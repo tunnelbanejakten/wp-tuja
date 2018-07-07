@@ -47,6 +47,11 @@ class FormShortcode
 
     public function render(): String
     {
+        $group = $this->group_dao->get_by_key($this->team_id);
+        if ($group === false) {
+            return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
+        }
+
         $message_success = null;
         $message_error = null;
         switch ($_POST['tuja_formshortcode_action']) {
@@ -73,9 +78,10 @@ class FormShortcode
                 });
                 $question->latest_response = $questions_responses[0];
             }
-            return sprintf('<p>%s</p>', Field::create($question)->render('tuja_formshortcode_response_' . $question->id));
+            $field_name = 'tuja_formshortcode_response_' . $question->id;
+            $html_field = Field::create($question)->render($field_name);
+            return sprintf('<p>%s</p>', $html_field);
         }, $questions));
-        $group = $this->group_dao->get_by_key($this->team_id);
         $html_greeting = sprintf('<p>Hej, %s.</p>', $group->name);
         $submit_button = sprintf('<button type="submit" name="tuja_formshortcode_action" value="update">Uppdatera svar</button>');
         return sprintf(

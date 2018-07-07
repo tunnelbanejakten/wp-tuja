@@ -21,6 +21,7 @@ Open shell to Wordpress installation:
     * Data model for _team_, _form_, _form_question_, _form_question_response_.
     * GUI for displaying form using WP shortcode.
     * Form pre-filled with team's previous responses.
+    * Form values should not be cleared if values cannot be saves. 
     * The address should be something like https://www.tunnelbanejakten.se/form/THE_FORM_ID/THE_TEAM_ID
         * The custom address could potentially be implemented using two WP features: "The Rewrite API" and "query_vars". 
         * https://premium.wpmudev.org/blog/building-customized-urls-wordpress/

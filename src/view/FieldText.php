@@ -19,7 +19,7 @@ class FieldText extends Field
             $this->label,
             $render_id,
             $field_name ?: $this->key,
-            $this->value,
+            isset($_POST[$field_name]) ? $_POST[$field_name] : $this->value,
             strtolower((new \ReflectionClass($this))->getShortName()));
     }
 }
