@@ -10,6 +10,7 @@ if (!$competition) {
 if ($_POST['tuja_action'] == 'group_create') {
     $props = new Group();
     $props->name = $_POST['tuja_group_name'];
+    $props->type = $_POST['tuja_group_type'];
     $props->competition_id = $competition->id;
     $db_groups->create($props);
 }
@@ -41,5 +42,9 @@ $groups = $db_groups->get_all_in_competition($competition->id);
     }
     ?>
     <input type="text" name="tuja_group_name"/>
+    <select name="tuja_group_type">
+        <option value="participant">Tävlande</option>
+        <option value="crew">Funktionär</option>
+    </select>
     <button type="submit" name="tuja_action" value="group_create">Skapa</button>
 </form>
