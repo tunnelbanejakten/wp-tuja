@@ -3,7 +3,6 @@
 namespace tuja\view;
 
 use tuja\data\model\Question;
-use tuja\util\Id;
 
 class Field
 {
@@ -18,7 +17,15 @@ class Field
 
     static function create(Question $question)
     {
-        $field = new FieldText();
+        switch ($question->type) {
+            case 'dropdown':
+                $field = new FieldDropdown();
+                $field->options = json_decode($question->answer, true)['values'];
+                break;
+            default:
+                $field = new FieldText();
+                break;
+        }
         $field->label = $question->text;
         $field->key = "question-" . $question->id;
         $field->value = $question->latest_response->answer;

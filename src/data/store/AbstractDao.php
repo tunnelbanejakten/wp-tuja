@@ -52,6 +52,7 @@ class AbstractDao
     {
         $f = new Form();
         $f->id = $result->id;
+        $f->competition_id = $result->competition_id;
         $f->name = $result->name;
         $f->allow_multiple_responses_per_team = $result->allow_multiple_responses_per_team;
         $f->accept_responses_from = $result->accept_responses_from;

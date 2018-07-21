@@ -2,7 +2,7 @@
 
 namespace tuja\view;
 
-include 'Field.php';
+include_once 'Field.php';
 
 class FieldText extends Field
 {

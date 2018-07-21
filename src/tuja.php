@@ -8,6 +8,7 @@
 */
 include 'util/Id.php';
 include 'view/FieldText.php';
+include 'view/FieldDropdown.php';
 include 'view/FormShortcode.php';
 include 'data/store/AbstractDao.php';
 include 'data/store/CompetitionDao.php';

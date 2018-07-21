@@ -13,4 +13,12 @@ class Question
     public $sort_order;
     public $text_hint;
     public $latest_response;
+
+    public function set_answer_one_of($valid_responses)
+    {
+        $this->answer = json_encode(array(
+            'validation' => 'one_of',
+            'values' => $valid_responses
+        ));
+    }
 }
