@@ -1,0 +1,27 @@
+.tuja-signup-person {
+    margin: 0;
+    padding: 1em 0;
+}
+
+.tuja-field,
+.tuja-item-buttons {
+    margin: 0.5em 0 0 0;
+}
+
+.tuja-field label {
+    margin: 0;
+}
+
+.tuja-question-hint {
+    font-size: 80%;
+    font-weight: normal;
+    color: #666;
+}
+
+.tuja-item-buttons {
+    text-align: right;
+}
+
+.tuja-item-buttons button {
+    font-size: 80%;
+}

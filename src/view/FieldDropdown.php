@@ -17,9 +17,11 @@ class FieldDropdown extends Field
     {
         $render_id = $field_name ?: uniqid();
         $selected_value = isset($_POST[$field_name]) ? $_POST[$field_name] : $this->value;
-        return sprintf('<label for="%s">%s</label><select id="%s" name="%s" class="tuja-%s">%s</select>',
+        $hint = isset($this->hint) ? sprintf('<br><span class="tuja-question-hint">%s</span>', $this->hint) : '';
+        return sprintf('<div class="tuja-field"><label for="%s">%s%s</label><select id="%s" name="%s" class="tuja-%s">%s</select></div>',
             $render_id,
             $this->label,
+            $hint,
             $render_id,
             $field_name ?: $this->key,
             strtolower((new \ReflectionClass($this))->getShortName()),

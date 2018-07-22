@@ -10,17 +10,20 @@ include 'util/Id.php';
 include 'view/FieldText.php';
 include 'view/FieldDropdown.php';
 include 'view/FormShortcode.php';
+include 'view/SignupParticipantsShortcode.php';
 include 'data/store/AbstractDao.php';
 include 'data/store/CompetitionDao.php';
 include 'data/store/FormDao.php';
 include 'data/store/GroupDao.php';
 include 'data/store/QuestionDao.php';
 include 'data/store/ResponseDao.php';
+include 'data/store/PersonDao.php';
 include 'data/model/Form.php';
 include 'data/model/Group.php';
 include 'data/model/Question.php';
 include 'data/model/Competition.php';
 include 'data/model/Response.php';
+include 'data/model/Person.php';
 include 'db.init.php';
 
 const SLUG = 'tuja';
@@ -32,6 +35,7 @@ use data\store\QuestionDao;
 use tuja\data\model\Competition;
 use tuja\util\Id;
 use view\FormShortcode;
+use view\SignupParticipantsShortcode;
 
 add_shortcode('tuja_textfield', 'tuja_textfield');
 
@@ -56,6 +60,17 @@ function tuja_form($atts)
     $form_id = $atts['form'];
     $team_id = $wp_query->query_vars['team_id'];
     $component = new FormShortcode($wpdb, $form_id, $team_id);
+    return $component->render();
+}
+
+add_shortcode('tuja_signup_participants', 'tuja_signup_participants');
+
+function tuja_signup_participants($atts)
+{
+    global $wp_query, $wpdb;
+    $competition_id = $atts['competition'];
+    $team_id = $wp_query->query_vars['team_id'];
+    $component = new SignupParticipantsShortcode($wpdb, $competition_id, $team_id);
     return $component->render();
 }
 
@@ -86,11 +101,19 @@ function tuja_add_menu()
     add_menu_page('Tunnelbanejakten', 'Tunnelbanejakten', 'manage_options', SLUG, 'tuja_show_admin_page');
 }
 
-function tuja_admin_theme_style() {
+function tuja_admin_theme_style()
+{
     wp_enqueue_style('tuja-admin-theme', plugins_url('admin.css', __FILE__));
 }
+
 add_action('admin_enqueue_scripts', 'tuja_admin_theme_style');
 //add_action('login_enqueue_scripts', 'tuja_admin_theme_style');
+function tuja_wp_theme_style()
+{
+    wp_enqueue_style('tuja-wp-theme', plugins_url('wp.css', __FILE__));
+}
+
+add_action('wp_enqueue_scripts', 'tuja_wp_theme_style');
 
 function tuja_show_admin_page()
 {

@@ -13,23 +13,22 @@ class GroupDao extends AbstractDao
 
     function create(Group $group)
     {
-        $query_template = '
-            INSERT INTO team (
-                random_id,
-                competition_id,
-                name,
-                type
-            ) VALUES (
-                %s,
-                %s,
-                %s,
-                %s
-            )';
-        return $this->wpdb->query($this->wpdb->prepare($query_template,
-            $this->id->random_string(10),
-            $group->competition_id,
-            $group->name,
-            $group->type));
+        $affected_rows = $this->wpdb->insert('team',
+            array(
+                'random_id' => $this->id->random_string(10),
+                'competition_id' => $group->competition_id,
+                'name' => $group->name,
+                'type' => $group->type
+            ),
+            array(
+                '%s',
+                '%d',
+                '%s',
+                '%s'
+            ));
+        $success = $affected_rows !== false && $affected_rows === 1;
+
+        return $success ? $this->wpdb->insert_id : false;
     }
 
     function get($id)

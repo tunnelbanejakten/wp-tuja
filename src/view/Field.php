@@ -10,6 +10,7 @@ class Field
     public $key;
     public $value;
     public $label;
+    public $hint;
 
     function __construct()
     {
@@ -34,6 +35,7 @@ class Field
                 break;
         }
         $field->label = $question->text;
+        $field->hint = $question->text_hint;
         $field->key = "question-" . $question->id;
         $field->value = $question->latest_response->answer;
         return $field;

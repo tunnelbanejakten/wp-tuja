@@ -8,16 +8,16 @@ CREATE TABLE competition (
 )
   ENGINE = INNODB;
 
-CREATE TABLE role (
-  id                      INTEGER AUTO_INCREMENT PRIMARY KEY,
-  competition_id          INTEGER     NOT NULL,
-  name                    VARCHAR(50) NOT NULL,
-  signup_fee              INTEGER,
-  assignable_to_team_type VARCHAR(20) NOT NULL CHECK (assignable_to_team_type IN ('crew', 'participant')),
-  CONSTRAINT fk_role_competition FOREIGN KEY (competition_id) REFERENCES competition (id)
-    ON DELETE CASCADE
-)
-  ENGINE = INNODB;
+# CREATE TABLE role (
+#   id                      INTEGER AUTO_INCREMENT PRIMARY KEY,
+#   competition_id          INTEGER     NOT NULL,
+#   name                    VARCHAR(50) NOT NULL,
+#   signup_fee              INTEGER,
+#   assignable_to_team_type VARCHAR(20) NOT NULL CHECK (assignable_to_team_type IN ('crew', 'participant')),
+#   CONSTRAINT fk_role_competition FOREIGN KEY (competition_id) REFERENCES competition (id)
+#     ON DELETE CASCADE
+# )
+#   ENGINE = INNODB;
 
 CREATE TABLE team (
   id             INTEGER AUTO_INCREMENT PRIMARY KEY,
@@ -33,14 +33,20 @@ CREATE TABLE team (
   ENGINE = INNODB;
 
 CREATE TABLE person (
-  id      INTEGER AUTO_INCREMENT PRIMARY KEY,
-  name    VARCHAR(100) NOT NULL,
-  team_id INTEGER      NOT NULL,
-  role_id INTEGER      NOT NULL,
+  id             INTEGER               AUTO_INCREMENT PRIMARY KEY,
+  random_id      VARCHAR(20)  NOT NULL,
+  name           VARCHAR(100) NOT NULL,
+  team_id        INTEGER      NOT NULL,
+#   role_id        INTEGER      NOT NULL,
+  phone          VARCHAR(50),
+  phone_verified BOOLEAN      NOT NULL DEFAULT FALSE,
+  email          VARCHAR(50),
+  email_verified BOOLEAN      NOT NULL DEFAULT FALSE,
+  CONSTRAINT UNIQUE idx_person_token (random_id),
   CONSTRAINT fk_person_team FOREIGN KEY (team_id) REFERENCES team (id)
-    ON DELETE CASCADE,
-  CONSTRAINT fk_person_role FOREIGN KEY (role_id) REFERENCES role (id)
-    ON DELETE CASCADE
+    ON DELETE CASCADE #,
+#   CONSTRAINT fk_person_role FOREIGN KEY (role_id) REFERENCES role (id)
+#     ON DELETE CASCADE
 )
   ENGINE = INNODB;
 

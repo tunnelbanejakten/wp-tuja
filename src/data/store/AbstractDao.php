@@ -5,6 +5,7 @@ namespace data\store;
 use tuja\data\model\Competition;
 use tuja\data\model\Form;
 use tuja\data\model\Group;
+use tuja\data\model\Person;
 use tuja\data\model\Question;
 use tuja\data\model\Response;
 use tuja\util\Id;
@@ -69,6 +70,20 @@ class AbstractDao
         $g->type = $result->type;
         $g->competition_id = $result->competition_id;
         return $g;
+    }
+
+    protected static function to_person($result): Person
+    {
+        $p = new Person();
+        $p->id = $result->id;
+        $p->random_id = $result->random_id;
+        $p->name = $result->name;
+        $p->group_id = $result->team_id;
+        $p->phone = $result->phone;
+        $p->phone_verified = $result->phone_verified;
+        $p->email = $result->email;
+        $p->email_verified = $result->email_verified;
+        return $p;
     }
 
     protected static function to_form_question($result): Question
