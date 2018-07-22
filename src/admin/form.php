@@ -1,6 +1,7 @@
 <?php
 
 use tuja\data\model\Question;
+use tuja\view\Field;
 
 const FORM_FIELD_NAME_PREFIX = 'tuja-question';
 const ACTION_NAME_DELETE_PREFIX = 'question_delete__';
@@ -67,9 +68,14 @@ if ($_POST['tuja_action'] == 'questions_update') {
     var_dump($success); // TODO: Show nicer status message
 }
 $competition = $db_competition->get($form->competition_id);
+
+$competition_url = add_query_arg(array(
+    'tuja_view' => 'competition',
+    'tuja_competition' => $competition->id
+));
 ?>
 <h1>Tunnelbanejakten</h1>
-<h2>Tävling <?= $competition->name ?></h2>
+<h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h2>
 <h3>Formulär <?= $form->name ?></h3>
 <form method="post" action="<?= add_query_arg() ?>">
     <?php
@@ -77,6 +83,7 @@ $competition = $db_competition->get($form->competition_id);
 
     foreach ($questions as $question) {
         printf('<div class="tuja-admin-question">');
+        printf('<div class="tuja-admin-question-properties">');
 
         //TODO: There is a lot of quite similar code for generating HTML here. Can a helper method be implemented in order to DRY?
 
@@ -87,7 +94,7 @@ $competition = $db_competition->get($form->competition_id);
             'text' => 'Fritext',
             'dropdown' => 'Välj ett alternativ'
         );
-        printf('<label for="%s">%s</label><select id="%s" name="%s">%s</select>',
+        printf('<div class="tuja-admin-question-property tuja-admin-question-property-type"><label for="%s">%s</label><select id="%s" name="%s">%s</select></div>',
             $render_id,
             'Typ av fråga',
             $render_id,
@@ -98,7 +105,7 @@ $competition = $db_competition->get($form->competition_id);
 
         $render_id = uniqid();
         $field_name = 'tuja-question__' . $question->id . '__text';
-        printf('<label for="%s">%s</label><input type="text" id="%s" name="%s" value="%s" />',
+        printf('<div class="tuja-admin-question-property tuja-admin-question-property-text"><label for="%s">%s</label><input type="text" id="%s" name="%s" value="%s" /></div>',
             $render_id,
             'Text',
             $render_id,
@@ -107,7 +114,7 @@ $competition = $db_competition->get($form->competition_id);
 
         $render_id = uniqid();
         $field_name = 'tuja-question__' . $question->id . '__text_hint';
-        printf('<label for="%s">%s</label><input type="text" id="%s" name="%s" value="%s" />',
+        printf('<div class="tuja-admin-question-property tuja-admin-question-property-texthint"><label for="%s">%s</label><input type="text" id="%s" name="%s" value="%s" /></div>',
             $render_id,
             'Tips eller vägledning',
             $render_id,
@@ -116,7 +123,7 @@ $competition = $db_competition->get($form->competition_id);
 
         $render_id = uniqid();
         $field_name = 'tuja-question__' . $question->id . '__sort_order';
-        printf('<label for="%s">%s</label><input type="number" id="%s" name="%s" value="%s" />',
+        printf('<div class="tuja-admin-question-property tuja-admin-question-property-sortorder"><label for="%s">%s</label><input type="number" id="%s" name="%s" value="%s" /></div>',
             $render_id,
             'Ordning',
             $render_id,
@@ -126,13 +133,19 @@ $competition = $db_competition->get($form->competition_id);
         $render_id = uniqid();
         $field_name = 'tuja-question__' . $question->id . '__answer';
         $answer = stripslashes(isset($_POST[$field_name]) ? $_POST[$field_name] : json_encode(json_decode($question->answer), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        printf('<label for="%s">%s</label><textarea cols="50" rows="10" id="%s" name="%s">%s</textarea>',
+        printf('<div class="tuja-admin-question-property tuja-admin-question-property-answer"><label for="%s">%s</label><textarea cols="50" rows="10" id="%s" name="%s">%s</textarea></div>',
             $render_id,
             'Svar',
             $render_id,
             $field_name,
             $answer);
+        printf('</div>');
+
         printf('<button type="submit" name="tuja_action" value="%s%d">Ta bort</button>', ACTION_NAME_DELETE_PREFIX, $question->id);
+
+        $html_field = Field::create($question)->render('tuja_' . uniqid());
+        printf('<div class="tuja-admin-question-preview"><p>Förhandsgranskning av fråga <br>(uppdateras när du sparar ändringarna): </p>%s</div>', $html_field);
+
         printf('</div>');
     }
     ?>

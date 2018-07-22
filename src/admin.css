@@ -23,3 +23,26 @@
     display: block;
     width: 100%;
 }
+
+.tuja-admin-question-preview {
+    border: 1px solid #aaa;
+    background-color: white;
+    margin: 1em 0;
+    padding: 1em;
+}
+.tuja-admin-question-preview p {
+    margin: 0 0 0.5em 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.tuja-admin-question-properties {
+    display: flex;
+    flex-wrap: wrap;
+}
+.tuja-admin-question-property {
+    width: 30em;
+    margin: 0 1em 1em 0;
+}
+.tuja-admin-question-preview {
+    width: 50%;
+}
