@@ -21,4 +21,13 @@ class Question
             'values' => $valid_responses
         ));
     }
+
+    public function set_answer_one_of_these($valid_response, $selectable_responses)
+    {
+        $this->answer = json_encode(array(
+            'validation' => 'one_of',
+            'values' => array($valid_response),
+            'options' => $selectable_responses
+        ));
+    }
 }

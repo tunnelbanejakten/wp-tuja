@@ -1,5 +1,6 @@
 <?php
 
+use tuja\data\model\Form;
 use tuja\data\model\Group;
 
 $competition = $db_competition->get($_GET['tuja_competition']);
@@ -13,6 +14,11 @@ if ($_POST['tuja_action'] == 'group_create') {
     $props->type = $_POST['tuja_group_type'];
     $props->competition_id = $competition->id;
     $db_groups->create($props);
+} elseif ($_POST['tuja_action'] == 'form_create') {
+    $props = new Form();
+    $props->name = $_POST['tuja_form_name'];
+    $props->competition_id = $competition->id;
+    $db_form->create($props);
 }
 $forms = $db_form->get_all_in_competition($competition->id);
 $groups = $db_groups->get_all_in_competition($competition->id);
@@ -23,18 +29,15 @@ $groups = $db_groups->get_all_in_competition($competition->id);
     <h3>Formulär</h3>
     <?php
     foreach ($forms as $form) {
-        printf('<ul><li><strong>%s:</strong>', $form->name);
-        $questions = $db_question->get_all_in_form($form->id);
-
-        printf('<ul>');
-        foreach ($questions as $question) {
-            printf('<li>%s</li>', $question->text);
-        }
-        printf('</ul>');
-
-        printf('</li></ul>');
+            $url = add_query_arg(array(
+                'tuja_view' => 'form',
+                'tuja_form' => $form->id
+            ));
+            printf('<p><a href="%s">%s</a></p>', $url, $form->name);
     }
     ?>
+    <input type="text" name="tuja_form_name"/>
+    <button type="submit" name="tuja_action" value="form_create">Skapa</button>
     <h3>Lag</h3>
     <?php
     foreach ($groups as $group) {

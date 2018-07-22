@@ -75,6 +75,7 @@ class AbstractDao
     {
         $q = new Question();
         $q->id = $result->id;
+        $q->form_id = $result->form_id;
         $q->type = $result->type;
         $q->answer = $result->answer;
         $q->text = $result->text;

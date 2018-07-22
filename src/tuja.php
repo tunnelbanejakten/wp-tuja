@@ -86,6 +86,12 @@ function tuja_add_menu()
     add_menu_page('Tunnelbanejakten', 'Tunnelbanejakten', 'manage_options', SLUG, 'tuja_show_admin_page');
 }
 
+function tuja_admin_theme_style() {
+    wp_enqueue_style('tuja-admin-theme', plugins_url('admin.css', __FILE__));
+}
+add_action('admin_enqueue_scripts', 'tuja_admin_theme_style');
+//add_action('login_enqueue_scripts', 'tuja_admin_theme_style');
+
 function tuja_show_admin_page()
 {
     global $wpdb;

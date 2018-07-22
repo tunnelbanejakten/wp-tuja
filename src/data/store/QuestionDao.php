@@ -2,6 +2,8 @@
 
 namespace data\store;
 
+use tuja\data\model\Question;
+
 class QuestionDao extends AbstractDao
 {
     function __construct($wpdb)
@@ -9,11 +11,70 @@ class QuestionDao extends AbstractDao
         parent::__construct($wpdb);
     }
 
+    function create(Question $question)
+    {
+        $query_template = '
+            INSERT INTO form_question (
+                form_id,
+                type,
+                answer,
+                text,
+                sort_order,
+                text_hint
+            ) VALUES (
+                %d,
+                %s,
+                %s,
+                %s,
+                %d,
+                %s 
+            )';
+        return $this->wpdb->query($this->wpdb->prepare($query_template,
+            $question->form_id,
+            $question->type,
+            $question->answer,
+            $question->text,
+            $question->sort_order,
+            $question->text_hint));
+    }
+
+    function delete($id)
+    {
+        $query_template = 'DELETE FROM form_question WHERE id = %d';
+        return $this->wpdb->query($this->wpdb->prepare($query_template, $id));
+    }
+
+    function update(Question $question)
+    {
+        $query_template = '
+            UPDATE form_question SET
+                type = %s,
+                answer = %s,
+                text = %s,
+                sort_order = %d,
+                text_hint = %s
+                WHERE 
+                id = %d AND
+                form_id = %d';
+        return $this->wpdb->query($this->wpdb->prepare($query_template,
+            $question->type,
+            $question->answer,
+            $question->text,
+            $question->sort_order,
+            $question->text_hint,
+            $question->id,
+            $question->form_id));
+    }
+
     function get_all_in_form($form_id)
     {
         return $this->get_objects(
             'data\store\AbstractDao::to_form_question',
-            'SELECT * FROM form_question WHERE form_id = %d',
+            '
+                SELECT * 
+                FROM form_question 
+                WHERE form_id = %d 
+                ORDER BY sort_order, id',
             $form_id);
     }
 

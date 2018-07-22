@@ -1,0 +1,25 @@
+.tuja-admin-question textarea {
+    font-family: monospace;
+}
+
+.tuja-admin-question {
+    margin: 1em 0;
+    padding: 1em 0;
+    border-top: 1px solid #aaa;
+}
+
+.tuja-admin-question:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.tuja-admin-question label {
+    display: block;
+}
+.tuja-admin-question input,
+.tuja-admin-question textarea,
+.tuja-admin-question select {
+    display: block;
+    width: 100%;
+}
