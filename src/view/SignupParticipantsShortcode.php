@@ -26,27 +26,26 @@ class SignupParticipantsShortcode
     private $group_dao;
     private $person_dao;
     private $competition_id;
-    private $team_key;
+    private $group_key;
 
-    // TODO: Use the term "group" instead of "team" everywhere but in the database.
-    public function __construct($wpdb, $competition_id, $team_key)
+    public function __construct($wpdb, $competition_id, $group_key)
     {
         $this->competition_id = $competition_id;
-        $this->team_key = $team_key;
+        $this->group_key = $group_key;
         $this->group_dao = new GroupDao($wpdb);
         $this->person_dao = new PersonDao($wpdb);
     }
 
     public function render(): String
     {
-        $team_key = $this->team_key;
+        $group_key = $this->group_key;
 
 //        $message_success = null;
 //        $message_error = null;
 
-        if (isset($team_key)) {
+        if (isset($group_key)) {
             // TODO: Split into smaller methods.
-            $group = $this->group_dao->get_by_key($team_key);
+            $group = $this->group_dao->get_by_key($group_key);
             if ($group === false) {
                 return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
             }
@@ -139,7 +138,7 @@ class SignupParticipantsShortcode
                         return sprintf('Ett fel uppstod.');
                     }
                 } else {
-                    // TODO: Check for existing teams instead of relying on database constraint. Show the form instead of just an error message.
+                    // TODO: Check for existing groups instead of relying on database constraint. Show the form instead of just an error message.
                     return sprintf('Kunde inte anmäla laget. Kanske finns redan ett lag med samma namn?');
                 }
             }

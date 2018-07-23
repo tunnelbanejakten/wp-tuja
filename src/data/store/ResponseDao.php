@@ -27,17 +27,17 @@ class ResponseDao extends AbstractDao
             )';
         return $this->wpdb->query($this->wpdb->prepare($query_template,
             $response->form_question_id,
-            $response->team_id,
+            $response->group_id,
             $response->answer,
             $response->points));
     }
 
-    function get_by_team($team_id)
+    function get_by_group($group_id)
     {
         return $this->get_objects(
             'data\store\AbstractDao::to_response',
             'SELECT * FROM form_question_response WHERE team_id = %d',
-            $team_id);
+            $group_id);
     }
 
 }

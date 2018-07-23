@@ -16,26 +16,26 @@ class FormShortcode
     private $group_dao;
     private $response_dao;
 
-    const TEAMS_DROPDOWN_NAME = 'tuja_formshortcode_response_team';
+    const TEAMS_DROPDOWN_NAME = 'tuja_formshortcode_response_group';
 
-    public function __construct($wpdb, $form_id, $team_key)
+    public function __construct($wpdb, $form_id, $group_key)
     {
         $this->form_id = $form_id;
-        $this->team_key = $team_key;
+        $this->group_key = $group_key;
         $this->question_dao = new QuestionDao($wpdb);
         $this->group_dao = new GroupDao($wpdb);
         $this->response_dao = new ResponseDao($wpdb);
         $this->form_dao = new FormDao($wpdb);
     }
 
-    public function update_answers($team_id): String
+    public function update_answers($group_id): String
     {
         $overall_success = true;
         $questions = $this->question_dao->get_all_in_form($this->form_id);
         foreach ($questions as $question) {
             if (isset($_POST['tuja_formshortcode_response_' . $question->id])) {
                 $new_response = new Response();
-                $new_response->team_id = $team_id;
+                $new_response->group_id = $group_id;
                 $new_response->form_question_id = $question->id;
                 $new_response->answer = $_POST['tuja_formshortcode_response_' . $question->id];
                 $new_response->points = null;
@@ -53,8 +53,8 @@ class FormShortcode
     public function render(): String
     {
         $html_sections = [];
-        $team_key = $this->team_key;
-        $group = $this->group_dao->get_by_key($team_key);
+        $group_key = $this->group_key;
+        $group = $this->group_dao->get_by_key($group_key);
         if ($group === false) {
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
         }
@@ -62,18 +62,18 @@ class FormShortcode
         $html_sections[] = sprintf('<p>Hej, %s.</p>', $group->name);
 
         if ($group->type === 'crew') {
-            $html_sections[] = sprintf('<p>%s</p>', $this->get_teams_dropdown());
+            $html_sections[] = sprintf('<p>%s</p>', $this->get_groups_dropdown());
 
-            $team_id = $_POST[self::TEAMS_DROPDOWN_NAME];
+            $group_id = $_POST[self::TEAMS_DROPDOWN_NAME];
         } else {
-            $team_id = $group->id;
+            $group_id = $group->id;
         }
 
         $message_success = null;
         $message_error = null;
         switch ($_POST['tuja_formshortcode_action']) {
             case 'update':
-                $updated = $this->update_answers($team_id);
+                $updated = $this->update_answers($group_id);
                 if ($updated) {
                     $message_success = 'Era svar har sparats.';
                     $html_sections[] = sprintf('<p class="tuja-message tuja-message-success">%s</p>', $message_success);
@@ -84,7 +84,7 @@ class FormShortcode
                 break;
         }
 
-        $responses = $this->response_dao->get_by_team($team_id);
+        $responses = $this->response_dao->get_by_group($group_id);
         $questions = $this->question_dao->get_all_in_form($this->form_id);
 
         $html_sections[] = join(array_map(function ($question) use ($responses) {
@@ -105,11 +105,11 @@ class FormShortcode
         return sprintf('<form method="post">%s</form>', join($html_sections));
     }
 
-    private function get_teams_dropdown(): string
+    private function get_groups_dropdown(): string
     {
-        $choose_team_question = new Question();
-        $choose_team_question->type = 'dropdown';
-        $choose_team_question->text = 'Vilket lag vill du rapportera för?';
+        $choose_group_question = new Question();
+        $choose_group_question->type = 'dropdown';
+        $choose_group_question->text = 'Vilket lag vill du rapportera för?';
 
         $form = $this->form_dao->get($this->form_id);
         $competition_id = $form->competition_id;
@@ -125,8 +125,8 @@ class FormShortcode
             array_map(function ($option) {
                 return $option->name;
             }, $participant_groups));
-        $choose_team_question->set_answer_one_of($options);
-        $html_field = Field::create($choose_team_question)->render(self::TEAMS_DROPDOWN_NAME);
+        $choose_group_question->set_answer_one_of($options);
+        $html_field = Field::create($choose_group_question)->render(self::TEAMS_DROPDOWN_NAME);
         return $html_field;
     }
 }

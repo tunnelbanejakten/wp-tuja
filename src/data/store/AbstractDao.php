@@ -55,7 +55,7 @@ class AbstractDao
         $f->id = $result->id;
         $f->competition_id = $result->competition_id;
         $f->name = $result->name;
-        $f->allow_multiple_responses_per_team = $result->allow_multiple_responses_per_team;
+        $f->allow_multiple_responses_per_group = $result->allow_multiple_responses_per_team;
         $f->accept_responses_from = $result->accept_responses_from;
         $f->accept_responses_until = $result->accept_responses_until;
         return $f;
@@ -104,7 +104,7 @@ class AbstractDao
         $r = new Response();
         $r->id = $result->id;
         $r->form_question_id = $result->form_question_id;
-        $r->team_id = $result->team_id;
+        $r->group_id = $result->team_id;
         $r->answer = $result->answer;
         $r->points = $result->points;
         return $r;

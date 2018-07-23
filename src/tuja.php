@@ -58,8 +58,8 @@ function tuja_form($atts)
 {
     global $wp_query, $wpdb;
     $form_id = $atts['form'];
-    $team_id = $wp_query->query_vars['team_id'];
-    $component = new FormShortcode($wpdb, $form_id, $team_id);
+    $group_id = $wp_query->query_vars['group_id'];
+    $component = new FormShortcode($wpdb, $form_id, $group_id);
     return $component->render();
 }
 
@@ -69,8 +69,8 @@ function tuja_signup_participants($atts)
 {
     global $wp_query, $wpdb;
     $competition_id = $atts['competition'];
-    $team_id = $wp_query->query_vars['team_id'];
-    $component = new SignupParticipantsShortcode($wpdb, $competition_id, $team_id);
+    $group_id = $wp_query->query_vars['group_id'];
+    $component = new SignupParticipantsShortcode($wpdb, $competition_id, $group_id);
     return $component->render();
 }
 
@@ -78,7 +78,7 @@ add_filter('query_vars', 'tuja_query_vars');
 
 function tuja_query_vars($vars)
 {
-    $vars[] = 'team_id';
+    $vars[] = 'group_id';
     return $vars;
 }
 
@@ -86,7 +86,7 @@ add_filter('rewrite_rules_array', 'tujo_rewrite_rules');
 
 function tujo_rewrite_rules($rules)
 {
-    $rules = array('([^/]+)/team-([^/]+)/?$' => 'single.php?pagename=$matches[1]&team_id=$matches[2]') + $rules;
+    $rules = array('([^/]+)/team-([^/]+)/?$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]') + $rules;
     return $rules;
 }
 
