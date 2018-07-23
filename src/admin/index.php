@@ -16,3 +16,9 @@
     <input type="text" name="tuja_competition_name"/>
     <button type="submit" name="tuja_action" value="competition_create">Skapa</button>
 </form>
+<?php
+$url = add_query_arg(array(
+    'tuja_view' => 'settings'
+));
+printf('<p><a href="%s">Inställningar</a></p>', $url);
+?>

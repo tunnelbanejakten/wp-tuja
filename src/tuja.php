@@ -7,6 +7,7 @@
     Author URI: https://tunnelbanejakten.se
 */
 include 'util/Id.php';
+include 'util/Recaptcha.php';
 include 'view/FieldText.php';
 include 'view/FieldDropdown.php';
 include 'view/FormShortcode.php';
@@ -114,6 +115,13 @@ function tuja_wp_theme_style()
 }
 
 add_action('wp_enqueue_scripts', 'tuja_wp_theme_style');
+
+function tuja_recaptcha_script()
+{
+    wp_register_script('tuja-recaptcha-script', 'https://www.google.com/recaptcha/api.js');
+}
+
+add_action('wp_enqueue_scripts', 'tuja_recaptcha_script');
 
 function tuja_show_admin_page()
 {

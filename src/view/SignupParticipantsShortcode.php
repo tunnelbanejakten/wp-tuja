@@ -10,6 +10,7 @@ use tuja\data\model\Person;
 use tuja\data\model\Question;
 use tuja\data\model\Response;
 use tuja\view\Field;
+use util\Recaptcha;
 
 const SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON = 'tuja-person__';
 const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
@@ -65,6 +66,12 @@ class SignupParticipantsShortcode
         } else {
             if ($_POST['tuja_signupparticipantsshortcode_action'] == ACTION_NAME_SAVE) {
                 try {
+                    $recaptcha_secret = get_option('tuja_recaptcha_sitesecret');
+                    if (!empty($recaptcha_secret)) {
+                        $recaptcha = new Recaptcha($recaptcha_secret);
+                        $recaptcha->verify($_POST['g-recaptcha-response']);
+                    }
+
                     $new_group = $this->create_group();
 
                     // TODO: Handle https links as well.
@@ -118,6 +125,12 @@ class SignupParticipantsShortcode
         $person_name_question->text_hint = 'Vi kommer skicka viktig information inför tävlingen till denna adress. Ni kan ändra till en annan adress senare om det skulle behövas.';
         $person_name_question->latest_response = new Response();
         $html_sections[] = Field::create($person_name_question)->render(self::FIELD_PERSON_EMAIL);
+
+        $recaptcha_sitekey = get_option('tuja_recaptcha_sitekey');
+        if (!empty($recaptcha_sitekey)) {
+            wp_enqueue_script('tuja-recaptcha-script');
+            $html_sections[] = sprintf('<div class="tuja-robot-check"><div class="g-recaptcha" data-sitekey="%s"></div></div>', $recaptcha_sitekey);
+        }
 
         $html_sections[] = sprintf('<div><button type="submit" name="tuja_signupparticipantsshortcode_action" value="%s">%s</button></div>', ACTION_NAME_SAVE, 'Anmäl lag');
 
