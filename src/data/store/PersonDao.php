@@ -13,28 +13,21 @@ class PersonDao extends AbstractDao
 
     function create(Person $person)
     {
-        // TODO: Use wpdb->insert instead.
-        $query_template = '
-            INSERT INTO person (
-                random_id,
-                name,
-                team_id,
-                phone,
-                email
-            ) VALUES (
-                %s,
-                %s,
-                %d,
-                %s,
-                %s
-            )';
-        // TODO: People should have randomized ids to prevent users from changing other team's users by manipulating form values.
-        return $this->wpdb->query($this->wpdb->prepare($query_template,
-            $this->id->random_string(10),
-            $person->name,
-            $person->group_id,
-            $person->phone,
-            $person->email));
+        return $this->wpdb->insert('person',
+            array(
+                'random_id' => $this->id->random_string(10),
+                'name' => $person->name,
+                'team_id' => $person->group_id,
+                'phone' => $person->phone,
+                'email' => $person->email
+            ),
+            array(
+                '%s',
+                '%s',
+                '%d',
+                '%s',
+                '%s'
+            ));
     }
 
     function update(Person $person)
