@@ -4,6 +4,7 @@ namespace view;
 
 use data\store\GroupDao;
 use data\store\PersonDao;
+use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
@@ -40,115 +41,52 @@ class SignupParticipantsShortcode
     {
         $group_key = $this->group_key;
 
-//        $message_success = null;
-//        $message_error = null;
-
         if (isset($group_key)) {
-            // TODO: Split into smaller methods.
             $group = $this->group_dao->get_by_key($group_key);
             if ($group === false) {
                 return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
             }
 
             if (substr($_POST['tuja_signupparticipantsshortcode_action'], 0, strlen(ACTION_NAME_DELETE_PERSON_PREFIX)) == ACTION_NAME_DELETE_PERSON_PREFIX) {
-                $person_to_delete = substr($_POST['tuja_signupparticipantsshortcode_action'], strlen(ACTION_NAME_DELETE_PERSON_PREFIX));
-                // TODO: Handle/show error if delete fails.
-                $this->person_dao->delete_by_key($person_to_delete);
+                try {
+                    $person_to_delete = substr($_POST['tuja_signupparticipantsshortcode_action'], strlen(ACTION_NAME_DELETE_PERSON_PREFIX));
+                    $this->delete_person($person_to_delete);
+                } catch (Exception $e) {
+                    return $this->render_update_form($group, $e);
+                }
             } elseif ($_POST['tuja_signupparticipantsshortcode_action'] == ACTION_NAME_SAVE) {
-
-                $form_values = array_filter($_POST, function ($key) {
-                    return substr($key, 0, strlen(SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON)) === SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON;
-                }, ARRAY_FILTER_USE_KEY);
-
-                $people = $this->person_dao->get_all_in_group($group->id);
-
-                $updated_people = array_combine(array_map(function ($person) {
-                    return $person->random_id;
-                }, $people), $people);
-                $new_person = null;
-                foreach ($form_values as $field_name => $field_value) {
-                    list(, $attr, $id) = explode('__', $field_name);
-                    if (empty($id)) {
-                        if (!isset($new_person)) {
-                            $new_person = new Person();
-                            $new_person->group_id = $group->id;
-                        }
-                        $current_person = $new_person;
-                    } else {
-                        $current_person = $updated_people[$id];
-                    }
-                    switch ($attr) {
-                        case 'name':
-                            $current_person->name = $field_value;
-                            break;
-                        case 'email':
-                            $current_person->email = $field_value;
-                            break;
-                        case 'phone':
-                            $current_person->phone = $field_value;
-                            break;
-                    }
+                try {
+                    $this->update_group($group->id);
+                } catch (Exception $e) {
+                    return $this->render_update_form($group, $e);
                 }
-
-                $overall_success = true;
-                foreach ($updated_people as $updated_person) {
-                    $affected_rows = $this->person_dao->update($updated_person);
-                    $this_success = $affected_rows !== false && $affected_rows === 1;
-                    $overall_success = ($overall_success and $this_success);
-                }
-                if (isset($new_person) && !empty($new_person->name)) {
-                    $affected_rows = $this->person_dao->create($new_person);
-                    $this_success = $affected_rows !== false && $affected_rows === 1;
-                    if ($this_success) {
-                        // Clear the "new person form" after successfully adding a new person to the group.
-                        unset($_POST[SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON . 'name__']);
-                        unset($_POST[SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON . 'email__']);
-                        unset($_POST[SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON . 'phone__']);
-                    }
-                    $overall_success = ($overall_success and $this_success);
-                }
-                var_dump($overall_success); // TODO: Show nicer status message
             }
-
-            return $this->render_update($group);
+            return $this->render_update_form($group);
         } else {
             if ($_POST['tuja_signupparticipantsshortcode_action'] == ACTION_NAME_SAVE) {
-                $new_group = new Group();
-                $new_group->name = $_POST[self::FIELD_GROUP_NAME];
-                $new_group->type = 'participant';
-                $new_group->competition_id = $this->competition_id;
-                $new_group_id = $this->group_dao->create($new_group);
+                try {
+                    $new_group = $this->create_group();
 
-                if ($new_group_id !== false) {
-                    $new_person = new Person();
-                    $new_person->group_id = $new_group_id;
-                    $new_person->name = $_POST[self::FIELD_PERSON_NAME];
-                    $new_person->email = $_POST[self::FIELD_PERSON_EMAIL];
-                    $affected_rows = $this->person_dao->create($new_person);
-                    if ($affected_rows !== false && $affected_rows == 1) {
-
-                        $group = $this->group_dao->get($new_group_id);
-
-                        // TODO: Handle https links as well.
-                        $current_url = "http://{$_SERVER['SERVER_NAME']}:{$_SERVER['SERVER_PORT']}{$_SERVER['REQUEST_URI']}";
-                        $edit_link = rtrim($current_url, '/') . "/team-{$group->random_id}";
-                        return sprintf('<p>Tack! Nästa steg är att gå till <a href="%s">%s</a> och fylla i vad de andra deltagarna i ert lag heter. Vi har också skickat länken till din e-postadress så att du kan ändra er anmälan framöver.</p>', $edit_link, $edit_link);
-                    } else {
-                        // TODO: Show the form instead of just an error message.
-                        return sprintf('Ett fel uppstod.');
-                    }
-                } else {
-                    // TODO: Check for existing groups instead of relying on database constraint. Show the form instead of just an error message.
-                    return sprintf('Kunde inte anmäla laget. Kanske finns redan ett lag med samma namn?');
+                    // TODO: Handle https links as well.
+                    $current_url = "http://{$_SERVER['SERVER_NAME']}:{$_SERVER['SERVER_PORT']}{$_SERVER['REQUEST_URI']}";
+                    $edit_link = rtrim($current_url, '/') . "/team-{$new_group->random_id}";
+                    return sprintf('<p class="tuja-message tuja-message-success">Tack! Nästa steg är att gå till <a href="%s">%s</a> och fylla i vad de andra deltagarna i ert lag heter. Vi har också skickat länken till din e-postadress så att du kan ändra er anmälan framöver.</p>', $edit_link, $edit_link);
+                } catch (Exception $e) {
+                    return $this->render_create_form($e);
                 }
+            } else {
+                return $this->render_create_form();
             }
-            return $this->render_create();
         }
     }
 
-    private function render_create(): string
+    private function render_create_form($exception_to_show = null): string
     {
         $html_sections = [];
+
+        if (isset($exception_to_show)) {
+            $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $exception_to_show->getMessage());
+        }
 
         $group_name_question = new Question();
         $group_name_question->type = 'text';
@@ -186,11 +124,15 @@ class SignupParticipantsShortcode
         return sprintf('<form method="post">%s</form>', join($html_sections));
     }
 
-    private function render_update($group): string
+    private function render_update_form($group, $exception_to_show = null): string
     {
         $people = $this->person_dao->get_all_in_group($group->id);
 
         $html_sections = [];
+
+        if (isset($exception_to_show)) {
+            $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $exception_to_show->getMessage());
+        }
 
         $html_sections[] = sprintf('<h3>Laget</h3>');
 
@@ -261,5 +203,99 @@ class SignupParticipantsShortcode
         }
 
         return sprintf('<div class="tuja-signup-person">%s</div>', join($html_sections));
+    }
+
+    private function update_group($group_id)
+    {
+        $form_values = array_filter($_POST, function ($key) {
+            return substr($key, 0, strlen(SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON)) === SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON;
+        }, ARRAY_FILTER_USE_KEY);
+
+        $people = $this->person_dao->get_all_in_group($group_id);
+
+        $updated_people = array_combine(array_map(function ($person) {
+            return $person->random_id;
+        }, $people), $people);
+        $new_person = null;
+        foreach ($form_values as $field_name => $field_value) {
+            list(, $attr, $id) = explode('__', $field_name);
+            if (empty($id)) {
+                if (!isset($new_person)) {
+                    $new_person = new Person();
+                    $new_person->group_id = $group_id;
+                }
+                $current_person = $new_person;
+            } else {
+                $current_person = $updated_people[$id];
+            }
+            switch ($attr) {
+                case 'name':
+                    $current_person->name = $field_value;
+                    break;
+                case 'email':
+                    $current_person->email = $field_value;
+                    break;
+                case 'phone':
+                    $current_person->phone = $field_value;
+                    break;
+            }
+        }
+
+        $overall_success = true;
+        foreach ($updated_people as $updated_person) {
+            $affected_rows = $this->person_dao->update($updated_person);
+            $this_success = $affected_rows !== false && $affected_rows === 1;
+            $overall_success = ($overall_success and $this_success);
+        }
+        if (isset($new_person) && !empty($new_person->name)) {
+            $affected_rows = $this->person_dao->create($new_person);
+            $this_success = $affected_rows !== false && $affected_rows === 1;
+            if ($this_success) {
+                // Clear the "new person form" after successfully adding a new person to the group.
+                unset($_POST[SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON . 'name__']);
+                unset($_POST[SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON . 'email__']);
+                unset($_POST[SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON . 'phone__']);
+            }
+            $overall_success = ($overall_success and $this_success);
+        }
+        if (!$overall_success) {
+            throw new Exception('Alla ändringar kunde inte sparas.');
+        }
+    }
+
+    private function create_group(): Group
+    {
+        $new_group = new Group();
+        $new_group->name = $_POST[self::FIELD_GROUP_NAME];
+        $new_group->type = 'participant';
+        $new_group->competition_id = $this->competition_id;
+        $new_group_id = $this->group_dao->create($new_group);
+
+        if ($new_group_id !== false) {
+            $new_person = new Person();
+            $new_person->group_id = $new_group_id;
+            $new_person->name = $_POST[self::FIELD_PERSON_NAME];
+            $new_person->email = $_POST[self::FIELD_PERSON_EMAIL];
+            $affected_rows = $this->person_dao->create($new_person);
+            if ($affected_rows !== false && $affected_rows == 1) {
+
+                $group = $this->group_dao->get($new_group_id);
+
+                return $group;
+            } else {
+                throw new Exception('Ett fel uppstod. Vi vet tyvärr inte riktigt varför.');
+            }
+        } else {
+            // TODO: Check for existing groups instead of relying on database constraint.
+            throw new Exception('Kunde inte anmäla laget. Kanske finns redan ett lag med samma namn?');
+        }
+    }
+
+    private function delete_person($person_to_delete)
+    {
+        $success = $this->person_dao->delete_by_key($person_to_delete);
+        if (!$success) {
+            throw new Exception('Det gick inte att ta bort deltagaren.');
+        }
     }
 }
