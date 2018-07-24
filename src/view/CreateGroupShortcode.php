@@ -139,7 +139,7 @@ class CreateGroupShortcode
         try {
             $new_group->validate();
         } catch (ValidationException $e) {
-            throw new ValidationException(self::FIELD_GROUP_NAME . $e->getField(), $e->getMessage());
+            throw new ValidationException(self::FIELD_PREFIX_GROUP . $e->getField(), $e->getMessage());
         }
 
         $new_person = new Person();
@@ -157,7 +157,7 @@ class CreateGroupShortcode
         try {
             $new_group_id = $this->group_dao->create($new_group);
         } catch (ValidationException $e) {
-            throw new ValidationException(self::FIELD_GROUP_NAME . $e->getField(), $e->getMessage());
+            throw new ValidationException(self::FIELD_PREFIX_GROUP . $e->getField(), $e->getMessage());
         }
         if ($new_group_id !== false) {
             $new_person->group_id = $new_group_id;

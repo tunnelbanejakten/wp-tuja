@@ -32,7 +32,7 @@ class Person
         if (strlen($this->phone) > 50) {
             throw new ValidationException('phone', 'Telefonnumret får bara vara 50 tecken långt.');
         }
-        if (!empty(trim($this->email)) && preg_match('/^\+?[0-9 -]{6,}$/', $this->phone) !== 1) {
+        if (!empty(trim($this->phone)) && preg_match('/^\+?[0-9 -]{6,}$/', $this->phone) !== 1) {
             throw new ValidationException('phone', 'Telefonnummer ser konstigt ut');
         }
     }
