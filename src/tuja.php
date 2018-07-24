@@ -25,6 +25,7 @@ include 'data/model/Question.php';
 include 'data/model/Competition.php';
 include 'data/model/Response.php';
 include 'data/model/Person.php';
+include 'data/model/ValidationException.php';
 include 'db.init.php';
 
 const SLUG = 'tuja';

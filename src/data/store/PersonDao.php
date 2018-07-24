@@ -13,6 +13,8 @@ class PersonDao extends AbstractDao
 
     function create(Person $person)
     {
+        $person->validate();
+
         return $this->wpdb->insert('person',
             array(
                 'random_id' => $this->id->random_string(10),
@@ -32,6 +34,8 @@ class PersonDao extends AbstractDao
 
     function update(Person $person)
     {
+        $person->validate();
+
         return $this->wpdb->update('person',
             array(
                 'name' => $person->name,
