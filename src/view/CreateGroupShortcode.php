@@ -175,8 +175,7 @@ class CreateGroupShortcode
                 throw new ValidationException(self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage());
             }
         } else {
-            // TODO: Check for existing groups instead of relying on database constraint.
-            throw new Exception('Kunde inte anmäla laget. Kanske finns redan ett lag med samma namn?');
+            throw new Exception('Kunde inte anmäla laget.');
         }
     }
 }
