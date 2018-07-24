@@ -41,7 +41,7 @@ $groups = $db_groups->get_all_in_competition($competition->id);
     <h3>Lag</h3>
     <?php
     foreach ($groups as $group) {
-        printf('<p>%s</p>', $group->name);
+        printf('<p>%s</p>', htmlspecialchars($group->name));
     }
     ?>
     <input type="text" name="tuja_group_name"/>

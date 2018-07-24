@@ -21,7 +21,7 @@ class FieldText extends Field
             $hint,
             $render_id,
             $field_name ?: $this->key,
-            isset($_POST[$field_name]) ? $_POST[$field_name] : $this->value,
+            htmlspecialchars(isset($_POST[$field_name]) ? $_POST[$field_name] : $this->value),
             strtolower((new \ReflectionClass($this))->getShortName()));
     }
 }
