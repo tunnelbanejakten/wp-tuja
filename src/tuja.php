@@ -11,7 +11,8 @@ include 'util/Recaptcha.php';
 include 'view/FieldText.php';
 include 'view/FieldDropdown.php';
 include 'view/FormShortcode.php';
-include 'view/SignupParticipantsShortcode.php';
+include 'view/EditGroupShortcode.php';
+include 'view/CreateGroupShortcode.php';
 include 'data/store/AbstractDao.php';
 include 'data/store/CompetitionDao.php';
 include 'data/store/FormDao.php';
@@ -36,8 +37,9 @@ use data\store\GroupDao;
 use data\store\QuestionDao;
 use tuja\data\model\Competition;
 use tuja\util\Id;
+use view\CreateGroupShortcode;
+use view\EditGroupShortcode;
 use view\FormShortcode;
-use view\SignupParticipantsShortcode;
 
 add_shortcode('tuja_textfield', 'tuja_textfield');
 
@@ -65,14 +67,24 @@ function tuja_form($atts)
     return $component->render();
 }
 
-add_shortcode('tuja_signup_participants', 'tuja_signup_participants');
+add_shortcode('tuja_edit_group', 'tuja_edit_group_shortcode');
 
-function tuja_signup_participants($atts)
+function tuja_edit_group_shortcode($atts)
 {
     global $wp_query, $wpdb;
     $competition_id = $atts['competition'];
     $group_id = $wp_query->query_vars['group_id'];
-    $component = new SignupParticipantsShortcode($wpdb, $competition_id, $group_id);
+    $component = new EditGroupShortcode($wpdb, $competition_id, $group_id);
+    return $component->render();
+}
+
+add_shortcode('tuja_create_group', 'tuja_create_group_shortcode');
+
+function tuja_create_group_shortcode($atts)
+{
+    global $wpdb;
+    $competition_id = $atts['competition'];
+    $component = new CreateGroupShortcode($wpdb, $competition_id);
     return $component->render();
 }
 
