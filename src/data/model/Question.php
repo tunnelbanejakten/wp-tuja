@@ -3,6 +3,8 @@
 namespace tuja\data\model;
 
 
+use Exception;
+
 class Question
 {
     public $id;
@@ -29,5 +31,18 @@ class Question
             'values' => array($valid_response),
             'options' => $selectable_responses
         ));
+    }
+
+    public function validate()
+    {
+        if (strlen($this->text) > 500) {
+            throw new Exception('Frågan får inte var längre än 500 tecken.');
+        }
+        if (strlen($this->text_hint) > 500) {
+            throw new Exception('Hjälptexten får inte var längre än 500 tecken.');
+        }
+        if (strlen($this->answer) > 500) {
+            throw new Exception('Svaret får inte var längre än 500 tecken.');
+        }
     }
 }

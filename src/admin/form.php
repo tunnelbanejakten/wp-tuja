@@ -46,17 +46,25 @@ if ($_POST['tuja_action'] == 'questions_update') {
 
     $overall_success = true;
     foreach ($updated_questions as $updated_question) {
-        $affected_rows = $db_question->update($updated_question);
-        $this_success = $affected_rows !== false && $affected_rows === 1;
-        $overall_success = ($overall_success and $this_success);
+        try {
+            $affected_rows = $db_question->update($updated_question);
+            $this_success = $affected_rows !== false && $affected_rows === 1;
+            $overall_success = ($overall_success and $this_success);
+        } catch (Exception $e) {
+            $overall_success = false;
+        }
     }
     var_dump($overall_success); // TODO: Show nicer status message
 } elseif ($_POST['tuja_action'] == 'question_create') {
     $props = new Question();
     $props->set_answer_one_of_these('alice', array('alice' => 'Alice', 'bob' => 'Bob'));
     $props->form_id = $form->id;
-    $affected_rows = $db_question->create($props);
-    $success = $affected_rows !== false && $affected_rows === 1;
+    try {
+        $affected_rows = $db_question->create($props);
+        $success = $affected_rows !== false && $affected_rows === 1;
+    } catch (Exception $e) {
+        $success = false;
+    }
     var_dump($success); // TODO: Show nicer status message
 } elseif (substr($_POST['tuja_action'], 0, strlen(ACTION_NAME_DELETE_PREFIX)) == ACTION_NAME_DELETE_PREFIX) {
     $wpdb->show_errors(); // TODO: Show nicer error message if question cannot be deleted (e.g. in case someone has answered the question already)

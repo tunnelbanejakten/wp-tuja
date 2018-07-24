@@ -46,3 +46,14 @@
 .tuja-robot-check {
     margin: 1em 0;
 }
+
+.tuja-field-error input {
+    border-color: lightcoral !important;
+}
+
+.tuja-field-error .tuja-message {
+    font-size: 80%;
+    margin-top: 0;
+    border-top: none;
+}
+

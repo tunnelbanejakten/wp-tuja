@@ -6,6 +6,7 @@ use data\store\FormDao;
 use data\store\GroupDao;
 use data\store\QuestionDao;
 use data\store\ResponseDao;
+use Exception;
 use tuja\data\model\Question;
 use tuja\data\model\Response;
 use tuja\view\Field;
@@ -28,26 +29,32 @@ class FormShortcode
         $this->form_dao = new FormDao($wpdb);
     }
 
-    public function update_answers($group_id): String
+    public function update_answers($group_id): array
     {
+        $errors = array();
         $overall_success = true;
         $questions = $this->question_dao->get_all_in_form($this->form_id);
         foreach ($questions as $question) {
-            if (isset($_POST['tuja_formshortcode_response_' . $question->id])) {
-                $new_response = new Response();
-                $new_response->group_id = $group_id;
-                $new_response->form_question_id = $question->id;
-                $new_response->answer = $_POST['tuja_formshortcode_response_' . $question->id];
-                $new_response->points = null;
+            $user_answer = $_POST['tuja_formshortcode_response_' . $question->id];
+            if (isset($user_answer)) {
+                try {
+                    $new_response = new Response();
+                    $new_response->group_id = $group_id;
+                    $new_response->form_question_id = $question->id;
+                    $new_response->answer = $user_answer;
+                    $new_response->points = null;
 
-                $affected_rows = $this->response_dao->create($new_response);
+                    $affected_rows = $this->response_dao->create($new_response);
 
-                $this_success = $affected_rows !== false && $affected_rows === 1;
-                $overall_success = ($overall_success and $this_success);
+                    $this_success = $affected_rows !== false && $affected_rows === 1;
+                    $overall_success = ($overall_success and $this_success);
+                } catch (Exception $e) {
+                    $overall_success = false;
+                    $errors['tuja_formshortcode_response_' . $question->id] = $e->getMessage();
+                }
             }
         }
-        return $overall_success;
-
+        return $errors;
     }
 
     public function render(): String
@@ -71,10 +78,11 @@ class FormShortcode
 
         $message_success = null;
         $message_error = null;
+        $errors = array();
         switch ($_POST['tuja_formshortcode_action']) {
             case 'update':
-                $updated = $this->update_answers($group_id);
-                if ($updated) {
+                $errors = $this->update_answers($group_id);
+                if (empty($errors)) {
                     $message_success = 'Era svar har sparats.';
                     $html_sections[] = sprintf('<p class="tuja-message tuja-message-success">%s</p>', $message_success);
                 } else {
@@ -87,7 +95,7 @@ class FormShortcode
         $responses = $this->response_dao->get_by_group($group_id);
         $questions = $this->question_dao->get_all_in_form($this->form_id);
 
-        $html_sections[] = join(array_map(function ($question) use ($responses) {
+        $html_sections[] = join(array_map(function ($question) use ($responses, $errors) {
             $questions_responses = array_filter($responses, function ($response) use ($question) {
                 return $response->form_question_id == $question->id;
             });
@@ -99,7 +107,10 @@ class FormShortcode
             }
             $field_name = 'tuja_formshortcode_response_' . $question->id;
             $html_field = Field::create($question)->render($field_name);
-            return sprintf('<p>%s</p>', $html_field);
+            return sprintf('<div class="tuja-question %s">%s%s</div>',
+                isset($errors[$field_name]) ? 'tuja-field-error' : '',
+                $html_field,
+                isset($errors[$field_name]) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[$field_name]) : '');
         }, $questions));
         $html_sections[] = sprintf('<button type="submit" name="tuja_formshortcode_action" value="update">Uppdatera svar</button>');
         return sprintf('<form method="post">%s</form>', join($html_sections));

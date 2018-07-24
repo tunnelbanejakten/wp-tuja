@@ -13,6 +13,8 @@ class ResponseDao extends AbstractDao
 
     function create(Response $response)
     {
+        $response->validate();
+
         $query_template = '
             INSERT INTO form_question_response (
                 form_question_id,

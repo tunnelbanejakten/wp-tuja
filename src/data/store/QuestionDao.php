@@ -13,6 +13,8 @@ class QuestionDao extends AbstractDao
 
     function create(Question $question)
     {
+        $question->validate();
+
         $query_template = '
             INSERT INTO form_question (
                 form_id,
@@ -46,6 +48,8 @@ class QuestionDao extends AbstractDao
 
     function update(Question $question)
     {
+        $question->validate();
+
         $query_template = '
             UPDATE form_question SET
                 type = %s,
