@@ -3,40 +3,24 @@
 namespace view;
 
 use data\model\ValidationException;
-use data\store\GroupDao;
-use data\store\PersonDao;
 use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
-use tuja\data\model\Response;
 use tuja\view\Field;
 use util\Recaptcha;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
-class CreateGroupShortcode
+class CreateGroupShortcode extends AbstractGroupShortcode
 {
-    const ACTION_BUTTON_NAME = 'tuja-action';
-    const ACTION_NAME_SAVE = 'save';
 
-    const FIELD_PREFIX_PERSON = 'tuja-person__';
-    const FIELD_PREFIX_GROUP = 'tuja-group__';
-    const FIELD_GROUP_NAME = self::FIELD_PREFIX_GROUP . 'name';
-    const FIELD_GROUP_AGE = self::FIELD_PREFIX_GROUP . 'age';
-    const FIELD_PERSON_NAME = self::FIELD_PREFIX_PERSON . 'name';
-    const FIELD_PERSON_EMAIL = self::FIELD_PREFIX_PERSON . 'email';
-    const FIELD_PERSON_PHONE = self::FIELD_PREFIX_PERSON . 'phone';
-
-    private $group_dao;
-    private $person_dao;
     private $competition_id;
 
     public function __construct($wpdb, $competition_id)
     {
+        parent::__construct($wpdb);
         $this->competition_id = $competition_id;
-        $this->group_dao = new GroupDao($wpdb);
-        $this->person_dao = new PersonDao($wpdb);
     }
 
     public function render(): String
@@ -75,10 +59,7 @@ class CreateGroupShortcode
             $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['__']);
         }
 
-        $group_name_question = new Question();
-        $group_name_question->type = 'text';
-        $group_name_question->text = 'Vad heter ert lag?';
-        $group_name_question->latest_response = new Response();
+        $group_name_question = Question::create_text('Vad heter ert lag?');
         $html_field = Field::create($group_name_question)->render(self::FIELD_GROUP_NAME);
         $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
             isset($errors[self::FIELD_GROUP_NAME]) ? 'tuja-field-error' : '',
@@ -86,32 +67,26 @@ class CreateGroupShortcode
             isset($errors[self::FIELD_GROUP_NAME]) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[self::FIELD_GROUP_NAME]) : '');
 
         // TODO: Age group is not saved in database
-        $person_name_question = new Question();
-        $person_name_question->type = 'dropdown';
-        $person_name_question->text = 'Vilken klass tävlar ni i?';
-        $person_name_question->text_hint = 'Välj den som de flesta av deltagarna tillhör.';
-        $person_name_question->set_answer_one_of(array(
-            '13-15' => '13-15 år',
-            '15-18' => '15-18 år',
-            '18' => '18 år och äldre'
-        ));
+        $person_name_question = Question::create_dropdown(
+            'Vilken klass tävlar ni i?',
+            array(
+                '13-15' => '13-15 år',
+                '15-18' => '15-18 år',
+                '18' => '18 år och äldre'
+            ),
+            'Välj den som de flesta av deltagarna tillhör.');
         $html_sections[] = Field::create($person_name_question)->render(self::FIELD_GROUP_AGE);
 
-        $person_name_question = new Question();
-        $person_name_question->type = 'text';
-        $person_name_question->text = 'Vad heter du?';
-        $person_name_question->latest_response = new Response();
+        $person_name_question = Question::create_text('Vad heter du?');
         $html_field = Field::create($person_name_question)->render(self::FIELD_PERSON_NAME);
         $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
             isset($errors[self::FIELD_PERSON_NAME]) ? 'tuja-field-error' : '',
             $html_field,
             isset($errors[self::FIELD_PERSON_NAME]) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[self::FIELD_PERSON_NAME]) : '');
 
-        $person_name_question = new Question();
-        $person_name_question->type = 'text';
-        $person_name_question->text = 'Vilken e-postadress har du?';
-        $person_name_question->text_hint = 'Vi kommer skicka viktig information inför tävlingen till denna adress. Ni kan ändra till en annan adress senare om det skulle behövas.';
-        $person_name_question->latest_response = new Response();
+        $person_name_question = Question::create_text(
+            'Vilken e-postadress har du?',
+            'Vi kommer skicka viktig information inför tävlingen till denna adress. Ni kan ändra till en annan adress senare om det skulle behövas.');
         $html_field = Field::create($person_name_question)->render(self::FIELD_PERSON_EMAIL);
         $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
             isset($errors[self::FIELD_PERSON_EMAIL]) ? 'tuja-field-error' : '',

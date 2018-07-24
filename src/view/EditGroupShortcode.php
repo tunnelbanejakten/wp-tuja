@@ -3,8 +3,6 @@
 namespace view;
 
 use data\model\ValidationException;
-use data\store\GroupDao;
-use data\store\PersonDao;
 use Exception;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
@@ -13,31 +11,17 @@ use tuja\view\Field;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
-class EditGroupShortcode
+class EditGroupShortcode extends AbstractGroupShortcode
 {
-    const ACTION_BUTTON_NAME = 'tuja-action';
-    const ACTION_NAME_SAVE = 'save';
     const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
-
-    const FIELD_PREFIX_PERSON = 'tuja-person__';
-    const FIELD_PREFIX_GROUP = 'tuja-group__';
-    const FIELD_GROUP_NAME = self::FIELD_PREFIX_GROUP . 'name';
-    const FIELD_GROUP_AGE = self::FIELD_PREFIX_GROUP . 'age';
-    const FIELD_PERSON_NAME = self::FIELD_PREFIX_PERSON . 'name';
-    const FIELD_PERSON_EMAIL = self::FIELD_PREFIX_PERSON . 'email';
     const FIELD_PERSON_PHONE = self::FIELD_PREFIX_PERSON . 'phone';
 
-    private $group_dao;
-    private $person_dao;
-    private $competition_id;
     private $group_key;
 
-    public function __construct($wpdb, $competition_id, $group_key)
+    public function __construct($wpdb, $group_key)
     {
-        $this->competition_id = $competition_id;
+        parent::__construct($wpdb);
         $this->group_key = $group_key;
-        $this->group_dao = new GroupDao($wpdb);
-        $this->person_dao = new PersonDao($wpdb);
     }
 
     public function render(): String
@@ -79,27 +63,21 @@ class EditGroupShortcode
 
         $html_sections[] = sprintf('<h3>Laget</h3>');
 
-        // TODO: Implement constructors or factory methods for common Question objects.
-        $group_name_question = new Question();
-        $group_name_question->type = 'text';
-        $group_name_question->text = 'Vad heter ert lag?';
-        $group_name_question->latest_response = new Response();
-        $group_name_question->latest_response->answer = $group->name;
+        $group_name_question = Question::create_text('Vad heter ert lag?', null, new Response($group->name));
         $html_field = Field::create($group_name_question)->render(self::FIELD_GROUP_NAME);
         $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
             isset($errors['name']) ? 'tuja-field-error' : '',
             $html_field,
             isset($errors['name']) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['name']) : '');
 
-        $person_name_question = new Question();
-        $person_name_question->type = 'dropdown';
-        $person_name_question->text = 'Vilken klass tävlar ni i?';
-        $person_name_question->text_hint = 'Välj den som de flesta av deltagarna tillhör.';
-        $person_name_question->set_answer_one_of(array(
-            '13-15' => '13-15 år',
-            '15-18' => '15-18 år',
-            '18' => '18 år och äldre'
-        ));
+        $person_name_question = Question::create_dropdown(
+            'Vilken klass tävlar ni i?',
+            array(
+                '13-15' => '13-15 år',
+                '15-18' => '15-18 år',
+                '18' => '18 år och äldre'
+            ),
+            'Välj den som de flesta av deltagarna tillhör.');
         $html_field = Field::create($person_name_question)->render(self::FIELD_GROUP_AGE);
         $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
             isset($errors['age']) ? 'tuja-field-error' : '',
@@ -130,33 +108,21 @@ class EditGroupShortcode
 
         $random_id = $person->random_id ?: '';
 
-        $person_name_question = new Question();
-        $person_name_question->type = 'text';
-        $person_name_question->text = 'Namn';
-        $person_name_question->latest_response = new Response();
-        $person_name_question->latest_response->answer = $person->name;
+        $person_name_question = Question::create_text('Namn', null, new Response($person->name));
         $html_field = Field::create($person_name_question)->render(self::FIELD_PERSON_NAME . '__' . $random_id);
         $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
             isset($errors[$random_id . '__name']) ? 'tuja-field-error' : '',
             $html_field,
             isset($errors[$random_id . '__name']) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[$random_id . '__name']) : '');
 
-        $person_name_question = new Question();
-        $person_name_question->type = 'text';
-        $person_name_question->text = 'E-postadress';
-        $person_name_question->latest_response = new Response();
-        $person_name_question->latest_response->answer = $person->email;
+        $person_name_question = Question::create_text('E-postadress', null, new Response($person->email));
         $html_field = Field::create($person_name_question)->render(self::FIELD_PERSON_EMAIL . '__' . $random_id);
         $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
             isset($errors[$random_id . '__email']) ? 'tuja-field-error' : '',
             $html_field,
             isset($errors[$random_id . '__email']) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[$random_id . '__email']) : '');
 
-        $person_name_question = new Question();
-        $person_name_question->type = 'text';
-        $person_name_question->text = 'Telefonnummer';
-        $person_name_question->latest_response = new Response();
-        $person_name_question->latest_response->answer = $person->phone;
+        $person_name_question = Question::create_text('Telefonnummer', null, new Response($person->phone));
         $html_field = Field::create($person_name_question)->render(self::FIELD_PERSON_PHONE . '__' . $random_id);
         $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
             isset($errors[$random_id . '__phone']) ? 'tuja-field-error' : '',
@@ -189,7 +155,7 @@ class EditGroupShortcode
         }
 
         $form_values = array_filter($_POST, function ($key) {
-            return substr($key, 0, strlen(SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON)) === SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON;
+            return substr($key, 0, strlen(self::FIELD_PREFIX_PERSON)) === self::FIELD_PREFIX_PERSON;
         }, ARRAY_FILTER_USE_KEY);
 
         $people = $this->person_dao->get_all_in_group($group_id);
@@ -242,9 +208,9 @@ class EditGroupShortcode
                 $this_success = $affected_rows !== false && $affected_rows === 1;
                 if ($this_success) {
                     // Clear the "new person form" after successfully adding a new person to the group.
-                    unset($_POST[SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON . 'name__']);
-                    unset($_POST[SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON . 'email__']);
-                    unset($_POST[SIGNUP_PARTICIPANTS_FIELD_PREFIX_PERSON . 'phone__']);
+                    unset($_POST[self::FIELD_PREFIX_PERSON . 'name__']);
+                    unset($_POST[self::FIELD_PREFIX_PERSON . 'email__']);
+                    unset($_POST[self::FIELD_PREFIX_PERSON . 'phone__']);
                 }
                 $overall_success = ($overall_success and $this_success);
             } catch (ValidationException $e) {

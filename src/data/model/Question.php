@@ -45,4 +45,24 @@ class Question
             throw new Exception('Svaret får inte var längre än 500 tecken.');
         }
     }
+
+    public static function create_text($text, $hint = null, $response = null): Question
+    {
+        $question = new Question();
+        $question->type = 'text';
+        $question->text = $text;
+        $question->text_hint = $hint;
+        $question->latest_response = $response ?: new Response();
+        return $question;
+    }
+    public static function create_dropdown($text, $options, $hint = null, $response = null): Question
+    {
+        $question = new Question();
+        $question->type = 'dropdown';
+        $question->text = $text;
+        $question->text_hint = $hint;
+        $question->latest_response = $response ?: new Response();
+        $question->set_answer_one_of($options);
+        return $question;
+    }
 }

@@ -13,6 +13,12 @@ class Response
     public $answer;
     public $points;
 
+    public function __construct($answer = null)
+    {
+        $this->answer = $answer;
+    }
+
+
     public function validate()
     {
         if (strlen($this->answer) > 500) {

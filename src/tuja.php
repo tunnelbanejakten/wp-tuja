@@ -11,6 +11,7 @@ include 'util/Recaptcha.php';
 include 'view/FieldText.php';
 include 'view/FieldDropdown.php';
 include 'view/FormShortcode.php';
+include 'view/AbstractGroupShortcode.php';
 include 'view/EditGroupShortcode.php';
 include 'view/CreateGroupShortcode.php';
 include 'data/store/AbstractDao.php';
@@ -72,9 +73,8 @@ add_shortcode('tuja_edit_group', 'tuja_edit_group_shortcode');
 function tuja_edit_group_shortcode($atts)
 {
     global $wp_query, $wpdb;
-    $competition_id = $atts['competition'];
     $group_id = $wp_query->query_vars['group_id'];
-    $component = new EditGroupShortcode($wpdb, $competition_id, $group_id);
+    $component = new EditGroupShortcode($wpdb, $group_id);
     return $component->render();
 }
 
