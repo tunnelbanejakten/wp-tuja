@@ -69,9 +69,13 @@ class FormShortcode
         $html_sections[] = sprintf('<p>Hej, %s.</p>', $group->name);
 
         if ($group->type === 'crew') {
-            $html_sections[] = sprintf('<p>%s</p>', $this->get_groups_dropdown());
+            $participant_groups = $this->get_participant_groups();
 
-            $group_id = $_POST[self::TEAMS_DROPDOWN_NAME];
+            $html_sections[] = sprintf('<p>%s</p>', $this->get_groups_dropdown($participant_groups));
+
+            $selected_group = $this->get_selected_group($participant_groups);
+
+            $group_id = $selected_group->id;
         } else {
             $group_id = $group->id;
         }
@@ -116,12 +120,22 @@ class FormShortcode
         return sprintf('<form method="post">%s</form>', join($html_sections));
     }
 
-    private function get_groups_dropdown(): string
+    private function get_groups_dropdown($participant_groups): string
     {
         $choose_group_question = new Question();
         $choose_group_question->type = 'dropdown';
         $choose_group_question->text = 'Vilket lag vill du rapportera för?';
 
+        $options = array_map(function ($option) {
+            return $option->name;
+        }, $participant_groups);
+        $choose_group_question->possible_answers = $options;
+        $html_field = Field::create($choose_group_question)->render(self::TEAMS_DROPDOWN_NAME);
+        return $html_field;
+    }
+
+    private function get_participant_groups(): array
+    {
         $form = $this->form_dao->get($this->form_id);
         $competition_id = $form->competition_id;
 
@@ -129,15 +143,15 @@ class FormShortcode
         $participant_groups = array_filter($competition_groups, function ($option) {
             return $option->type === 'participant';
         });
-        $options = array_combine(
-            array_map(function ($option) {
-                return $option->id;
-            }, $participant_groups),
-            array_map(function ($option) {
-                return $option->name;
-            }, $participant_groups));
-        $choose_group_question->set_answer_one_of($options);
-        $html_field = Field::create($choose_group_question)->render(self::TEAMS_DROPDOWN_NAME);
-        return $html_field;
+        return $participant_groups;
+    }
+
+    private function get_selected_group($participant_groups)
+    {
+        $selected_group_name = $_POST[self::TEAMS_DROPDOWN_NAME];
+        $selected_group = array_values(array_filter($participant_groups, function ($group) use ($selected_group_name) {
+            return strcmp($group->name, $selected_group_name) == 0;
+        }))[0];
+        return $selected_group;
     }
 }

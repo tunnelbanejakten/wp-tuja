@@ -25,8 +25,8 @@ class FieldDropdown extends Field
             $render_id,
             $field_name ?: $this->key,
             strtolower((new \ReflectionClass($this))->getShortName()),
-            join(array_map(function ($key, $value) use ($selected_value) {
-                return sprintf('<option value="%s" %s>%s</option>', htmlspecialchars($key), $key == $selected_value ? ' selected="selected"' : '', htmlspecialchars($value));
-            }, array_keys($this->options), array_values($this->options))));
+            join(array_map(function ($value) use ($selected_value) {
+                return sprintf('<option value="%s" %s>%s</option>', htmlspecialchars($value), $value == $selected_value ? ' selected="selected"' : '', htmlspecialchars($value));
+            }, $this->options)));
     }
 }

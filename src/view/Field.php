@@ -21,14 +21,7 @@ class Field
         switch ($question->type) {
             case 'dropdown':
                 $field = new FieldDropdown();
-                $answer = json_decode($question->answer, true);
-                if (isset($answer['options'])) {
-                    $field->options = $answer['options'];
-                } else {
-                    $field->options = array_combine(
-                        $answer['values'],
-                        $answer['values']);
-                }
+                $field->options = $question->possible_answers ?: $question->correct_answers;
                 break;
             default:
                 $field = new FieldText();
