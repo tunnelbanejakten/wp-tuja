@@ -46,7 +46,7 @@ class Question
         }
     }
 
-    public static function create_text($text, $hint = null, $response = null): Question
+    public static function text($text, $hint = null, $response = null): Question
     {
         $question = new Question();
         $question->type = 'text';
@@ -55,7 +55,7 @@ class Question
         $question->latest_response = $response ?: new Response();
         return $question;
     }
-    public static function create_dropdown($text, $options, $hint = null, $response = null): Question
+    public static function dropdown($text, $options, $hint = null, $response = null): Question
     {
         $question = new Question();
         $question->type = 'dropdown';

@@ -7,7 +7,6 @@ use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
-use tuja\view\Field;
 use util\Recaptcha;
 
 
@@ -59,15 +58,11 @@ class CreateGroupShortcode extends AbstractGroupShortcode
             $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['__']);
         }
 
-        $group_name_question = Question::create_text('Vad heter ert lag?');
-        $html_field = Field::create($group_name_question)->render(self::FIELD_GROUP_NAME);
-        $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
-            isset($errors[self::FIELD_GROUP_NAME]) ? 'tuja-field-error' : '',
-            $html_field,
-            isset($errors[self::FIELD_GROUP_NAME]) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[self::FIELD_GROUP_NAME]) : '');
+        $group_name_question = Question::text('Vad heter ert lag?');
+        $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors[self::FIELD_GROUP_NAME]);
 
         // TODO: Age group is not saved in database
-        $person_name_question = Question::create_dropdown(
+        $person_name_question = Question::dropdown(
             'Vilken klass tävlar ni i?',
             array(
                 '13-15' => '13-15 år',
@@ -75,23 +70,15 @@ class CreateGroupShortcode extends AbstractGroupShortcode
                 '18' => '18 år och äldre'
             ),
             'Välj den som de flesta av deltagarna tillhör.');
-        $html_sections[] = Field::create($person_name_question)->render(self::FIELD_GROUP_AGE);
+        $html_sections[] = $this->render_field($person_name_question, self::FIELD_GROUP_AGE, $errors[self::FIELD_GROUP_AGE]);
 
-        $person_name_question = Question::create_text('Vad heter du?');
-        $html_field = Field::create($person_name_question)->render(self::FIELD_PERSON_NAME);
-        $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
-            isset($errors[self::FIELD_PERSON_NAME]) ? 'tuja-field-error' : '',
-            $html_field,
-            isset($errors[self::FIELD_PERSON_NAME]) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[self::FIELD_PERSON_NAME]) : '');
+        $person_name_question = Question::text('Vad heter du?');
+        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors[self::FIELD_PERSON_NAME]);
 
-        $person_name_question = Question::create_text(
+        $person_name_question = Question::text(
             'Vilken e-postadress har du?',
             'Vi kommer skicka viktig information inför tävlingen till denna adress. Ni kan ändra till en annan adress senare om det skulle behövas.');
-        $html_field = Field::create($person_name_question)->render(self::FIELD_PERSON_EMAIL);
-        $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
-            isset($errors[self::FIELD_PERSON_EMAIL]) ? 'tuja-field-error' : '',
-            $html_field,
-            isset($errors[self::FIELD_PERSON_EMAIL]) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[self::FIELD_PERSON_EMAIL]) : '');
+        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL, $errors[self::FIELD_PERSON_EMAIL]);
 
         $recaptcha_sitekey = get_option('tuja_recaptcha_sitekey');
         if (!empty($recaptcha_sitekey)) {

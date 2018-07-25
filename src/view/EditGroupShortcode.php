@@ -63,14 +63,10 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
         $html_sections[] = sprintf('<h3>Laget</h3>');
 
-        $group_name_question = Question::create_text('Vad heter ert lag?', null, new Response($group->name));
-        $html_field = Field::create($group_name_question)->render(self::FIELD_GROUP_NAME);
-        $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
-            isset($errors['name']) ? 'tuja-field-error' : '',
-            $html_field,
-            isset($errors['name']) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['name']) : '');
+        $group_name_question = Question::text('Vad heter ert lag?', null, new Response($group->name));
+        $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors['name']);
 
-        $person_name_question = Question::create_dropdown(
+        $person_name_question = Question::dropdown(
             'Vilken klass tävlar ni i?',
             array(
                 '13-15' => '13-15 år',
@@ -78,11 +74,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
                 '18' => '18 år och äldre'
             ),
             'Välj den som de flesta av deltagarna tillhör.');
-        $html_field = Field::create($person_name_question)->render(self::FIELD_GROUP_AGE);
-        $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
-            isset($errors['age']) ? 'tuja-field-error' : '',
-            $html_field,
-            isset($errors['age']) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['age']) : '');
+        $html_sections[] = $this->render_field($person_name_question, self::FIELD_GROUP_AGE, $errors['age']);
 
         if (is_array($people)) {
             foreach ($people as $index => $person) {
@@ -108,26 +100,14 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
         $random_id = $person->random_id ?: '';
 
-        $person_name_question = Question::create_text('Namn', null, new Response($person->name));
-        $html_field = Field::create($person_name_question)->render(self::FIELD_PERSON_NAME . '__' . $random_id);
-        $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
-            isset($errors[$random_id . '__name']) ? 'tuja-field-error' : '',
-            $html_field,
-            isset($errors[$random_id . '__name']) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[$random_id . '__name']) : '');
+        $person_name_question = Question::text('Namn', null, new Response($person->name));
+        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME . '__' . $random_id, $errors[$random_id . '__name']);
 
-        $person_name_question = Question::create_text('E-postadress', null, new Response($person->email));
-        $html_field = Field::create($person_name_question)->render(self::FIELD_PERSON_EMAIL . '__' . $random_id);
-        $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
-            isset($errors[$random_id . '__email']) ? 'tuja-field-error' : '',
-            $html_field,
-            isset($errors[$random_id . '__email']) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[$random_id . '__email']) : '');
+        $person_name_question = Question::text('E-postadress', null, new Response($person->email));
+        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, $errors[$random_id . '__email']);
 
-        $person_name_question = Question::create_text('Telefonnummer', null, new Response($person->phone));
-        $html_field = Field::create($person_name_question)->render(self::FIELD_PERSON_PHONE . '__' . $random_id);
-        $html_sections[] = sprintf('<div class="tuja-question %s">%s%s</div>',
-            isset($errors[$random_id . '__phone']) ? 'tuja-field-error' : '',
-            $html_field,
-            isset($errors[$random_id . '__phone']) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[$random_id . '__phone']) : '');
+        $person_name_question = Question::text('Telefonnummer', null, new Response($person->phone));
+        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, $errors[$random_id . '__phone']);
 
         if (isset($person->id)) {
             $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="submit" name="%s" value="%s%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_DELETE_PERSON_PREFIX, $random_id, 'Ta bort');
