@@ -126,7 +126,10 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $group->name = $_POST[self::FIELD_GROUP_NAME];
 
         try {
-            $this->group_dao->update($group);
+            $affected_rows = $this->group_dao->update($group);
+            if ($affected_rows === false) {
+                $overall_success = false;
+            }
         } catch (ValidationException $e) {
             $validation_errors[$e->getField()] = $e->getMessage();
             $overall_success = false;
@@ -172,8 +175,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         foreach ($updated_people as $updated_person) {
             try {
                 $affected_rows = $this->person_dao->update($updated_person);
-                // TODO: Number of affected rows is 0 if an existing person is untouched. This will be interpreted as an error since we always expect 1 affected row.
-                $this_success = $affected_rows !== false && $affected_rows === 1;
+                $this_success = $affected_rows !== false;
                 $overall_success = ($overall_success and $this_success);
             } catch (ValidationException $e) {
                 $validation_errors[$updated_person->random_id . '__' . $e->getField()] = $e->getMessage();
