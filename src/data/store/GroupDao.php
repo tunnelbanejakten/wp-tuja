@@ -22,7 +22,7 @@ class GroupDao extends AbstractDao
 
         $affected_rows = $this->wpdb->insert('team',
             array(
-                'random_id' => $this->id->random_string(10),
+                'random_id' => $this->id->random_string(),
                 'competition_id' => $group->competition_id,
                 'name' => $group->name,
                 'type' => $group->type

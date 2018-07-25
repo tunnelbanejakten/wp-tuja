@@ -22,7 +22,7 @@ class CompetitionDao extends AbstractDao
                 %S
             )';
         return $this->wpdb->query($this->wpdb->prepare($query_template,
-            $this->id->random_string(10),
+            $this->id->random_string(),
             $competition->name));
     }
 

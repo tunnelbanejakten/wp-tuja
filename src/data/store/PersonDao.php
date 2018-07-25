@@ -17,7 +17,7 @@ class PersonDao extends AbstractDao
 
         return $this->wpdb->insert('person',
             array(
-                'random_id' => $this->id->random_string(10),
+                'random_id' => $this->id->random_string(),
                 'name' => $person->name,
                 'team_id' => $person->group_id,
                 'phone' => $person->phone,

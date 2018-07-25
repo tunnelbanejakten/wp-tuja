@@ -49,14 +49,6 @@ function tuja_textfield()
     return (new tuja\view\FieldText())->render();
 }
 
-add_shortcode('tuja_randomstring', 'tuja_randomstring');
-
-function tuja_randomstring($atts)
-{
-    global $wp_query;
-    return (new Id())->random_string(isset($atts["length"]) ? $atts["length"] : 10);
-}
-
 add_shortcode('tuja_form', 'tuja_form');
 
 function tuja_form($atts)
@@ -84,7 +76,8 @@ function tuja_create_group_shortcode($atts)
 {
     global $wpdb;
     $competition_id = $atts['competition'];
-    $component = new CreateGroupShortcode($wpdb, $competition_id);
+    $edit_link_template = $atts['edit_link_template'];
+    $component = new CreateGroupShortcode($wpdb, $competition_id, $edit_link_template);
     return $component->render();
 }
 
@@ -100,7 +93,7 @@ add_filter('rewrite_rules_array', 'tujo_rewrite_rules');
 
 function tujo_rewrite_rules($rules)
 {
-    $rules = array('([^/]+)/team-([^/]+)/?$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]') + $rules;
+    $rules = array('([^/]+)/([' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '})$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]') + $rules;
     return $rules;
 }
 

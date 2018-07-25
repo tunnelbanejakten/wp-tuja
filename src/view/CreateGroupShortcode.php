@@ -15,11 +15,13 @@ class CreateGroupShortcode extends AbstractGroupShortcode
 {
 
     private $competition_id;
+    private $edit_link_template;
 
-    public function __construct($wpdb, $competition_id)
+    public function __construct($wpdb, $competition_id, $edit_link_template)
     {
         parent::__construct($wpdb);
         $this->competition_id = $competition_id;
+        $this->edit_link_template = $edit_link_template;
     }
 
     public function render(): String
@@ -35,10 +37,12 @@ class CreateGroupShortcode extends AbstractGroupShortcode
                 // TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
                 $new_group = $this->create_group();
 
-                // TODO: Handle https links as well.
-                $current_url = "http://{$_SERVER['SERVER_NAME']}:{$_SERVER['SERVER_PORT']}{$_SERVER['REQUEST_URI']}";
-                $edit_link = rtrim($current_url, '/') . "/team-{$new_group->random_id}";
-                return sprintf('<p class="tuja-message tuja-message-success">Tack! Nästa steg är att gå till <a href="%s">%s</a> och fylla i vad de andra deltagarna i ert lag heter. Vi har också skickat länken till din e-postadress så att du kan ändra er anmälan framöver.</p>', $edit_link, $edit_link);
+                $edit_link = sprintf($this->edit_link_template, $new_group->random_id);
+                if (!empty($edit_link)) {
+                    return sprintf('<p class="tuja-message tuja-message-success">Tack! Nästa steg är att gå till <a href="%s">%s</a> och fylla i vad de andra deltagarna i ert lag heter. Vi har också skickat länken till din e-postadress så att du kan ändra er anmälan framöver.</p>', $edit_link, $edit_link);
+                } else {
+                    return sprintf('<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>');
+                }
             } catch (ValidationException $e) {
                 return $this->render_create_form(array($e->getField() => $e->getMessage()));
             } catch (Exception $e) {
