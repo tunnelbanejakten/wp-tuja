@@ -35,8 +35,11 @@ if ($_POST['tuja_action'] == 'questions_update') {
             case 'text_hint':
                 $updated_questions[$id]->text_hint = $field_value;
                 break;
-            case 'answer':
-                $updated_questions[$id]->answer = stripslashes($field_value);
+            case 'correct_answers':
+                $updated_questions[$id]->correct_answers = array_map('trim', explode("\n", trim($field_value)));
+                break;
+            case 'possible_answers':
+                $updated_questions[$id]->possible_answers = array_map('trim', explode("\n", trim($field_value)));
                 break;
             case 'sort_order':
                 $updated_questions[$id]->sort_order = $field_value;
@@ -57,7 +60,8 @@ if ($_POST['tuja_action'] == 'questions_update') {
     var_dump($overall_success); // TODO: Show nicer status message
 } elseif ($_POST['tuja_action'] == 'question_create') {
     $props = new Question();
-    $props->set_answer_one_of_these('alice', array('alice' => 'Alice', 'bob' => 'Bob'));
+    $props->correct_answers = array('Alice');
+    $props->possible_answers = array('Alice', 'Bob');
     $props->form_id = $form->id;
     try {
         $affected_rows = $db_question->create($props);
@@ -139,14 +143,25 @@ $competition_url = add_query_arg(array(
             isset($_POST[$field_name]) ? $_POST[$field_name] : $question->sort_order);
 
         $render_id = uniqid();
-        $field_name = 'tuja-question__' . $question->id . '__answer';
-        $answer = stripslashes(isset($_POST[$field_name]) ? $_POST[$field_name] : json_encode(json_decode($question->answer), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        printf('<div class="tuja-admin-question-property tuja-admin-question-property-answer"><label for="%s">%s</label><textarea cols="50" rows="10" id="%s" name="%s">%s</textarea></div>',
+        $field_name = 'tuja-question__' . $question->id . '__correct_answers';
+        $answer = stripslashes(isset($_POST[$field_name]) ? $_POST[$field_name] : implode("\n", $question->correct_answers ?: array()));
+        printf('<div class="tuja-admin-question-property tuja-admin-question-property-correctanswers"><label for="%s">%s</label><textarea cols="50" rows="5" id="%s" name="%s">%s</textarea></div>',
             $render_id,
-            'Svar',
+            'Korrekta svar (ett per rad)',
             $render_id,
             $field_name,
             $answer);
+
+        $render_id = uniqid();
+        $field_name = 'tuja-question__' . $question->id . '__possible_answers';
+        $answer = stripslashes(isset($_POST[$field_name]) ? $_POST[$field_name] : implode("\n", $question->possible_answers ?: array()));
+        printf('<div class="tuja-admin-question-property tuja-admin-question-property-possibleanswers"><label for="%s">%s</label><textarea cols="50" rows="5" id="%s" name="%s">%s</textarea></div>',
+            $render_id,
+            'Alternativ att visa (ett per rad)',
+            $render_id,
+            $field_name,
+            $answer);
+
         printf('</div>');
 
         printf('<button type="submit" name="tuja_action" value="%s%d">Ta bort</button>', ACTION_NAME_DELETE_PREFIX, $question->id);

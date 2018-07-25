@@ -40,6 +40,7 @@ class AbstractDao
         return $results;
     }
 
+    // TODO: Move all to_* methods to the corresponding model classes?
     protected static function to_competition($result): Competition
     {
         $c = new Competition();
@@ -92,7 +93,8 @@ class AbstractDao
         $q->id = $result->id;
         $q->form_id = $result->form_id;
         $q->type = $result->type;
-        $q->answer = $result->answer;
+        $q->possible_answers = json_decode($result->answer, true)['options'];
+        $q->correct_answers = json_decode($result->answer, true)['values'];
         $q->text = $result->text;
         $q->sort_order = $result->sort_order;
         $q->text_hint = $result->text_hint;
