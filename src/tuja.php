@@ -13,7 +13,9 @@ include 'view/FieldDropdown.php';
 include 'view/FormShortcode.php';
 include 'view/AbstractGroupShortcode.php';
 include 'view/EditGroupShortcode.php';
+include 'view/EditPersonShortcode.php';
 include 'view/CreateGroupShortcode.php';
+include 'view/CreatePersonShortcode.php';
 include 'data/store/AbstractDao.php';
 include 'data/store/CompetitionDao.php';
 include 'data/store/FormDao.php';
@@ -39,7 +41,9 @@ use data\store\QuestionDao;
 use tuja\data\model\Competition;
 use tuja\util\Id;
 use view\CreateGroupShortcode;
+use view\CreatePersonShortcode;
 use view\EditGroupShortcode;
+use view\EditPersonShortcode;
 use view\FormShortcode;
 
 add_shortcode('tuja_textfield', 'tuja_textfield');
@@ -78,6 +82,27 @@ function tuja_create_group_shortcode($atts)
     $competition_id = $atts['competition'];
     $edit_link_template = $atts['edit_link_template'];
     $component = new CreateGroupShortcode($wpdb, $competition_id, $edit_link_template);
+    return $component->render();
+}
+
+add_shortcode('tuja_create_person', 'tuja_create_person_shortcode');
+
+function tuja_create_person_shortcode($atts)
+{
+    global $wp_query, $wpdb;
+    $group_id = $wp_query->query_vars['group_id'];
+    $edit_link_template = $atts['edit_link_template'];
+    $component = new CreatePersonShortcode($wpdb, $group_id, $edit_link_template);
+    return $component->render();
+}
+
+add_shortcode('tuja_edit_person', 'tuja_edit_person_shortcode');
+
+function tuja_edit_person_shortcode($atts)
+{
+    global $wp_query, $wpdb;
+    $person_key = $wp_query->query_vars['group_id'];
+    $component = new EditPersonShortcode($wpdb, $person_key);
     return $component->render();
 }
 

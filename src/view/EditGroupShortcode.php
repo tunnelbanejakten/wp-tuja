@@ -7,14 +7,12 @@ use Exception;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
 use tuja\data\model\Response;
-use tuja\view\Field;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
 class EditGroupShortcode extends AbstractGroupShortcode
 {
     const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
-    const FIELD_PERSON_PHONE = self::FIELD_PREFIX_PERSON . 'phone';
 
     private $group_key;
 
@@ -186,8 +184,8 @@ class EditGroupShortcode extends AbstractGroupShortcode
         }
         if (isset($new_person) && !empty($new_person->name)) {
             try {
-                $affected_rows = $this->person_dao->create($new_person);
-                $this_success = $affected_rows !== false && $affected_rows === 1;
+                $new_person_id = $this->person_dao->create($new_person);
+                $this_success = $new_person_id !== false;
                 if ($this_success) {
                     // Clear the "new person form" after successfully adding a new person to the group.
                     unset($_POST[self::FIELD_PREFIX_PERSON . 'name__']);

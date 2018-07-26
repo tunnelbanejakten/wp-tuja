@@ -17,6 +17,7 @@ class AbstractGroupShortcode
     const FIELD_GROUP_AGE = self::FIELD_PREFIX_GROUP . 'age';
     const FIELD_PERSON_NAME = self::FIELD_PREFIX_PERSON . 'name';
     const FIELD_PERSON_EMAIL = self::FIELD_PREFIX_PERSON . 'email';
+    const FIELD_PERSON_PHONE = self::FIELD_PREFIX_PERSON . 'phone';
 
     protected $person_dao;
     protected $group_dao;

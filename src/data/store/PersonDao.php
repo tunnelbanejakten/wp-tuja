@@ -15,7 +15,7 @@ class PersonDao extends AbstractDao
     {
         $person->validate();
 
-        return $this->wpdb->insert('person',
+        $affected_rows = $this->wpdb->insert('person',
             array(
                 'random_id' => $this->id->random_string(),
                 'name' => $person->name,
@@ -30,6 +30,10 @@ class PersonDao extends AbstractDao
                 '%s',
                 '%s'
             ));
+
+        $success = $affected_rows !== false && $affected_rows === 1;
+
+        return $success ? $this->wpdb->insert_id : false;
     }
 
     function update(Person $person)
@@ -54,6 +58,15 @@ class PersonDao extends AbstractDao
             'SELECT * FROM person WHERE id = %d',
             $id);
     }
+
+    function get_by_key($key)
+    {
+        return $this->get_object(
+            'data\store\AbstractDao::to_person',
+            'SELECT * FROM person WHERE random_id = %s',
+            $key);
+    }
+
 
     function get_all_in_group($group_id)
     {

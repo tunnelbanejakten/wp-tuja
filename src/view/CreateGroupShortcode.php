@@ -128,8 +128,8 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         if ($new_group_id !== false) {
             $new_person->group_id = $new_group_id;
             try {
-                $affected_rows = $this->person_dao->create($new_person);
-                if ($affected_rows !== false && $affected_rows == 1) {
+                $new_person_id = $this->person_dao->create($new_person);
+                if ($new_person_id !== false) {
 
                     $group = $this->group_dao->get($new_group_id);
 
