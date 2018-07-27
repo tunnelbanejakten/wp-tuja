@@ -70,8 +70,6 @@ class FormShortcode
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
         }
 
-        $html_sections[] = sprintf('<p>Hej, %s.</p>', $group->name);
-
         if ($group->type === 'crew') {
             $participant_groups = $this->get_participant_groups();
 

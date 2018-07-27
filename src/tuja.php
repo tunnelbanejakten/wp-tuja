@@ -12,6 +12,8 @@ include 'util/score/ScoreCalculator.php';
 include 'view/FieldText.php';
 include 'view/FieldChoices.php';
 include 'view/FormShortcode.php';
+include 'view/FormReadonlyShortcode.php';
+include 'view/GroupNameShortcode.php';
 include 'view/AbstractGroupShortcode.php';
 include 'view/EditGroupShortcode.php';
 include 'view/EditPersonShortcode.php';
@@ -47,13 +49,8 @@ use view\CreatePersonShortcode;
 use view\EditGroupShortcode;
 use view\EditPersonShortcode;
 use view\FormShortcode;
-
-add_shortcode('tuja_textfield', 'tuja_textfield');
-
-function tuja_textfield()
-{
-    return (new tuja\view\FieldText())->render();
-}
+use view\FormReadonlyShortcode;
+use view\GroupNameShortcode;
 
 add_shortcode('tuja_form', 'tuja_form');
 
@@ -61,8 +58,21 @@ function tuja_form($atts)
 {
     global $wp_query, $wpdb;
     $form_id = $atts['form'];
+    $is_readonly = in_array(strtolower($atts['readonly']), ['yes', 'true']);
     $group_id = $wp_query->query_vars['group_id'];
-    $component = new FormShortcode($wpdb, $form_id, $group_id);
+    $component = $is_readonly ?
+        new FormReadonlyShortcode($wpdb, $form_id, $group_id) :
+        new FormShortcode($wpdb, $form_id, $group_id);
+    return $component->render();
+}
+
+add_shortcode('tuja_group_name', 'tuja_group_name_shortcode');
+
+function tuja_group_name_shortcode($atts)
+{
+    global $wp_query, $wpdb;
+    $group_id = $wp_query->query_vars['group_id'];
+    $component = new GroupNameShortcode($wpdb, $group_id);
     return $component->render();
 }
 
