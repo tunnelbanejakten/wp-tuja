@@ -8,6 +8,7 @@ class Field
 {
     public $id;
     public $key;
+    // TODO: Rename to values?
     public $value;
     public $label;
     public $hint;
@@ -19,9 +20,12 @@ class Field
     static function create(Question $question)
     {
         switch ($question->type) {
+            // TODO: Rename "dropdown" to "single" or "radio"
             case 'dropdown':
-                $field = new FieldDropdown();
-                $field->options = $question->possible_answers ?: $question->correct_answers;
+                $field = new FieldChoices($question->possible_answers ?: $question->correct_answers, false);
+                break;
+            case 'multi':
+                $field = new FieldChoices($question->possible_answers ?: $question->correct_answers, true);
                 break;
             default:
                 $field = new FieldText();
@@ -30,7 +34,7 @@ class Field
         $field->label = $question->text;
         $field->hint = $question->text_hint;
         $field->key = "question-" . $question->id;
-        $field->value = $question->latest_response->answer;
+        $field->value = $question->latest_response->answers;
         return $field;
     }
 }

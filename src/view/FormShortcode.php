@@ -36,12 +36,16 @@ class FormShortcode
         $questions = $this->question_dao->get_all_in_form($this->form_id);
         foreach ($questions as $question) {
             $user_answer = $_POST['tuja_formshortcode_response_' . $question->id];
+            // TODO: Handle this special case when user has not selected any of the options to a multi-choice question somewhere else? We still need to store an empty array to explicitly state that the user no longer has selected anything in case an option was previously selected by the user.
+            if ($question->type == 'multi' && !isset($user_answer)) {
+                $user_answer = array();
+            }
             if (isset($user_answer)) {
                 try {
                     $new_response = new Response();
                     $new_response->group_id = $group_id;
                     $new_response->form_question_id = $question->id;
-                    $new_response->answer = $user_answer;
+                    $new_response->answers = is_array($user_answer) ? $user_answer : array($user_answer);
                     $new_response->points = null;
 
                     $affected_rows = $this->response_dao->create($new_response);
@@ -76,6 +80,8 @@ class FormShortcode
             $selected_group = $this->get_selected_group($participant_groups);
 
             $group_id = $selected_group->id;
+
+            // TODO: Current answers for selected group are now loaded/shown.
         } else {
             $group_id = $group->id;
         }

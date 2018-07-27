@@ -9,7 +9,7 @@
 include 'util/Id.php';
 include 'util/Recaptcha.php';
 include 'view/FieldText.php';
-include 'view/FieldDropdown.php';
+include 'view/FieldChoices.php';
 include 'view/FormShortcode.php';
 include 'view/AbstractGroupShortcode.php';
 include 'view/EditGroupShortcode.php';

@@ -38,11 +38,13 @@
     color: darkred;
     background-color: #ffdddd;
 }
+
 .tuja-message.tuja-message-success {
     border-color: #81f081;
     color: #008a00;
     background-color: #deffde;
 }
+
 .tuja-robot-check {
     margin: 1em 0;
 }
@@ -57,3 +59,9 @@
     border-top: none;
 }
 
+.tuja-fieldchoices-radiobutton label {
+    display: inline-block;
+}
+.tuja-fieldchoices-checkbox label {
+    display: inline-block;
+}
