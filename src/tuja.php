@@ -8,6 +8,7 @@
 */
 include 'util/Id.php';
 include 'util/Recaptcha.php';
+include 'util/score/ScoreCalculator.php';
 include 'view/FieldText.php';
 include 'view/FieldChoices.php';
 include 'view/FormShortcode.php';
@@ -38,6 +39,7 @@ use data\store\CompetitionDao;
 use data\store\FormDao;
 use data\store\GroupDao;
 use data\store\QuestionDao;
+use data\store\ResponseDao;
 use tuja\data\model\Competition;
 use tuja\util\Id;
 use view\CreateGroupShortcode;
@@ -157,10 +159,12 @@ add_action('wp_enqueue_scripts', 'tuja_recaptcha_script');
 function tuja_show_admin_page()
 {
     global $wpdb;
+    // TODO: Create DAOs on-demand, not all-at-once here.
     $db_competition = new CompetitionDao($wpdb);
     $db_form = new FormDao($wpdb);
     $db_groups = new GroupDao($wpdb);
     $db_question = new QuestionDao($wpdb);
+    $db_response = new ResponseDao($wpdb);
 
     if ($_POST['tuja_action'] == 'competition_create') {
         $props = new Competition();

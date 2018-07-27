@@ -35,6 +35,12 @@ if ($_POST['tuja_action'] == 'questions_update') {
             case 'text_hint':
                 $updated_questions[$id]->text_hint = $field_value;
                 break;
+            case 'scoretype':
+                $updated_questions[$id]->score_type = !empty($field_value) ? $field_value : null;
+                break;
+            case 'scoremax':
+                $updated_questions[$id]->score_max = $field_value;
+                break;
             case 'correct_answers':
                 $updated_questions[$id]->correct_answers = array_map('trim', explode("\n", trim($field_value)));
                 break;
@@ -124,6 +130,33 @@ $competition_url = add_query_arg(array(
             $render_id,
             $field_name,
             isset($_POST[$field_name]) ? $_POST[$field_name] : $question->text);
+
+        $render_id = uniqid();
+        $field_name = FORM_FIELD_NAME_PREFIX . '__' . $question->id . '__scoretype';
+        $selected_value = $_POST[$field_name] ?: $question->score_type;
+        $options = array(
+            '' => 'Rätta inte',
+            Question::QUESTION_GRADING_TYPE_ONE_OF => 'Ge poäng om minst ett korrekt svar angivits',
+            Question::QUESTION_GRADING_TYPE_ALL_OF => 'Ge poäng om alla korrekta svar angivits',
+            Question::QUESTION_GRADING_TYPE_SUBMITTED_ANSWER_IS_POINTS => 'Svaret är poängen'
+        );
+        printf('<div class="tuja-admin-question-property tuja-admin-question-property-type"><label for="%s">%s</label><select id="%s" name="%s">%s</select></div>',
+            $render_id,
+            'Rättningsmall',
+            $render_id,
+            $field_name,
+            join(array_map(function ($key, $value) use ($selected_value) {
+                return sprintf('<option value="%s" %s>%s</option>', $key, $key == $selected_value ? ' selected="selected"' : '', $value);
+            }, array_keys($options), array_values($options))));
+
+        $render_id = uniqid();
+        $field_name = 'tuja-question__' . $question->id . '__scoremax';
+        printf('<div class="tuja-admin-question-property tuja-admin-question-property-text"><label for="%s">%s</label><input type="number" id="%s" name="%s" value="%s" /></div>',
+            $render_id,
+            'Maxpoäng',
+            $render_id,
+            $field_name,
+            isset($_POST[$field_name]) ? $_POST[$field_name] : $question->score_max);
 
         $render_id = uniqid();
         $field_name = 'tuja-question__' . $question->id . '__text_hint';

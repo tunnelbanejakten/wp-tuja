@@ -95,6 +95,8 @@ class AbstractDao
         $q->type = $result->type;
         $q->possible_answers = json_decode($result->answer, true)['options'];
         $q->correct_answers = json_decode($result->answer, true)['values'];
+        $q->score_type = json_decode($result->answer, true)['score_type'];
+        $q->score_max = json_decode($result->answer, true)['score_max'];
         $q->text = $result->text;
         $q->sort_order = $result->sort_order;
         $q->text_hint = $result->text_hint;

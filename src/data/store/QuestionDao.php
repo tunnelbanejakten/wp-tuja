@@ -67,7 +67,8 @@ class QuestionDao extends AbstractDao
         return $this->wpdb->query($this->wpdb->prepare($query_template,
             $question->type,
             json_encode(array(
-                'validation' => 'one_of',
+                'score_type' => $question->score_type,
+                'score_max' => floatval($question->score_max),
                 'values' => $question->correct_answers,
                 'options' => $question->possible_answers
             )),
@@ -88,6 +89,18 @@ class QuestionDao extends AbstractDao
                 WHERE form_id = %d 
                 ORDER BY sort_order, id',
             $form_id);
+    }
+
+    function get_all_in_competition($competition_id)
+    {
+        return $this->get_objects(
+            'data\store\AbstractDao::to_form_question',
+            '
+                SELECT q.* 
+                FROM form_question AS q INNER JOIN form AS f ON q.form_id = f.id
+                WHERE f.competition_id = %d
+                ORDER BY q.sort_order, q.id',
+            $competition_id);
     }
 
 }

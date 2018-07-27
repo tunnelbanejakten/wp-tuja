@@ -2,6 +2,7 @@
 
 use tuja\data\model\Form;
 use tuja\data\model\Group;
+use util\score\ScoreCalculator;
 
 $competition = $db_competition->get($_GET['tuja_competition']);
 if (!$competition) {
@@ -33,11 +34,22 @@ $groups = $db_groups->get_all_in_competition($competition->id);
                 'tuja_view' => 'form',
                 'tuja_form' => $form->id
             ));
-            printf('<p><a href="%s">%s</a></p>', $url, $form->name);
+            printf('<p><a href="%s">%s</a> Shortcode: <code>[tuja_form form="%d"]</code></p>', $url, $form->name, $form->id);
     }
     ?>
     <input type="text" name="tuja_form_name"/>
     <button type="submit" name="tuja_action" value="form_create">Skapa</button>
+    <h3>Ställning</h3>
+    <?php
+    $calculator = new ScoreCalculator($competition->id, $db_question, $db_response, $db_groups);
+    $score_board = $calculator->score_board();
+    usort($score_board, function ($a, $b) {
+        return $b['score'] - $a['score'];
+    });
+    foreach ($score_board as $team_score) {
+        printf('<p>%s: %d p</p>', htmlspecialchars($team_score['group_name']), $team_score['score']);
+    }
+    ?>
     <h3>Lag</h3>
     <?php
     foreach ($groups as $group) {
