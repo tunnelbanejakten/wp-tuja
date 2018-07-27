@@ -62,10 +62,21 @@ Open shell to Wordpress installation:
     * ?
 0. Use Case _Team Sends Photo by Email_:
     * ?
+0. Use Case _Team Check Which Photo Assignments Have Been Approved_:
+    * The team sees a list of all the photo assignments and sees for which they have provided accepted pictures.
+    * The team does not necessarily see awarded points or the actual image or if a picture has been received but not yet approved/accepted.
+    * The team might see submitted photos in a separate list, but the best would be to see them in the same list.
 0. Use Case _Team Check-In_:
     * ?
 0. Use Case _Crew Reviews Photo_:
-    * ?
+    * A crew member looks at a photo and, if it is good enough, marks it as Approved in a form.
+    * Ideally, the photo is automatically associated with a particular photo assignment (i.e. question) but that might
+      not be possible (for various reasons). This would, for example, not be possible if the photo is submitted in
+      an Instagram message.
+    * Photos are approved using a regular form, but one restricted so that only crew members can submit to it.
+      * Would "security by obscurity" be enough in that the page with the form could have a random URL?
+    * A page could be created where the first part is the form, without any pictures, and the second part is a list of
+      all submitted photos. The reviewer would have to scroll up and down quite a lot, but at least it would work.
 0. Use Case _Crew Reviews Answer_:
     * ?
 0. Use Case _Crew Imports Contacts to Phone_:
