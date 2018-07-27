@@ -12,6 +12,7 @@ class Field
     public $value;
     public $label;
     public $hint;
+    public $submit_on_change;
 
     function __construct()
     {

@@ -35,12 +35,13 @@ class FieldChoices extends Field
 
     public function render_long_list($render_id, $field_name)
     {
-        return sprintf('<select id="%s" name="%s" class="tuja-%s tuja-%s-longlist" %s size="%d">%s</select>',
+        return sprintf('<select id="%s" name="%s" class="tuja-%s tuja-%s-longlist" %s %s size="%d">%s</select>',
             $render_id,
             $field_name ?: $this->key,
             strtolower((new \ReflectionClass($this))->getShortName()),
             strtolower((new \ReflectionClass($this))->getShortName()),
             $this->is_multichoice ? ' multiple="multiple"' : '',
+            $this->submit_on_change ? ' onchange="this.form.submit()"' : '',
             $this->is_multichoice ? 10 : 1,
             join(array_map(function ($value) use ($field_name) {
                 return sprintf('<option value="%s" %s>%s</option>', htmlspecialchars($value), $this->is_selected($field_name, $value) ? ' selected="selected"' : '', htmlspecialchars($value));
@@ -56,7 +57,7 @@ class FieldChoices extends Field
                 // Use [] to "trick" PHP into storing selected values in an array. Requires that other parts of the code handles both scalars and arrays.
                 $name .= '[]';
             }
-            return sprintf('<div class="tuja-%s-%s"><input type="%s" name="%s" value="%s" class="tuja-%s tuja-%s-shortlist" id="%s" %s /><label for="%s">%s</label></div>',
+            return sprintf('<div class="tuja-%s-%s"><input type="%s" name="%s" value="%s" class="tuja-%s tuja-%s-shortlist" id="%s" %s %s/><label for="%s">%s</label></div>',
                 strtolower((new \ReflectionClass($this))->getShortName()),
                 $this->is_multichoice ? 'checkbox' : 'radiobutton',
                 $this->is_multichoice ? 'checkbox' : 'radio',
@@ -66,6 +67,7 @@ class FieldChoices extends Field
                 strtolower((new \ReflectionClass($this))->getShortName()),
                 $id,
                 $this->is_selected($field_name, $value) ? ' checked="checked"' : '',
+                $this->submit_on_change ? ' onchange="this.form.submit()"' : '',
                 $id,
                 htmlspecialchars($value));
         }, array_keys($this->options), array_values($this->options)));

@@ -77,20 +77,18 @@ class FormShortcode
 
             $html_sections[] = sprintf('<p>%s</p>', $this->get_groups_dropdown($participant_groups));
 
-            $selected_group = $this->get_selected_group($participant_groups);
+            $selected_participant_group = $this->get_selected_group($participant_groups);
 
-            $group_id = $selected_group->id;
-
-            // TODO: Current answers for selected group are now loaded/shown.
+            $group_id = $selected_participant_group->id;
         } else {
             $group_id = $group->id;
         }
 
-        $message_success = null;
-        $message_error = null;
-        $errors = array();
-        switch ($_POST['tuja_formshortcode_action']) {
-            case 'update':
+        if ($group_id) {
+            $message_success = null;
+            $message_error = null;
+            $errors = array();
+            if ($_POST['tuja_formshortcode_action'] == 'update') {
                 $errors = $this->update_answers($group_id);
                 if (empty($errors)) {
                     $message_success = 'Era svar har sparats.';
@@ -99,30 +97,39 @@ class FormShortcode
                     $message_error = 'Oj, det gick inte att spara era svar.';
                     $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $message_error);
                 }
-                break;
+            }
+            // We do not want to present the previously inputted values in case the user changed from one group to another.
+            // The responses inputted for the previously selected group are not relevant anymore (they are, in fact, probably incorrect).
+            // Keep the previous form values if the user clicked "Update responses", not otherwise.
+            $ignore_previous_form_values = $_POST['tuja_formshortcode_action'] != 'update';
+
+            $responses = $this->response_dao->get_by_group($group_id);
+            $questions = $this->question_dao->get_all_in_form($this->form_id);
+
+            $html_sections[] = join(array_map(function ($question) use ($responses, $errors, $ignore_previous_form_values) {
+                $questions_responses = array_filter($responses, function ($response) use ($question) {
+                    return $response->form_question_id == $question->id;
+                });
+                if (count($questions_responses) > 0) {
+                    usort($questions_responses, function ($a, $b) {
+                        return $a->id < $b->id ? 1 : -1;
+                    });
+                    $question->latest_response = $questions_responses[0];
+                }
+                $field_name = 'tuja_formshortcode_response_' . $question->id;
+                if ($ignore_previous_form_values) {
+                    // Clear input field value from previous submission:
+                    unset($_POST[$field_name]);
+                }
+                $html_field = Field::create($question)->render($field_name);
+                return sprintf('<div class="tuja-question %s">%s%s</div>',
+                    isset($errors[$field_name]) ? 'tuja-field-error' : '',
+                    $html_field,
+                    isset($errors[$field_name]) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[$field_name]) : '');
+            }, $questions));
+            $html_sections[] = sprintf('<button type="submit" name="tuja_formshortcode_action" value="update">Uppdatera svar</button>');
         }
 
-        $responses = $this->response_dao->get_by_group($group_id);
-        $questions = $this->question_dao->get_all_in_form($this->form_id);
-
-        $html_sections[] = join(array_map(function ($question) use ($responses, $errors) {
-            $questions_responses = array_filter($responses, function ($response) use ($question) {
-                return $response->form_question_id == $question->id;
-            });
-            if (count($questions_responses) > 0) {
-                usort($questions_responses, function ($a, $b) {
-                    return $a->id < $b->id ? 1 : -1;
-                });
-                $question->latest_response = $questions_responses[0];
-            }
-            $field_name = 'tuja_formshortcode_response_' . $question->id;
-            $html_field = Field::create($question)->render($field_name);
-            return sprintf('<div class="tuja-question %s">%s%s</div>',
-                isset($errors[$field_name]) ? 'tuja-field-error' : '',
-                $html_field,
-                isset($errors[$field_name]) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[$field_name]) : '');
-        }, $questions));
-        $html_sections[] = sprintf('<button type="submit" name="tuja_formshortcode_action" value="update">Uppdatera svar</button>');
         return sprintf('<form method="post">%s</form>', join($html_sections));
     }
 
@@ -131,12 +138,15 @@ class FormShortcode
         $choose_group_question = new Question();
         $choose_group_question->type = 'dropdown';
         $choose_group_question->text = 'Vilket lag vill du rapportera för?';
+        $choose_group_question->text_hint = 'Byt inte lag om du har osparade ändringar.';
 
         $options = array_map(function ($option) {
             return $option->name;
         }, $participant_groups);
-        $choose_group_question->possible_answers = $options;
-        $html_field = Field::create($choose_group_question)->render(self::TEAMS_DROPDOWN_NAME);
+        $choose_group_question->possible_answers = array_merge(array('' => 'Välj lag'), $options);
+        $field = Field::create($choose_group_question);
+        $field->submit_on_change = true;
+        $html_field = $field->render(self::TEAMS_DROPDOWN_NAME);
         return $html_field;
     }
 
