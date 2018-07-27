@@ -104,7 +104,8 @@ $competition_url = add_query_arg(array(
         $selected_value = $_POST[$field_name] ?: $question->type;
         $options = array(
             'text' => 'Fritext',
-            'dropdown' => 'Välj ett alternativ'
+            'dropdown' => 'Välj ett alternativ',
+            'multi' => 'Välj flera alternativ'
         );
         printf('<div class="tuja-admin-question-property tuja-admin-question-property-type"><label for="%s">%s</label><select id="%s" name="%s">%s</select></div>',
             $render_id,
