@@ -10,19 +10,19 @@ class Response
     public $id;
     public $form_question_id;
     public $group_id;
-    public $answer;
+    public $answers;
     public $points;
 
-    public function __construct($answer = null)
+    public function __construct($answers = null)
     {
-        $this->answer = $answer;
+        $this->answers = $answers;
     }
 
 
     public function validate()
     {
-        if (strlen($this->answer) > 500) {
-            throw new Exception('Du får inte skriva in fler än 500 tecken.');
+        if (strlen(json_encode($this->answers) > 500)) {
+            throw new Exception('Du har svarat lite för mycket.');
         }
     }
 }

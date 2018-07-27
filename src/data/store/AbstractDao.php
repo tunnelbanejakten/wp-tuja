@@ -107,7 +107,7 @@ class AbstractDao
         $r->id = $result->id;
         $r->form_question_id = $result->form_question_id;
         $r->group_id = $result->team_id;
-        $r->answer = $result->answer;
+        $r->answers = json_decode($result->answer);
         $r->points = $result->points;
         return $r;
     }

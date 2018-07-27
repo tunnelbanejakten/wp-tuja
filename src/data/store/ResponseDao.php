@@ -30,7 +30,7 @@ class ResponseDao extends AbstractDao
         return $this->wpdb->query($this->wpdb->prepare($query_template,
             $response->form_question_id,
             $response->group_id,
-            $response->answer,
+            json_encode($response->answers),
             $response->points));
     }
 
