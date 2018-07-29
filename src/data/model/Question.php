@@ -75,23 +75,22 @@ class Question
         }
     }
 
-    public static function text($text, $hint = null, $response = null): Question
+    public static function text($text, $hint = null, $answer = null): Question
     {
         $question = new Question();
         $question->type = 'text';
         $question->text = $text;
         $question->text_hint = $hint;
-        $question->latest_response = $response ?: new Response();
+        $question->latest_response = new Response(isset($answer) && !empty($answer) ? [$answer] : []);
         return $question;
     }
 
-    public static function dropdown($text, $options, $hint = null, $response = null): Question
+    public static function dropdown($text, $options, $hint = null): Question
     {
         $question = new Question();
         $question->type = 'dropdown';
         $question->text = $text;
         $question->text_hint = $hint;
-        $question->latest_response = $response ?: new Response();
         $question->possible_answers = $options;
         return $question;
     }

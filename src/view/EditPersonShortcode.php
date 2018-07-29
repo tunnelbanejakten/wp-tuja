@@ -48,13 +48,13 @@ class EditPersonShortcode extends AbstractGroupShortcode
             $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['__']);
         }
 
-        $person_name_question = Question::text('Namn', null, new Response($person->name));
+        $person_name_question = Question::text('Namn', null, $person->name);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors['name']);
 
-        $person_name_question = Question::text('E-postadress', null, new Response($person->email));
+        $person_name_question = Question::text('E-postadress', null, $person->email);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL, $errors['email']);
 
-        $person_name_question = Question::text('Telefonnummer', null, new Response($person->phone));
+        $person_name_question = Question::text('Telefonnummer', null, $person->phone);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE, $errors['phone']);
 
 
