@@ -6,7 +6,9 @@ use data\model\ValidationException;
 use Exception;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
+use util\messaging\MessageSender;
 use util\Recaptcha;
+use util\Template;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
@@ -15,11 +17,14 @@ class CreatePersonShortcode extends AbstractGroupShortcode
 
     private $group_key;
 
+    private $message_sender;
+
     private $edit_link_template;
 
     public function __construct($wpdb, $group_key, $edit_link_template)
     {
         parent::__construct($wpdb);
+        $this->message_sender = new MessageSender();
         $this->group_key = $group_key;
         $this->edit_link_template = $edit_link_template;
     }
@@ -46,6 +51,9 @@ class CreatePersonShortcode extends AbstractGroupShortcode
                     $new_person = $this->create_person($group);
 
                     $edit_link = sprintf($this->edit_link_template, $new_person->random_id);
+
+                    $this->send_person_welcome_mail($new_person->email, $new_person);
+
                     if (!empty($edit_link)) {
                         return sprintf('<p class="tuja-message tuja-message-success">Tack för din anmälan. Gå till <a href="%s">%s</a> om du behöver ändra din anmälan senare. Vi har också skickat länken till din e-postadress.</p>', $edit_link, $edit_link);
                     } else {
@@ -112,4 +120,18 @@ class CreatePersonShortcode extends AbstractGroupShortcode
             throw new ValidationException(self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage());
         }
     }
+
+    private function send_person_welcome_mail($to, $person)
+    {
+        // TODO: The subject and body must be customizable somehow -- we don't want the same message to be sent to crew members and team members.
+        $mail_result = $this->message_sender->send_mail($to,
+            'Tack för din anmälan',
+            Template::file('util/messaging/signup_person_crew.html')->render([
+                'link' => sprintf($this->edit_link_template, $person->random_id)
+            ]));
+        if (!$mail_result) {
+//            throw new Exception('Ett fel uppstod. Vi vet tyvärr inte riktigt varför.');
+        }
+    }
+
 }

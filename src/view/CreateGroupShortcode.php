@@ -158,7 +158,7 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         }
     }
 
-    private function send_group_welcome_mail($to, $group): void
+    private function send_group_welcome_mail($to, $group)
     {
         $mail_result = $this->message_sender->send_mail($to,
             'Er anmälan är nästan klar',
@@ -170,7 +170,7 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         }
     }
 
-    private function send_group_admin_mail($to, $group): void
+    private function send_group_admin_mail($to, $group)
     {
         $mail_result = $this->message_sender->send_mail($to,
             'Anmälan från ' . $group->name,
