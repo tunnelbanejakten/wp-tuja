@@ -7,7 +7,9 @@ use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
+use util\messaging\MessageSender;
 use util\Recaptcha;
+use util\Template;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
@@ -17,11 +19,14 @@ class CreateGroupShortcode extends AbstractGroupShortcode
     private $competition_id;
     private $edit_link_template;
 
+    private $message_sender;
+
     public function __construct($wpdb, $competition_id, $edit_link_template)
     {
         parent::__construct($wpdb);
         $this->competition_id = $competition_id;
         $this->edit_link_template = $edit_link_template;
+        $this->message_sender = new MessageSender();
     }
 
     public function render(): String
@@ -95,6 +100,7 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         return sprintf('<form method="post">%s</form>', join($html_sections));
     }
 
+    // TODO: create_group does a bit too much application logic to be in a presentation class. Extract application logic to some utility class.
     private function create_group(): Group
     {
         $new_group = new Group();
@@ -133,6 +139,13 @@ class CreateGroupShortcode extends AbstractGroupShortcode
 
                     $group = $this->group_dao->get($new_group_id);
 
+                    $this->send_group_welcome_mail($new_person->email, $group);
+
+                    $admin_email = get_option('admin_email');
+                    if (!empty($admin_email)) {
+                        $this->send_group_admin_mail($admin_email, $group);
+                    }
+
                     return $group;
                 } else {
                     throw new Exception('Ett fel uppstod. Vi vet tyvärr inte riktigt varför.');
@@ -142,6 +155,31 @@ class CreateGroupShortcode extends AbstractGroupShortcode
             }
         } else {
             throw new Exception('Kunde inte anmäla laget.');
+        }
+    }
+
+    private function send_group_welcome_mail($to, $group): void
+    {
+        $mail_result = $this->message_sender->send_mail($to,
+            'Er anmälan är nästan klar',
+            Template::file('util/messaging/signup_group_participant.html')->render([
+                'link' => sprintf($this->edit_link_template, $group->random_id)
+            ]));
+        if (!$mail_result) {
+//            throw new Exception('Ett fel uppstod. Vi vet tyvärr inte riktigt varför.');
+        }
+    }
+
+    private function send_group_admin_mail($to, $group): void
+    {
+        $mail_result = $this->message_sender->send_mail($to,
+            'Anmälan från ' . $group->name,
+            Template::file('util/messaging/signup_group_admin.html')->render([
+                'group_name' => htmlspecialchars($group->name),
+                'link' => sprintf($this->edit_link_template, $group->random_id)
+            ]));
+        if (!$mail_result) {
+//            throw new Exception('Ett fel uppstod. Vi vet tyvärr inte riktigt varför.');
         }
     }
 }

@@ -9,6 +9,8 @@
 include 'util/Id.php';
 include 'util/Recaptcha.php';
 include 'util/score/ScoreCalculator.php';
+include 'util/messaging/MessageSender.php';
+include 'util/Template.php';
 include 'view/FieldText.php';
 include 'view/FieldChoices.php';
 include 'view/FormShortcode.php';

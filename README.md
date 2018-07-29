@@ -8,6 +8,8 @@ Go to http://localhost:8080/ and configure your demo site.
 
 Go to http://localhost:8080/wp-admin/plugins.php and activate the Tuja plugin/
 
+Configuring e-mail: You must install some kind of e-mail plugin in order for Wordpress 
+to be able to send e-mail. One such plugin is https://wordpress.org/plugins/wp-mail-smtp/.
 
 # Debugging
 
