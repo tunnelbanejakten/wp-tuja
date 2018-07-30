@@ -7,6 +7,31 @@ use util\ImageManager;
 
 include_once 'Field.php';
 
+class FieldImagesImage
+{
+    public $image_id;
+    public $option;
+    public $comment;
+
+    public function __construct($image_id, $option, $comment)
+    {
+        $this->image_id = $image_id;
+        $this->option = $option;
+        $this->comment = $comment;
+    }
+
+    public function __toString()
+    {
+        return join(',', array($this->image_id, $this->option, $this->comment));
+    }
+
+    public static function from_string($answer): FieldImagesImage
+    {
+        list ($image_id, $option, $comment) = explode(',', $answer, 3);
+        return new FieldImagesImage($image_id, $option, $comment);
+    }
+}
+
 class FieldImages extends Field
 {
     public $options;
@@ -58,11 +83,10 @@ class FieldImages extends Field
                     try {
                         $import_result = $this->image_manager->import_jpeg($uploaded_file_info['tmp_name']);
                         if ($import_result) {
-                            $answer['NEW'] = [
-                                'image_id' => $import_result,
-                                'option' => $_POST["$form_field-NEW-option"],
-                                'comment' => $_POST["$form_field-NEW-comment"]
-                            ];
+                            $answer['NEW'] = new FieldImagesImage(
+                                $import_result,
+                                $_POST["$form_field-NEW-option"],
+                                $_POST["$form_field-NEW-comment"]);
                         }
                     } catch (Exception $e) {
                         // TODO: Bad error handling here.
@@ -76,13 +100,15 @@ class FieldImages extends Field
         foreach ($_POST as $key => $value) {
             if (substr($key, 0, strlen($form_field)) === $form_field) {
                 list($index, $sub_field) = explode('-', substr($key, strlen($form_field)), 2);
-                $answer[$index][$sub_field] = $value;
+                if (!isset($answer[$index])) {
+                    $answer[$index] = new FieldImagesImage('', '', '');
+                }
+                $answer[$index]->{$sub_field} = $value;
             }
         }
 
-        $answer = array_values(array_map(function ($sub_fields) {
-            // TODO: Extract sub-field property names to constants.
-            return join(',', array($sub_fields['image_id'], $sub_fields['option'], $sub_fields['comment']));
+        $answer = array_values(array_map(function ($image) {
+            return "$image";
         }, $answer));
 
         return $answer;
@@ -104,15 +130,14 @@ class FieldImages extends Field
     private function render_images_list($field_name)
     {
         return join(array_map(function ($index, $val) use ($field_name) {
-            // TODO: Small DTO class to handle comma-separated answer?
-            list ($image_id, $option_key, $comment) = explode(',', $val, 3);
-            if (empty($image_id)) {
+            $image = FieldImagesImage::from_string($val);
+            if (empty($image->image_id)) {
                 return '';
             }
             return sprintf('<div class="tuja-image tuja-image-existing"><div class="tuja-image-preview">%s</div><div class="tuja-image-options">%s%s%s</div></div>',
-                $this->render_image("$field_name$index", $image_id),
-                $this->render_options_list("$field_name$index", $option_key),
-                $this->render_comment_field("$field_name$index", $comment),
+                $this->render_image("$field_name$index", $image->image_id),
+                $this->render_options_list("$field_name$index", $image->option),
+                $this->render_comment_field("$field_name$index", $image->comment),
                 // TODO: Should removing an image be handled in the same way as removing a group member? The former uses Javascript, the latter regular submit action.
                 sprintf('<div class="tuja-item-buttons"><button type="button" onclick="this.parentNode.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode.parentNode)">Ta bort</button></div>'));
         }, array_keys($this->value), array_values($this->value)));
