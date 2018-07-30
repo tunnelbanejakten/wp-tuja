@@ -182,10 +182,9 @@ class FieldImages extends Field
     private function render_image($field_name, $image_id)
     {
         $resized_image_url = $this->image_manager->get_resized_image_url($image_id, 200 * 200);
-        if (!$resized_image_url) {
-            // TODO: The input fields are identical in both cases. DRY.
-            return sprintf('%s<input type="hidden" name="%s-image_id" value="%s">', 'Kan inte visa bild.', $field_name, $image_id);
-        }
-        return sprintf('<img src="%s"><input type="hidden" name="%s-image_id" value="%s">', $resized_image_url, $field_name, $image_id);
+        return sprintf('%s<input type="hidden" name="%s-image_id" value="%s">',
+            $resized_image_url ? sprintf('<img src="%s">', $resized_image_url) : 'Kan inte visa bild.',
+            $field_name,
+            $image_id);
     }
 }
