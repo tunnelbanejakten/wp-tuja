@@ -35,11 +35,7 @@ class FormShortcode
         $overall_success = true;
         $questions = $this->question_dao->get_all_in_form($this->form_id);
         foreach ($questions as $question) {
-            $user_answer = $_POST['tuja_formshortcode_response_' . $question->id];
-            // TODO: Handle this special case when user has not selected any of the options to a multi-choice question somewhere else? We still need to store an empty array to explicitly state that the user no longer has selected anything in case an option was previously selected by the user.
-            if ($question->type == 'multi' && !isset($user_answer)) {
-                $user_answer = array();
-            }
+            $user_answer = Field::create($question)->get_posted_answer('tuja_formshortcode_response_' . $question->id);
             if (isset($user_answer)) {
                 try {
                     $new_response = new Response();
@@ -128,7 +124,7 @@ class FormShortcode
             $html_sections[] = sprintf('<button type="submit" name="tuja_formshortcode_action" value="update">Uppdatera svar</button>');
         }
 
-        return sprintf('<form method="post">%s</form>', join($html_sections));
+        return sprintf('<form method="post" enctype="multipart/form-data">%s</form>', join($html_sections));
     }
 
     private function get_groups_dropdown($participant_groups): string

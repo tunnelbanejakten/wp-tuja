@@ -18,6 +18,17 @@ class FieldChoices extends Field
         $this->is_multichoice = $is_multichoice;
     }
 
+    public function get_posted_answer($form_field)
+    {
+        $user_answer = parent::get_posted_answer($form_field);
+        if ($this->is_multichoice && !isset($user_answer)) {
+            // Handle special case when user has not selected any of the options to a multi-choice question.
+            // We still need to store an empty array to explicitly state that the user no longer has selected
+            // anything in case an option was previously selected by the user.
+            return array();
+        }
+        return $user_answer;
+    }
 
     public function render($field_name)
     {

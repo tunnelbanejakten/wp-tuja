@@ -18,6 +18,11 @@ class Field
     {
     }
 
+    public function get_posted_answer($form_field)
+    {
+        return $_POST[$form_field];
+    }
+
     static function create(Question $question)
     {
         switch ($question->type) {
@@ -27,6 +32,9 @@ class Field
                 break;
             case 'multi':
                 $field = new FieldChoices($question->possible_answers ?: $question->correct_answers, true);
+                break;
+            case 'images':
+                $field = new FieldImages($question->possible_answers ?: $question->correct_answers, true);
                 break;
             default:
                 $field = new FieldText();

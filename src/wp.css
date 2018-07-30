@@ -59,9 +59,20 @@
     border-top: none;
 }
 
+.tuja-fieldimages-radiobutton label,
 .tuja-fieldchoices-radiobutton label {
     display: inline-block;
 }
 .tuja-fieldchoices-checkbox label {
     display: inline-block;
+}
+.tuja-fieldimages .tuja-image {
+    display: flex;
+    flex-direction: row;
+}
+.tuja-fieldimages .tuja-image div {
+    flex: 1;
+}
+.tuja-fieldimages .tuja-image input[type='file'] {
+    width: 100%;
 }

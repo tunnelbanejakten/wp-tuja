@@ -108,8 +108,10 @@ $competition_url = add_query_arg(array(
         $render_id = uniqid();
         $field_name = FORM_FIELD_NAME_PREFIX . '__' . $question->id . '__type';
         $selected_value = $_POST[$field_name] ?: $question->type;
+        // TODO: Extract question types to constants. DRY.
         $options = array(
             'text' => 'Fritext',
+            'images' => 'Bilder',
             'dropdown' => 'Välj ett alternativ',
             'multi' => 'Välj flera alternativ'
         );
