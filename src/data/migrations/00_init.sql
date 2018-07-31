@@ -24,7 +24,7 @@ CREATE TABLE team (
   random_id      VARCHAR(20)  NOT NULL UNIQUE,
   competition_id INTEGER      NOT NULL,
   name           VARCHAR(100) NOT NULL,
-  type           VARCHAR(20)  NOT NULL CHECK (type IN ('crew', 'participant')),
+  type           VARCHAR(20)  NOT NULL,
   CONSTRAINT UNIQUE idx_team_token (random_id),
   CONSTRAINT UNIQUE idx_team_name (competition_id, name),
   CONSTRAINT fk_team_competition FOREIGN KEY (competition_id) REFERENCES competition (id)
@@ -37,7 +37,7 @@ CREATE TABLE person (
   random_id      VARCHAR(20)  NOT NULL,
   name           VARCHAR(100) NOT NULL,
   team_id        INTEGER      NOT NULL,
-#   role_id        INTEGER      NOT NULL,
+  #   role_id        INTEGER      NOT NULL,
   phone          VARCHAR(50),
   phone_verified BOOLEAN      NOT NULL DEFAULT FALSE,
   email          VARCHAR(50),
@@ -45,8 +45,8 @@ CREATE TABLE person (
   CONSTRAINT UNIQUE idx_person_token (random_id),
   CONSTRAINT fk_person_team FOREIGN KEY (team_id) REFERENCES team (id)
     ON DELETE CASCADE #,
-#   CONSTRAINT fk_person_role FOREIGN KEY (role_id) REFERENCES role (id)
-#     ON DELETE CASCADE
+  #   CONSTRAINT fk_person_role FOREIGN KEY (role_id) REFERENCES role (id)
+  #     ON DELETE CASCADE
 )
   ENGINE = INNODB;
 
@@ -84,24 +84,27 @@ CREATE TABLE form_question (
 CREATE TABLE form_question_response (
   id               INTEGER AUTO_INCREMENT PRIMARY KEY,
   form_question_id INTEGER      NOT NULL,
-  team_id          INTEGER      NOT NULL REFERENCES team (id)
-    ON DELETE CASCADE,
+  team_id          INTEGER      NOT NULL,
   answer           VARCHAR(500) NOT NULL,
   points           INTEGER,
   CONSTRAINT fk_form_question_response_question FOREIGN KEY (form_question_id) REFERENCES form_question (id)
-    ON DELETE RESTRICT
-
+    ON DELETE RESTRICT,
+  CONSTRAINT fk_form_question_response_team FOREIGN KEY (team_id) REFERENCES team (id)
+    ON DELETE CASCADE
 )
   ENGINE = INNODB;
 
 CREATE TABLE message (
-  id                        INTEGER AUTO_INCREMENT PRIMARY KEY,
-  text                      VARCHAR(1000),
-  image                     VARCHAR(1000),
-  source                    VARCHAR(10) CHECK (source IN ('email', 'mms')),
-  source_message_id         VARCHAR(100),
-  form_question_response_id INTEGER,
-  CONSTRAINT fk_message_form_question_response FOREIGN KEY (form_question_response_id) REFERENCES form_question_response (id)
+  id                INTEGER AUTO_INCREMENT PRIMARY KEY,
+  form_question_id  INTEGER,
+  team_id           INTEGER,
+  text              VARCHAR(1000),
+  image             VARCHAR(1000),
+  source            VARCHAR(10),
+  source_message_id VARCHAR(100),
+  CONSTRAINT fk_form_question_response_question FOREIGN KEY (form_question_id) REFERENCES form_question (id)
+    ON DELETE RESTRICT,
+  CONSTRAINT fk_form_question_response_team FOREIGN KEY (team_id) REFERENCES team (id)
     ON DELETE CASCADE
 )
   ENGINE = INNODB;
