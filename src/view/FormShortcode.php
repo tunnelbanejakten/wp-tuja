@@ -124,7 +124,7 @@ class FormShortcode
             $html_sections[] = sprintf('<button type="submit" name="tuja_formshortcode_action" value="update">Uppdatera svar</button>');
         }
 
-        return sprintf('<form method="post" enctype="multipart/form-data">%s</form>', join($html_sections));
+        return sprintf('<form method="post" enctype="multipart/form-data" onsubmit="if (tujaUpload) { tujaUpload.removeRedundantFileFields() }">%s</form>', join($html_sections));
     }
 
     private function get_groups_dropdown($participant_groups): string

@@ -170,6 +170,13 @@ function tuja_recaptcha_script()
 
 add_action('wp_enqueue_scripts', 'tuja_recaptcha_script');
 
+function tuja_upload_script()
+{
+    wp_register_script('tuja-upload-script', plugins_url('upload.js', __FILE__));
+}
+
+add_action('wp_enqueue_scripts', 'tuja_upload_script');
+
 function tuja_show_admin_page()
 {
     global $wpdb;

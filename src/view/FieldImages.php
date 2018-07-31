@@ -50,51 +50,30 @@ class FieldImages extends Field
     {
         $answer = [];
         // TODO: Extract sub-field property names to constants.
-        if ($_FILES["$form_field-NEW-file"]) {
-            // TODO: Move handling of uploaded image to other method. A "get method" should not have side-effects like this.
+        $is_regular_file_upload_attempted = isset($_FILES["$form_field-NEW-file"]) && $_FILES["$form_field-NEW-file"]['error'] !== UPLOAD_ERR_NO_FILE;
+        $is_base64_file_upload_attempted = isset($_POST["$form_field-NEW-file_resized"]);
+        if ($is_regular_file_upload_attempted || $is_base64_file_upload_attempted) {
+            // TODO: A "get method" should not have side-effects, like saving files.
             // Process upload of new image
-            $uploaded_file_info = $_FILES["$form_field-NEW-file"];
-            if (isset($uploaded_file_info)) {
-                if ($uploaded_file_info['error'] > 0) {
-                    switch ($uploaded_file_info['error']) {
-                        case UPLOAD_ERR_INI_SIZE:
-                            printf('<p>Error: %s</p>', 'The uploaded file exceeds the limit of ' . ini_get('upload_max_filesize'));
-                            break;
-                        case UPLOAD_ERR_FORM_SIZE:
-                            printf('<p>Error: %s</p>', 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.');
-                            break;
-                        case UPLOAD_ERR_PARTIAL:
-                            printf('<p>Error: %s</p>', 'The uploaded file was only partially uploaded.');
-                            break;
-                        case UPLOAD_ERR_NO_FILE:
-                            printf('<p>Error: %s</p>', 'No file was uploaded.');
-                            break;
-                        case UPLOAD_ERR_NO_TMP_DIR:
-                            printf('<p>Error: %s</p>', 'Missing a temporary folder.');
-                            break;
-                        case UPLOAD_ERR_CANT_WRITE:
-                            printf('<p>Error: %s</p>', 'Failed to write file to disk.');
-                            break;
-                        case UPLOAD_ERR_EXTENSION:
-                            printf('<p>Error: %s</p>', 'A PHP extension stopped the file upload.');
-                            break;
-                    }
-                } else {
-                    try {
-                        $import_result = $this->image_manager->import_jpeg($uploaded_file_info['tmp_name']);
-                        if ($import_result) {
-                            $answer['NEW'] = new FieldImagesImage(
-                                $import_result,
-                                $_POST["$form_field-NEW-option"],
-                                $_POST["$form_field-NEW-comment"]);
-                        }
-                    } catch (Exception $e) {
-                        // TODO: Bad error handling here.
-                        printf('<p>Image import failed. %s</p> ', $e->getMessage());
-                    }
+            try {
+                $image_path = isset($_FILES["$form_field-NEW-file"]) ?
+                    $this->get_uploaded_file_path($_FILES["$form_field-NEW-file"]) :
+                    $this->save_base64_file($_POST["$form_field-NEW-file_resized"]);
+                $import_result = $this->image_manager->import_jpeg($image_path);
+                if ($import_result) {
+                    $answer['NEW'] = new FieldImagesImage(
+                        $import_result,
+                        $_POST["$form_field-NEW-option"],
+                        $_POST["$form_field-NEW-comment"]);
+                }
+            } catch (Exception $e) {
+                // TODO: Bad error handling here.
+                printf('<p>Image import failed. %s</p> ', $e->getMessage());
+            } finally {
+                if (isset($image_path) && file_exists($image_path)) {
+                    unlink($image_path);
                 }
             }
-
         }
 
         foreach ($_POST as $key => $value) {
@@ -168,7 +147,9 @@ class FieldImages extends Field
 
     private function render_file_upload_field($field_name)
     {
-        return sprintf('<input type="file" name="%s-file">', $field_name);
+        // TODO: Add configuration parameter in admin GUI for disabling the resizing feature (in case it causes problem for users)
+        wp_enqueue_script('tuja-upload-script');
+        return sprintf('<input type="file" name="%s-file" onchange="tujaUpload.onSelect(this)">', $field_name);
     }
 
     private function render_image_upload($field_name)
@@ -186,5 +167,43 @@ class FieldImages extends Field
             $resized_image_url ? sprintf('<img src="%s">', $resized_image_url) : 'Kan inte visa bild.',
             $field_name,
             $image_id);
+    }
+
+    private function get_uploaded_file_path($uploaded_file_info)
+    {
+        if ($uploaded_file_info['error'] > 0) {
+            switch ($uploaded_file_info['error']) {
+                case UPLOAD_ERR_INI_SIZE:
+                    throw new Exception('The uploaded file exceeds the limit of ' . ini_get('upload_max_filesize'));
+                case UPLOAD_ERR_FORM_SIZE:
+                    throw new Exception('The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.');
+                case UPLOAD_ERR_PARTIAL:
+                    throw new Exception('The uploaded file was only partially uploaded.');
+                case UPLOAD_ERR_NO_TMP_DIR:
+                    throw new Exception('Missing a temporary folder.');
+                case UPLOAD_ERR_CANT_WRITE:
+                    throw new Exception('Failed to write file to disk.');
+                case UPLOAD_ERR_EXTENSION:
+                    throw new Exception('A PHP extension stopped the file upload.');
+                default:
+                    throw new Exception('Unknown problem occurred when uploading file.');
+            }
+        }
+        return $uploaded_file_info['tmp_name'];
+    }
+
+    private function save_base64_file($base64_data)
+    {
+        $data = base64_decode($base64_data);
+        if ($data !== false) {
+            $temp_file_path = tempnam(sys_get_temp_dir(), 'tuja-base64image-');
+            $handle = fopen($temp_file_path, "w");
+            $write_result = fwrite($handle, $data);
+            fclose($handle);
+            if ($write_result !== false) {
+                return $temp_file_path;
+            }
+        }
+        throw new Exception('Could not save base64-encoded file.');
     }
 }
