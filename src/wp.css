@@ -76,3 +76,9 @@
 .tuja-fieldimages .tuja-image input[type='file'] {
     width: 100%;
 }
+.tuja-image-preview img {
+    display: block;
+}
+.tuja-image.tuja-image-existing {
+    margin: 0 0 0.5em 0;
+}
