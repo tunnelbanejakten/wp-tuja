@@ -30,33 +30,27 @@ var tujaUpload = (function () {
 
       img.src = e.target.result
       img.onload = function (ev) {
-        var width = img.width
-        var height = img.height
-
         var canvas = document.createElement('canvas')
         var ctx = canvas.getContext('2d')
         ctx.drawImage(img, 0, 0)
 
-        var MAX_WIDTH = size
-        var MAX_HEIGHT = size
         var width = img.width
         var height = img.height
 
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width
-            width = MAX_WIDTH
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height
-            height = MAX_HEIGHT
-          }
+        var new_width = Math.round(Math.sqrt((size * width) / height));
+        var new_height = Math.round(new_width * (height / width));
+
+        if (width * height <= new_width * new_height * 1.1) {
+          // Original image is less than 10% larger than the scaled down version would. Don't bother resizing it, just use the original image instead.
+          return
         }
-        canvas.width = width
-        canvas.height = height
+
+        console.log('Resize from ' + width + 'x' + height + ' to ' + new_width + 'x' + new_height)
+
+        canvas.width = new_width
+        canvas.height = new_height
         var ctx = canvas.getContext('2d')
-        ctx.drawImage(img, 0, 0, width, height)
+        ctx.drawImage(img, 0, 0, new_width, new_height)
 
         var dataurl = canvas.toDataURL('image/jpeg', JPEG_QUALITY)
 
@@ -74,19 +68,33 @@ var tujaUpload = (function () {
       if (files.length === 1) {
         var file = files[0]
 
-        resize(file, 1500, function (dataurl) {
+        var parent = element.parentNode
+        var lastChild = parent.childNodes.item(parent.childNodes.length - 1)
+        if (lastChild.getAttribute('class') === 'tuja-images-resize-status') {
+          parent.removeChild(lastChild)
+        }
+
+        resize(file, 2000000, function (dataurl) {
           var imgPreview = document.createElement('img')
           imgPreview.src = dataurl
-          element.parentNode.appendChild(imgPreview)
-
-          console.log('Data URL is ' + dataurl.length + ' b long.')
 
           var hiddenInput = document.createElement('input')
           hiddenInput.setAttribute('type', 'hidden')
           hiddenInput.setAttribute('value', dataurl.substr(DATAURL_PREFIX.length))
           hiddenInput.setAttribute('name', element.getAttribute('name') + '_resized')
           hiddenInput.setAttribute('id', element.getAttribute('name') + '_resized')
-          element.parentNode.appendChild(hiddenInput)
+
+          var resizeDescription = document.createElement('p')
+          resizeDescription.setAttribute('class', 'tuja-help')
+          resizeDescription.innerHTML = 'Vi förminskar bilden innan du skickar in den för att spara på din surfpott.'
+
+          var wrapper = document.createElement('div')
+          wrapper.setAttribute('class', 'tuja-images-resize-status')
+          wrapper.appendChild(imgPreview)
+          wrapper.appendChild(resizeDescription)
+          wrapper.appendChild(hiddenInput)
+
+          parent.appendChild(wrapper)
         })
       }
     },

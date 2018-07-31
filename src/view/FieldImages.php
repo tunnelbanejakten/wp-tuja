@@ -154,7 +154,7 @@ class FieldImages extends Field
 
     private function render_image_upload($field_name)
     {
-        return sprintf('<div class="tuja-image tuja-image-new"><div class="tuja-image-select">Välj bild att ladda upp (laddas upp när du trycker på Uppdatera svar):<br>%s</div><div class="tuja-image-options">%s%s</div></div>',
+        return sprintf('<div class="tuja-image tuja-image-new"><div class="tuja-image-select"><label for="">Välj ny bild att ladda upp:</label>%s<p class="tuja-help">Bilden laddas upp när du trycker på Uppdatera svar.</p></div><div class="tuja-image-options"><label>Beskriv den nya bilden:</label>%s%s</div></div>',
             $this->render_file_upload_field($field_name),
             $this->render_options_list($field_name, ''),
             $this->render_comment_field($field_name, ''));
