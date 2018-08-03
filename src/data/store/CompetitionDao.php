@@ -18,8 +18,8 @@ class CompetitionDao extends AbstractDao
                 random_id,
                 name
             ) VALUES (
-                %S,
-                %S
+                %s,
+                %s
             )';
         return $this->wpdb->query($this->wpdb->prepare($query_template,
             $this->id->random_string(),
