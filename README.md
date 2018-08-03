@@ -16,6 +16,84 @@ to be able to send e-mail. One such plugin is https://wordpress.org/plugins/wp-m
 Open shell to Wordpress installation:
 
     $ docker-compose exec wordpress bash
+
+# Short Codes
+
+## tuja_form
+
+Features:
+* Displays GUI for answering questions in a form.
+* Uses id string in URL to identify the team answering the questions. 
+* Lets the user choose one of the "participant groups" instead if the id string actually identifies a "crew group".
+
+Attributes:
+* form: The integer id (i.e. primary key in the database) for the form to display.
+* readonly: Boolean flag for whether or not user should be able to provide answers or if only current answer for each question is displayed. 
+
+Known issues:
+* 
+
+## tuja_group_name
+
+Features:
+* Displays the group name references by the "group_id" URL parameter (handled in a WP query variable).
+
+Attributes:
+No attributes.
+
+Known issues:
+* 
+
+## tuja_edit_group
+
+Features:
+* Edit group properties (like name and age group).
+* Edit group members (adding, changing and removing people in group).
+* Uses id string in URL to identify the group. 
+
+Attributes:
+No attributes.
+
+Known issues:
+* 
+
+## tuja_create_group
+
+Features:
+* Handles registration of new groups (i.e. signing up new teams).
+* Create one group and its initial group member (who is presumably the group leader).
+
+Attributes:
+* competition: The competition to which group should belong.
+* edit_link_template: Template for URL used to edit group once created. Needs to be an absolute URL.
+
+Known issues:
+* 
+
+## tuja_create_person
+
+Features:
+* Creates a new group member, i.e. person. Basically a sign-me-up-to-specific-team form.
+* Uses id string in URL to identify the group to which the person should be added. 
+
+Attributes:
+* edit_link_template: Template for URL used to edit person once created. Needs to be an absolute URL.
+
+Known issues:
+* 
+
+## tuja_edit_person
+
+Features:
+* Form for changing name, phone number and email address of a specific person.
+* Uses id string in URL to identify the person. 
+
+Attributes:
+No attributes.
+
+Known issues:
+* 
+
     
 # To Do
 
