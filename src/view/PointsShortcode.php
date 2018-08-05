@@ -147,6 +147,7 @@ class PointsShortcode
     public function get_filter_field()
     {
         $render_id = self::FILTER_DROPDOWN_NAME;
+        // TODO: Show user if the assigned points will actually be counted or if the use has provided a new answer to the question which in effect nullifies the points assigned here.
         $hint = sprintf('<br><span class="tuja-question-hint">%s</span>', 'Kom ihåg att spara innan du byter.');
         return sprintf('<div class="tuja-field"><label for="%s">%s%s</label>%s</div>',
             $render_id,

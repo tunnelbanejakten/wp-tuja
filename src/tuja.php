@@ -47,6 +47,7 @@ const SLUG = 'tuja';
 use data\store\CompetitionDao;
 use data\store\FormDao;
 use data\store\GroupDao;
+use data\store\PointsDao;
 use data\store\QuestionDao;
 use data\store\ResponseDao;
 use tuja\data\model\Competition;
@@ -201,6 +202,7 @@ function tuja_show_admin_page()
     $db_groups = new GroupDao($wpdb);
     $db_question = new QuestionDao($wpdb);
     $db_response = new ResponseDao($wpdb);
+    $db_points = new PointsDao($wpdb);
 
     if ($_POST['tuja_action'] == 'competition_create') {
         $props = new Competition();

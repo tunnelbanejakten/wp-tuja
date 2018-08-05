@@ -41,7 +41,7 @@ $groups = $db_groups->get_all_in_competition($competition->id);
     <button type="submit" name="tuja_action" value="form_create">Skapa</button>
     <h3>Ställning</h3>
     <?php
-    $calculator = new ScoreCalculator($competition->id, $db_question, $db_response, $db_groups);
+    $calculator = new ScoreCalculator($competition->id, $db_question, $db_response, $db_groups, $db_points);
     $score_board = $calculator->score_board();
     usort($score_board, function ($a, $b) {
         return $b['score'] - $a['score'];

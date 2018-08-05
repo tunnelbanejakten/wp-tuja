@@ -42,7 +42,6 @@ class FormShortcode
                     $new_response->group_id = $group_id;
                     $new_response->form_question_id = $question->id;
                     $new_response->answers = is_array($user_answer) ? $user_answer : array($user_answer);
-                    $new_response->points = null;
 
                     $affected_rows = $this->response_dao->create($new_response);
 

@@ -19,19 +19,16 @@ class ResponseDao extends AbstractDao
             INSERT INTO form_question_response (
                 form_question_id,
                 team_id,
-                answer,
-                points
+                answer
             ) VALUES (
-                %s,
-                %s,
-                %s,
+                %d,
+                %d,
                 %s
             )';
         return $this->wpdb->query($this->wpdb->prepare($query_template,
             $response->form_question_id,
             $response->group_id,
-            json_encode($response->answers),
-            $response->points));
+            json_encode($response->answers)));
     }
 
     function get_by_group($group_id)
