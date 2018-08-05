@@ -219,10 +219,9 @@ class PointsShortcode
         return $value == $_POST[self::FILTER_DROPDOWN_NAME];
     }
 
-    private function render_field($text, $max_score, $question_id, $group_id, $set_points): string
+    private function render_field($text, $max_score, $question_id, $group_id, $current_points): string
     {
-        // TODO: Rename $set_points parameter since the name is ambiguous: is it a set of points of the points that have been set?
-        $answer = $set_points[$question_id . self::FIELD_NAME_PART_SEP . $group_id];
+        $answer = $current_points[$question_id . self::FIELD_NAME_PART_SEP . $group_id];
         $field = Field::create(Question::text($text, sprintf('Max %d poäng.', $max_score), $answer->points));
         $field_name = self::QUESTION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $question_id . self::FIELD_NAME_PART_SEP . $group_id;
         return $field->render($field_name);
@@ -231,14 +230,14 @@ class PointsShortcode
     private function get_optimistic_lock_value(array $keys)
     {
         $current_points = $this->points_dao->get_by_competition($this->competition_id);
-        $set_points = array_combine(
+        $current_points = array_combine(
             array_map(function ($points) {
                 return $points->form_question_id . self::FIELD_NAME_PART_SEP . $points->group_id;
             }, $current_points),
             array_values($current_points));
 
-        $current_optimistic_lock_value = array_reduce($keys, function ($carry, PointsKey $key) use ($set_points) {
-            return $this->get_last_saved($carry, $set_points[$key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id]->created);
+        $current_optimistic_lock_value = array_reduce($keys, function ($carry, PointsKey $key) use ($current_points) {
+            return $this->get_last_saved($carry, $current_points[$key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id]->created);
         }, 0);
 
         return $current_optimistic_lock_value;
