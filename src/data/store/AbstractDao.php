@@ -6,6 +6,7 @@ use tuja\data\model\Competition;
 use tuja\data\model\Form;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
+use tuja\data\model\Points;
 use tuja\data\model\Question;
 use tuja\data\model\Response;
 use tuja\util\Id;
@@ -110,8 +111,19 @@ class AbstractDao
         $r->form_question_id = $result->form_question_id;
         $r->group_id = $result->team_id;
         $r->answers = json_decode($result->answer);
-        $r->points = $result->points;
+        $r->created = $result->created;
+        $r->is_reviewed = $result->is_reviewed;
         return $r;
+    }
+
+    protected static function to_points($result): Points
+    {
+        $p = new Points();
+        $p->form_question_id = $result->form_question_id;
+        $p->group_id = $result->team_id;
+        $p->points = $result->points;
+        $p->created = $result->created;
+        return $p;
     }
 
 }
