@@ -58,7 +58,7 @@ class PointsShortcode
             list(, , $question_id, $group_id) = explode(self::FIELD_NAME_PART_SEP, $field_name);
             try {
                 // TODO: Make sure user cannot input a higher score than allowed by the question
-                $this->points_dao->set($group_id, $question_id, !empty($field_value) ? intval($field_value) : null);
+                $this->points_dao->set($group_id, $question_id, is_numeric($field_value) ? intval($field_value) : null);
             } catch (Exception $e) {
                 // TODO: Use the key to display the error message next to the problematic text field.
                 $errors[$field_name] = $e->getMessage();
