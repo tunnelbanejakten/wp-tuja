@@ -114,12 +114,12 @@ class PointsShortcode
             if (count($groups) == 1) {
                 $group = array_values($groups)[0];
                 foreach ($questions as $question) {
-                    $html_sections[] = sprintf('<p>%s</p>', $this->render_field($question->text, $question->id, $group->id, $current_points));
+                    $html_sections[] = sprintf('<p>%s</p>', $this->render_field($question->text, $question->score_max, $question->id, $group->id, $current_points));
                 }
             } elseif (count($questions) == 1) {
                 $question = array_values($questions)[0];
                 foreach ($groups as $group) {
-                    $html_sections[] = sprintf('<p>%s</p>', $this->render_field($group->name, $question->id, $group->id, $current_points));
+                    $html_sections[] = sprintf('<p>%s</p>', $this->render_field($group->name, $question->score_max, $question->id, $group->id, $current_points));
                 }
             }
 
@@ -219,11 +219,11 @@ class PointsShortcode
         return $value == $_POST[self::FILTER_DROPDOWN_NAME];
     }
 
-    private function render_field($text, $question_id, $group_id, $set_points): string
+    private function render_field($text, $max_score, $question_id, $group_id, $set_points): string
     {
         // TODO: Rename $set_points parameter since the name is ambiguous: is it a set of points of the points that have been set?
         $answer = $set_points[$question_id . self::FIELD_NAME_PART_SEP . $group_id];
-        $field = Field::create(Question::text($text, null, $answer->points));
+        $field = Field::create(Question::text($text, sprintf('Max %d poäng.', $max_score), $answer->points));
         $field_name = self::QUESTION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $question_id . self::FIELD_NAME_PART_SEP . $group_id;
         return $field->render($field_name);
     }
