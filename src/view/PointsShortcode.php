@@ -10,7 +10,6 @@ use Exception;
 use tuja\data\model\Question;
 use tuja\view\Field;
 
-// TODO: The code for the optimistic lock is a bit spread out in the class. Can it be put into only one, or at most two, functions?
 class PointsShortcode
 {
     private $competition_id;
@@ -110,26 +109,20 @@ class PointsShortcode
             }, $current_points),
             array_values($current_points));
 
-        $optimistic_lock_value = 0;
-
         if (!empty($_POST[self::FILTER_DROPDOWN_NAME])) {
             if (count($groups) == 1) {
                 $group = array_values($groups)[0];
                 foreach ($questions as $question) {
-                    $optimistic_lock_value = $this->get_last_saved(
-                        $optimistic_lock_value,
-                        $current_points[$question->id . self::FIELD_NAME_PART_SEP . $group->id]->created);
                     $html_sections[] = sprintf('<p>%s</p>', $this->render_field($question->text, $question->id, $group->id, $current_points));
                 }
             } elseif (count($questions) == 1) {
                 $question = array_values($questions)[0];
                 foreach ($groups as $group) {
-                    $optimistic_lock_value = $this->get_last_saved(
-                        $optimistic_lock_value,
-                        $current_points[$question->id . self::FIELD_NAME_PART_SEP . $group->id]->created);
                     $html_sections[] = sprintf('<p>%s</p>', $this->render_field($group->name, $question->id, $group->id, $current_points));
                 }
             }
+
+            $optimistic_lock_value = $this->get_optimistic_lock_value($this->get_keys($groups, $questions));
 
             $html_sections[] = sprintf('<input type="hidden" name="%s" value="%s">', self::OPTIMISTIC_LOCK_FIELD_NAME, $optimistic_lock_value);
 
@@ -137,6 +130,17 @@ class PointsShortcode
         }
 
         return sprintf('<form method="post">%s</form>', join($html_sections));
+    }
+
+    private function get_keys($groups, $questions): array
+    {
+        $keys = [];
+        foreach ($groups as $group) {
+            foreach ($questions as $question) {
+                $keys[] = new PointsKey($group->id, $question->id);
+            }
+        }
+        return $keys;
     }
 
     public function get_filter_field()
@@ -150,8 +154,8 @@ class PointsShortcode
             $this->render_filter_dropdown()
         );
     }
-
     // TODO: Extend FieldChoices so that it supports <optgroup>?
+
     public function render_filter_dropdown()
     {
         $questions = $this->question_dao->get_all_in_competition($this->competition_id);
@@ -196,8 +200,8 @@ class PointsShortcode
             'Lag',
             $group_options);
     }
-
     // TODO: Cache the result from this function so that it is only fetched once from database?
+
     private function get_participant_groups(): array
     {
         $competition_groups = $this->group_dao->get_all_in_competition($this->competition_id);
@@ -221,6 +225,22 @@ class PointsShortcode
         return $field->render($field_name);
     }
 
+    private function get_optimistic_lock_value(array $keys)
+    {
+        $current_points = $this->points_dao->get_by_competition($this->competition_id);
+        $set_points = array_combine(
+            array_map(function ($points) {
+                return $points->form_question_id . self::FIELD_NAME_PART_SEP . $points->group_id;
+            }, $current_points),
+            array_values($current_points));
+
+        $current_optimistic_lock_value = array_reduce($keys, function ($carry, PointsKey $key) use ($set_points) {
+            return $this->get_last_saved($carry, $set_points[$key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id]->created);
+        }, 0);
+
+        return $current_optimistic_lock_value;
+    }
+
     private function get_last_saved($last_saved, $mysql_time_string)
     {
         if (isset($mysql_time_string)) {
@@ -236,17 +256,12 @@ class PointsShortcode
 
     private function check_optimistic_lock($form_values)
     {
-        $current_points = $this->points_dao->get_by_competition($this->competition_id);
-        $set_points = array_combine(
-            array_map(function ($points) {
-                return $points->form_question_id . self::FIELD_NAME_PART_SEP . $points->group_id;
-            }, $current_points),
-            array_values($current_points));
-
-        $current_optimistic_lock_value = array_reduce(array_keys($form_values), function ($carry, $field_name) use ($set_points) {
+        $keys = array_map(function ($field_name) {
             list(, , $question_id, $group_id) = explode(self::FIELD_NAME_PART_SEP, $field_name);
-            return $this->get_last_saved($carry, $set_points[$question_id . self::FIELD_NAME_PART_SEP . $group_id]->created);
-        }, 0);
+            return new PointsKey($group_id, $question_id);
+        }, array_keys($form_values));
+
+        $current_optimistic_lock_value = $this->get_optimistic_lock_value($keys);
 
         if ($current_optimistic_lock_value != $_POST[self::OPTIMISTIC_LOCK_FIELD_NAME]) {
             throw new Exception('' .
@@ -255,5 +270,18 @@ class PointsShortcode
                 'funktionärers poäng så sparades inte poängen du angav. De senast inrapporterade ' .
                 'poängen visas istället för de du rapporterade in.');
         }
+    }
+
+}
+
+class PointsKey
+{
+    public $group_id;
+    public $question_id;
+
+    public function __construct($group_id, $question_id)
+    {
+        $this->group_id = $group_id;
+        $this->question_id = $question_id;
     }
 }
