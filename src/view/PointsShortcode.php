@@ -17,6 +17,7 @@ class PointsShortcode
     private $group_dao;
     private $points_dao;
     private $group_key;
+    private $participant_groups;
 
     const FIELD_NAME_PART_SEP = '__';
     const FORM_PREFIX = 'tuja_pointsshortcode';
@@ -154,6 +155,7 @@ class PointsShortcode
             $this->render_filter_dropdown()
         );
     }
+
     // TODO: Extend FieldChoices so that it supports <optgroup>?
 
     public function render_filter_dropdown()
@@ -200,15 +202,16 @@ class PointsShortcode
             'Lag',
             $group_options);
     }
-    // TODO: Cache the result from this function so that it is only fetched once from database?
 
     private function get_participant_groups(): array
     {
-        $competition_groups = $this->group_dao->get_all_in_competition($this->competition_id);
-        $participant_groups = array_filter($competition_groups, function ($option) {
-            return $option->type === 'participant';
-        });
-        return $participant_groups;
+        if (!isset($this->participant_groups)) {
+            $competition_groups = $this->group_dao->get_all_in_competition($this->competition_id);
+            $this->participant_groups = array_filter($competition_groups, function ($option) {
+                return $option->type === 'participant';
+            });
+        }
+        return $this->participant_groups;
     }
 
     private function is_selected($value)
