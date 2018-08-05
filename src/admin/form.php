@@ -139,8 +139,7 @@ $competition_url = add_query_arg(array(
         $options = array(
             '' => 'Rätta inte',
             Question::QUESTION_GRADING_TYPE_ONE_OF => 'Ge poäng om minst ett korrekt svar angivits',
-            Question::QUESTION_GRADING_TYPE_ALL_OF => 'Ge poäng om alla korrekta svar angivits',
-            Question::QUESTION_GRADING_TYPE_SUBMITTED_ANSWER_IS_POINTS => 'Svaret är poängen'
+            Question::QUESTION_GRADING_TYPE_ALL_OF => 'Ge poäng om alla korrekta svar angivits'
         );
         printf('<div class="tuja-admin-question-property tuja-admin-question-property-type"><label for="%s">%s</label><select id="%s" name="%s">%s</select></div>',
             $render_id,

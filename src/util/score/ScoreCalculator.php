@@ -8,20 +8,15 @@ class ScoreCalculator
     private $question_dao;
     private $response_dao;
     private $group_dao;
+    private $points_dao;
 
-    /**
-     * ScoreCalculator constructor.
-     * @param $competition_id
-     * @param $question_dao
-     * @param $response_dao
-     * @param $group_dao
-     */
-    public function __construct($competition_id, $question_dao, $response_dao, $group_dao)
+    public function __construct($competition_id, $question_dao, $response_dao, $group_dao, $points_dao)
     {
         $this->competition_id = $competition_id;
         $this->question_dao = $question_dao;
         $this->response_dao = $response_dao;
         $this->group_dao = $group_dao;
+        $this->points_dao = $points_dao;
     }
 
     public function score($group_id)
@@ -34,6 +29,11 @@ class ScoreCalculator
      */
     public function score_per_question($group_id)
     {
+        $points = $this->points_dao->get_by_group($group_id);
+        $points_overrides = array_combine(array_map(function ($points) {
+            return $points->form_question_id;
+        }, $points), $points);
+
         $scores = [];
         $responses = $this->response_dao->get_by_group($group_id);
         // TODO: This sorting is done in multiple methods. Move to get_by_group method?
@@ -43,15 +43,20 @@ class ScoreCalculator
 
         $last_response = [];
         foreach (array_reverse($responses) as $response) {
-            $last_response[$response->form_question_id] = $response->answers;
+            $last_response[$response->form_question_id] = $response;
         }
 
         // TODO: Cache response of get_all_in_competition? (Unnecessary to call it once per team.)
         $questions = $this->question_dao->get_all_in_competition($this->competition_id);
         foreach ($questions as $question) {
-            $answers = $last_response[$question->id];
+            $answers = $last_response[$question->id]->answers;
+            // TODO: How should the is_reviewed flag be used? Only count points for answers where is_reviewed = true?
             if (isset($answers)) {
                 $scores[$question->id] = $question->score($answers);
+            }
+            // TODO: Is this date comparison (the "created" field) reliable? Convert to DateTime object first?
+            if (isset($points_overrides[$question->id]) && $points_overrides[$question->id]->created > $last_response[$question->id]->created) {
+                $scores[$question->id] = $points_overrides[$question->id]->points;
             }
         }
 
