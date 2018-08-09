@@ -23,18 +23,24 @@ if ($_POST['tuja_action'] == 'group_create') {
 }
 $forms = $db_form->get_all_in_competition($competition->id);
 $groups = $db_groups->get_all_in_competition($competition->id);
+
 ?>
 <form method="post" action="<?= add_query_arg() ?>">
     <h1>Tunnelbanejakten</h1>
     <h2>Tävling <?= $competition->name ?></h2>
     <h3>Formulär</h3>
     <?php
+    $review_url = add_query_arg(array(
+        'tuja_competition' => $competition->id,
+        'tuja_view' => 'review'
+    ));
+    printf('<p><a href="%s">Gå igenom okontrollerade svar</a></p>', $review_url);
     foreach ($forms as $form) {
-            $url = add_query_arg(array(
-                'tuja_view' => 'form',
-                'tuja_form' => $form->id
-            ));
-            printf('<p><a href="%s">%s</a> Shortcode: <code>[tuja_form form="%d"]</code></p>', $url, $form->name, $form->id);
+        $url = add_query_arg(array(
+            'tuja_view' => 'form',
+            'tuja_form' => $form->id
+        ));
+        printf('<p><a href="%s">%s</a> Shortcode: <code>[tuja_form form="%d"]</code></p>', $url, $form->name, $form->id);
     }
     ?>
     <input type="text" name="tuja_form_name"/>
@@ -53,7 +59,11 @@ $groups = $db_groups->get_all_in_competition($competition->id);
     <h3>Lag</h3>
     <?php
     foreach ($groups as $group) {
-        printf('<p>%s</p>', htmlspecialchars($group->name));
+        $group_url = add_query_arg(array(
+            'tuja_group' => $group->id,
+            'tuja_view' => 'group'
+        ));
+        printf('<p><a href="%s">%s</a></p>', $group_url, htmlspecialchars($group->name));
     }
     ?>
     <input type="text" name="tuja_group_name"/>

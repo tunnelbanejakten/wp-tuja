@@ -30,18 +30,13 @@ class FormReadonlyShortcode
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Oj då, vi vet inte vilket lag du tillhör.');
         }
 
-        $responses = $this->response_dao->get_by_group($group->id);
+        $responses = $this->response_dao->get_latest_by_group($group->id);
         $questions = $this->question_dao->get_all_in_form($this->form_id);
 
         return join(array_map(function ($question) use ($responses) {
-            $questions_responses = array_filter($responses, function ($response) use ($question) {
-                return $response->form_question_id == $question->id;
-            });
-            if (count($questions_responses) > 0) {
-                usort($questions_responses, function ($a, $b) {
-                    return $a->id < $b->id ? 1 : -1;
-                });
-                $question->latest_response = $questions_responses[0];
+            $response = $responses[$question->id];
+            if (isset($response)) {
+                $question->latest_response = $response;
             }
             return sprintf('<div class="tuja-question"><p><strong>%s</strong><br>%s</p></div>',
                 $question->text,
