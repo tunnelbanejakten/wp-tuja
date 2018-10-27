@@ -36,17 +36,3 @@ assert($question->score(['alice', 'bob', 'carol']) == 0);
 assert($question->score(['alice', 'carol']) == 0);
 assert($question->score(['carol']) == 0);
 assert($question->score(['trudy']) == 0);
-
-$question = new Question();
-$question->score_type = Question::QUESTION_GRADING_TYPE_SUBMITTED_ANSWER_IS_POINTS;
-$question->score_max = 10;
-
-assert($question->score(['10']) == 10);
-assert($question->score(['1']) == 1);
-assert($question->score(['11', 'bob']) == 10);
-assert($question->score(['-1', 'BOB']) == -1);
-assert($question->score(['alice', 'bob', 'carol']) == 0); // alicia okay but bobb is not
-assert($question->score(['a', '1']) == 0);
-assert($question->score(['0x2']) == 0);
-assert($question->score(['3', '4']) == 3);
-assert($question->score(['11', '9']) == 10);

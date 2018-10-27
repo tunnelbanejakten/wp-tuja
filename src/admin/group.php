@@ -1,0 +1,113 @@
+<?php
+
+use util\score\ScoreCalculator;
+
+$group = $db_groups->get($_GET['tuja_group']);
+if (!$group) {
+    print 'Could not find group';
+    return;
+}
+$competition = $db_competition->get($group->competition_id);
+if (!$competition) {
+    print 'Could not find competition';
+    return;
+}
+
+$competition_url = add_query_arg(array(
+    'tuja_competition' => $competition->id,
+    'tuja_view' => 'competition'
+));
+
+if ($_POST['tuja_points_action'] === 'save') {
+    $questions = $db_question->get_all_in_competition($competition->id);
+    foreach ($questions as $question) {
+        $value = $_POST['tuja_group_points__' . $question->id];
+        if (isset($value)) {
+            $db_points->set($group->id, $question->id, is_numeric($value) ? intval($value) : null);
+        }
+    }
+}
+
+$forms = $db_form->get_all_in_competition($competition->id);
+
+$score_calculator = new ScoreCalculator($competition->id, $db_question, $db_response, $db_groups, $db_points);
+$calculated_scores_final = $score_calculator->score_per_question($group->id);
+$calculated_scores_without_overrides = $score_calculator->score_per_question($group->id, false);
+$responses = $db_response->get_latest_by_group($group->id);
+$response_per_question = array_combine(array_map(function ($response) {
+    return $response->form_question_id;
+}, $responses), array_values($responses));
+$points_overrides = $db_points->get_by_group($group->id);
+$points_overrides_per_question = array_combine(array_map(function ($points) {
+    return $points->form_question_id;
+}, $points_overrides), array_values($points_overrides));
+?>
+<form method="post" action="<?= add_query_arg() ?>">
+    <h1>Tunnelbanejakten</h1>
+    <h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h2>
+    <h2>Grupp <?= htmlspecialchars($group->name) ?></h2>
+
+    <p><strong>Totalt <?= array_sum($calculated_scores_final) ?> poäng.</strong></p>
+
+    <table>
+        <thead>
+        <tr>
+            <th rowspan="2">Fråga</th>
+            <th rowspan="2">Rätt svar</th>
+            <th rowspan="2">Lagets svar</th>
+            <th colspan="3">Poäng</th>
+        </tr>
+        <tr>
+            <td>Autom.</td>
+            <td>Manuell</td>
+            <td>Slutlig</td>
+        </tr>
+        </thead>
+        <tfoot>
+        <tr>
+            <td colspan="5"></td>
+            <td><?= array_sum($calculated_scores_final) ?> p</td>
+        </tr>
+        </tfoot>
+        <tbody>
+
+        <?php
+
+        foreach ($forms as $form) {
+            printf('<tr><td colspan="6"><strong>%s</strong></td></tr>', $form->name);
+            $questions = $db_question->get_all_in_form($form->id);
+            foreach ($questions as $question) {
+                $calculated_score_without_override = $calculated_scores_without_overrides[$question->id] ?: 0;
+                $calculated_score_final = $calculated_scores_final[$question->id] ?: 0;
+
+                $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
+                $response = $response_per_question[$question->id];
+                // Only set $points_override if the override points were set AFTER the most recent answer was created/submitted.
+                // TODO: Is this date comparison (the "created" field) reliable? It seems to be working but is PHP just doing a simple string comparison of MySQL timestamps? Convert to DateTime object first?
+                $points_override = $points_overrides_per_question[$question->id] && $points_overrides_per_question[$question->id]->created > $response->created
+                    ? $points_overrides_per_question[$question->id]->points
+                    : '';
+                printf('' .
+                    '<tr>' .
+                    '  <td>%s</td>' .
+                    '  <td>%s</td>' .
+                    '  <td>%s</td>' .
+                    '  <td>%s p</td>' .
+                    '  <td><input type="text" name="%s" value="%s" size="5"></td>' .
+                    '  <td>%d p</td>' .
+                    '</tr>',
+                    $question->text,
+                    join(', ', $question->correct_answers),
+                    // TODO: For image answers; display image itself, not merely the MD5 hash of the image (i.e. not merely what is stored in the database).
+                    is_array($response->answers) ? join(', ', $response->answers) : '<em>Ogiltigt svar</em>',
+                    $calculated_score_without_override,
+                    'tuja_group_points__' . $question->id,
+                    $points_override,
+                    $calculated_score_final);
+            }
+        }
+        ?>
+        </tbody>
+    </table>
+    <button class="button button-primary" type="submit" name="tuja_points_action" value="save">Spara</button>
+</form>

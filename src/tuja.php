@@ -16,6 +16,7 @@ include 'view/FieldImages.php';
 include 'view/FieldText.php';
 include 'view/FieldChoices.php';
 include 'view/FormShortcode.php';
+include 'view/PointsShortcode.php';
 include 'view/FormReadonlyShortcode.php';
 include 'view/GroupNameShortcode.php';
 include 'view/AbstractGroupShortcode.php';
@@ -30,7 +31,9 @@ include 'data/store/GroupDao.php';
 include 'data/store/QuestionDao.php';
 include 'data/store/ResponseDao.php';
 include 'data/store/PersonDao.php';
+include 'data/store/PointsDao.php';
 include 'data/model/Form.php';
+include 'data/model/Points.php';
 include 'data/model/Group.php';
 include 'data/model/Question.php';
 include 'data/model/Competition.php';
@@ -44,6 +47,7 @@ const SLUG = 'tuja';
 use data\store\CompetitionDao;
 use data\store\FormDao;
 use data\store\GroupDao;
+use data\store\PointsDao;
 use data\store\QuestionDao;
 use data\store\ResponseDao;
 use tuja\data\model\Competition;
@@ -55,6 +59,7 @@ use view\EditPersonShortcode;
 use view\FormShortcode;
 use view\FormReadonlyShortcode;
 use view\GroupNameShortcode;
+use view\PointsShortcode;
 
 add_shortcode('tuja_form', 'tuja_form');
 
@@ -67,6 +72,17 @@ function tuja_form($atts)
     $component = $is_readonly ?
         new FormReadonlyShortcode($wpdb, $form_id, $group_id) :
         new FormShortcode($wpdb, $form_id, $group_id);
+    return $component->render();
+}
+
+add_shortcode('tuja_points', 'tuja_points');
+
+function tuja_points($atts)
+{
+    global $wp_query, $wpdb;
+    $competition_id = $atts['competition'];
+    $group_id = $wp_query->query_vars['group_id'];
+    $component = new PointsShortcode($wpdb, $competition_id, $group_id);
     return $component->render();
 }
 
@@ -186,6 +202,7 @@ function tuja_show_admin_page()
     $db_groups = new GroupDao($wpdb);
     $db_question = new QuestionDao($wpdb);
     $db_response = new ResponseDao($wpdb);
+    $db_points = new PointsDao($wpdb);
 
     if ($_POST['tuja_action'] == 'competition_create') {
         $props = new Competition();

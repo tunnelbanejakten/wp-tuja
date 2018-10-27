@@ -94,6 +94,21 @@ No attributes.
 Known issues:
 * 
 
+## tuja_points
+
+Features:
+* Form for setting explicit score for teams. Will override any points set by the automatic score calculator.
+* Optimistic locking feature prevents concurrent users from overwriting each others changes (Alice cannot submit 
+  points if Bob user submits points for the same questions after Alice loads the page with the form). 
+* Uses id string in URL to identify the user's team.
+* Only crew teams are permitted to use the form. 
+
+Attributes:
+* competition: The competition for which users can report points with the form.
+
+Known issues:
+* See to-do items in source code... 
+
     
 # To Do
 

@@ -8,20 +8,15 @@ class ScoreCalculator
     private $question_dao;
     private $response_dao;
     private $group_dao;
+    private $points_dao;
 
-    /**
-     * ScoreCalculator constructor.
-     * @param $competition_id
-     * @param $question_dao
-     * @param $response_dao
-     * @param $group_dao
-     */
-    public function __construct($competition_id, $question_dao, $response_dao, $group_dao)
+    public function __construct($competition_id, $question_dao, $response_dao, $group_dao, $points_dao)
     {
         $this->competition_id = $competition_id;
         $this->question_dao = $question_dao;
         $this->response_dao = $response_dao;
         $this->group_dao = $group_dao;
+        $this->points_dao = $points_dao;
     }
 
     public function score($group_id)
@@ -32,26 +27,27 @@ class ScoreCalculator
     /**
      * Calculates total score for a single team.
      */
-    public function score_per_question($group_id)
+    public function score_per_question($group_id, $consider_overrides = true)
     {
-        $scores = [];
-        $responses = $this->response_dao->get_by_group($group_id);
-        // TODO: This sorting is done in multiple methods. Move to get_by_group method?
-        usort($responses, function ($a, $b) {
-            return $a->id < $b->id ? 1 : -1;
-        });
+        $points = $this->points_dao->get_by_group($group_id);
+        $points_overrides = array_combine(array_map(function ($points) {
+            return $points->form_question_id;
+        }, $points), $points);
 
-        $last_response = [];
-        foreach (array_reverse($responses) as $response) {
-            $last_response[$response->form_question_id] = $response->answers;
-        }
+        $scores = [];
+        $responses = $this->response_dao->get_latest_by_group($group_id);
 
         // TODO: Cache response of get_all_in_competition? (Unnecessary to call it once per team.)
         $questions = $this->question_dao->get_all_in_competition($this->competition_id);
         foreach ($questions as $question) {
-            $answers = $last_response[$question->id];
+            $answers = $responses[$question->id]->answers;
+            // TODO: How should the is_reviewed flag be used? Only count points for answers where is_reviewed = true?
             if (isset($answers)) {
                 $scores[$question->id] = $question->score($answers);
+            }
+            // TODO: Is this date comparison (the "created" field) reliable? It seems to be working but is PHP just doing a simple string comparison of MySQL timestamps? Convert to DateTime object first?
+            if ($consider_overrides && isset($points_overrides[$question->id]) && $points_overrides[$question->id]->created > $responses[$question->id]->created) {
+                $scores[$question->id] = $points_overrides[$question->id]->points;
             }
         }
 

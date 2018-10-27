@@ -34,23 +34,28 @@ class FormShortcode
         $errors = array();
         $overall_success = true;
         $questions = $this->question_dao->get_all_in_form($this->form_id);
+
+        $responses = $this->response_dao->get_latest_by_group($group_id);
+
         foreach ($questions as $question) {
             $user_answer = Field::create($question)->get_posted_answer('tuja_formshortcode_response_' . $question->id);
             if (isset($user_answer)) {
-                try {
-                    $new_response = new Response();
-                    $new_response->group_id = $group_id;
-                    $new_response->form_question_id = $question->id;
-                    $new_response->answers = is_array($user_answer) ? $user_answer : array($user_answer);
-                    $new_response->points = null;
+                $user_answer_array = is_array($user_answer) ? $user_answer : array($user_answer);
+                if (!isset($responses[$question->id]) || $user_answer_array != $responses[$question->id]->answers) {
+                    try {
+                        $new_response = new Response();
+                        $new_response->group_id = $group_id;
+                        $new_response->form_question_id = $question->id;
+                        $new_response->answers = $user_answer_array;
 
-                    $affected_rows = $this->response_dao->create($new_response);
+                        $affected_rows = $this->response_dao->create($new_response);
 
-                    $this_success = $affected_rows !== false && $affected_rows === 1;
-                    $overall_success = ($overall_success and $this_success);
-                } catch (Exception $e) {
-                    $overall_success = false;
-                    $errors['tuja_formshortcode_response_' . $question->id] = $e->getMessage();
+                        $this_success = $affected_rows !== false && $affected_rows === 1;
+                        $overall_success = ($overall_success and $this_success);
+                    } catch (Exception $e) {
+                        $overall_success = false;
+                        $errors['tuja_formshortcode_response_' . $question->id] = $e->getMessage();
+                    }
                 }
             }
         }
@@ -97,19 +102,11 @@ class FormShortcode
             // Keep the previous form values if the user clicked "Update responses", not otherwise.
             $ignore_previous_form_values = $_POST['tuja_formshortcode_action'] != 'update';
 
-            $responses = $this->response_dao->get_by_group($group_id);
+            $responses = $this->response_dao->get_latest_by_group($group_id);
             $questions = $this->question_dao->get_all_in_form($this->form_id);
 
             $html_sections[] = join(array_map(function ($question) use ($responses, $errors, $ignore_previous_form_values) {
-                $questions_responses = array_filter($responses, function ($response) use ($question) {
-                    return $response->form_question_id == $question->id;
-                });
-                if (count($questions_responses) > 0) {
-                    usort($questions_responses, function ($a, $b) {
-                        return $a->id < $b->id ? 1 : -1;
-                    });
-                    $question->latest_response = $questions_responses[0];
-                }
+                $question->latest_response = $responses[$question->id];
                 $field_name = 'tuja_formshortcode_response_' . $question->id;
                 if ($ignore_previous_form_values) {
                     // Clear input field value from previous submission:
