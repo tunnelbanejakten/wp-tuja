@@ -2,7 +2,8 @@
 
 Get the Docker stuff up-and-running:
 
-    $ docker-compose up
+	$ cp .env-example .env
+    $ docker-compose up -d
 
 Go to http://localhost:8080/ and configure your demo site.
 
