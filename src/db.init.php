@@ -17,6 +17,8 @@ function tuja_db_migrate()
             error_log("Database migrate. Executing script " . $migration_script_path);
             $full_script = file_get_contents($migration_script_path);
             foreach (explode(';', $full_script) as $command) {
+				if(empty($command)) continue;
+				
                 $affected_rows = $wpdb->query($command);
                 error_log("Database migrate. Executing command " . $command);
                 if ($affected_rows === false) {
