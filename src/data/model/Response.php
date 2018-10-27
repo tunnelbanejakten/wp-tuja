@@ -11,7 +11,8 @@ class Response
     public $form_question_id;
     public $group_id;
     public $answers;
-    public $points;
+    public $created;
+    public $is_reviewed;
 
     public function __construct($answers = null)
     {

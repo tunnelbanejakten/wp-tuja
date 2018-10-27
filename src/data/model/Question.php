@@ -19,13 +19,11 @@ class Question
     public $score_type;
     public $score_max;
 
-    const QUESTION_GRADING_TYPE_SUBMITTED_ANSWER_IS_POINTS = "submitted_answer_is_points";
     const QUESTION_GRADING_TYPE_ONE_OF = "one_of";
     const QUESTION_GRADING_TYPE_ALL_OF = "all_of";
 
     const SCORING_METHODS = [
         self::QUESTION_GRADING_TYPE_ALL_OF,
-        self::QUESTION_GRADING_TYPE_SUBMITTED_ANSWER_IS_POINTS,
         self::QUESTION_GRADING_TYPE_ONE_OF
     ];
 
@@ -46,8 +44,6 @@ class Question
     {
         $answers = array_map('strtolower', $answers);
         switch ($this->score_type) {
-            case self::QUESTION_GRADING_TYPE_SUBMITTED_ANSWER_IS_POINTS:
-                return min($this->score_max, floatval($answers[0]));
             case self::QUESTION_GRADING_TYPE_ONE_OF:
             case self::QUESTION_GRADING_TYPE_ALL_OF:
                 $correct_answers = array_map('strtolower', $this->correct_answers);
