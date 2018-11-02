@@ -1,5 +1,7 @@
 <?php
 
+use tuja\view\FieldImages;
+
 $competition = $db_competition->get($_GET['tuja_competition']);
 if (!$competition) {
     print 'Could not find competition';
@@ -103,19 +105,27 @@ $current_points = array_combine(
                             // Only set $points if the override points were set AFTER the most recent answer was created/submitted.
                             // TODO: Is this date comparison (the "created" field) reliable? It seems to be working but is PHP just doing a simple string comparison of MySQL timestamps? Convert to DateTime object first?
                             $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
+
+                            if (is_array($response->answers) && $question->type == 'images') {
+                                $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
+                                // For each user-provided answer, render the photo description and a photo thumbnail:
+                                $response->answers = array_map(function ($answer) use ($field) {
+                                    return $field->render_admin_preview($answer);
+                                }, $response->answers);
+                            }
+
                             printf('' .
                                 '<tr>' .
-                                '  <td>%s</td>' .
-                                '  <td>%s</td>' .
-                                '  <td>%s</td>' .
-                                '  <td>%s p</td>' .
-                                '  <td><input type="text" name="%s" value="%s" size="5"></td>' .
-                                '  <td>%d p</td>' .
+                                '  <td valign="top">%s</td>' .
+                                '  <td valign="top">%s</td>' .
+                                '  <td valign="top">%s</td>' .
+                                '  <td valign="top">%s p</td>' .
+                                '  <td valign="top"><input type="text" name="%s" value="%s" size="5"></td>' .
+                                '  <td valign="top">%d p</td>' .
                                 '</tr>',
                                 $groups_map[$response->group_id]->name,
                                 join(', ', $question->correct_answers),
-                                // TODO: For image answers; display image itself, not merely the MD5 hash of the image (i.e. not merely what is stored in the database).
-                                is_array($response->answers) ? join(', ', $response->answers) : '<em>Ogiltigt svar</em>',
+                                is_array($response->answers) ? join('<br>', $response->answers) : '<em>Ogiltigt svar</em>',
                                 '',
                                 sprintf('tuja_review_points__%s__%s', $response->form_question_id, $response->group_id),
                                 $field_value,

@@ -1,5 +1,6 @@
 <?php
 
+use tuja\view\FieldImages;
 use util\score\ScoreCalculator;
 
 $group = $db_groups->get($_GET['tuja_group']);
@@ -72,7 +73,6 @@ $points_overrides_per_question = array_combine(array_map(function ($points) {
         <tbody>
 
         <?php
-
         foreach ($forms as $form) {
             printf('<tr><td colspan="6"><strong>%s</strong></td></tr>', $form->name);
             $questions = $db_question->get_all_in_form($form->id);
@@ -87,19 +87,27 @@ $points_overrides_per_question = array_combine(array_map(function ($points) {
                 $points_override = $points_overrides_per_question[$question->id] && $points_overrides_per_question[$question->id]->created > $response->created
                     ? $points_overrides_per_question[$question->id]->points
                     : '';
+
+                if (is_array($response->answers) && $question->type == 'images') {
+                    $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
+                    // For each user-provided answer, render the photo description and a photo thumbnail:
+                    $response->answers = array_map(function ($answer) use ($field) {
+                        return $field->render_admin_preview($answer);
+                    }, $response->answers);
+                }
+
                 printf('' .
                     '<tr>' .
-                    '  <td>%s</td>' .
-                    '  <td>%s</td>' .
-                    '  <td>%s</td>' .
-                    '  <td>%s p</td>' .
-                    '  <td><input type="text" name="%s" value="%s" size="5"></td>' .
-                    '  <td>%d p</td>' .
+                    '  <td valign="top">%s</td>' .
+                    '  <td valign="top">%s</td>' .
+                    '  <td valign="top">%s</td>' .
+                    '  <td valign="top">%s p</td>' .
+                    '  <td valign="top"><input type="text" name="%s" value="%s" size="5"></td>' .
+                    '  <td valign="top">%d p</td>' .
                     '</tr>',
                     $question->text,
                     join(', ', $question->correct_answers),
-                    // TODO: For image answers; display image itself, not merely the MD5 hash of the image (i.e. not merely what is stored in the database).
-                    is_array($response->answers) ? join(', ', $response->answers) : '<em>Ogiltigt svar</em>',
+                    is_array($response->answers) ? join('<br>', $response->answers) : '<em>Ogiltigt svar</em>',
                     $calculated_score_without_override,
                     'tuja_group_points__' . $question->id,
                     $points_override,
