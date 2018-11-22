@@ -103,7 +103,6 @@ $current_points = array_combine(
                             $response_ids[] = $response->id;
                             $points = $current_points[$response->form_question_id . '__' . $response->group_id];
                             // Only set $points if the override points were set AFTER the most recent answer was created/submitted.
-                            // TODO: Is this date comparison (the "created" field) reliable? It seems to be working but is PHP just doing a simple string comparison of MySQL timestamps? Convert to DateTime object first?
                             $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
 
                             if (is_array($response->answers) && $question->type == 'images') {

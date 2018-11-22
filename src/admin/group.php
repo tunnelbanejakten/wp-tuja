@@ -81,9 +81,8 @@ $points_overrides_per_question = array_combine(array_map(function ($points) {
                 $calculated_score_final = $calculated_scores_final[$question->id] ?: 0;
 
                 $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
-                $response = $response_per_question[$question->id];
+                $response = $response_per_question[$question->id]; // TODO: One line to late?
                 // Only set $points_override if the override points were set AFTER the most recent answer was created/submitted.
-                // TODO: Is this date comparison (the "created" field) reliable? It seems to be working but is PHP just doing a simple string comparison of MySQL timestamps? Convert to DateTime object first?
                 $points_override = $points_overrides_per_question[$question->id] && $points_overrides_per_question[$question->id]->created > $response->created
                     ? $points_overrides_per_question[$question->id]->points
                     : '';
