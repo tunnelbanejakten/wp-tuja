@@ -6,12 +6,16 @@
     Author: Mikael Svensson
     Author URI: https://tunnelbanejakten.se
 */
+// TODO: This list of includes is not maintainable. How should we do things instead?
 include 'util/Id.php';
 include 'util/Recaptcha.php';
 include 'util/score/ScoreCalculator.php';
 include 'util/messaging/MessageSender.php';
 include 'util/Template.php';
+include 'util/SmsBackupRestoreXmlFileProcessor.php';
 include 'util/ImageManager.php';
+include 'util/MessageImporter.php';
+include 'util/Phone.php';
 include 'view/FieldImages.php';
 include 'view/FieldText.php';
 include 'view/FieldChoices.php';
@@ -32,6 +36,7 @@ include 'data/store/QuestionDao.php';
 include 'data/store/ResponseDao.php';
 include 'data/store/PersonDao.php';
 include 'data/store/PointsDao.php';
+include 'data/store/MessageDao.php';
 include 'data/model/Form.php';
 include 'data/model/Points.php';
 include 'data/model/Group.php';
@@ -40,6 +45,7 @@ include 'data/model/Competition.php';
 include 'data/model/Response.php';
 include 'data/model/Person.php';
 include 'data/model/ValidationException.php';
+include 'data/model/Message.php';
 include 'db.init.php';
 
 const SLUG = 'tuja';
@@ -47,6 +53,7 @@ const SLUG = 'tuja';
 use data\store\CompetitionDao;
 use data\store\FormDao;
 use data\store\GroupDao;
+use data\store\MessageDao;
 use data\store\PointsDao;
 use data\store\QuestionDao;
 use data\store\ResponseDao;
@@ -203,6 +210,7 @@ function tuja_show_admin_page()
     $db_question = new QuestionDao($wpdb);
     $db_response = new ResponseDao($wpdb);
     $db_points = new PointsDao($wpdb);
+    $db_message = new MessageDao($wpdb);
 
     if ($_POST['tuja_action'] == 'competition_create') {
         $props = new Competition();
@@ -212,5 +220,7 @@ function tuja_show_admin_page()
 
     $view = $_GET['tuja_view'] ?: 'index';
 
+    printf('<div class="tuja tuja-view-%s">', $view);
     include "admin/$view.php";
+    print('</div>');
 }
