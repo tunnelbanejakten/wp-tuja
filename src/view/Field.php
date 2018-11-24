@@ -27,10 +27,10 @@ class Field
     {
         switch ($question->type) {
             // TODO: Rename "dropdown" to "single" or "radio"
-            case 'dropdown':
+            case 'pick_one':
                 $field = new FieldChoices($question->possible_answers ?: $question->correct_answers, false);
                 break;
-            case 'multi':
+            case 'pick_multi':
                 $field = new FieldChoices($question->possible_answers ?: $question->correct_answers, true);
                 break;
             case 'images':

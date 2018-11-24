@@ -127,7 +127,7 @@ class FormShortcode
     private function get_groups_dropdown($participant_groups): string
     {
         $choose_group_question = new Question();
-        $choose_group_question->type = 'dropdown';
+        $choose_group_question->type = 'pick_one';
         $choose_group_question->text = 'Vilket lag vill du rapportera för?';
         $choose_group_question->text_hint = 'Byt inte lag om du har osparade ändringar.';
 
