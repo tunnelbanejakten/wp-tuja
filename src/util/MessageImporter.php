@@ -45,7 +45,7 @@ class MessageImporter
 
         $message = new Message();
         $message->form_question_id = null;
-        $message->team_id = $group_id;
+        $message->group_id = $group_id;
         $message->text = $text;
         $message->image = join(',', $image_ids);
         $message->source = self::SOURCE;

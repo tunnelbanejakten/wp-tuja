@@ -7,8 +7,7 @@ class Message
 {
     public $id;
     public $form_question_id;
-    // TODO: Rename to $group_id
-    public $team_id;
+    public $group_id;
     public $text;
     public $image; // TODO: This is actually a comma-separated list of file hashes
     public $source;

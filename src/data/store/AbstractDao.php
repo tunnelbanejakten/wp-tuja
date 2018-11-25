@@ -134,7 +134,7 @@ class AbstractDao
         $m = new Message();
         $m->id = $result->id;
         $m->form_question_id = $result->form_question_id;
-        $m->team_id = $result->team_id;
+        $m->group_id = $result->team_id;
         $m->text = $result->text;
         $m->image = $result->image;
         $m->source = $result->source;
