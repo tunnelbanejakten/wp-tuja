@@ -85,10 +85,10 @@ $groups = $db_groups->get_all_in_competition($competition->id);
 
     <h3>Specialfunktioner</h3>
     <?php
-    $review_url = add_query_arg(array(
+    $messages_url = add_query_arg(array(
         'tuja_competition' => $competition->id,
-        'tuja_view' => 'import_messages'
+        'tuja_view' => 'messages'
     ));
-    printf('<p><a href="%s">Importera SMS och MMS</a></p>', $review_url);
+    printf('<p><a href="%s">Meddelanden, ex. MMS</a></p>', $messages_url);
     ?>
 </form>

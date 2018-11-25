@@ -61,4 +61,11 @@ class MessageDao extends AbstractDao
             'SELECT * FROM message WHERE team_id = %d ORDER BY date_received',
             $group_id);
     }
+
+    function get_without_group()
+    {
+        return $this->get_objects(
+            'data\store\AbstractDao::to_message',
+            'SELECT * FROM message WHERE team_id IS NULL ORDER BY date_received');
+    }
 }
