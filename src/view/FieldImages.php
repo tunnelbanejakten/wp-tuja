@@ -93,6 +93,32 @@ class FieldImages extends Field
         return $answer;
     }
 
+    public function render_admin_preview($answer)
+    {
+        $image = FieldImagesImage::from_string($answer);
+        if (empty($image->image_id)) {
+            return '';
+        }
+        return sprintf('' .
+            '<div class="tuja-image tuja-image-existing">' .
+            '<div class="tuja-image-preview">%s</div>' .
+            '<div class="tuja-image-options">%s%s</div>' .
+            '</div>',
+            $this->render_image(uniqid(), $image->image_id),
+            $this->get_option_label($image->option) ?: '',
+            !empty($image->comment) ? sprintf('<br><em>"%s"</em>', $image->comment) : '');
+    }
+
+
+    private function get_option_label($option_key)
+    {
+        $matches = array_filter($this->options, function ($value) use ($option_key) {
+            return $option_key == md5($value);
+        });
+        // Use reset() to return first element in array (array_filter preserves index so the first element may not be the 0th)
+        return reset($matches);
+    }
+
 
     public function render($field_name)
     {
@@ -104,7 +130,6 @@ class FieldImages extends Field
             is_array($this->value) ? $this->render_images_list($field_name) : '',
             $this->render_image_upload("$field_name-NEW"));
     }
-
 
     private function render_images_list($field_name)
     {
