@@ -58,6 +58,7 @@ class MessageImporter
         $message->image = join(',', $image_ids);
         $message->source = 'mms';
         $message->source_message_id = sprintf('%s,%s', $sender, $timestamp->format(DateTime::ISO8601));
+        $message->date_received = $timestamp;
 
         $res = $this->message_dao->create($message);
 

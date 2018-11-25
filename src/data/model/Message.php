@@ -13,6 +13,8 @@ class Message
     public $image;
     public $source;
     public $source_message_id;
+    public $date_received;
+    public $date_imported;
 
     public function validate()
     {

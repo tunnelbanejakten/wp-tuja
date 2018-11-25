@@ -22,10 +22,12 @@ class MessageDao extends AbstractDao
               text,
               image,
               source,
-              source_message_id
+              source_message_id,
+              date_received
             ) VALUES (
                 IF(%d=0, NULL, %d),
                 IF(%d=0, NULL, %d),
+                %s,
                 %s,
                 %s,
                 %s,
@@ -40,7 +42,8 @@ class MessageDao extends AbstractDao
             $message->text,
             $message->image,
             $message->source,
-            $message->source_message_id
+            $message->source_message_id,
+            $message->date_received != null ? $message->date_received->format('Y-m-d H:i:s') : null
         ));
     }
 
@@ -48,7 +51,14 @@ class MessageDao extends AbstractDao
     {
         return $this->get_objects(
             'data\store\AbstractDao::to_message',
-            'SELECT * FROM message ORDER BY id');
+            'SELECT * FROM message ORDER BY date_received');
     }
 
+    function get_by_group($group_id)
+    {
+        return $this->get_objects(
+            'data\store\AbstractDao::to_message',
+            'SELECT * FROM message WHERE team_id = %d ORDER BY date_received',
+            $group_id);
+    }
 }

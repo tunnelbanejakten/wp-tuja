@@ -110,4 +110,13 @@ $points_overrides_per_question = array_combine(array_map(function ($points) {
         </tbody>
     </table>
     <button class="button button-primary" type="submit" name="tuja_points_action" value="save">Spara</button>
+
+    <h3>Meddelanden</h3>
+    <?php
+    // TODO: Show messages nicer
+    $messages = $db_message->get_by_group($group->id);
+    foreach ($messages as $message) {
+        printf('<p>%s: %s %s</p>', $message->date_received->format(DateTime::ISO8601), $message->image, $message->text);
+    }
+    ?>
 </form>

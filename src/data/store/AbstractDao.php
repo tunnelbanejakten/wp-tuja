@@ -2,6 +2,7 @@
 
 namespace data\store;
 
+use DateTime;
 use tuja\data\model\Competition;
 use tuja\data\model\Form;
 use tuja\data\model\Group;
@@ -138,6 +139,8 @@ class AbstractDao
         $m->image = $result->image;
         $m->source = $result->source;
         $m->source_message_id = $result->source_message_id;
+        $m->date_received = new DateTime($result->date_received);
+        $m->date_imported = new DateTime($result->date_imported);
         return $m;
     }
 
