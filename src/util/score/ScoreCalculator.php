@@ -45,7 +45,6 @@ class ScoreCalculator
             if (isset($answers)) {
                 $scores[$question->id] = $question->score($answers);
             }
-            // TODO: Is this date comparison (the "created" field) reliable? It seems to be working but is PHP just doing a simple string comparison of MySQL timestamps? Convert to DateTime object first?
             if ($consider_overrides && isset($points_overrides[$question->id]) && $points_overrides[$question->id]->created > $responses[$question->id]->created) {
                 $scores[$question->id] = $points_overrides[$question->id]->points;
             }

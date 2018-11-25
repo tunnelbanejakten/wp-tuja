@@ -114,7 +114,7 @@ class AbstractDao
         $r->form_question_id = $result->form_question_id;
         $r->group_id = $result->team_id;
         $r->answers = json_decode($result->answer);
-        $r->created = $result->created;
+        $r->created = new DateTime($result->created);
         $r->is_reviewed = $result->is_reviewed;
         return $r;
     }
@@ -125,7 +125,7 @@ class AbstractDao
         $p->form_question_id = $result->form_question_id;
         $p->group_id = $result->team_id;
         $p->points = $result->points;
-        $p->created = $result->created;
+        $p->created = new DateTime($result->created);
         return $p;
     }
 
