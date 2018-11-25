@@ -24,13 +24,16 @@ function tuja_get_mms_messages_to_import()
 
     $importer = new SmsBackupRestoreXmlFileProcessor('.', $date_limit);
 
-    $mms_messages = null;
-    if (!empty($_POST['tuja_import_url'])) {
-        $mms_messages = $importer->process($_POST['tuja_import_url']);
-    } elseif (file_exists($_FILES['tuja_import_file']['tmp_name'])) {
-        $mms_messages = $importer->process($_FILES['tuja_import_file']['tmp_name']);
+    if (file_exists($_FILES['tuja_import_file']['tmp_name'])) {
+        return $importer->process($_FILES['tuja_import_file']['tmp_name']);
+    } else {
+        $import_url = $_POST['tuja_import_url'];
+        if (!empty($import_url)) {
+            update_option('tuja_message_import_url', $import_url);
+            return $importer->process($import_url);
+        }
     }
-    return $mms_messages;
+    return null;
 }
 
 ?>
@@ -119,7 +122,12 @@ if ($_POST['tuja_points_action'] === 'import') {
 
         <p>Alternativ 2: Fil som finns på nätet</p>
         <div>
-            <input type="text" name="tuja_import_url" class="text" placeholder="http://" size="100">
+            <input type="text"
+                   name="tuja_import_url"
+                   class="text"
+                   placeholder="http://"
+                   size="100"
+                   value="<?= get_option('tuja_message_import_url', '') ?>">
         </div>
 
         <p><strong>Inställningar</strong></p>
