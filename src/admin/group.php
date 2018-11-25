@@ -126,13 +126,12 @@ $points_overrides_per_question = array_combine(array_map(function ($points) {
         // TODO: Show messages nicer (also in messages.php)
         $messages = $db_message->get_by_group($group->id);
         foreach ($messages as $message) {
-            $image_ids = explode(',', $message->image);
-            if (is_array($image_ids)) {
+            if (is_array($message->image_ids)) {
                 $field = new FieldImages([]);
                 // For each user-provided answer, render the photo description and a photo thumbnail:
                 $images = array_map(function ($image_id) use ($field) {
                     return $field->render_admin_preview("$image_id,,");
-                }, $image_ids);
+                }, $message->image_ids);
             }
 
             printf('<tr><td valign="top">%s</td><td valign="top">%s</td><td valign="top">%s</td></tr>', $message->date_received->format(DateTime::ISO8601), join('', $images), $message->text);

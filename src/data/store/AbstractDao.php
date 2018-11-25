@@ -136,7 +136,7 @@ class AbstractDao
         $m->form_question_id = $result->form_question_id;
         $m->group_id = $result->team_id;
         $m->text = $result->text;
-        $m->image = $result->image;
+        $m->image_ids = explode(',', $result->image);
         $m->source = $result->source;
         $m->source_message_id = $result->source_message_id;
         $m->date_received = new DateTime($result->date_received);

@@ -47,7 +47,7 @@ class MessageImporter
         $message->form_question_id = null;
         $message->group_id = $group_id;
         $message->text = $text;
-        $message->image = join(',', $image_ids);
+        $message->image_ids = $image_ids;
         $message->source = self::SOURCE;
         $message->source_message_id = $message_id;
         $message->date_received = $timestamp;

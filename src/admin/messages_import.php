@@ -69,7 +69,9 @@ if ($_POST['tuja_points_action'] === 'import') {
 
             try {
                 $message = $importer->import($text_value, $image_value, $mms->from, $mms->date);
-                printf('<p>Importerade bilderna %s med id=%s</p>', $message->image, $message->source_message_id);
+                printf('<p>Importerade bilderna %s med id=%s</p>',
+                    join(', ', $message->image_ids),
+                    $message->source_message_id);
             } catch (Exception $e) {
                 printf('<p>Kunde inte importera: %s</p>', $e->getMessage());
             }

@@ -33,14 +33,13 @@ class MessageDao extends AbstractDao
                 %s,
                 %s
             )';
-//        var_dump($message);
         return $this->wpdb->query($this->wpdb->prepare($query_template,
             $message->form_question_id,
             $message->form_question_id,
             $message->group_id,
             $message->group_id,
             $message->text,
-            $message->image,
+            join(',', $message->image_ids),
             $message->source,
             $message->source_message_id,
             $message->date_received != null ? $message->date_received->format('Y-m-d H:i:s') : null

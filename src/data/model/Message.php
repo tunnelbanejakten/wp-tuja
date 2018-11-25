@@ -9,7 +9,7 @@ class Message
     public $form_question_id;
     public $group_id;
     public $text;
-    public $image; // TODO: This is actually a comma-separated list of file hashes
+    public $image_ids;
     public $source;
     public $source_message_id;
     public $date_received;
