@@ -20,7 +20,11 @@ $competition_url = add_query_arg(array(
 
 function tuja_get_mms_messages_to_import()
 {
-    $date_limit = $_POST['tuja_import_onlyrecent'] === 'yes' ? new DateTime('yesterday') : null;
+    $only_recent = $_POST['tuja_import_onlyrecent'] === 'yes';
+
+    update_option('tuja_message_import_only_recent', $only_recent ? 'yes' : null);
+
+    $date_limit = $only_recent ? new DateTime('yesterday') : null;
 
     $importer = new SmsBackupRestoreXmlFileProcessor('.', $date_limit);
 
@@ -88,8 +92,7 @@ if ($_POST['tuja_points_action'] === 'import') {
         <ul>
             <li>Du har appen
                 <a href="https://play.google.com/store/apps/details?id=com.riteshsahu.SMSBackupRestore&hl=en">
-                    SMS Backup &amp; Restore
-                </a>
+                    SMS Backup &amp; Restore</a>
                 på din telefon. Denna app finns enbart för Android.
             </li>
             <li>Inställningar i appen:
@@ -133,11 +136,16 @@ if ($_POST['tuja_points_action'] === 'import') {
         <p><strong>Inställningar</strong></p>
 
         <div>
-            <input type="checkbox" value="yes" name="tuja_import_onlyrecent" id="tuja-import-onlyrecent">
+            <input type="checkbox"
+                   value="yes"
+                   name="tuja_import_onlyrecent"
+                <?= get_option('tuja_message_import_only_recent', '') == 'yes' ? 'checked="checked"' : '' ?>
+                   id="tuja-import-onlyrecent">
             <label for="tuja-import-onlyrecent">Importera bara meddelanden från idag och igår</label>
         </div>
 
-        <p>Okej, nu är det dags att importera:</p>
+        <br>
+
         <div>
             <button class="button button-primary" type="submit" name="tuja_points_action" value="import">
                 Importera
