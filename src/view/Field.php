@@ -26,7 +26,6 @@ class Field
     static function create(Question $question)
     {
         switch ($question->type) {
-            // TODO: Rename "dropdown" to "single" or "radio"
             case 'pick_one':
                 $field = new FieldChoices($question->possible_answers ?: $question->correct_answers, false);
                 break;

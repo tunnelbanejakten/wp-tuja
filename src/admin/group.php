@@ -134,7 +134,14 @@ $points_overrides_per_question = array_combine(array_map(function ($points) {
                 }, $message->image_ids);
             }
 
-            printf('<tr><td valign="top">%s</td><td valign="top">%s</td><td valign="top">%s</td></tr>', $message->date_received->format(DateTime::ISO8601), join('', $images), $message->text);
+            printf('<tr>' .
+                '<td valign="top">%s</td>' .
+                '<td valign="top">%s</td>' .
+                '<td valign="top">%s</td>' .
+                '</tr>',
+                $message->date_received->format(DateTime::ISO8601),
+                join('', $images),
+                $message->text);
         }
         ?>
         </tbody>
