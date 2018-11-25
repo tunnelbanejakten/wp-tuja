@@ -12,6 +12,7 @@ if (!$competition) {
     return;
 }
 
+// TODO: Make helper function for generating URLs
 $competition_url = add_query_arg(array(
     'tuja_competition' => $competition->id,
     'tuja_view' => 'competition'
@@ -31,11 +32,12 @@ function tuja_get_mms_messages_to_import()
     }
     return $mms_messages;
 }
+
 ?>
 
-<h1>Tunnelbanejakten</h1>
-<h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h2>
-<h2>Importera SMS och MMS</h2>
+    <h1>Tunnelbanejakten</h1>
+    <h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h2>
+    <h2>Importera SMS och MMS</h2>
 
 <?php
 if ($_POST['tuja_points_action'] === 'import') {
@@ -47,7 +49,9 @@ if ($_POST['tuja_points_action'] === 'import') {
         $person_dao = new PersonDao($wpdb);
         $message_dao = new MessageDao($wpdb);
 
-        $importer = new MessageImporter($person_dao, $message_dao, $competition->id);
+        $importer = new MessageImporter(
+            $message_dao,
+            $person_dao->get_all_in_competition($competition->id));
 
         foreach ($mms_messages as $mms) {
             $text_value = join('. ', $mms->texts);
@@ -63,18 +67,25 @@ if ($_POST['tuja_points_action'] === 'import') {
                 return $carry;
             }, []);
 
-            $importer->import($text_value, $image_value, $mms->from, $mms->date);
+            try {
+                $message = $importer->import($text_value, $image_value, $mms->from, $mms->date);
+                printf('<p>Importerade bilderna %s med id=%s</p>', $message->image, $message->source_message_id);
+            } catch (Exception $e) {
+                printf('<p>Kunde inte importera: %s</p>', $e->getMessage());
+            }
         }
     }
 } else {
-    $forms = $db_form->get_all_in_competition($competition->id);
-?>
+    ?>
     <form method="post" action="<?= add_query_arg() ?>" enctype="multipart/form-data">
 
         <h3>Krav för att kunna importera SMS och MMS:</h3>
         <ul>
-            <li>Du har appen <a href="https://play.google.com/store/apps/details?id=com.riteshsahu.SMSBackupRestore&hl=en">SMS
-                    Backup &amp; Restore</a> på din telefon. Denna app finns enbart för Android.
+            <li>Du har appen
+                <a href="https://play.google.com/store/apps/details?id=com.riteshsahu.SMSBackupRestore&hl=en">
+                    SMS Backup &amp; Restore
+                </a>
+                på din telefon. Denna app finns enbart för Android.
             </li>
             <li>Inställningar i appen:
                 <ul>
@@ -90,9 +101,9 @@ if ($_POST['tuja_points_action'] === 'import') {
         <p><strong>Skapa fil</strong></p>
         <ol>
             <li>Starta appen.</li>
-            <li>Tryck på <em>Säkerhetskopiera nu</em> så att säkerhetkopian antingen sparas som en fil i din mobiltelefon
-                eller sparas som en publik fil på webben (dvs. en fil som går att ladda ner utan att behöva logga in
-                någonstans).
+            <li>Tryck på <em>Säkerhetskopiera nu</em> så att säkerhetkopian antingen sparas som en fil i din
+                mobiltelefon eller sparas som en publik fil på webben (dvs. en fil som går att ladda ner utan
+                att behöva logga in någonstans).
             </li>
         </ol>
 
@@ -112,15 +123,17 @@ if ($_POST['tuja_points_action'] === 'import') {
         <p><strong>Inställningar</strong></p>
 
         <div>
-            <input type="checkbox" value="yes" name="tuja_import_onlyrecent" id="tuja-import-onlyrecent"><label
-                    for="tuja-import-onlyrecent">Importera bara meddelanden från idag och igår</label>
+            <input type="checkbox" value="yes" name="tuja_import_onlyrecent" id="tuja-import-onlyrecent">
+            <label for="tuja-import-onlyrecent">Importera bara meddelanden från idag och igår</label>
         </div>
 
         <p>Okej, nu är det dags att importera:</p>
         <div>
-            <button class="button button-primary" type="submit" name="tuja_points_action" value="import">Importera</button>
+            <button class="button button-primary" type="submit" name="tuja_points_action" value="import">
+                Importera
+            </button>
         </div>
     </form>
-<?php
+    <?php
 }
 ?>

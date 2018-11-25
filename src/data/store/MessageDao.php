@@ -68,4 +68,14 @@ class MessageDao extends AbstractDao
             'data\store\AbstractDao::to_message',
             'SELECT * FROM message WHERE team_id IS NULL ORDER BY date_received');
     }
+
+    function exists($source, $source_message_id)
+    {
+        $count = $this->wpdb->get_var(
+            $this->wpdb->prepare(
+                'SELECT COUNT(*) FROM message WHERE source = %d AND source_message_id = %s',
+                $source,
+                $source_message_id));
+        return $count > 0;
+    }
 }

@@ -80,7 +80,9 @@ class PersonDao extends AbstractDao
     {
         return $this->get_objects(
             'data\store\AbstractDao::to_person',
-            'SELECT p.* FROM person AS p INNER JOIN team AS t ON p.team_id = t.id WHERE t.competition_id = %d',
+            'SELECT p.* '.
+            'FROM person AS p INNER JOIN team AS t ON p.team_id = t.id '.
+            'WHERE t.competition_id = %d',
             $competition_id);
     }
 

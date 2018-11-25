@@ -32,7 +32,7 @@ printf('<p><a href="%s">Importera meddelanden</a></p>', $import_url);
     <tbody>
 
     <?php
-    // TODO: Show messages nicer (alsol in group.php)
+    // TODO: Show messages nicer (also in group.php)
     $messages = $db_message->get_without_group();
     foreach ($messages as $message) {
         $image_ids = explode(',', $message->image);
@@ -44,7 +44,16 @@ printf('<p><a href="%s">Importera meddelanden</a></p>', $import_url);
             }, $image_ids);
         }
 
-        printf('<tr><td valign="top">%s</td><td valign="top">%s</td><td valign="top">%s</td></tr>', $message->date_received->format(DateTime::ISO8601), join('', $images), $message->text);
+        printf('<tr>' .
+            '<td valign="top">%s</td>' .
+            '<td valign="top">%s</td>' .
+            '<td valign="top">%s</td>' .
+            '<td valign="top">%s</td>' .
+            '</tr>',
+            $message->date_received->format(DateTime::ISO8601),
+            join('', $images),
+            $message->text,
+            $message->source_message_id);
     }
     ?>
     </tbody>
