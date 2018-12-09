@@ -11,7 +11,7 @@ class Group
     public $random_id;
     public $competition_id;
     public $name;
-    public $type;
+    public $category_id;
 
     public function validate()
     {
