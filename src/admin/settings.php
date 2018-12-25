@@ -24,7 +24,7 @@ function tuja_print_option_row($label, $option_name)
 }
 ?>
 <form method="post" action="<?= add_query_arg() ?>">
-    <h1>Tunnelbanejakten</h1>
+    <h1>Generella inställningar</h1>
 
     <h2 class="title">ReCAPTCHA</h2>
 
