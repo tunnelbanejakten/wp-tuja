@@ -1,7 +1,7 @@
 
 .tuja-admin-question {
     margin: 1em 0;
-    padding: 1em 0;
+    padding: 1em 0 0 0;
     border-top: 1px solid #aaa;
 }
 
@@ -32,6 +32,10 @@
     border-bottom: 1px solid #ddd;
 }
 
+.tuja-admin-question-preview input {
+    width: auto;
+}
+
 .tuja-admin-question-properties {
     display: flex;
     flex-wrap: wrap;
@@ -39,6 +43,9 @@
 .tuja-admin-question-property {
     width: 30em;
     margin: 0 1em 1em 0;
+}
+.tuja-admin-question-property.tuja-admin-question-short {
+    width: 19.33em;
 }
 .tuja-admin-question-preview {
     width: 50%;
