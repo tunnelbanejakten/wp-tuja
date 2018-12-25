@@ -12,6 +12,7 @@ include 'util/score/ScoreCalculator.php';
 include 'util/messaging/MessageSender.php';
 include 'util/Template.php';
 include 'util/ImageManager.php';
+include 'util/DateUtils.php';
 include 'view/FieldImages.php';
 include 'view/FieldText.php';
 include 'view/FieldChoices.php';

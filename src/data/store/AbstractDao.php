@@ -3,6 +3,7 @@
 namespace data\store;
 
 use DateTime;
+use DateTimeZone;
 use tuja\data\model\Competition;
 use tuja\data\model\Form;
 use tuja\data\model\Group;
@@ -43,27 +44,6 @@ class AbstractDao
     }
 
     // TODO: Move all to_* methods to the corresponding model classes?
-    protected static function to_competition($result): Competition
-    {
-        $c = new Competition();
-        $c->name = $result->name;
-        $c->id = $result->id;
-        $c->random_id = $result->random_id;
-        return $c;
-    }
-
-    protected static function to_form($result): Form
-    {
-        $f = new Form();
-        $f->id = $result->id;
-        $f->competition_id = $result->competition_id;
-        $f->name = $result->name;
-        $f->allow_multiple_responses_per_group = $result->allow_multiple_responses_per_team;
-        $f->accept_responses_from = $result->accept_responses_from;
-        $f->accept_responses_until = $result->accept_responses_until;
-        return $f;
-    }
-
     protected static function to_group($result): Group
     {
         $g = new Group();
@@ -112,7 +92,7 @@ class AbstractDao
         $r->form_question_id = $result->form_question_id;
         $r->group_id = $result->team_id;
         $r->answers = json_decode($result->answer);
-        $r->created = new DateTime($result->created);
+        $r->created = self::from_db_date($result->created_at);
         $r->is_reviewed = $result->is_reviewed;
         return $r;
     }
@@ -123,8 +103,26 @@ class AbstractDao
         $p->form_question_id = $result->form_question_id;
         $p->group_id = $result->team_id;
         $p->points = $result->points;
-        $p->created = new DateTime($result->created);
+        $p->created = self::from_db_date($result->created_at);
         return $p;
+    }
+
+    protected static function to_db_date(DateTime $dateTime = null)
+    {
+        if ($dateTime != null) {
+            return $dateTime->getTimestamp(); // Unix timestamps are always UTC
+        } else {
+            return null;
+        }
+    }
+
+    protected static function from_db_date($dbDate)
+    {
+        if (!empty($dbDate)) {
+            return new DateTime('@' . $dbDate, new DateTimeZone('UTC'));
+        } else {
+            return null;
+        }
     }
 
 }

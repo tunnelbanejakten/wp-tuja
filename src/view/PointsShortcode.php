@@ -239,20 +239,15 @@ class PointsShortcode
 
         $current_optimistic_lock_value = array_reduce($keys, function ($carry, PointsKey $key) use ($current_points) {
             return $this->get_last_saved($carry, $current_points[$key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id]->created);
-        }, 0);
+        }, null);
 
         return $current_optimistic_lock_value;
     }
 
-    private function get_last_saved($last_saved, $mysql_time_string)
+    private function get_last_saved(DateTime $last_saved = null, DateTime $current_datetime = null)
     {
-        if (isset($mysql_time_string)) {
-            // TODO: Add helper function for dealing with MySQL date columns?
-            $date_time = DateTime::createFromFormat('Y-m-d H:i:s', $mysql_time_string);
-            if ($date_time !== false) {
-                $timestamp = $date_time->getTimestamp();
-                return max($last_saved, $timestamp);
-            }
+        if ($last_saved != null && $current_datetime != null) {
+            return max($last_saved, $current_datetime);
         }
         return $last_saved;
     }
