@@ -15,13 +15,14 @@ class FieldText extends Field
     {
         $render_id = $field_name ?: uniqid();
         $hint = isset($this->hint) ? sprintf('<br><span class="tuja-question-hint">%s</span>', $this->hint) : '';
-        return sprintf('<div class="tuja-field"><label for="%s">%s%s</label><input type="text" id="%s" name="%s" value="%s" class="tuja-%s" /></div>',
+        return sprintf('<div class="tuja-field"><label for="%s">%s%s</label><input type="text" id="%s" name="%s" value="%s" class="tuja-%s" %s/></div>',
             $render_id,
             $this->label,
             $hint,
             $render_id,
             $field_name ?: $this->key,
             htmlspecialchars(isset($_POST[$field_name]) ? $_POST[$field_name] : $this->value[0]),
-            strtolower((new \ReflectionClass($this))->getShortName()));
+            strtolower((new \ReflectionClass($this))->getShortName()),
+            $this->read_only ? ' disabled="disabled"' : '');
     }
 }

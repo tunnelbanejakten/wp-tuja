@@ -31,6 +31,10 @@ class CreateGroupShortcode extends AbstractGroupShortcode
 
     public function render(): String
     {
+        if (!$this->is_create_allowed($this->competition_id)) {
+            return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Anmälan är tyvärr stängd.');
+        }
+
         if ($_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
             try {
                 $recaptcha_secret = get_option('tuja_recaptcha_sitesecret');

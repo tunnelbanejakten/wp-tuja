@@ -2,8 +2,10 @@
 
 namespace view;
 
+use data\store\CompetitionDao;
 use data\store\GroupDao;
 use data\store\PersonDao;
+use DateTime;
 use tuja\view\Field;
 
 class AbstractGroupShortcode
@@ -21,19 +23,49 @@ class AbstractGroupShortcode
 
     protected $person_dao;
     protected $group_dao;
+    protected $competition_dao;
 
     public function __construct($wpdb)
     {
         $this->group_dao = new GroupDao($wpdb);
         $this->person_dao = new PersonDao($wpdb);
+        $this->competition_dao = new CompetitionDao($wpdb);
     }
 
-    protected function render_field($question, $field_name, $error_message): string
+    protected function render_field($question, $field_name, $error_message, $read_only = false): string
     {
-        $html_field = Field::create($question)->render($field_name);
+        $field = Field::create($question);
+        $field->read_only = $read_only;
+        $html = $field->render($field_name);
         return sprintf('<div class="tuja-question %s">%s%s</div>',
             !empty($error_message) ? 'tuja-field-error' : '',
-            $html_field,
+            $html,
             !empty($error_message) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $error_message) : '');
+    }
+
+    protected function is_create_allowed($competition_id): bool
+    {
+        $form = $this->competition_dao->get($competition_id);
+        $now = new DateTime();
+        if ($form->create_group_start != null && $form->create_group_start > $now) {
+            return false;
+        }
+        if ($form->create_group_end != null && $form->create_group_end < $now) {
+            return false;
+        }
+        return true;
+    }
+
+    protected function is_edit_allowed($competition_id): bool
+    {
+        $form = $this->competition_dao->get($competition_id);
+        $now = new DateTime();
+        if ($form->edit_group_start != null && $form->edit_group_start > $now) {
+            return false;
+        }
+        if ($form->edit_group_end != null && $form->edit_group_end < $now) {
+            return false;
+        }
+        return true;
     }
 }
