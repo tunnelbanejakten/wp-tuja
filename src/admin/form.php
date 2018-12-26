@@ -1,8 +1,8 @@
 <?php
 
-include_once 'AdminUtil.php';
+include_once 'AdminUtils.php';
 
-use admin\AdminUtil;
+use admin\AdminUtils;
 use tuja\data\model\Question;
 use tuja\view\Field;
 use util\DateUtils;
@@ -74,7 +74,7 @@ if ($_POST['tuja_action'] == 'questions_update') {
         $form->submit_response_end = DateUtils::from_date_local_value($_POST['tuja-submit-response-end']);
         $db_form->update($form);
     } catch (Exception $e) {
-        AdminUtil::printException($e);
+        AdminUtils::printException($e);
     }
 } elseif ($_POST['tuja_action'] == 'question_create') {
     $props = new Question();
