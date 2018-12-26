@@ -8,7 +8,7 @@ use tuja\data\model\Person;
 use tuja\data\model\Question;
 
 
-// TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
+// TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix. Throwing exceptions might be preferable.
 class EditGroupShortcode extends AbstractGroupShortcode
 {
     const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
@@ -98,6 +98,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
                 self::ACTION_NAME_SAVE,
                 'Uppdatera anmälan');
         } else {
+            // TODO: Should other error messages also contain email link?
             $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>',
                 sprintf('Du kan inte längre ändra er anmälan. Kontakta <a href="mailto:%s">%s</a> om du behöver ändra något.',
                     get_bloginfo('admin_email'),

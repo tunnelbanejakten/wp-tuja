@@ -58,7 +58,7 @@ var tujaCountdown = (function () {
           parseInt(span.dataset.secondsLeft),
           span.dataset.formatPast,
           span.dataset.formatFuture)
-        setInterval(handler, 1000)
+        setInterval(handler, 1000) // TODO: Updating every second is probably unnecessarily often.
       }
     }
   }

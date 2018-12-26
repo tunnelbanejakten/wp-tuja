@@ -43,7 +43,7 @@ class AbstractDao
         return $results;
     }
 
-    // TODO: Move all to_* methods to the corresponding model classes?
+    // TODO: Move all to_* methods to the corresponding model classes. Already done for FormDao and CompetitionDao.
     protected static function to_group($result): Group
     {
         $g = new Group();

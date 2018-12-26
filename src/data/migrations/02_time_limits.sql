@@ -8,11 +8,6 @@ ALTER TABLE competition
   ADD COLUMN edit_group_start INTEGER,
   ADD COLUMN edit_group_end INTEGER;
 
-# UPDATE competition
-# SET
-#   create_group_start = unix_timestamp(accept_signup_from),
-#   create_group_end   = unix_timestamp(accept_signup_until);
-
 ALTER TABLE competition
   DROP COLUMN accept_signup_from,
   DROP COLUMN accept_signup_until;
@@ -24,11 +19,6 @@ ALTER TABLE competition
 ALTER TABLE form
   ADD COLUMN submit_response_start INTEGER,
   ADD COLUMN submit_response_end INTEGER;
-
-# UPDATE form
-# SET
-#   submit_response_start = unix_timestamp(accept_responses_from),
-#   submit_response_end   = unix_timestamp(accept_responses_until);
 
 ALTER TABLE form
   DROP COLUMN accept_responses_from,
