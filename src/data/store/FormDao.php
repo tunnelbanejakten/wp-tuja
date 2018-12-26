@@ -50,7 +50,7 @@ class FormDao extends AbstractDao
             ));
     }
 
-    function get($id): Form
+    function get($id)
     {
         return $this->get_object(
             function ($row) {

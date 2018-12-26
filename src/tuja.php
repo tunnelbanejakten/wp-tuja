@@ -25,6 +25,7 @@ include 'view/EditGroupShortcode.php';
 include 'view/EditPersonShortcode.php';
 include 'view/CreateGroupShortcode.php';
 include 'view/CreatePersonShortcode.php';
+include 'view/CountdownShortcode.php';
 include 'data/store/AbstractDao.php';
 include 'data/store/CompetitionDao.php';
 include 'data/store/FormDao.php';
@@ -57,10 +58,14 @@ use view\CreateGroupShortcode;
 use view\CreatePersonShortcode;
 use view\EditGroupShortcode;
 use view\EditPersonShortcode;
+use view\FormClosesCountdownShortcode;
+use view\FormOpensCountdownShortcode;
 use view\FormShortcode;
 use view\FormReadonlyShortcode;
 use view\GroupNameShortcode;
 use view\PointsShortcode;
+use view\SignupClosesCountdownShortcode;
+use view\SignupOpensCountdownShortcode;
 
 add_shortcode('tuja_form', 'tuja_form');
 
@@ -193,6 +198,101 @@ function tuja_upload_script()
 }
 
 add_action('wp_enqueue_scripts', 'tuja_upload_script');
+
+function tuja_countdown_script()
+{
+    wp_register_script('tuja-countdown-script', plugins_url('countdown.js', __FILE__));
+}
+
+add_action('wp_enqueue_scripts', 'tuja_countdown_script');
+
+function tuja_signup_opens_countdown_shortcode($atts)
+{
+    global $wpdb;
+
+    $competition_id = $atts['competition'];
+
+    $past_format = $atts['past_format'];
+    if (empty($past_format)) {
+        return '[past_format must be specified]';
+    }
+
+    $future_format = $atts['future_format'];
+    if (empty($future_format)) {
+        return '[future_format must be specified]';
+    }
+
+    $component = new SignupOpensCountdownShortcode($wpdb);
+    return $component->render($competition_id, $past_format, $future_format);
+}
+
+add_shortcode('tuja_signup_opens_countdown', 'tuja_signup_opens_countdown_shortcode');
+
+function tuja_signup_closes_countdown_shortcode($atts)
+{
+    global $wpdb;
+
+    $competition_id = $atts['competition'];
+
+    $past_format = $atts['past_format'];
+    if (empty($past_format)) {
+        return '[past_format must be specified]';
+    }
+
+    $future_format = $atts['future_format'];
+    if (empty($future_format)) {
+        return '[future_format must be specified]';
+    }
+
+    $component = new SignupClosesCountdownShortcode($wpdb);
+    return $component->render($competition_id, $past_format, $future_format);
+}
+
+add_shortcode('tuja_signup_closes_countdown', 'tuja_signup_closes_countdown_shortcode');
+
+function tuja_form_opens_countdown_shortcode($atts)
+{
+    global $wpdb;
+
+    $form_id = $atts['form'];
+
+    $past_format = $atts['past_format'];
+    if (empty($past_format)) {
+        return '[past_format must be specified]';
+    }
+
+    $future_format = $atts['future_format'];
+    if (empty($future_format)) {
+        return '[future_format must be specified]';
+    }
+
+    $component = new FormOpensCountdownShortcode($wpdb);
+    return $component->render($form_id, $past_format, $future_format);
+}
+
+add_shortcode('tuja_form_opens_countdown', 'tuja_form_opens_countdown_shortcode');
+
+function tuja_form_closes_countdown_shortcode($atts)
+{
+    global $wpdb;
+
+    $form_id = $atts['form'];
+
+    $past_format = $atts['past_format'];
+    if (empty($past_format)) {
+        return '[past_format must be specified]';
+    }
+
+    $future_format = $atts['future_format'];
+    if (empty($future_format)) {
+        return '[future_format must be specified]';
+    }
+
+    $component = new FormClosesCountdownShortcode($wpdb);
+    return $component->render($form_id, $past_format, $future_format);
+}
+
+add_shortcode('tuja_form_closes_countdown', 'tuja_form_closes_countdown_shortcode');
 
 function tuja_show_admin_page()
 {

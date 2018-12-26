@@ -110,6 +110,26 @@ Attributes:
 Known issues:
 * See to-do items in source code... 
 
+## tuja_form_opens_countdown and tuja_form_closes_countdown
+
+Features:
+* Displays the "fuzzy time", e.g. "2 minutes" instead of "132 seconds", until the specified form begins/stops accepting submissions.
+
+Attributes:
+* form: The id of the form to check.
+* past_format: Pattern string to use when the time has passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
+* future_format: Pattern string to use when the time has not yet passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
+
+## tuja_signup_opens_countdown and tuja_signup_closes_countdown
+
+Features:
+* Displays the "fuzzy time", e.g. "2 minutes" instead of "132 seconds", until the specified competition begins/stops accepting new group sign-ups.
+
+Attributes:
+* competition: The id of the competition to check.
+* past_format: Pattern string to use when the time has passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
+* future_format: Pattern string to use when the time has not yet passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
+
     
 # To Do
 

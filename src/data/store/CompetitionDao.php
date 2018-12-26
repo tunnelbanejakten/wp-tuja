@@ -52,7 +52,7 @@ class CompetitionDao extends AbstractDao
             ));
     }
 
-    function get($id): Competition
+    function get($id)
     {
         return $this->get_object(
             function ($row) {
