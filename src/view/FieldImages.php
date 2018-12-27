@@ -143,7 +143,7 @@ class FieldImages extends Field
                 $this->render_options_list("$field_name$index", $image->option),
                 $this->render_comment_field("$field_name$index", $image->comment),
                 // TODO: Should removing an image be handled in the same way as removing a group member? The former uses Javascript, the latter regular submit action.
-                sprintf('<div class="tuja-item-buttons"><button type="button" onclick="this.parentNode.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode.parentNode)">Ta bort</button></div>'));
+                !$this->read_only ? sprintf('<div class="tuja-item-buttons"><button type="button" onclick="this.parentNode.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode.parentNode)">Ta bort</button></div>') : '');
         }, array_keys($this->value), array_values($this->value)));
     }
 
@@ -152,7 +152,7 @@ class FieldImages extends Field
         return join(array_map(function ($index, $value) use ($field_name, $option_key) {
             $id = $field_name . '-' . $index;
             $name = $field_name ?: $this->key;
-            return sprintf('<div class="tuja-%s-radiobutton"><input type="radio" name="%s-option" value="%s" class="tuja-%s tuja-%s-shortlist" id="%s" %s/><label for="%s">%s</label></div>',
+            return sprintf('<div class="tuja-%s-radiobutton"><input type="radio" name="%s-option" value="%s" class="tuja-%s tuja-%s-shortlist" id="%s" %s %s/><label for="%s">%s</label></div>',
                 strtolower((new \ReflectionClass($this))->getShortName()),
                 $name,
                 md5($value),
@@ -160,6 +160,7 @@ class FieldImages extends Field
                 strtolower((new \ReflectionClass($this))->getShortName()),
                 $id,
                 $option_key == md5($value) ? ' checked="checked"' : '',
+                $this->read_only ? ' disabled="disabled"' : '',
                 $id,
                 htmlspecialchars($value));
         }, array_keys($this->options), array_values($this->options)));
@@ -167,7 +168,11 @@ class FieldImages extends Field
 
     private function render_comment_field($field_name, $comment)
     {
-        return sprintf('<input type="text" name="%s-comment" value="%s" placeholder="Kommentar">', $field_name, $comment);
+        return sprintf('<input type="text" name="%s-comment" value="%s" placeholder="%s" %s>',
+            $field_name,
+            $comment,
+            $this->read_only ? '' : 'Kommentar',
+            $this->read_only ? ' disabled="disabled"' : '');
     }
 
     private function render_file_upload_field($field_name)

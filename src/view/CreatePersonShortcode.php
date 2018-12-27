@@ -39,6 +39,10 @@ class CreatePersonShortcode extends AbstractGroupShortcode
                 return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
             }
 
+            if (!$this->is_edit_allowed($group->competition_id)) {
+                return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.');
+            }
+
             if ($_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
                 try {
                     $recaptcha_secret = get_option('tuja_recaptcha_sitesecret');

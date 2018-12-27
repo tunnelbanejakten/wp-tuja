@@ -1,7 +1,6 @@
 <form method="post" action="<?= add_query_arg() ?>">
 
-    <h1>Tunnelbanejakten</h1>
-    <h2>Tävlingar</h2>
+    <h1>Tävlingar</h1>
     <?php
     $competitions = $db_competition->get_all();
     foreach ($competitions as $competition) {

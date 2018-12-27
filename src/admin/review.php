@@ -54,8 +54,7 @@ $current_points = array_combine(
 
 ?>
 <form method="post" action="<?= add_query_arg() ?>">
-    <h1>Tunnelbanejakten</h1>
-    <h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h2>
+    <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h1>
 
     <?php
     if (empty($responses)) {

@@ -13,6 +13,7 @@ class Field
     public $label;
     public $hint;
     public $submit_on_change;
+    public $read_only;
 
     function __construct()
     {
@@ -33,7 +34,7 @@ class Field
                 $field = new FieldChoices($question->possible_answers ?: $question->correct_answers, true);
                 break;
             case 'images':
-                $field = new FieldImages($question->possible_answers ?: $question->correct_answers, true);
+                $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
                 break;
             default:
                 $field = new FieldText();

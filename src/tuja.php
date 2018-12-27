@@ -14,6 +14,7 @@ include 'util/messaging/MessageSender.php';
 include 'util/Template.php';
 include 'util/SmsBackupRestoreXmlFileProcessor.php';
 include 'util/ImageManager.php';
+include 'util/DateUtils.php';
 include 'util/MessageImporter.php';
 include 'util/Phone.php';
 include 'view/FieldImages.php';
@@ -28,6 +29,7 @@ include 'view/EditGroupShortcode.php';
 include 'view/EditPersonShortcode.php';
 include 'view/CreateGroupShortcode.php';
 include 'view/CreatePersonShortcode.php';
+include 'view/CountdownShortcode.php';
 include 'data/store/AbstractDao.php';
 include 'data/store/CompetitionDao.php';
 include 'data/store/FormDao.php';
@@ -61,12 +63,13 @@ use data\store\QuestionDao;
 use data\store\ResponseDao;
 use tuja\data\model\Competition;
 use tuja\util\Id;
+use view\CountdownShortcode;
 use view\CreateGroupShortcode;
 use view\CreatePersonShortcode;
 use view\EditGroupShortcode;
 use view\EditPersonShortcode;
-use view\FormShortcode;
 use view\FormReadonlyShortcode;
+use view\FormShortcode;
 use view\GroupNameShortcode;
 use view\PointsShortcode;
 
@@ -203,6 +206,41 @@ function tuja_upload_script()
 }
 
 add_action('wp_enqueue_scripts', 'tuja_upload_script');
+
+function tuja_countdown_script()
+{
+    wp_register_script('tuja-countdown-script', plugins_url('countdown.js', __FILE__));
+}
+
+add_action('wp_enqueue_scripts', 'tuja_countdown_script');
+
+function tuja_signup_opens_countdown_shortcode($atts)
+{
+    return CountdownShortcode::signup_opens($atts);
+}
+
+add_shortcode('tuja_signup_opens_countdown', 'tuja_signup_opens_countdown_shortcode');
+
+function tuja_signup_closes_countdown_shortcode($atts)
+{
+    return CountdownShortcode::signup_closes($atts);
+}
+
+add_shortcode('tuja_signup_closes_countdown', 'tuja_signup_closes_countdown_shortcode');
+
+function tuja_form_opens_countdown_shortcode($atts)
+{
+    return CountdownShortcode::submit_form_response_opens($atts);
+}
+
+add_shortcode('tuja_form_opens_countdown', 'tuja_form_opens_countdown_shortcode');
+
+function tuja_form_closes_countdown_shortcode($atts)
+{
+    return CountdownShortcode::submit_form_response_closes($atts);
+}
+
+add_shortcode('tuja_form_closes_countdown', 'tuja_form_closes_countdown_shortcode');
 
 function tuja_show_admin_page()
 {

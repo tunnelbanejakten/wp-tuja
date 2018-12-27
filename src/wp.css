@@ -84,3 +84,10 @@
 .tuja-image.tuja-image-existing {
     margin: 0 0 0.5em 0;
 }
+
+.tuja-question input[disabled] {
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+}

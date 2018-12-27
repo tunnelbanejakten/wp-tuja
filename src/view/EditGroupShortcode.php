@@ -8,7 +8,7 @@ use tuja\data\model\Person;
 use tuja\data\model\Question;
 
 
-// TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
+// TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix. Throwing exceptions might be preferable.
 class EditGroupShortcode extends AbstractGroupShortcode
 {
     const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
@@ -31,24 +31,34 @@ class EditGroupShortcode extends AbstractGroupShortcode
                 return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
             }
 
+            $is_read_only = !$this->is_edit_allowed($group->competition_id);
+            $errors = array();
+
             if (substr($_POST[self::ACTION_BUTTON_NAME], 0, strlen(self::ACTION_NAME_DELETE_PERSON_PREFIX)) == self::ACTION_NAME_DELETE_PERSON_PREFIX) {
-                try {
-                    $person_to_delete = substr($_POST[self::ACTION_BUTTON_NAME], strlen(self::ACTION_NAME_DELETE_PERSON_PREFIX));
-                    $this->delete_person($person_to_delete);
-                } catch (Exception $e) {
-                    return $this->render_update_form($group, array('__' => $e->getMessage()));
+                if (!$is_read_only) {
+                    try {
+                        $person_to_delete = substr($_POST[self::ACTION_BUTTON_NAME], strlen(self::ACTION_NAME_DELETE_PERSON_PREFIX));
+                        $this->delete_person($person_to_delete);
+                    } catch (Exception $e) {
+                        $errors = array('__' => $e->getMessage());
+                    }
+                } else {
+                    $errors = array('__' => 'Tyvärr så kan anmälningar inte ändras nu.');
                 }
             } elseif ($_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
-                $errors = $this->update_group($group);
-                return $this->render_update_form($group, $errors);
+                if (!$is_read_only) {
+                    $errors = $this->update_group($group);
+                } else {
+                    $errors = array('__' => 'Tyvärr så kan anmälningar inte ändras nu.');
+                }
             }
-            return $this->render_update_form($group);
+            return $this->render_update_form($group, $errors, $is_read_only);
         } else {
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
         }
     }
 
-    private function render_update_form($group, $errors = array()): string
+    private function render_update_form($group, $errors = array(), $read_only = false): string
     {
         $people = $this->person_dao->get_all_in_group($group->id);
 
@@ -61,7 +71,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $html_sections[] = sprintf('<h3>Laget</h3>');
 
         $group_name_question = Question::text('Vad heter ert lag?', null, $group->name);
-        $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors['name']);
+        $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors['name'], $read_only);
 
         $categories = $this->get_categories($group->competition_id);
 
@@ -79,21 +89,34 @@ class EditGroupShortcode extends AbstractGroupShortcode
             'Välj den som de flesta av deltagarna tillhör.',
             $current_group_category_name
         );
-        $html_sections[] = $this->render_field($group_category_question, self::FIELD_GROUP_AGE, $errors['age']);
+        $html_sections[] = $this->render_field($group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only);
 
         if (is_array($people)) {
             foreach ($people as $index => $person) {
-                $html_sections[] = $this->render_person_form($person, $index + 1, $errors);
+                $html_sections[] = $this->render_person_form($person, $index + 1, $errors, $read_only);
             }
         }
-        $html_sections[] = $this->render_person_form(new Person(), -1, $errors);
+        if (!$read_only) {
+            $html_sections[] = $this->render_person_form(new Person(), -1, $errors, $read_only);
+        }
 
-        $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Uppdatera anmälan');
+        if (!$read_only) {
+            $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>',
+                self::ACTION_BUTTON_NAME,
+                self::ACTION_NAME_SAVE,
+                'Uppdatera anmälan');
+        } else {
+            // TODO: Should other error messages also contain email link?
+            $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>',
+                sprintf('Du kan inte längre ändra er anmälan. Kontakta <a href="mailto:%s">%s</a> om du behöver ändra något.',
+                    get_bloginfo('admin_email'),
+                    get_bloginfo('admin_email')));
+        }
 
         return sprintf('<form method="post">%s</form>', join($html_sections));
     }
 
-    private function render_person_form($person, $number, $errors = array()): string
+    private function render_person_form($person, $number, $errors = array(), $read_only = false): string
     {
         $html_sections = [];
         if (isset($person->id)) {
@@ -106,16 +129,20 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $random_id = $person->random_id ?: '';
 
         $person_name_question = Question::text('Namn', null, $person->name);
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME . '__' . $random_id, $errors[$random_id . '__name']);
+        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME . '__' . $random_id, $errors[$random_id . '__name'], $read_only);
 
         $person_name_question = Question::text('E-postadress', null, $person->email);
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, $errors[$random_id . '__email']);
+        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, $errors[$random_id . '__email'], $read_only);
 
         $person_name_question = Question::text('Telefonnummer', null, $person->phone);
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, $errors[$random_id . '__phone']);
+        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, $errors[$random_id . '__phone'], $read_only);
 
-        if (isset($person->id)) {
-            $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="submit" name="%s" value="%s%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_DELETE_PERSON_PREFIX, $random_id, 'Ta bort');
+        if (isset($person->id) && !$read_only) {
+            $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="submit" name="%s" value="%s%s">%s</button></div>',
+                self::ACTION_BUTTON_NAME,
+                self::ACTION_NAME_DELETE_PERSON_PREFIX,
+                $random_id,
+                'Ta bort');
         }
 
         return sprintf('<div class="tuja-signup-person">%s</div>', join($html_sections));

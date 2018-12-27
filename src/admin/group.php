@@ -44,8 +44,7 @@ $points_overrides_per_question = array_combine(array_map(function ($points) {
 }, $points_overrides), array_values($points_overrides));
 ?>
 <form method="post" action="<?= add_query_arg() ?>">
-    <h1>Tunnelbanejakten</h1>
-    <h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h2>
+    <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h1>
     <h2>Grupp <?= htmlspecialchars($group->name) ?></h2>
 
     <p><strong>Totalt <?= array_sum($calculated_scores_final) ?> poäng.</strong></p>

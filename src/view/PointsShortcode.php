@@ -250,22 +250,19 @@ class PointsShortcode
             }, $current_points),
             array_values($current_points));
 
-        $current_optimistic_lock_value = array_reduce($keys, function ($carry, $key) use ($current_points) {
-            return $this->get_latest_date($carry, $current_points[$key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id]->created);
-        }, 0);
+        $current_optimistic_lock_value = array_reduce($keys, function ($carry, PointsKey $key) use ($current_points) {
+            return $this->get_last_saved($carry, $current_points[$key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id]->created);
+        }, null);
 
         return $current_optimistic_lock_value;
     }
 
-    private function get_latest_date($ref_timestamp, $datetime)
+    private function get_last_saved(DateTime $last_saved = null, DateTime $current_datetime = null)
     {
-        if (isset($datetime)) {
-            if ($datetime !== false) {
-                $timestamp = $datetime->getTimestamp();
-                return max($ref_timestamp, $timestamp);
-            }
+        if ($last_saved != null && $current_datetime != null) {
+            return max($last_saved, $current_datetime);
         }
-        return $ref_timestamp;
+        return $last_saved;
     }
 
     private function check_optimistic_lock($form_values)
