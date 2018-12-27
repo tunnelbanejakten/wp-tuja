@@ -41,7 +41,6 @@ class EditGroupShortcode extends AbstractGroupShortcode
                     $errors = array('__' => 'Tyvärr så kan anmälningar inte ändras nu.');
                 }
             }
-
             return $this->render_update_form($group, $errors, $is_read_only);
         } else {
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
@@ -90,9 +89,10 @@ class EditGroupShortcode extends AbstractGroupShortcode
                 return $this->render_person_form($person, 0, $errors, $read_only);
             }, $people)));
         }
-        $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="button" name="%s" value="%s" class="tuja-add-person">%s</button></div>', self::ACTION_BUTTON_NAME, 'new_person', 'Lägg till deltagare');
-
-        $html_sections[] = sprintf('<div class="tuja-person-template">%s</div>', $this->render_person_form(new Person(), -1, $errors, $read_only));
+        if (!$read_only) {
+            $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="button" name="%s" value="%s" class="tuja-add-person">%s</button></div>', self::ACTION_BUTTON_NAME, 'new_person', 'Lägg till deltagare');
+            $html_sections[] = sprintf('<div class="tuja-person-template">%s</div>', $this->render_person_form(new Person(), -1, $errors, $read_only));
+        }
 
         if (!$read_only) {
             $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>',
@@ -125,7 +125,13 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $person_name_question = Question::text('Telefonnummer', null, $person->phone);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, $errors[$random_id . '__phone'], $read_only);
 
-        $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="button" name="%s" value="%s%s" class="tuja-delete-person">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_DELETE_PERSON_PREFIX, $random_id, 'Ta bort');
+        if (!$read_only) {
+            $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="button" name="%s" value="%s%s" class="tuja-delete-person">%s</button></div>',
+                self::ACTION_BUTTON_NAME,
+                self::ACTION_NAME_DELETE_PERSON_PREFIX,
+                $random_id,
+                'Ta bort');
+        }
 
         return sprintf('<div class="tuja-signup-person">%s</div>', join($html_sections));
     }

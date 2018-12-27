@@ -4,15 +4,6 @@ var tujaEditGroup = (function () {
   function generateId () {
     // Current timestamp is good enough for the purposes of this function: ensuring each click on Add Person gets an unique id.
     return new Date().getTime()
-
-    /*
-        var RANDOM_CHARS = '0123456789abcdefghijklmnopqrstuvwxyz'
-        var LENGTH = 10
-        return new Array(LENGTH).fill(0).map(function () {
-          // window.crypto would be more secure but Math.random is good enough for now
-          return RANDOM_CHARS.charAt(Math.floor(Math.random() * RANDOM_CHARS.length))
-        }).join('')
-    */
   }
 
   function addPerson ($, event) {

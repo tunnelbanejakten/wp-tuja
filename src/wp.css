@@ -64,23 +64,29 @@
 .tuja-fieldchoices-radiobutton label {
     display: inline-block;
 }
+
 .tuja-fieldchoices-checkbox label {
     display: inline-block;
 }
+
 .tuja-fieldimages .tuja-image {
     display: flex;
     flex-direction: row;
 }
+
 .tuja-fieldimages .tuja-image > div {
     flex: 1;
     margin-right: 1em;
 }
+
 .tuja-fieldimages .tuja-image input[type='file'] {
     width: 100%;
 }
+
 .tuja-image-preview img {
     display: block;
 }
+
 .tuja-image.tuja-image-existing {
     margin: 0 0 0.5em 0;
 }
@@ -91,6 +97,7 @@
     margin: 0;
     color: inherit;
 }
+
 .tuja-person-template {
     display: none;
 }
