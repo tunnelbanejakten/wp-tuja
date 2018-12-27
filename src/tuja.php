@@ -193,6 +193,13 @@ function tuja_upload_script()
 
 add_action('wp_enqueue_scripts', 'tuja_upload_script');
 
+function tuja_editgroup_script()
+{
+    wp_register_script('tuja-editgroup-script', plugins_url('edit-group.js', __FILE__));
+}
+
+add_action('wp_enqueue_scripts', 'tuja_editgroup_script');
+
 function tuja_show_admin_page()
 {
     global $wpdb;

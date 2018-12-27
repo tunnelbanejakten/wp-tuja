@@ -6,7 +6,6 @@ use data\model\ValidationException;
 use Exception;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
-use tuja\data\model\Response;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
@@ -32,14 +31,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
                 return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
             }
 
-            if (substr($_POST[self::ACTION_BUTTON_NAME], 0, strlen(self::ACTION_NAME_DELETE_PERSON_PREFIX)) == self::ACTION_NAME_DELETE_PERSON_PREFIX) {
-                try {
-                    $person_to_delete = substr($_POST[self::ACTION_BUTTON_NAME], strlen(self::ACTION_NAME_DELETE_PERSON_PREFIX));
-                    $this->delete_person($person_to_delete);
-                } catch (Exception $e) {
-                    return $this->render_update_form($group, array('__' => $e->getMessage()));
-                }
-            } elseif ($_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
+            if ($_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
                 $errors = $this->update_group($group);
                 return $this->render_update_form($group, $errors);
             }
@@ -51,6 +43,8 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
     private function render_update_form($group, $errors = array()): string
     {
+        wp_enqueue_script('tuja-editgroup-script');
+
         $people = $this->person_dao->get_all_in_group($group->id);
 
         $html_sections = [];
@@ -74,12 +68,16 @@ class EditGroupShortcode extends AbstractGroupShortcode
             'Välj den som de flesta av deltagarna tillhör.');
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_GROUP_AGE, $errors['age']);
 
+        $html_sections[] = sprintf('<h3>Deltagarna</h3>');
+
         if (is_array($people)) {
-            foreach ($people as $index => $person) {
-                $html_sections[] = $this->render_person_form($person, $index + 1, $errors);
-            }
+            $html_sections[] = sprintf('<div class="tuja-people-existing">%s</div>', join(array_map(function ($person) use ($errors) {
+                return $this->render_person_form($person, 0, $errors);
+            }, $people)));
         }
-        $html_sections[] = $this->render_person_form(new Person(), -1, $errors);
+        $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="button" name="%s" value="%s" class="tuja-add-person">%s</button></div>', self::ACTION_BUTTON_NAME, 'new_person', 'Lägg till deltagare');
+
+        $html_sections[] = sprintf('<div class="tuja-person-template">%s</div>', $this->render_person_form(new Person(), -1, $errors));
 
         $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Uppdatera anmälan');
 
@@ -89,12 +87,6 @@ class EditGroupShortcode extends AbstractGroupShortcode
     private function render_person_form($person, $number, $errors = array()): string
     {
         $html_sections = [];
-        if (isset($person->id)) {
-            $html_sections[] = sprintf('<h3>Deltagare %s</h3>', $number);
-        } else {
-            $html_sections[] = sprintf('<h3>Ytterligare en deltagare</h3>');
-            $html_sections[] = sprintf('<p><span class="tuja-question-hint">Lägg till en deltagare genom att fylla i uppgifterna och tryck på Uppdatera anmälan-knappen. Därefter kan du lägga till ytterligare en deltagare om du behöver.</span></p>');
-        }
 
         $random_id = $person->random_id ?: '';
 
@@ -107,9 +99,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $person_name_question = Question::text('Telefonnummer', null, $person->phone);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, $errors[$random_id . '__phone']);
 
-        if (isset($person->id)) {
-            $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="submit" name="%s" value="%s%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_DELETE_PERSON_PREFIX, $random_id, 'Ta bort');
-        }
+        $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="button" name="%s" value="%s%s" class="tuja-delete-person">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_DELETE_PERSON_PREFIX, $random_id, 'Ta bort');
 
         return sprintf('<div class="tuja-signup-person">%s</div>', join($html_sections));
     }
@@ -135,63 +125,32 @@ class EditGroupShortcode extends AbstractGroupShortcode
             $overall_success = false;
         }
 
-        $form_values = array_filter($_POST, function ($key) {
-            return substr($key, 0, strlen(self::FIELD_PREFIX_PERSON)) === self::FIELD_PREFIX_PERSON;
-        }, ARRAY_FILTER_USE_KEY);
-
         $people = $this->person_dao->get_all_in_group($group_id);
 
-        $updated_people = array_combine(array_map(function ($person) {
+        $preexisting_ids = array_map(function ($person) {
+            return $person->random_id;
+        }, $people);
+
+        $submitted_ids = $this->get_submitted_person_ids();
+
+        $updated_ids = array_intersect($preexisting_ids, $submitted_ids);
+        $deleted_ids = array_diff($preexisting_ids, $submitted_ids);
+        $created_ids = array_diff($submitted_ids, $preexisting_ids);
+
+        $people_map = array_combine(array_map(function ($person) {
             return $person->random_id;
         }, $people), $people);
-        $new_person = null;
-        foreach ($form_values as $field_name => $field_value) {
-            list(, $attr, $id) = explode('__', $field_name);
-            if (empty($id)) {
-                if (!isset($new_person)) {
-                    $new_person = new Person();
-                    $new_person->group_id = $group_id;
-                }
-                $current_person = $new_person;
-            } else {
-                $current_person = $updated_people[$id];
-            }
-            // TODO: Iterate over array of field names instead of a switch case for each?
-            switch ($attr) {
-                case 'name':
-                    $current_person->name = $field_value;
-                    break;
-                case 'email':
-                    $current_person->email = $field_value;
-                    break;
-                case 'phone':
-                    $current_person->phone = $field_value;
-                    break;
-            }
-        }
 
-        foreach ($updated_people as $updated_person) {
+        foreach ($created_ids as $id) {
             try {
-                $affected_rows = $this->person_dao->update($updated_person);
-                $this_success = $affected_rows !== false;
-                $overall_success = ($overall_success and $this_success);
-            } catch (ValidationException $e) {
-                $validation_errors[$updated_person->random_id . '__' . $e->getField()] = $e->getMessage();
-                $overall_success = false;
-            } catch (Exception $e) {
-                $overall_success = false;
-            }
-        }
-        if (isset($new_person) && !empty($new_person->name)) {
-            try {
+                $new_person = new Person();
+                $new_person->group_id = $group_id;
+                $new_person->name = $_POST[self::FIELD_PREFIX_PERSON . 'name__' . $id];
+                $new_person->email = $_POST[self::FIELD_PREFIX_PERSON . 'email__' . $id];
+                $new_person->phone = $_POST[self::FIELD_PREFIX_PERSON . 'phone__' . $id];
+
                 $new_person_id = $this->person_dao->create($new_person);
                 $this_success = $new_person_id !== false;
-                if ($this_success) {
-                    // Clear the "new person form" after successfully adding a new person to the group.
-                    unset($_POST[self::FIELD_PREFIX_PERSON . 'name__']);
-                    unset($_POST[self::FIELD_PREFIX_PERSON . 'email__']);
-                    unset($_POST[self::FIELD_PREFIX_PERSON . 'phone__']);
-                }
                 $overall_success = ($overall_success and $this_success);
             } catch (ValidationException $e) {
                 $validation_errors['__' . $e->getField()] = $e->getMessage();
@@ -200,18 +159,54 @@ class EditGroupShortcode extends AbstractGroupShortcode
                 $overall_success = false;
             }
         }
+
+        foreach ($updated_ids as $id) {
+            if (isset($people_map[$id])) {
+                try {
+                    $people_map[$id]->name = $_POST[self::FIELD_PREFIX_PERSON . 'name__' . $id];
+                    $people_map[$id]->email = $_POST[self::FIELD_PREFIX_PERSON . 'email__' . $id];
+                    $people_map[$id]->phone = $_POST[self::FIELD_PREFIX_PERSON . 'phone__' . $id];
+
+                    $affected_rows = $this->person_dao->update($people_map[$id]);
+                    $this_success = $affected_rows !== false;
+                    $overall_success = ($overall_success and $this_success);
+                } catch (ValidationException $e) {
+                    $validation_errors[$id . '__' . $e->getField()] = $e->getMessage();
+                    $overall_success = false;
+                } catch (Exception $e) {
+                    $overall_success = false;
+                }
+            }
+        }
+
+        foreach ($deleted_ids as $id) {
+            if (isset($people_map[$id])) {
+                $delete_successful = $this->person_dao->delete_by_key($id);
+                if (!$delete_successful) {
+                    $overall_success = false;
+                }
+            }
+        }
+
         if (!$overall_success) {
             $validation_errors['__'] = 'Alla ändringar kunde inte sparas.';
         }
-
         return $validation_errors;
     }
 
-    private function delete_person($person_to_delete)
+    private function get_submitted_person_ids(): array
     {
-        $success = $this->person_dao->delete_by_key($person_to_delete);
-        if (!$success) {
-            throw new Exception('Det gick inte att ta bort deltagaren.');
-        }
+        // $person_prop_field_names are the keys in $_POST which correspond to form values for the group members.
+        $person_prop_field_names = array_filter(array_keys($_POST), function ($key) {
+            return substr($key, 0, strlen(self::FIELD_PREFIX_PERSON)) === self::FIELD_PREFIX_PERSON;
+        });
+
+        // $all_ids will include duplicates (one for each of the name, email and phone fields).
+        // $all_ids will include empty strings because of the fields in the hidden template for new participant are submitted.
+        $all_ids = array_map(function ($key) {
+            list(, , $id) = explode('__', $key);
+            return $id;
+        }, $person_prop_field_names);
+        return array_filter(array_unique($all_ids) /* No callback to outer array_filter means that empty strings will be skipped.*/);
     }
 }
