@@ -3,6 +3,7 @@
 include_once 'AdminUtils.php';
 
 use admin\AdminUtils;
+use data\store\GroupCategoryDao;
 use tuja\data\model\Form;
 use tuja\data\model\Group;
 use util\DateUtils;
@@ -16,7 +17,7 @@ if (!$competition) {
 if ($_POST['tuja_action'] == 'group_create') {
     $props = new Group();
     $props->name = $_POST['tuja_group_name'];
-    $props->type = $_POST['tuja_group_type'];
+    $props->category_id = $_POST['tuja_group_type'];
     $props->competition_id = $competition->id;
     $db_groups->create($props);
 } elseif ($_POST['tuja_action'] == 'form_create') {
@@ -102,6 +103,13 @@ $groups = $db_groups->get_all_in_competition($competition->id);
     </table>
     <input type="text" name="tuja_form_name"/>
     <button type="submit" name="tuja_action" value="form_create">Skapa</button>
+    <?php
+    $settings_url = add_query_arg(array(
+        'tuja_competition' => $competition->id,
+        'tuja_view' => 'competition_settings'
+    ));
+    printf('<p><a href="%s">Inställningar för tävling</a></p>', $settings_url);
+    ?>
     <h3>Ställning</h3>
     <?php
     $review_url = add_query_arg(array(
@@ -130,8 +138,24 @@ $groups = $db_groups->get_all_in_competition($competition->id);
     </table>
     <input type="text" name="tuja_group_name"/>
     <select name="tuja_group_type">
-        <option value="participant">Tävlande</option>
-        <option value="crew">Funktionär</option>
+        <?php
+        $category_dao = new GroupCategoryDao($wpdb);
+        print join('', array_map(function ($category) {
+            return sprintf('<option value="%d">%s (%s)</option>',
+                $category->id,
+                $category->name,
+                $category->is_crew ? 'Funktionär' : 'Tävlande');
+        }, $category_dao->get_all_in_competition($competition->id)));
+        ?>
     </select>
     <button type="submit" name="tuja_action" value="group_create">Skapa</button>
+
+    <h3>Specialfunktioner</h3>
+    <?php
+    $messages_url = add_query_arg(array(
+        'tuja_competition' => $competition->id,
+        'tuja_view' => 'messages'
+    ));
+    printf('<p><a href="%s">Meddelanden, ex. MMS</a></p>', $messages_url);
+    ?>
 </form>

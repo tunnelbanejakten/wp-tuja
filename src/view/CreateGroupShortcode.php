@@ -21,9 +21,9 @@ class CreateGroupShortcode extends AbstractGroupShortcode
 
     private $message_sender;
 
-    public function __construct($wpdb, $competition_id, $edit_link_template)
+    public function __construct($wpdb, $competition_id, $edit_link_template, $is_crew_form)
     {
-        parent::__construct($wpdb);
+        parent::__construct($wpdb, $is_crew_form);
         $this->competition_id = $competition_id;
         $this->edit_link_template = $edit_link_template;
         $this->message_sender = new MessageSender();
@@ -74,16 +74,18 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         $group_name_question = Question::text('Vad heter ert lag?');
         $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors[self::FIELD_GROUP_NAME]);
 
-        // TODO: Age group is not saved in database
-        $person_name_question = Question::dropdown(
+        $categories = $this->get_categories($this->competition_id);
+
+        $group_category_options = array_map(function ($category) {
+            return $category->name;
+        }, $categories);
+
+        $group_category_question = Question::dropdown(
             'Vilken klass tävlar ni i?',
-            array(
-                '13-15' => '13-15 år',
-                '15-18' => '15-18 år',
-                '18' => '18 år och äldre'
-            ),
-            'Välj den som de flesta av deltagarna tillhör.');
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_GROUP_AGE, $errors[self::FIELD_GROUP_AGE]);
+            $group_category_options,
+            'Välj den som de flesta av deltagarna tillhör.'
+        );
+        $html_sections[] = $this->render_field($group_category_question, self::FIELD_GROUP_AGE, $errors[self::FIELD_GROUP_AGE]);
 
         $person_name_question = Question::text('Vad heter du?');
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors[self::FIELD_PERSON_NAME]);
@@ -109,8 +111,17 @@ class CreateGroupShortcode extends AbstractGroupShortcode
     {
         $new_group = new Group();
         $new_group->name = $_POST[self::FIELD_GROUP_NAME];
-        $new_group->type = 'participant';
         $new_group->competition_id = $this->competition_id;
+
+        // TODO: DRY... Very similar code in EditGroupShortcode.php
+        $selected_category = $_POST[self::FIELD_GROUP_AGE];
+        $categories = $this->get_categories($this->competition_id);
+        $found_category = array_filter($categories, function ($category) use ($selected_category) {
+            return $category->name == $selected_category;
+        });
+        if (count($found_category) == 1) {
+            $new_group->category_id = reset($found_category)->id;
+        }
 
         try {
             $new_group->validate();

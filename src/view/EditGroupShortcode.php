@@ -15,9 +15,9 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
     private $group_key;
 
-    public function __construct($wpdb, $group_key)
+    public function __construct($wpdb, $group_key, $is_crew_form)
     {
-        parent::__construct($wpdb);
+        parent::__construct($wpdb, $is_crew_form);
         $this->group_key = $group_key;
     }
 
@@ -73,15 +73,23 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $group_name_question = Question::text('Vad heter ert lag?', null, $group->name);
         $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors['name'], $read_only);
 
-        $person_name_question = Question::dropdown(
+        $categories = $this->get_categories($group->competition_id);
+
+        $current_group_category_name = reset(array_filter($categories, function ($category) use ($group) {
+            return $category->id == $group->category_id;
+        }))->name;
+
+        $group_category_options = array_map(function ($category) {
+            return $category->name;
+        }, $categories);
+
+        $group_category_question = Question::dropdown(
             'Vilken klass tävlar ni i?',
-            array(
-                '13-15' => '13-15 år',
-                '15-18' => '15-18 år',
-                '18' => '18 år och äldre'
-            ),
-            'Välj den som de flesta av deltagarna tillhör.');
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only);
+            $group_category_options,
+            'Välj den som de flesta av deltagarna tillhör.',
+            $current_group_category_name
+        );
+        $html_sections[] = $this->render_field($group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only);
 
         if (is_array($people)) {
             foreach ($people as $index => $person) {
@@ -148,6 +156,14 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $group_id = $group->id;
 
         $group->name = $_POST[self::FIELD_GROUP_NAME];
+        $selected_category = $_POST[self::FIELD_GROUP_AGE];
+        $categories = $this->get_categories($group->competition_id);
+        $found_category = array_filter($categories, function ($category) use ($selected_category) {
+            return $category->name == $selected_category;
+        });
+        if (count($found_category) == 1) {
+            $group->category_id = reset($found_category)->id;
+        }
 
         try {
             $affected_rows = $this->group_dao->update($group);

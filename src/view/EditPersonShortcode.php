@@ -14,7 +14,7 @@ class EditPersonShortcode extends AbstractGroupShortcode
 
     public function __construct($wpdb, $person_key)
     {
-        parent::__construct($wpdb);
+        parent::__construct($wpdb, false);
         $this->person_key = $person_key;
     }
 

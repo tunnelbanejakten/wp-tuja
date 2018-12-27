@@ -1,3 +1,16 @@
+.tuja ol,
+.tuja ul {
+    padding: 0 0 0 1em;
+    margin: 0
+}
+
+.tuja li {
+    margin: 0.2em 0 0.2em 1em;
+}
+
+.tuja ul {
+    list-style-type: disc;
+}
 
 .tuja-admin-question {
     margin: 1em 0;
@@ -14,6 +27,7 @@
 .tuja-admin-question label {
     display: block;
 }
+
 .tuja-admin-question input,
 .tuja-admin-question textarea,
 .tuja-admin-question select {
@@ -27,6 +41,7 @@
     margin: 1em 0;
     padding: 1em;
 }
+
 .tuja-admin-question-preview p {
     margin: 0 0 0.5em 0;
     border-bottom: 1px solid #ddd;
@@ -40,13 +55,20 @@
     display: flex;
     flex-wrap: wrap;
 }
+
 .tuja-admin-question-property {
     width: 30em;
     margin: 0 1em 1em 0;
 }
+
 .tuja-admin-question-property.tuja-admin-question-short {
     width: 19.33em;
 }
+
 .tuja-admin-question-preview {
     width: 50%;
+}
+
+body.wp-admin th {
+    text-align: start;
 }

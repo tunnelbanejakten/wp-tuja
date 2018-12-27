@@ -23,7 +23,7 @@ class CreatePersonShortcode extends AbstractGroupShortcode
 
     public function __construct($wpdb, $group_key, $edit_link_template)
     {
-        parent::__construct($wpdb);
+        parent::__construct($wpdb, false);
         $this->message_sender = new MessageSender();
         $this->group_key = $group_key;
         $this->edit_link_template = $edit_link_template;

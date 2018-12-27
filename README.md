@@ -53,7 +53,8 @@ Features:
 * Uses id string in URL to identify the group. 
 
 Attributes:
-No attributes.
+* is_crew_form: Sets which group categories to show in the form. The value "yes" means that only crew categories 
+  are shown, otherwise only non-crew categories are shown. 
 
 Known issues:
 * 
@@ -67,6 +68,8 @@ Features:
 Attributes:
 * competition: The competition to which group should belong.
 * edit_link_template: Template for URL used to edit group once created. Needs to be an absolute URL.
+* is_crew_form: Sets which group categories to show in the form. The value "yes" means that only crew categories 
+  are shown, otherwise only non-crew categories are shown. 
 
 Known issues:
 * 
