@@ -1,3 +1,16 @@
+.tuja ol,
+.tuja ul {
+    padding: 0 0 0 1em;
+    margin: 0
+}
+
+.tuja li {
+    margin: 0.2em 0 0.2em 1em;
+}
+
+.tuja ul {
+    list-style-type: disc;
+}
 
 .tuja-admin-question {
     margin: 1em 0;

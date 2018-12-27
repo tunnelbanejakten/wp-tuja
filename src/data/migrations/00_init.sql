@@ -65,7 +65,7 @@ CREATE TABLE form (
 CREATE TABLE form_question (
   id         INTEGER AUTO_INCREMENT PRIMARY KEY,
   form_id    INTEGER      NOT NULL,
-  type       VARCHAR(10)  NOT NULL CHECK (type IN ('text', 'number', 'header', 'pick_one', 'pick_multiple')),
+  type       VARCHAR(10)  NOT NULL,
   answer     VARCHAR(500),
   text       VARCHAR(500) NOT NULL,
   sort_order SMALLINT,
@@ -102,9 +102,10 @@ CREATE TABLE message (
   image             VARCHAR(1000),
   source            VARCHAR(10),
   source_message_id VARCHAR(100),
-  CONSTRAINT fk_form_question_response_question FOREIGN KEY (form_question_id) REFERENCES form_question (id)
+  CONSTRAINT UNIQUE idx_message_source_id (source, source_message_id),
+  CONSTRAINT fk_message_question FOREIGN KEY (form_question_id) REFERENCES form_question (id)
     ON DELETE RESTRICT,
-  CONSTRAINT fk_form_question_response_team FOREIGN KEY (team_id) REFERENCES team (id)
+  CONSTRAINT fk_message_team FOREIGN KEY (team_id) REFERENCES team (id)
     ON DELETE CASCADE
 )
   ENGINE = INNODB;

@@ -7,11 +7,13 @@ use tuja\data\model\Competition;
 use tuja\data\model\Form;
 use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
+use tuja\data\model\Message;
 use tuja\data\model\Person;
 use tuja\data\model\Points;
 use tuja\data\model\Question;
 use tuja\data\model\Response;
 use tuja\util\Id;
+use util\Phone;
 
 class AbstractDao
 {
@@ -93,7 +95,7 @@ class AbstractDao
         $p->random_id = $result->random_id;
         $p->name = $result->name;
         $p->group_id = $result->team_id;
-        $p->phone = $result->phone;
+        $p->phone = Phone::fix_phone_number($result->phone);
         $p->phone_verified = $result->phone_verified;
         $p->email = $result->email;
         $p->email_verified = $result->email_verified;
@@ -136,6 +138,21 @@ class AbstractDao
         $p->points = $result->points;
         $p->created = new DateTime($result->created);
         return $p;
+    }
+
+    protected static function to_message($result): Message
+    {
+        $m = new Message();
+        $m->id = $result->id;
+        $m->form_question_id = $result->form_question_id;
+        $m->group_id = $result->team_id;
+        $m->text = $result->text;
+        $m->image_ids = explode(',', $result->image);
+        $m->source = $result->source;
+        $m->source_message_id = $result->source_message_id;
+        $m->date_received = new DateTime($result->date_received);
+        $m->date_imported = new DateTime($result->date_imported);
+        return $m;
     }
 
 }

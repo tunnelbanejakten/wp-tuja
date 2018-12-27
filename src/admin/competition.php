@@ -97,4 +97,13 @@ $groups = $db_groups->get_all_in_competition($competition->id);
         ?>
     </select>
     <button type="submit" name="tuja_action" value="group_create">Skapa</button>
+
+    <h3>Specialfunktioner</h3>
+    <?php
+    $messages_url = add_query_arg(array(
+        'tuja_competition' => $competition->id,
+        'tuja_view' => 'messages'
+    ));
+    printf('<p><a href="%s">Meddelanden, ex. MMS</a></p>', $messages_url);
+    ?>
 </form>

@@ -84,7 +84,7 @@ class Question
     public static function dropdown($text, $options, $hint = null, $answer = null): Question
     {
         $question = new Question();
-        $question->type = 'dropdown';
+        $question->type = 'pick_one';
         $question->text = $text;
         $question->text_hint = $hint;
         $question->possible_answers = $options;
