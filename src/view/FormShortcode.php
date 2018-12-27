@@ -3,6 +3,7 @@
 namespace view;
 
 use data\store\FormDao;
+use data\store\GroupCategoryDao;
 use data\store\GroupDao;
 use data\store\QuestionDao;
 use data\store\ResponseDao;
@@ -16,6 +17,7 @@ class FormShortcode
     private $question_dao;
     private $group_dao;
     private $response_dao;
+    private $category_dao;
 
     const TEAMS_DROPDOWN_NAME = 'tuja_formshortcode_response_group';
 
@@ -27,6 +29,7 @@ class FormShortcode
         $this->group_dao = new GroupDao($wpdb);
         $this->response_dao = new ResponseDao($wpdb);
         $this->form_dao = new FormDao($wpdb);
+        $this->category_dao = new GroupCategoryDao($wpdb);
     }
 
     public function update_answers($group_id): array
@@ -71,7 +74,8 @@ class FormShortcode
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
         }
 
-        if ($group->type === 'crew') {
+        $group_category = $this->category_dao->get($group->category_id);
+        if ($group_category->is_crew) {
             $participant_groups = $this->get_participant_groups();
 
             $html_sections[] = sprintf('<p>%s</p>', $this->get_groups_dropdown($participant_groups));
@@ -146,9 +150,17 @@ class FormShortcode
         $form = $this->form_dao->get($this->form_id);
         $competition_id = $form->competition_id;
 
+        $categories = $this->category_dao->get_all_in_competition($competition_id);
+        $participant_categories = array_filter($categories, function ($category) {
+            return !$category->is_crew;
+        });
+        $ids = array_map(function ($category) {
+            return $category->id;
+        }, $participant_categories);
+
         $competition_groups = $this->group_dao->get_all_in_competition($competition_id);
-        $participant_groups = array_filter($competition_groups, function ($option) {
-            return $option->type === 'participant';
+        $participant_groups = array_filter($competition_groups, function ($group) use ($ids) {
+            return in_array($group->category_id, $ids);
         });
         return $participant_groups;
     }

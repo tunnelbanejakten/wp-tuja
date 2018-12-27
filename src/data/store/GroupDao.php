@@ -25,13 +25,15 @@ class GroupDao extends AbstractDao
                 'random_id' => $this->id->random_string(),
                 'competition_id' => $group->competition_id,
                 'name' => $group->name,
-                'type' => $group->type
+                'type' => '',
+                'category_id' => $group->category_id
             ),
             array(
                 '%s',
                 '%d',
                 '%s',
-                '%s'
+                '%s',
+                '%d'
             ));
         $success = $affected_rows !== false && $affected_rows === 1;
 
@@ -48,7 +50,8 @@ class GroupDao extends AbstractDao
 
         return $this->wpdb->update('team',
             array(
-                'name' => $group->name
+                'name' => $group->name,
+                'category_id' => $group->category_id
             ),
             array(
                 'id' => $group->id
@@ -57,7 +60,12 @@ class GroupDao extends AbstractDao
 
     function exists($name, $exclude_group_id)
     {
-        $db_results = $this->wpdb->get_results($this->wpdb->prepare('SELECT id FROM team WHERE name = %s AND id != %d', $name, $exclude_group_id), OBJECT);
+        $db_results = $this->wpdb->get_results(
+            $this->wpdb->prepare(
+                'SELECT id FROM team WHERE name = %s AND id != %d',
+                $name,
+                $exclude_group_id),
+            OBJECT);
         return $db_results !== false && count($db_results) > 0;
     }
 

@@ -60,3 +60,7 @@
 .tuja-admin-question-preview {
     width: 50%;
 }
+
+body.wp-admin th {
+    text-align: start;
+}

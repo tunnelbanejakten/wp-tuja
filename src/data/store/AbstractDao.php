@@ -6,6 +6,7 @@ use DateTime;
 use tuja\data\model\Competition;
 use tuja\data\model\Form;
 use tuja\data\model\Group;
+use tuja\data\model\GroupCategory;
 use tuja\data\model\Message;
 use tuja\data\model\Person;
 use tuja\data\model\Points;
@@ -72,9 +73,19 @@ class AbstractDao
         $g->id = $result->id;
         $g->random_id = $result->random_id;
         $g->name = $result->name;
-        $g->type = $result->type;
+        $g->category_id = $result->category_id;
         $g->competition_id = $result->competition_id;
         return $g;
+    }
+
+    protected static function to_group_category($result): GroupCategory
+    {
+        $gc = new GroupCategory();
+        $gc->id = $result->id;
+        $gc->competition_id = $result->competition_id;
+        $gc->is_crew = $result->is_crew != 0;
+        $gc->name = $result->name;
+        return $gc;
     }
 
     protected static function to_person($result): Person

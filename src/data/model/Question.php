@@ -81,13 +81,14 @@ class Question
         return $question;
     }
 
-    public static function dropdown($text, $options, $hint = null): Question
+    public static function dropdown($text, $options, $hint = null, $answer = null): Question
     {
         $question = new Question();
         $question->type = 'pick_one';
         $question->text = $text;
         $question->text_hint = $hint;
         $question->possible_answers = $options;
+        $question->latest_response = new Response(isset($answer) && !empty($answer) ? [$answer] : []);
         return $question;
     }
 }

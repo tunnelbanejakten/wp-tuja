@@ -32,6 +32,7 @@ include 'data/store/AbstractDao.php';
 include 'data/store/CompetitionDao.php';
 include 'data/store/FormDao.php';
 include 'data/store/GroupDao.php';
+include 'data/store/GroupCategoryDao.php';
 include 'data/store/QuestionDao.php';
 include 'data/store/ResponseDao.php';
 include 'data/store/PersonDao.php';
@@ -40,6 +41,7 @@ include 'data/store/MessageDao.php';
 include 'data/model/Form.php';
 include 'data/model/Points.php';
 include 'data/model/Group.php';
+include 'data/model/GroupCategory.php';
 include 'data/model/Question.php';
 include 'data/model/Competition.php';
 include 'data/model/Response.php';
@@ -109,7 +111,8 @@ function tuja_edit_group_shortcode($atts)
 {
     global $wp_query, $wpdb;
     $group_id = $wp_query->query_vars['group_id'];
-    $component = new EditGroupShortcode($wpdb, $group_id);
+    $is_crew_form = $atts['is_crew_form'] == 'yes';
+    $component = new EditGroupShortcode($wpdb, $group_id, $is_crew_form);
     return $component->render();
 }
 
@@ -120,7 +123,8 @@ function tuja_create_group_shortcode($atts)
     global $wpdb;
     $competition_id = $atts['competition'];
     $edit_link_template = $atts['edit_link_template'];
-    $component = new CreateGroupShortcode($wpdb, $competition_id, $edit_link_template);
+    $is_crew_form = $atts['is_crew_form'] == 'yes';
+    $component = new CreateGroupShortcode($wpdb, $competition_id, $edit_link_template, $is_crew_form);
     return $component->render();
 }
 
