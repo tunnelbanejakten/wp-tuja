@@ -25,4 +25,3 @@ ALTER TABLE form_question_response
   ADD COLUMN is_reviewed BOOLEAN NOT NULL DEFAULT FALSE
   AFTER answer,
   DROP COLUMN points;
-
