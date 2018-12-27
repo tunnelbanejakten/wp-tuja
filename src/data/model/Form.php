@@ -3,12 +3,24 @@
 namespace tuja\data\model;
 
 
+use data\model\ValidationException;
+
 class Form
 {
     public $id;
     public $name;
     public $competition_id;
     public $allow_multiple_responses_per_group;
-    public $accept_responses_from;
-    public $accept_responses_until;
+    public $submit_response_start;
+    public $submit_response_end;
+
+    public function validate()
+    {
+        if (strlen(trim($this->name)) < 1) {
+            throw new ValidationException('name', 'Namnet måste fyllas i.');
+        }
+        if ($this->submit_response_start !== null && $this->submit_response_end !== null && $this->submit_response_start->diff($this->submit_response_end)->invert == 1) {
+            throw new ValidationException('submit_response_end', 'Perioden måste sluta efter att den börjar.');
+        }
+    }
 }

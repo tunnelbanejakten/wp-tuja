@@ -1,7 +1,11 @@
 <?php
 
+include_once 'AdminUtils.php';
+
+use admin\AdminUtils;
 use tuja\data\model\Question;
 use tuja\view\Field;
+use util\DateUtils;
 
 const FORM_FIELD_NAME_PREFIX = 'tuja-question';
 const ACTION_NAME_DELETE_PREFIX = 'question_delete__';
@@ -64,6 +68,14 @@ if ($_POST['tuja_action'] == 'questions_update') {
         }
     }
     var_dump($overall_success); // TODO: Show nicer status message
+} elseif ($_POST['tuja_action'] == 'form_update') {
+    try {
+        $form->submit_response_start = DateUtils::from_date_local_value($_POST['tuja-submit-response-start']);
+        $form->submit_response_end = DateUtils::from_date_local_value($_POST['tuja-submit-response-end']);
+        $db_form->update($form);
+    } catch (Exception $e) {
+        AdminUtils::printException($e);
+    }
 } elseif ($_POST['tuja_action'] == 'question_create') {
     $props = new Question();
     $props->correct_answers = array('Alice');
@@ -91,11 +103,35 @@ $competition_url = add_query_arg(array(
     'tuja_view' => 'competition',
     'tuja_competition' => $competition->id
 ));
+
 ?>
-<h1>Tunnelbanejakten</h1>
-<h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h2>
+<h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h1>
 <h3>Formulär <?= $form->name ?></h3>
 <form method="post" action="<?= add_query_arg() ?>">
+
+    <p><strong>Inställningar</strong></p>
+
+    <div class="tuja-admin-question">
+        <div class="tuja-admin-question-properties">
+            <div class="tuja-admin-question-property tuja-admin-question-short">
+                <label for="">Svar accepteras fr.o.m.</label>
+                <input type="datetime-local" name="tuja-submit-response-start" placeholder="yyyy-mm-dd hh:mm"
+                       value="<?= DateUtils::to_date_local_value($form->submit_response_start) ?>"/>
+            </div>
+            <div class="tuja-admin-question-property tuja-admin-question-short">
+                <label for="">Svar accepteras t.o.m.</label>
+                <input type="datetime-local" name="tuja-submit-response-end" placeholder="yyyy-mm-dd hh:mm"
+                       value="<?= DateUtils::to_date_local_value($form->submit_response_end) ?>"/>
+            </div>
+        </div>
+    </div>
+
+    <button class="button button-primary" type="submit" name="tuja_action" value="form_update">
+        Spara inställningar
+    </button>
+
+    <p><strong>Frågor</strong></p>
+
     <?php
     $questions = $db_question->get_all_in_form($form->id);
 
@@ -112,8 +148,8 @@ $competition_url = add_query_arg(array(
         $options = array(
             'text' => 'Fritext',
             'images' => 'Bilder',
-            'dropdown' => 'Välj ett alternativ',
-            'multi' => 'Välj flera alternativ'
+            'pick_one' => 'Välj ett alternativ',
+            'pick_multi' => 'Välj flera alternativ'
         );
         printf('<div class="tuja-admin-question-property tuja-admin-question-property-type"><label for="%s">%s</label><select id="%s" name="%s">%s</select></div>',
             $render_id,
@@ -199,7 +235,7 @@ $competition_url = add_query_arg(array(
 
         printf('</div>');
 
-        printf('<button type="submit" name="tuja_action" value="%s%d">Ta bort</button>', ACTION_NAME_DELETE_PREFIX, $question->id);
+        printf('<button type="submit" class="button" name="tuja_action" value="%s%d">Ta bort</button>', ACTION_NAME_DELETE_PREFIX, $question->id);
 
         $html_field = Field::create($question)->render('tuja_' . uniqid());
         printf('<div class="tuja-admin-question-preview"><p>Förhandsgranskning av fråga <br>(uppdateras när du sparar ändringarna): </p>%s</div>', $html_field);
@@ -207,6 +243,7 @@ $competition_url = add_query_arg(array(
         printf('</div>');
     }
     ?>
-    <button type="submit" name="tuja_action" value="questions_update">Spara</button>
-    <button type="submit" name="tuja_action" value="question_create">Ny fråga</button>
+    <button type="submit" name="tuja_action" class="button button-primary" value="questions_update">Spara frågor
+    </button>
+    <button type="submit" name="tuja_action" class="button" value="question_create">Ny fråga</button>
 </form>

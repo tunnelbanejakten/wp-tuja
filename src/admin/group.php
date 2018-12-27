@@ -44,8 +44,7 @@ $points_overrides_per_question = array_combine(array_map(function ($points) {
 }, $points_overrides), array_values($points_overrides));
 ?>
 <form method="post" action="<?= add_query_arg() ?>">
-    <h1>Tunnelbanejakten</h1>
-    <h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h2>
+    <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h1>
     <h2>Grupp <?= htmlspecialchars($group->name) ?></h2>
 
     <p><strong>Totalt <?= array_sum($calculated_scores_final) ?> poäng.</strong></p>
@@ -117,4 +116,33 @@ $points_overrides_per_question = array_combine(array_map(function ($points) {
         </tbody>
     </table>
     <button class="button button-primary" type="submit" name="tuja_points_action" value="save">Spara</button>
+
+    <h3>Meddelanden</h3>
+    <table>
+        <tbody>
+
+        <?php
+        // TODO: Show messages nicer (also in messages.php)
+        $messages = $db_message->get_by_group($group->id);
+        foreach ($messages as $message) {
+            if (is_array($message->image_ids)) {
+                $field = new FieldImages([]);
+                // For each user-provided answer, render the photo description and a photo thumbnail:
+                $images = array_map(function ($image_id) use ($field) {
+                    return $field->render_admin_preview("$image_id,,");
+                }, $message->image_ids);
+            }
+
+            printf('<tr>' .
+                '<td valign="top">%s</td>' .
+                '<td valign="top">%s</td>' .
+                '<td valign="top">%s</td>' .
+                '</tr>',
+                $message->date_received->format(DateTime::ISO8601),
+                join('', $images),
+                $message->text);
+        }
+        ?>
+        </tbody>
+    </table>
 </form>

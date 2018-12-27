@@ -2,6 +2,7 @@
 
 namespace view;
 
+use data\store\GroupCategoryDao;
 use data\store\GroupDao;
 use data\store\PointsDao;
 use data\store\QuestionDao;
@@ -18,6 +19,7 @@ class PointsShortcode
     private $points_dao;
     private $group_key;
     private $participant_groups;
+    private $category_dao;
 
     const FIELD_NAME_PART_SEP = '__';
     const FORM_PREFIX = 'tuja_pointsshortcode';
@@ -33,6 +35,7 @@ class PointsShortcode
         $this->question_dao = new QuestionDao($wpdb);
         $this->group_dao = new GroupDao($wpdb);
         $this->points_dao = new PointsDao($wpdb);
+        $this->category_dao = new GroupCategoryDao($wpdb);
     }
 
     public function update_points(): array
@@ -76,7 +79,8 @@ class PointsShortcode
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Vi vet inte vilken grupp du tillhör.');
         }
 
-        if ($crew_group->type !== 'crew') {
+        $group_category = $this->category_dao->get($crew_group->category_id);
+        if (!$group_category->is_crew) {
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Bara funktionärer får använda detta formulär.');
         }
 
@@ -207,9 +211,18 @@ class PointsShortcode
     private function get_participant_groups(): array
     {
         if (!isset($this->participant_groups)) {
+            // TODO: DRY... Very similar code in FormShortcode.php
+            $categories = $this->category_dao->get_all_in_competition($this->competition_id);
+            $participant_categories = array_filter($categories, function ($category) {
+                return !$category->is_crew;
+            });
+            $ids = array_map(function ($category) {
+                return $category->id;
+            }, $participant_categories);
+
             $competition_groups = $this->group_dao->get_all_in_competition($this->competition_id);
-            $this->participant_groups = array_filter($competition_groups, function ($option) {
-                return $option->type === 'participant';
+            $this->participant_groups = array_filter($competition_groups, function ($group) use ($ids) {
+                return in_array($group->category_id, $ids);
             });
         }
         return $this->participant_groups;
@@ -239,20 +252,15 @@ class PointsShortcode
 
         $current_optimistic_lock_value = array_reduce($keys, function ($carry, PointsKey $key) use ($current_points) {
             return $this->get_last_saved($carry, $current_points[$key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id]->created);
-        }, 0);
+        }, null);
 
         return $current_optimistic_lock_value;
     }
 
-    private function get_last_saved($last_saved, $mysql_time_string)
+    private function get_last_saved(DateTime $last_saved = null, DateTime $current_datetime = null)
     {
-        if (isset($mysql_time_string)) {
-            // TODO: Add helper function for dealing with MySQL date columns?
-            $date_time = DateTime::createFromFormat('Y-m-d H:i:s', $mysql_time_string);
-            if ($date_time !== false) {
-                $timestamp = $date_time->getTimestamp();
-                return max($last_saved, $timestamp);
-            }
+        if ($last_saved != null && $current_datetime != null) {
+            return max($last_saved, $current_datetime);
         }
         return $last_saved;
     }

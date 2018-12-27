@@ -76,6 +76,16 @@ class PersonDao extends AbstractDao
             $group_id);
     }
 
+    function get_all_in_competition($competition_id)
+    {
+        return $this->get_objects(
+            'data\store\AbstractDao::to_person',
+            'SELECT p.* '.
+            'FROM person AS p INNER JOIN team AS t ON p.team_id = t.id '.
+            'WHERE t.competition_id = %d',
+            $competition_id);
+    }
+
     public function delete_by_key($key)
     {
         $affected_rows = $this->wpdb->delete('person', array(

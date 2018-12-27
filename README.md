@@ -53,7 +53,8 @@ Features:
 * Uses id string in URL to identify the group. 
 
 Attributes:
-No attributes.
+* is_crew_form: Sets which group categories to show in the form. The value "yes" means that only crew categories 
+  are shown, otherwise only non-crew categories are shown. 
 
 Known issues:
 * 
@@ -67,6 +68,8 @@ Features:
 Attributes:
 * competition: The competition to which group should belong.
 * edit_link_template: Template for URL used to edit group once created. Needs to be an absolute URL.
+* is_crew_form: Sets which group categories to show in the form. The value "yes" means that only crew categories 
+  are shown, otherwise only non-crew categories are shown. 
 
 Known issues:
 * 
@@ -109,6 +112,26 @@ Attributes:
 
 Known issues:
 * See to-do items in source code... 
+
+## tuja_form_opens_countdown and tuja_form_closes_countdown
+
+Features:
+* Displays the "fuzzy time", e.g. "2 minutes" instead of "132 seconds", until the specified form begins/stops accepting submissions.
+
+Attributes:
+* form: The id of the form to check.
+* past_format: Pattern string to use when the time has passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
+* future_format: Pattern string to use when the time has not yet passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
+
+## tuja_signup_opens_countdown and tuja_signup_closes_countdown
+
+Features:
+* Displays the "fuzzy time", e.g. "2 minutes" instead of "132 seconds", until the specified competition begins/stops accepting new group sign-ups.
+
+Attributes:
+* competition: The id of the competition to check.
+* past_format: Pattern string to use when the time has passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
+* future_format: Pattern string to use when the time has not yet passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
 
     
 # To Do

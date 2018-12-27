@@ -23,7 +23,7 @@ class CreatePersonShortcode extends AbstractGroupShortcode
 
     public function __construct($wpdb, $group_key, $edit_link_template)
     {
-        parent::__construct($wpdb);
+        parent::__construct($wpdb, false);
         $this->message_sender = new MessageSender();
         $this->group_key = $group_key;
         $this->edit_link_template = $edit_link_template;
@@ -37,6 +37,10 @@ class CreatePersonShortcode extends AbstractGroupShortcode
             $group = $this->group_dao->get_by_key($group_key);
             if ($group === false) {
                 return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
+            }
+
+            if (!$this->is_edit_allowed($group->competition_id)) {
+                return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.');
             }
 
             if ($_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
