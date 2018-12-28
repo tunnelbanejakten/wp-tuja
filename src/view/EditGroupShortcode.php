@@ -86,19 +86,19 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
         if (is_array($people)) {
             $html_sections[] = sprintf('<div class="tuja-people-existing">%s</div>', join(array_map(function ($person) use ($errors, $read_only) {
-                return $this->render_person_form($person, 0, $errors, $read_only);
+                return $this->render_person_form($person, $errors, $read_only);
             }, $people)));
         }
         if (!$read_only) {
             $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="button" name="%s" value="%s" class="tuja-add-person">%s</button></div>', self::ACTION_BUTTON_NAME, 'new_person', 'Lägg till deltagare');
-            $html_sections[] = sprintf('<div class="tuja-person-template">%s</div>', $this->render_person_form(new Person(), -1, $errors, $read_only));
+            $html_sections[] = sprintf('<div class="tuja-person-template">%s</div>', $this->render_person_form(new Person(), $errors, $read_only));
         }
 
         if (!$read_only) {
             $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>',
                 self::ACTION_BUTTON_NAME,
                 self::ACTION_NAME_SAVE,
-                'Uppdatera anmälan');
+                'Spara');
         } else {
             // TODO: Should other error messages also contain email link?
             $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>',
@@ -110,7 +110,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         return sprintf('<form method="post">%s</form>', join($html_sections));
     }
 
-    private function render_person_form($person, $number, $errors = array(), $read_only = false): string
+    private function render_person_form($person, $errors = array(), $read_only = false): string
     {
         $html_sections = [];
 
