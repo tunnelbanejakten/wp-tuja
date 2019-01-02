@@ -26,6 +26,15 @@ $import_url = add_query_arg(array(
 printf('<p><a href="%s">Importera meddelanden</a></p>', $import_url);
 ?>
 
+<h3>Skicka</h3>
+<?php
+$import_url = add_query_arg(array(
+    'tuja_competition' => $competition->id,
+    'tuja_view' => 'messages_send'
+));
+printf('<p><a href="%s">Skicka meddelanden</a></p>', $import_url);
+?>
+
 <h3>Meddelanden utan tydlig avsändare</h3>
 <p>De här meddelandena har inte kunnat kopplas till någon av de tävlande lagen:</p>
 <table>
