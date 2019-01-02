@@ -14,6 +14,10 @@ class Competition
     public $create_group_end;
     public $edit_group_start;
     public $edit_group_end;
+    public $message_template_id_new_group_admin;
+    public $message_template_id_new_group_reporter;
+    public $message_template_id_new_crew_member;
+    public $message_template_id_new_noncrew_member;
 
     public function validate()
     {
