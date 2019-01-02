@@ -88,6 +88,12 @@ class MessageTemplateDao extends AbstractDao
             $id);
     }
 
+    function delete($id)
+    {
+        $query_template = 'DELETE FROM message_template WHERE id = %d';
+        return $this->wpdb->query($this->wpdb->prepare($query_template, $id));
+    }
+
     private static function to_message_template($result): MessageTemplate
     {
         $mt = new MessageTemplate();

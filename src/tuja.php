@@ -247,17 +247,17 @@ function tuja_form_closes_countdown_shortcode($atts)
 add_shortcode('tuja_form_closes_countdown', 'tuja_form_closes_countdown_shortcode');
 
 
-function pw_load_scripts($hook)
+function tuja_load_admin_scripts($hook)
 {
 //    print_r($hook);
 //    if ($hook != 'toplevel_page_tuja')
 //        return;
 
-    wp_enqueue_script('admin-messages', plugins_url('admin-messages.js', __FILE__));
+    wp_enqueue_script('admin-competition-settings', plugins_url('admin-competition-settings.js', __FILE__));
     wp_enqueue_script('admin-message-send', plugins_url('admin-message-send.js', __FILE__));
 }
 
-add_action('admin_enqueue_scripts', 'pw_load_scripts');
+add_action('admin_enqueue_scripts', 'tuja_load_admin_scripts');
 
 function tuja_show_admin_page()
 {

@@ -31,6 +31,19 @@ $groups = $db_groups->get_all_in_competition($competition->id);
 <form method="post" action="<?= add_query_arg() ?>">
     <h1>Tävling <?= $competition->name ?></h1>
 
+    <?php
+    $settings_url = add_query_arg(array(
+        'tuja_competition' => $competition->id,
+        'tuja_view' => 'competition_settings'
+    ));
+    printf('<p><a href="%s">Inställningar</a></p>', $settings_url);
+    $messages_url = add_query_arg(array(
+        'tuja_competition' => $competition->id,
+        'tuja_view' => 'messages'
+    ));
+    printf('<p><a href="%s">Meddelanden, ex. MMS</a></p>', $messages_url);
+    ?>
+
     <h3>Formulär</h3>
     <table>
         <tbody>
@@ -53,13 +66,7 @@ $groups = $db_groups->get_all_in_competition($competition->id);
     </table>
     <input type="text" name="tuja_form_name"/>
     <button type="submit" name="tuja_action" value="form_create">Skapa</button>
-    <?php
-    $settings_url = add_query_arg(array(
-        'tuja_competition' => $competition->id,
-        'tuja_view' => 'competition_settings'
-    ));
-    printf('<p><a href="%s">Inställningar för tävling</a></p>', $settings_url);
-    ?>
+
     <h3>Ställning</h3>
     <?php
     $review_url = add_query_arg(array(
@@ -99,13 +106,4 @@ $groups = $db_groups->get_all_in_competition($competition->id);
         ?>
     </select>
     <button type="submit" name="tuja_action" value="group_create">Skapa</button>
-
-    <h3>Specialfunktioner</h3>
-    <?php
-    $messages_url = add_query_arg(array(
-        'tuja_competition' => $competition->id,
-        'tuja_view' => 'messages'
-    ));
-    printf('<p><a href="%s">Meddelanden, ex. MMS</a></p>', $messages_url);
-    ?>
 </form>
