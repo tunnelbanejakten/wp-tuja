@@ -72,3 +72,18 @@
 body.wp-admin th {
     text-align: start;
 }
+
+.tuja-messagetemplate-template {
+    display: none;
+}
+.tuja-message-preview {
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+.tuja-message-preview p {
+    margin: 5px !important;
+}
+.tuja-message-preview.tuja-message-preview-plaintext {
+    white-space: pre;
+}
