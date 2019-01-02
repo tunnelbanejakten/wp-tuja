@@ -36,4 +36,13 @@ class Person
             throw new ValidationException('phone', 'Telefonnummer ser konstigt ut');
         }
     }
+
+    public static function from_email(string $email)
+    {
+        $person = new Person();
+        $person->name = substr($email, 0, strpos($email, '@'));
+        $person->email = $email;
+        return $person;
+    }
+
 }

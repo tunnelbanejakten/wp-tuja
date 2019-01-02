@@ -8,6 +8,7 @@ use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
 use util\messaging\MessageSender;
+use util\messaging\OutgoingEmailMessage;
 use util\Recaptcha;
 use util\Template;
 
@@ -154,11 +155,11 @@ class CreateGroupShortcode extends AbstractGroupShortcode
 
                     $group = $this->group_dao->get($new_group_id);
 
-                    $this->send_group_welcome_mail($new_person->email, $group);
+                    $this->send_group_welcome_mail($group, $new_person);
 
                     $admin_email = get_option('admin_email');
                     if (!empty($admin_email)) {
-                        $this->send_group_admin_mail($admin_email, $group);
+                        $this->send_group_admin_mail($admin_email, $group, $new_person);
                     }
 
                     return $group;
@@ -173,28 +174,51 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         }
     }
 
-    private function send_group_welcome_mail($to, $group)
+    private function send_group_welcome_mail(Group $group, Person $person)
     {
-        $mail_result = $this->message_sender->send_mail($to,
-            'Er anmälan är nästan klar',
-            Template::file('util/messaging/signup_group_participant.html')->render([
-                'link' => sprintf($this->edit_link_template, $group->random_id)
-            ]));
-        if (!$mail_result) {
-//            throw new Exception('Ett fel uppstod. Vi vet tyvärr inte riktigt varför.');
+        $competition = $this->competition_dao->get($this->competition_id);
+        $template_id = $competition->message_template_id_new_group_reporter;
+        if (isset($template_id)) {
+            $message_template = $this->message_template_dao->get($template_id);
+
+            $template_parameters = array_merge(
+                Template::site_parameters(),
+                Template::person_parameters($person),
+                Template::group_parameters($group)
+            );
+            $outgoing_message = new OutgoingEmailMessage($this->message_sender,
+                $person,
+                Template::string($message_template->body)->render($template_parameters, true),
+                Template::string($message_template->subject)->render($template_parameters));
+
+            try {
+                $outgoing_message->send();
+            } catch (Exception $e) {
+            }
         }
     }
 
-    private function send_group_admin_mail($to, $group)
+    private function send_group_admin_mail($admin_email, Group $group, Person $person)
     {
-        $mail_result = $this->message_sender->send_mail($to,
-            'Anmälan från ' . $group->name,
-            Template::file('util/messaging/signup_group_admin.html')->render([
-                'group_name' => htmlspecialchars($group->name),
-                'link' => sprintf($this->edit_link_template, $group->random_id)
-            ]));
-        if (!$mail_result) {
-//            throw new Exception('Ett fel uppstod. Vi vet tyvärr inte riktigt varför.');
+        $competition = $this->competition_dao->get($this->competition_id);
+        $template_id = $competition->message_template_id_new_group_admin;
+        if (isset($template_id)) {
+            $message_template = $this->message_template_dao->get($template_id);
+
+            $template_parameters = array_merge(
+                Template::site_parameters(),
+                Template::person_parameters($person),
+                Template::group_parameters($group)
+            );
+            $outgoing_message = new OutgoingEmailMessage($this->message_sender,
+                Person::from_email($admin_email),
+                Template::string($message_template->body)->render($template_parameters, true),
+                Template::string($message_template->subject)->render($template_parameters));
+
+            try {
+                $outgoing_message->send();
+            } catch (Exception $e) {
+            }
         }
     }
 }

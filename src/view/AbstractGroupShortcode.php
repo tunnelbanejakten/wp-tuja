@@ -5,6 +5,7 @@ namespace view;
 use data\store\GroupCategoryDao;
 use data\store\CompetitionDao;
 use data\store\GroupDao;
+use data\store\MessageTemplateDao;
 use data\store\PersonDao;
 use DateTime;
 use tuja\view\Field;
@@ -24,6 +25,8 @@ class AbstractGroupShortcode
 
     protected $person_dao;
     protected $group_dao;
+    protected $category_dao;
+    protected $message_template_dao;
     protected $competition_dao;
     private $is_crew_form;
 
@@ -33,6 +36,7 @@ class AbstractGroupShortcode
         $this->person_dao = new PersonDao($wpdb);
         $this->competition_dao = new CompetitionDao($wpdb);
         $this->category_dao = new GroupCategoryDao($wpdb);
+        $this->message_template_dao = new MessageTemplateDao($wpdb);
         $this->is_crew_form = $is_crew_form;
     }
 
