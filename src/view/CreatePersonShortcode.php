@@ -8,9 +8,7 @@ use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
 use util\messaging\MessageSender;
-use util\messaging\OutgoingEmailMessage;
 use util\Recaptcha;
-use util\Template;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
@@ -138,23 +136,11 @@ class CreatePersonShortcode extends AbstractGroupShortcode
             $competition->message_template_id_new_noncrew_member;
 
         if (isset($template_id)) {
-            $message_template = $this->message_template_dao->get($template_id);
-
-            $template_parameters = array_merge(
-                Template::site_parameters(),
-                Template::person_parameters($person),
-                Template::group_parameters($group)
-            );
-            $outgoing_message = new OutgoingEmailMessage($this->message_sender,
-                $person,
-                Template::string($message_template->body)->render($template_parameters, true),
-                Template::string($message_template->subject)->render($template_parameters));
-
-            try {
-                $outgoing_message->send();
-            } catch (Exception $e) {
-            }
+            $this->send_template_mail(
+                $person->email,
+                $template_id,
+                $group,
+                $person);
         }
     }
-
 }

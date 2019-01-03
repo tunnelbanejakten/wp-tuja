@@ -13,14 +13,17 @@ ALTER TABLE competition
   ADD COLUMN message_template_new_team_admin INTEGER,
   ADD CONSTRAINT fk_competition_messagetemplatenewteamadmin FOREIGN KEY (message_template_new_team_admin) REFERENCES message_template (id)
   ON DELETE RESTRICT;
+
 ALTER TABLE competition
   ADD COLUMN message_template_new_team_reporter INTEGER,
   ADD CONSTRAINT fk_competition_messagetemplatenewteamreporter FOREIGN KEY (message_template_new_team_reporter) REFERENCES message_template (id)
   ON DELETE RESTRICT;
+
 ALTER TABLE competition
   ADD COLUMN message_template_new_crew_member INTEGER,
   ADD CONSTRAINT fk_competition_messagetemplatenewcrewmember FOREIGN KEY (message_template_new_crew_member) REFERENCES message_template (id)
   ON DELETE RESTRICT;
+
 ALTER TABLE competition
   ADD COLUMN message_template_new_noncrew_member INTEGER,
   ADD CONSTRAINT fk_competition_messagetemplatenewnoncrewmember FOREIGN KEY (message_template_new_noncrew_member) REFERENCES message_template (id)

@@ -302,7 +302,6 @@ $message_templates = $message_template_dao->get_all_in_competition($competition-
                         $template->name
                     );
                 }, $message_templates)) ?>
-
             </select>
         </div>
         <div>
@@ -319,7 +318,6 @@ $message_templates = $message_template_dao->get_all_in_competition($competition-
                         $template->name
                     );
                 }, $message_templates)) ?>
-
             </select>
         </div>
         <div>
@@ -335,7 +333,6 @@ $message_templates = $message_template_dao->get_all_in_competition($competition-
                         $template->name
                     );
                 }, $message_templates)) ?>
-
             </select>
         </div>
         <div>
@@ -352,7 +349,6 @@ $message_templates = $message_template_dao->get_all_in_competition($competition-
                         $template->name
                     );
                 }, $message_templates)) ?>
-
             </select>
         </div>
     </div>

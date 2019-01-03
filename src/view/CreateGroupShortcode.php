@@ -7,10 +7,7 @@ use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
-use util\messaging\MessageSender;
-use util\messaging\OutgoingEmailMessage;
 use util\Recaptcha;
-use util\Template;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
@@ -20,14 +17,11 @@ class CreateGroupShortcode extends AbstractGroupShortcode
     private $competition_id;
     private $edit_link_template;
 
-    private $message_sender;
-
     public function __construct($wpdb, $competition_id, $edit_link_template, $is_crew_form)
     {
         parent::__construct($wpdb, $is_crew_form);
         $this->competition_id = $competition_id;
         $this->edit_link_template = $edit_link_template;
-        $this->message_sender = new MessageSender();
     }
 
     public function render(): String
@@ -179,22 +173,11 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         $competition = $this->competition_dao->get($this->competition_id);
         $template_id = $competition->message_template_id_new_group_reporter;
         if (isset($template_id)) {
-            $message_template = $this->message_template_dao->get($template_id);
-
-            $template_parameters = array_merge(
-                Template::site_parameters(),
-                Template::person_parameters($person),
-                Template::group_parameters($group)
-            );
-            $outgoing_message = new OutgoingEmailMessage($this->message_sender,
-                $person,
-                Template::string($message_template->body)->render($template_parameters, true),
-                Template::string($message_template->subject)->render($template_parameters));
-
-            try {
-                $outgoing_message->send();
-            } catch (Exception $e) {
-            }
+            $this->send_template_mail(
+                $person->email,
+                $template_id,
+                $group,
+                $person);
         }
     }
 
@@ -203,22 +186,11 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         $competition = $this->competition_dao->get($this->competition_id);
         $template_id = $competition->message_template_id_new_group_admin;
         if (isset($template_id)) {
-            $message_template = $this->message_template_dao->get($template_id);
-
-            $template_parameters = array_merge(
-                Template::site_parameters(),
-                Template::person_parameters($person),
-                Template::group_parameters($group)
-            );
-            $outgoing_message = new OutgoingEmailMessage($this->message_sender,
-                Person::from_email($admin_email),
-                Template::string($message_template->body)->render($template_parameters, true),
-                Template::string($message_template->subject)->render($template_parameters));
-
-            try {
-                $outgoing_message->send();
-            } catch (Exception $e) {
-            }
+            $this->send_template_mail(
+                $admin_email,
+                $template_id,
+                $group,
+                $person);
         }
     }
 }
