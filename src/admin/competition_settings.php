@@ -64,10 +64,13 @@ PATTERN;
 
 function tuja_print_group_category_form(GroupCategory $category)
 {
+    $id1 = uniqid();
+    $id2 = uniqid();
     $pattern = <<<PATTERN
         <div class="tuja-groupcategory-form">
             <input type="text" placeholder="Mallens namn" size="50" name="%s" value="%s">
-            <input type="checkbox" name="%s" id="%s" value="true" %s><label for="%s">Funktionär</label>
+            <input type="radio" name="%s" id="%s" value="true" %s><label for="%s">Funktionär</label>
+            <input type="radio" name="%s" id="%s" value="false" %s><label for="%s">Tävlande</label>
             <button class="button tuja-delete-groupcategory" type="button">
                 Ta bort
             </button>
@@ -77,9 +80,13 @@ PATTERN;
         tuja_list_item_field_name('groupcategory', $category->id, 'name'),
         $category->name,
         tuja_list_item_field_name('groupcategory', $category->id, 'iscrew'),
-        tuja_list_item_field_name('groupcategory', $category->id, 'iscrew'),
+        $id1,
         $category->is_crew == true ? 'checked="checked"' : '',
-        tuja_list_item_field_name('groupcategory', $category->id, 'iscrew'));
+        $id1,
+        tuja_list_item_field_name('groupcategory', $category->id, 'iscrew'),
+        $id2,
+        $category->is_crew != true ? 'checked="checked"' : '',
+        $id2);
 }
 
 $message_template_dao = new MessageTemplateDao($wpdb);
@@ -353,6 +360,9 @@ $message_templates = $message_template_dao->get_all_in_competition($competition-
         </div>
     </div>
     <div class="tuja-tab" id="tuja-tab-groupcategories">
+        <p>
+            Grupptyper gör det möjligt att hantera flera tävlingsklasser och att skilja på tävlande och funktionärer.
+        </p>
         <div class="tuja-groupcategory-existing">
             <?= join(array_map(function ($category) {
                 return tuja_print_group_category_form($category);
@@ -364,6 +374,20 @@ $message_templates = $message_template_dao->get_all_in_competition($competition-
         <button class="button tuja-add-groupcategory" type="button">
             Ny
         </button>
+        <p>Grypptyper ska inte förväxlas med grupper. En tävling kan ha flera grupper och varje person är med i en
+            grupp. Grupptyper är ett sätt att klassificera grupperna utifrån deras roll i tävlingen.</p>
+        <p>Detta gäller för grupper som har en grupptyp som är Funktionär:</p>
+        <ul>
+            <li>Personer i dessa grupper får rapportera in poäng för vilken grupp som helst.</li>
+            <li>Personer i dessa grupper får besvara formulär åt vilken grupp som helst.</li>
+            <li>Exempel på funktionärsgrupptyper: Kontrollanter, Tävlingsledning.</li>
+        </ul>
+        <p>Detta gäller för grupper som har en grupptyp som är Tävlande:</p>
+        <ul>
+            <li>Personer i dessa grupper får inte rapportera in poäng.</li>
+            <li>Personer i dessa grupper får enbart besvara formulär för egen räkning.</li>
+            <li>Exempel på tävlande grupptyper: Nybörjare, Veteraner, Super-experter.</li>
+        </ul>
     </div>
 
     <button class="button button-primary"
