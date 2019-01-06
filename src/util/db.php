@@ -2,6 +2,8 @@
 
 namespace tuja\util;
 
+use tuja\Plugin;
+
 class DB {
 	
 	static public function get_table($name) {

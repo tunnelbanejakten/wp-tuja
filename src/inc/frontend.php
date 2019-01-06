@@ -1,13 +1,10 @@
 <?php
-	namespace Webbmaffian;
+
+	namespace tuja;
 	
 	class Frontend extends Plugin {
 		
-		protected function init() {
-			$this->shortcodes();
-		}
-
-		public function shortcodes() {
+		public function init() {
 			add_shortcode('tuja_form', array($this, 'form_shortcode'));
 			add_shortcode('tuja_points', array($this, 'points_shortcode'));
 			add_shortcode('tuja_group_name', array($this, 'group_name_shortcode'));

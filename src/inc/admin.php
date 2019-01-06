@@ -5,10 +5,9 @@
 
 		static private $notices = array();
 		
-		protected function init() {
+		public function init() {
 			add_action('admin_menu', array($this, 'add_admin_menu_item'));
 			add_action('admin_enqueue_scripts', array($this, 'assets'));
-			add_action('init', array($this, 'handle_post'));
 			add_action('admin_notices', array($this, 'notices_html'));
 		}
 
