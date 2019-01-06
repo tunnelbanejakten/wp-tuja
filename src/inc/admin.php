@@ -7,7 +7,7 @@
 		
 		protected function init() {
 			add_action('admin_menu', array($this, 'add_admin_menu_item'));
-			add_action('admin_enqueue_scripts', array($this, 'load_admin_scripts'));
+			add_action('admin_enqueue_scripts', array($this, 'assets'));
 			add_action('init', array($this, 'handle_post'));
 			add_action('admin_notices', array($this, 'notices_html'));
 		}
@@ -36,8 +36,8 @@
 			add_menu_page('Tunnelbanejakten', 'Tunnelbanejakten', 'manage_options', static::SLUG, array($this, 'show_admin_page'));
 		}
 
-		public function load_admin_scripts() {
-			wp_enqueue_style('tuja-admin-theme', static::get_url() . '/admin.css');
+		public function assets() {
+			wp_enqueue_style('tuja-admin-theme', static::get_url() . '/assets/css/admin.css');
 			
 			// Load scripts based on screen->id
 			// $screen = get_current_screen();

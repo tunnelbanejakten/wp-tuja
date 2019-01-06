@@ -28,9 +28,11 @@
 
 		public function assets() {
 			wp_register_script('tuja-recaptcha-script', 'https://www.google.com/recaptcha/api.js');
-			wp_register_script('tuja-upload-script', static::get_url() . '/upload.js');
-			wp_register_script('tuja-countdown-script', static::get_url() . '/countdown.js');
-			wp_enqueue_style('tuja-wp-theme', plugins_url('wp.css', __FILE__));
+			wp_register_script('tuja-upload-script', static::get_url() . '/assets/js/upload.js');
+			wp_register_script('tuja-countdown-script', static::get_url() . '/assets/js/countdown.js');
+			wp_register_script('tuja-editgroup-script', static::get_url() . '/assets/js/edit-group.js');
+
+			wp_enqueue_style('tuja-wp-theme', static::get_url() . '/assets/css/wp.css');
 		}
 
 		public function form_shortcode($atts) {
