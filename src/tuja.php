@@ -49,7 +49,19 @@ abstract class Plugin {
 				create_group_start   INTEGER,
 				create_group_end     INTEGER,
 				edit_group_start     INTEGER,
-				edit_group_end       INTEGER
+				edit_group_end       INTEGER,
+				message_template_new_team_admin INTEGER,
+				message_template_new_team_reporter INTEGER,
+				message_template_new_crew_member INTEGER,
+				message_template_new_noncrew_member INTEGER,
+				ADD CONSTRAINT fk_competition_messagetemplatenewteamadmin FOREIGN KEY (message_template_new_team_admin) REFERENCES ' . DB::get_table('message_template') . ' (id)
+					ON DELETE RESTRICT,
+				ADD CONSTRAINT fk_competition_messagetemplatenewteamreporter FOREIGN KEY (message_template_new_team_reporter) REFERENCES ' . DB::get_table('message_template') . ' (id)
+					ON DELETE RESTRICT,
+				ADD CONSTRAINT fk_	competition_messagetemplatenewcrewmember FOREIGN KEY (message_template_new_crew_member) REFERENCES ' . DB::get_table('message_template') . ' (id)
+					ON DELETE RESTRICT,
+				ADD CONSTRAINT fk_competition_messagetemplatenewnoncrewmember FOREIGN KEY (message_template_new_noncrew_member) REFERENCES ' . DB::get_table('message_template') . ' (id)
+					ON DELETE RESTRICT
 			) ' . $charset;
 
 		$tables[] = '
@@ -160,6 +172,17 @@ abstract class Plugin {
 				name           VARCHAR(20),
 				CONSTRAINT fk_teamcategory_competition FOREIGN KEY (competition_id) REFERENCES competition (id)
 					ON DELETE CASCADE
+		) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE IF NOT EXISTS ' . DB::get_table('message_template') . ' (
+				id             INTEGER AUTO_INCREMENT PRIMARY KEY,
+				competition_id INTEGER NOT NULL,
+				name           VARCHAR(50),
+				subject        VARCHAR(500),
+				body           VARCHAR(50000),
+				CONSTRAINT fk_messagetemplate_competition FOREIGN KEY (competition_id) REFERENCES competition (id)
+				  ON DELETE CASCADE
 		) ' . $charset;
 
 		foreach($tables as $table) {

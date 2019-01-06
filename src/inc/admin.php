@@ -38,14 +38,23 @@
 
 		public function assets() {
 			wp_enqueue_style('tuja-admin-theme', static::get_url() . '/assets/css/admin.css');
-			
+
 			// Load scripts based on screen->id
 			// $screen = get_current_screen();
+			wp_enqueue_script('tuja-admin-competition-settings', static::get_url() . '/assets/js/admin-competition-settings.js');
+			wp_enqueue_script('tuja-admin-message-send', static::get_url() . '/assets/js/admin-message-send.js');
 		}
 
 		public function show_admin_page() {
 			global $wpdb;
-			// TODO: Create DAOs on-demand, not all-at-once here.
+			
+			// https://wpartisan.me/tutorials/wordpress-auto-adds-slashes-post-get-request-cookie
+			$_POST = array_map('stripslashes_deep', $_POST);
+			$_GET = array_map('stripslashes_deep', $_GET);
+			$_COOKIE = array_map('stripslashes_deep', $_COOKIE);
+			$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
+
+			// TODO: Create DAOs on-demand, not all-at-once here
 			$db_competition = new CompetitionDao($wpdb);
 			$db_form = new FormDao($wpdb);
 			$db_groups = new GroupDao($wpdb);
