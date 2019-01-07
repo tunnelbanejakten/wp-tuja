@@ -20,11 +20,19 @@ class CompetitionDao extends AbstractDao
                 'create_group_start' => self::to_db_date($competition->create_group_start),
                 'create_group_end' => self::to_db_date($competition->create_group_end),
                 'edit_group_start' => self::to_db_date($competition->edit_group_start),
-                'edit_group_end' => self::to_db_date($competition->edit_group_end)
+                'edit_group_end' => self::to_db_date($competition->edit_group_end),
+                'message_template_new_team_admin' => $competition->message_template_id_new_group_admin,
+                'message_template_new_team_reporter' => $competition->message_template_id_new_group_reporter,
+                'message_template_new_crew_member' => $competition->message_template_id_new_crew_member,
+                'message_template_new_noncrew_member' => $competition->message_template_id_new_noncrew_member
             ),
             array(
                 '%s',
                 '%s',
+                '%d',
+                '%d',
+                '%d',
+                '%d',
                 '%d',
                 '%d',
                 '%d',
@@ -45,7 +53,11 @@ class CompetitionDao extends AbstractDao
                 'create_group_start' => self::to_db_date($competition->create_group_start),
                 'create_group_end' => self::to_db_date($competition->create_group_end),
                 'edit_group_start' => self::to_db_date($competition->edit_group_start),
-                'edit_group_end' => self::to_db_date($competition->edit_group_end)
+                'edit_group_end' => self::to_db_date($competition->edit_group_end),
+                'message_template_new_team_admin' => $competition->message_template_id_new_group_admin,
+                'message_template_new_team_reporter' => $competition->message_template_id_new_group_reporter,
+                'message_template_new_crew_member' => $competition->message_template_id_new_crew_member,
+                'message_template_new_noncrew_member' => $competition->message_template_id_new_noncrew_member
             ),
             array(
                 'id' => $competition->id
@@ -81,6 +93,10 @@ class CompetitionDao extends AbstractDao
         $c->create_group_end = self::from_db_date($result->create_group_end);
         $c->edit_group_start = self::from_db_date($result->edit_group_start);
         $c->edit_group_end = self::from_db_date($result->edit_group_end);
+        $c->message_template_id_new_group_admin = $result->message_template_new_team_admin;
+        $c->message_template_id_new_group_reporter = $result->message_template_new_team_reporter;
+        $c->message_template_id_new_crew_member = $result->message_template_new_crew_member;
+        $c->message_template_id_new_noncrew_member = $result->message_template_new_noncrew_member;
         return $c;
     }
 

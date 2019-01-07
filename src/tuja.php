@@ -11,6 +11,8 @@ include 'util/Id.php';
 include 'util/Recaptcha.php';
 include 'util/score/ScoreCalculator.php';
 include 'util/messaging/MessageSender.php';
+include 'util/messaging/OutgoingMessage.php';
+include 'util/markdown/Parsedown.php';
 include 'util/Template.php';
 include 'util/SmsBackupRestoreXmlFileProcessor.php';
 include 'util/ImageManager.php';
@@ -40,6 +42,7 @@ include 'data/store/ResponseDao.php';
 include 'data/store/PersonDao.php';
 include 'data/store/PointsDao.php';
 include 'data/store/MessageDao.php';
+include 'data/store/MessageTemplateDao.php';
 include 'data/model/Form.php';
 include 'data/model/Points.php';
 include 'data/model/Group.php';
@@ -50,6 +53,7 @@ include 'data/model/Response.php';
 include 'data/model/Person.php';
 include 'data/model/ValidationException.php';
 include 'data/model/Message.php';
+include 'data/model/MessageTemplate.php';
 include 'db.init.php';
 
 const SLUG = 'tuja';
@@ -242,6 +246,18 @@ function tuja_form_closes_countdown_shortcode($atts)
 
 add_shortcode('tuja_form_closes_countdown', 'tuja_form_closes_countdown_shortcode');
 
+function tuja_load_admin_scripts($hook)
+{
+//    print_r($hook);
+//    if ($hook != 'toplevel_page_tuja')
+//        return;
+
+    wp_enqueue_script('admin-competition-settings', plugins_url('admin-competition-settings.js', __FILE__));
+    wp_enqueue_script('admin-message-send', plugins_url('admin-message-send.js', __FILE__));
+}
+
+add_action('admin_enqueue_scripts', 'tuja_load_admin_scripts');
+
 function tuja_editgroup_script()
 {
     wp_register_script('tuja-editgroup-script', plugins_url('edit-group.js', __FILE__));
@@ -252,6 +268,13 @@ add_action('wp_enqueue_scripts', 'tuja_editgroup_script');
 function tuja_show_admin_page()
 {
     global $wpdb;
+
+    // https://wpartisan.me/tutorials/wordpress-auto-adds-slashes-post-get-request-cookie
+    $_POST = array_map('stripslashes_deep', $_POST);
+    $_GET = array_map('stripslashes_deep', $_GET);
+    $_COOKIE = array_map('stripslashes_deep', $_COOKIE);
+    $_REQUEST = array_map('stripslashes_deep', $_REQUEST);
+
     // TODO: Create DAOs on-demand, not all-at-once here.
     $db_competition = new CompetitionDao($wpdb);
     $db_form = new FormDao($wpdb);
