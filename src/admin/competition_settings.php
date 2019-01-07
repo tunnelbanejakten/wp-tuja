@@ -1,5 +1,7 @@
 <?php
 
+namespace tuja\admin;
+
 use data\model\ValidationException;
 use data\store\GroupCategoryDao;
 use tuja\data\model\GroupCategory;

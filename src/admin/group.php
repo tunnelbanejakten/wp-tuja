@@ -1,5 +1,7 @@
 <?php
 
+namespace tuja\admin;
+
 use tuja\view\FieldImages;
 use util\score\ScoreCalculator;
 

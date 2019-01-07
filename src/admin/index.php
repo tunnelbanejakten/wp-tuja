@@ -1,3 +1,5 @@
+<?php namespace tuja\admin; ?>
+
 <form method="post" action="<?= add_query_arg() ?>">
 
     <h1>Tävlingar</h1>

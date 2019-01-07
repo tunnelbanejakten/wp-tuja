@@ -1,6 +1,6 @@
 <?php
 
-namespace data\store;
+namespace tuja\data\store;
 
 class PointsDao extends AbstractDao
 {

@@ -1,5 +1,7 @@
 <?php
 
+namespace tuja\admin;
+
 use data\store\MessageDao;
 use data\store\PersonDao;
 use util\ImageManager;

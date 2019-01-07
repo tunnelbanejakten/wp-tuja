@@ -1,6 +1,6 @@
 <?php
 
-namespace data\store;
+namespace tuja\data\store;
 
 use data\model\ValidationException;
 use tuja\data\model\Group;

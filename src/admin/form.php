@@ -1,5 +1,7 @@
 <?php
 
+namespace tuja\admin;
+
 include_once 'AdminUtils.php';
 
 use admin\AdminUtils;

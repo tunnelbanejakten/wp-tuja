@@ -1,5 +1,7 @@
 <?php
 
+namespace tuja\admin;
+
 use tuja\view\FieldImages;
 
 $competition = $db_competition->get($_GET['tuja_competition']);

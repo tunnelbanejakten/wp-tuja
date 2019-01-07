@@ -121,7 +121,7 @@ abstract class Plugin {
 				points           INTEGER,
 				created_at       INTEGER,
 				PRIMARY KEY (form_question_id, team_id)
-		) ' . $charset;
+			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE IF NOT EXISTS ' . DB::get_table('message') . ' (
@@ -142,7 +142,7 @@ abstract class Plugin {
 				competition_id INTEGER NOT NULL,
 				is_crew        BOOLEAN NOT NULL DEFAULT FALSE,
 				name           VARCHAR(20)
-		) ' . $charset;
+			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE IF NOT EXISTS ' . DB::get_table('message_template') . ' (
@@ -151,7 +151,7 @@ abstract class Plugin {
 				name           VARCHAR(50),
 				subject        VARCHAR(500),
 				body           VARCHAR(50000)
-		) ' . $charset;
+			) ' . $charset;
 
 		$tables[] = '
 			ALTER TABLE ' . DB::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_team_admin) REFERENCES ' . DB::get_table('message_template') . ' (id) ON DELETE RESTRICT,
@@ -199,7 +199,7 @@ abstract class Plugin {
 			self::PATH . '/util/score/' . $classname . '.php',
 			self::PATH . '/util/' . $classname . '.php',
 			self::PATH . '/view/' . $classname . '.php',
-			// self::PATH . '/admin/' . $classname . '.php',
+			self::PATH . '/admin/' . $classname . '.php',
 		);
 
 		foreach($paths as $path) {

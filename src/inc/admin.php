@@ -1,5 +1,14 @@
 <?php
 	namespace tuja;
+
+	use tuja\data\store\CompetitionDao;
+	use tuja\data\store\FormDao;
+	use tuja\data\store\GroupDao;
+	use tuja\data\store\QuestionDao;
+	use tuja\data\store\ResponseDao;
+	use tuja\data\store\PointsDao;
+	use tuja\data\store\MessageDao;
+	use tuja\data\model\Competition;
 	
 	class Admin extends Plugin {
 
@@ -39,9 +48,12 @@
 			wp_enqueue_style('tuja-admin-theme', static::get_url() . '/assets/css/admin.css');
 
 			// Load scripts based on screen->id
-			// $screen = get_current_screen();
-			wp_enqueue_script('tuja-admin-competition-settings', static::get_url() . '/assets/js/admin-competition-settings.js');
-			wp_enqueue_script('tuja-admin-message-send', static::get_url() . '/assets/js/admin-message-send.js');
+			$screen = get_current_screen();
+
+			if($screen === 'tuja') {
+				wp_enqueue_script('tuja-admin-competition-settings', static::get_url() . '/assets/js/admin-competition-settings.js');
+				wp_enqueue_script('tuja-admin-message-send', static::get_url() . '/assets/js/admin-message-send.js');
+			}
 		}
 
 		public function show_admin_page() {

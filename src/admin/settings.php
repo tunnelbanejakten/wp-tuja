@@ -1,4 +1,7 @@
 <?php
+
+namespace tuja\admin;
+
 const TUJA_OPTION_FIELD_NAME_PREFIX = 'tuja_option__';
 
 $form_values = array_filter($_POST, function ($key) {

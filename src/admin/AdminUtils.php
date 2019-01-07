@@ -1,7 +1,6 @@
 <?php
 
-namespace admin;
-
+namespace tuja\admin;
 
 use Exception;
 
