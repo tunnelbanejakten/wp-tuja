@@ -69,7 +69,7 @@ class EditPersonShortcode extends AbstractGroupShortcode
             $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>',
                 self::ACTION_BUTTON_NAME,
                 self::ACTION_NAME_SAVE,
-                'Uppdatera anmälan');
+                'Spara');
         } else {
             $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>',
                 sprintf('Du kan inte längre ändra din anmälan. Kontakta <a href="mailto:%s">%s</a> om du behöver ändra något.',
