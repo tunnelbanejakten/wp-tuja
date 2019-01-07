@@ -2,6 +2,8 @@
 
 namespace util\messaging;
 
+use util\Template;
+
 class MessageSender
 {
     public function send_mail($to, $subject, $body)
@@ -10,6 +12,10 @@ class MessageSender
         $headers = [
             'Content-Type: text/html; charset=UTF-8'
         ];
-        return wp_mail($to, "[Tunnelbanejakten] $subject", utf8_encode($body), $headers, $attachments);
+        $wrapped_body = Template::file('util/messaging/email_template.html')->render([
+            'subject' => $subject,
+            'body' => $body
+        ]);
+        return wp_mail($to, "[Tunnelbanejakten] $subject", $wrapped_body, $headers, $attachments);
     }
 }

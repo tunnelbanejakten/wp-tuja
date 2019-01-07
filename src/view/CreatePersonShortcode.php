@@ -4,11 +4,11 @@ namespace view;
 
 use data\model\ValidationException;
 use Exception;
+use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
 use util\messaging\MessageSender;
 use util\Recaptcha;
-use util\Template;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
@@ -56,7 +56,7 @@ class CreatePersonShortcode extends AbstractGroupShortcode
 
                     $edit_link = sprintf($this->edit_link_template, $new_person->random_id);
 
-                    $this->send_person_welcome_mail($new_person->email, $new_person);
+                    $this->send_person_welcome_mail($new_person, $group);
 
                     if (!empty($edit_link)) {
                         return sprintf('<p class="tuja-message tuja-message-success">Tack för din anmälan. Gå till <a href="%s">%s</a> om du behöver ändra din anmälan senare. Vi har också skickat länken till din e-postadress.</p>', $edit_link, $edit_link);
@@ -125,17 +125,22 @@ class CreatePersonShortcode extends AbstractGroupShortcode
         }
     }
 
-    private function send_person_welcome_mail($to, $person)
+    private function send_person_welcome_mail(Person $person, Group $group)
     {
-        // TODO: The subject and body must be customizable somehow -- we don't want the same message to be sent to crew members and team members.
-        $mail_result = $this->message_sender->send_mail($to,
-            'Tack för din anmälan',
-            Template::file('util/messaging/signup_person_crew.html')->render([
-                'link' => sprintf($this->edit_link_template, $person->random_id)
-            ]));
-        if (!$mail_result) {
-//            throw new Exception('Ett fel uppstod. Vi vet tyvärr inte riktigt varför.');
+        $competition = $this->competition_dao->get($group->competition_id);
+
+        $group_category = $this->category_dao->get($group->category_id);
+
+        $template_id = $group_category->is_crew ?
+            $competition->message_template_id_new_crew_member :
+            $competition->message_template_id_new_noncrew_member;
+
+        if (isset($template_id)) {
+            $this->send_template_mail(
+                $person->email,
+                $template_id,
+                $group,
+                $person);
         }
     }
-
 }

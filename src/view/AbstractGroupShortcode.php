@@ -2,12 +2,18 @@
 
 namespace view;
 
-use data\store\GroupCategoryDao;
 use data\store\CompetitionDao;
+use data\store\GroupCategoryDao;
 use data\store\GroupDao;
+use data\store\MessageTemplateDao;
 use data\store\PersonDao;
 use DateTime;
+use tuja\data\model\Group;
+use tuja\data\model\Person;
 use tuja\view\Field;
+use util\messaging\MessageSender;
+use util\messaging\OutgoingEmailMessage;
+use util\Template;
 
 class AbstractGroupShortcode
 {
@@ -24,8 +30,11 @@ class AbstractGroupShortcode
 
     protected $person_dao;
     protected $group_dao;
+    protected $category_dao;
+    protected $message_template_dao;
     protected $competition_dao;
     private $is_crew_form;
+    private $message_sender;
 
     public function __construct($wpdb, $is_crew_form)
     {
@@ -33,7 +42,9 @@ class AbstractGroupShortcode
         $this->person_dao = new PersonDao($wpdb);
         $this->competition_dao = new CompetitionDao($wpdb);
         $this->category_dao = new GroupCategoryDao($wpdb);
+        $this->message_template_dao = new MessageTemplateDao($wpdb);
         $this->is_crew_form = $is_crew_form;
+        $this->message_sender = new MessageSender();
     }
 
     protected function render_field($question, $field_name, $error_message, $read_only = false): string
@@ -80,5 +91,25 @@ class AbstractGroupShortcode
             return false;
         }
         return true;
+    }
+
+    protected function send_template_mail($to, $template_id, Group $group, Person $person)
+    {
+        $message_template = $this->message_template_dao->get($template_id);
+
+        $template_parameters = array_merge(
+            Template::site_parameters(),
+            Template::person_parameters($person),
+            Template::group_parameters($group)
+        );
+        $outgoing_message = new OutgoingEmailMessage($this->message_sender,
+            Person::from_email($to),
+            Template::string($message_template->body)->render($template_parameters, true),
+            Template::string($message_template->subject)->render($template_parameters));
+
+        try {
+            $outgoing_message->send();
+        } catch (Exception $e) {
+        }
     }
 }

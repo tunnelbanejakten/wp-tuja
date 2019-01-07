@@ -81,4 +81,10 @@ class GroupCategoryDao extends AbstractDao
             $competition_id);
     }
 
+    function delete($id)
+    {
+        $query_template = 'DELETE FROM team_category WHERE id = %d';
+        return $this->wpdb->query($this->wpdb->prepare($query_template, $id));
+    }
+
 }

@@ -4,11 +4,9 @@ namespace tuja\admin;
 
 include_once 'AdminUtils.php';
 
-use admin\AdminUtils;
 use data\store\GroupCategoryDao;
 use tuja\data\model\Form;
 use tuja\data\model\Group;
-use util\DateUtils;
 use util\score\ScoreCalculator;
 
 $competition = $db_competition->get($_GET['tuja_competition']);
@@ -27,61 +25,26 @@ if ($_POST['tuja_action'] == 'group_create') {
     $props->name = $_POST['tuja_form_name'];
     $props->competition_id = $competition->id;
     $db_form->create($props);
-} elseif ($_POST['tuja_action'] == 'form_update') {
-    try {
-        $competition->create_group_start = DateUtils::from_date_local_value($_POST['tuja_create_group_start']);
-        $competition->create_group_end = DateUtils::from_date_local_value($_POST['tuja_create_group_end']);
-        $competition->edit_group_start = DateUtils::from_date_local_value($_POST['tuja_edit_group_start']);
-        $competition->edit_group_end = DateUtils::from_date_local_value($_POST['tuja_edit_group_end']);
-
-        $db_competition->update($competition);
-    } catch (Exception $e) {
-        // TODO: Reuse this exception handling elsewhere?
-        AdminUtils::printException($e);
-    }
 }
-
 $forms = $db_form->get_all_in_competition($competition->id);
 $groups = $db_groups->get_all_in_competition($competition->id);
 
 ?>
 <form method="post" action="<?= add_query_arg() ?>">
     <h1>Tävling <?= $competition->name ?></h1>
-    <h3>Inställningar</h3>
 
-    <!-- TODO: Move competition settings to separate page? -->
-    <div class="tuja-admin-question">
-        <div class="tuja-admin-question-properties">
-            <div class="tuja-admin-question-property tuja-admin-question-short">
-                <label for="">Nya anmälningar kan göras fr.o.m.</label>
-                <input type="datetime-local" name="tuja_create_group_start" placeholder="yyyy-mm-dd hh:mm"
-                       value="<?= DateUtils::to_date_local_value($competition->create_group_start) ?>"/>
-            </div>
-            <div class="tuja-admin-question-property tuja-admin-question-short">
-                <label for="">Nya anmälningar kan göras t.o.m.</label>
-                <input type="datetime-local" name="tuja_create_group_end" placeholder="yyyy-mm-dd hh:mm"
-                       value="<?= DateUtils::to_date_local_value($competition->create_group_end) ?>"/>
-            </div>
-        </div>
-    </div>
-    <div class="tuja-admin-question">
-        <div class="tuja-admin-question-properties">
-            <div class="tuja-admin-question-property tuja-admin-question-short">
-                <label for="">Anmälningar kan ändras fr.o.m.</label>
-                <input type="datetime-local" name="tuja_edit_group_start" placeholder="yyyy-mm-dd hh:mm"
-                       value="<?= DateUtils::to_date_local_value($competition->edit_group_start) ?>"/>
-            </div>
-            <div class="tuja-admin-question-property tuja-admin-question-short">
-                <label for="">Anmälningar kan ändras t.o.m.</label>
-                <input type="datetime-local" name="tuja_edit_group_end" placeholder="yyyy-mm-dd hh:mm"
-                       value="<?= DateUtils::to_date_local_value($competition->edit_group_end) ?>"/>
-            </div>
-        </div>
-    </div>
-
-    <button class="button button-primary" type="submit" name="tuja_action" value="form_update">
-        Spara inställningar
-    </button>
+    <?php
+    $settings_url = add_query_arg(array(
+        'tuja_competition' => $competition->id,
+        'tuja_view' => 'competition_settings'
+    ));
+    printf('<p><a href="%s">Inställningar</a></p>', $settings_url);
+    $messages_url = add_query_arg(array(
+        'tuja_competition' => $competition->id,
+        'tuja_view' => 'messages'
+    ));
+    printf('<p><a href="%s">Meddelanden, ex. MMS</a></p>', $messages_url);
+    ?>
 
     <h3>Formulär</h3>
     <table>
@@ -105,13 +68,7 @@ $groups = $db_groups->get_all_in_competition($competition->id);
     </table>
     <input type="text" name="tuja_form_name"/>
     <button type="submit" name="tuja_action" value="form_create">Skapa</button>
-    <?php
-    $settings_url = add_query_arg(array(
-        'tuja_competition' => $competition->id,
-        'tuja_view' => 'competition_settings'
-    ));
-    printf('<p><a href="%s">Inställningar för tävling</a></p>', $settings_url);
-    ?>
+
     <h3>Ställning</h3>
     <?php
     $review_url = add_query_arg(array(
@@ -151,13 +108,4 @@ $groups = $db_groups->get_all_in_competition($competition->id);
         ?>
     </select>
     <button type="submit" name="tuja_action" value="group_create">Skapa</button>
-
-    <h3>Specialfunktioner</h3>
-    <?php
-    $messages_url = add_query_arg(array(
-        'tuja_competition' => $competition->id,
-        'tuja_view' => 'messages'
-    ));
-    printf('<p><a href="%s">Meddelanden, ex. MMS</a></p>', $messages_url);
-    ?>
 </form>
