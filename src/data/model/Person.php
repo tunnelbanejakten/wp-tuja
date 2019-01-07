@@ -26,7 +26,7 @@ class Person
         if (strlen($this->email) > 50) {
             throw new ValidationException('email', 'E-postadress får bara vara 50 tecken lång.');
         }
-        if (!empty(trim($this->email)) && preg_match('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i', $this->email) !== 1) {
+        if (!empty(trim($this->email)) && preg_match('/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i', $this->email) !== 1) {
             throw new ValidationException('email', 'E-postadressen ser konstig ut.');
         }
         if (strlen($this->phone) > 50) {
