@@ -140,7 +140,7 @@ $templates = $message_template_dao->get_all_in_competition($competition->id);
 
 $settings_url = add_query_arg(array(
     'tuja_competition' => $competition->id,
-    'tuja_view' => 'competition_settings'
+    'tuja_view' => 'CompetitionSettings'
 ));
 
 $is_preview = $_POST['tuja_messages_action'] === 'preview';

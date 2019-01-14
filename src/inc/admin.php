@@ -32,6 +32,19 @@
 			);
 		}
 
+		public function route() {
+			if(empty($_GET['tuja_view'])) return;
+
+			$view = 'tuja\admin\\' . sanitize_text_field($_GET['tuja_view']);
+			if(class_exists($view)) {
+				$view = new $view();
+
+				if(method_exists($view, 'output')) {
+					$view->output();
+				}
+			}
+		}
+
 		public function notices_html() {
 			if(!empty(self::$notices)) {
 				foreach(self::$notices as $notice) {
@@ -80,11 +93,15 @@
 				$db_competition->create($props);
 			}
 
-			$view = $_GET['tuja_view'] ?: 'index';
+			if(isset($_GET['tuja_view'])) {
+				$this->route();
+			} else {
+				$view = 'index';
+				printf('<div class="tuja tuja-view-%s">', $view);
+				include(Plugin::PATH . '/admin/views/' . $view . '.php');
+				print('</div>');
+			}
 
-			printf('<div class="tuja tuja-view-%s">', $view);
-			include('admin/' . $view . '.php');
-			print('</div>');
 		}
 	}
 	

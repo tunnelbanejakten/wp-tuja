@@ -19,7 +19,7 @@
 </form>
 <?php
 $url = add_query_arg(array(
-    'tuja_view' => 'settings'
+    'tuja_view' => 'Settings'
 ));
 printf('<p><a href="%s">Inställningar</a></p>', $url);
 ?>

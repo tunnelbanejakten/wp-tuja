@@ -36,7 +36,7 @@ $groups = $db_groups->get_all_in_competition($competition->id);
     <?php
     $settings_url = add_query_arg(array(
         'tuja_competition' => $competition->id,
-        'tuja_view' => 'competition_settings'
+        'tuja_view' => 'CompetitionSettings'
     ));
     printf('<p><a href="%s">Inställningar</a></p>', $settings_url);
     $messages_url = add_query_arg(array(
