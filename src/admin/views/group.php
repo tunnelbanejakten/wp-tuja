@@ -1,50 +1,5 @@
-<?php
+<?php namespace tuja\admin; ?>
 
-namespace tuja\admin;
-
-use tuja\view\FieldImages;
-use util\score\ScoreCalculator;
-
-$group = $db_groups->get($_GET['tuja_group']);
-if (!$group) {
-    print 'Could not find group';
-    return;
-}
-$competition = $db_competition->get($group->competition_id);
-if (!$competition) {
-    print 'Could not find competition';
-    return;
-}
-
-$competition_url = add_query_arg(array(
-    'tuja_competition' => $competition->id,
-    'tuja_view' => 'competition'
-));
-
-if ($_POST['tuja_points_action'] === 'save') {
-    $questions = $db_question->get_all_in_competition($competition->id);
-    foreach ($questions as $question) {
-        $value = $_POST['tuja_group_points__' . $question->id];
-        if (isset($value)) {
-            $db_points->set($group->id, $question->id, is_numeric($value) ? intval($value) : null);
-        }
-    }
-}
-
-$forms = $db_form->get_all_in_competition($competition->id);
-
-$score_calculator = new ScoreCalculator($competition->id, $db_question, $db_response, $db_groups, $db_points);
-$calculated_scores_final = $score_calculator->score_per_question($group->id);
-$calculated_scores_without_overrides = $score_calculator->score_per_question($group->id, false);
-$responses = $db_response->get_latest_by_group($group->id);
-$response_per_question = array_combine(array_map(function ($response) {
-    return $response->form_question_id;
-}, $responses), array_values($responses));
-$points_overrides = $db_points->get_by_group($group->id);
-$points_overrides_per_question = array_combine(array_map(function ($points) {
-    return $points->form_question_id;
-}, $points_overrides), array_values($points_overrides));
-?>
 <form method="post" action="<?= add_query_arg() ?>">
     <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h1>
     <h2>Grupp <?= htmlspecialchars($group->name) ?></h2>
