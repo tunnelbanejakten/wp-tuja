@@ -1,6 +1,6 @@
 <?php
 
-namespace util\score;
+namespace tuja\util\score;
 
 class ScoreCalculator
 {
