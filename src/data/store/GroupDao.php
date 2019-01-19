@@ -4,6 +4,7 @@ namespace tuja\data\store;
 
 use data\model\ValidationException;
 use tuja\data\model\Group;
+use tuja\util\DB;
 
 class GroupDao extends AbstractDao
 {
@@ -20,7 +21,7 @@ class GroupDao extends AbstractDao
             throw new ValidationException('name', 'Det finns redan ett lag med detta namn.');
         }
 
-        $affected_rows = $this->wpdb->insert('team',
+        $affected_rows = $this->wpdb->insert(DB::get_table('team'),
             array(
                 'random_id' => $this->id->random_string(),
                 'competition_id' => $group->competition_id,

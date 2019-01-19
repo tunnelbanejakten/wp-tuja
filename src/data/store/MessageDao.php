@@ -3,6 +3,7 @@
 namespace tuja\data\store;
 
 use tuja\data\model\Message;
+use tuja\util\DB;
 
 class MessageDao extends AbstractDao
 {
@@ -16,7 +17,7 @@ class MessageDao extends AbstractDao
         $message->validate();
 
         $query_template = '
-            INSERT INTO message (
+            INSERT INTO ' . DB::get_table('team_category') . ' (
               form_question_id,
               team_id,
               text,

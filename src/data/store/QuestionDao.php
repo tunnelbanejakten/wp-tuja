@@ -3,6 +3,7 @@
 namespace tuja\data\store;
 
 use tuja\data\model\Question;
+use tuja\util\DB;
 
 class QuestionDao extends AbstractDao
 {
@@ -13,10 +14,11 @@ class QuestionDao extends AbstractDao
 
     function create(Question $question)
     {
-        $question->validate();
+		$question->validate();
+		$table = DB::get_table('form_question');
 
         $query_template = '
-            INSERT INTO form_question (
+            INSERT INTO ' . $table . ' (
                 form_id,
                 type,
                 answer,
@@ -46,16 +48,18 @@ class QuestionDao extends AbstractDao
 
     function delete($id)
     {
-        $query_template = 'DELETE FROM form_question WHERE id = %d';
+		$table = DB::get_table('form_question_points');
+        $query_template = 'DELETE FROM ' . $table . ' WHERE id = %d';
         return $this->wpdb->query($this->wpdb->prepare($query_template, $id));
     }
 
     function update(Question $question)
     {
-        $question->validate();
+		$question->validate();
+		$table = DB::get_table('form_question_points');
 
         $query_template = '
-            UPDATE form_question SET
+            UPDATE ' . $table . ' SET
                 type = %s,
                 answer = %s,
                 text = %s,
@@ -81,11 +85,13 @@ class QuestionDao extends AbstractDao
 
     function get_all_in_form($form_id)
     {
+		$table = DB::get_table('form_question_points');
+
         return $this->get_objects(
             'data\store\AbstractDao::to_form_question',
             '
                 SELECT * 
-                FROM form_question 
+                FROM ' . $table . ' 
                 WHERE form_id = %d 
                 ORDER BY sort_order, id',
             $form_id);
@@ -93,11 +99,13 @@ class QuestionDao extends AbstractDao
 
     function get_all_in_competition($competition_id)
     {
+		$table = DB::get_table('form_question_points');
+
         return $this->get_objects(
             'data\store\AbstractDao::to_form_question',
             '
                 SELECT q.* 
-                FROM form_question AS q INNER JOIN form AS f ON q.form_id = f.id
+                FROM ' . $table . ' AS q INNER JOIN form AS f ON q.form_id = f.id
                 WHERE f.competition_id = %d
                 ORDER BY q.sort_order, q.id',
             $competition_id);

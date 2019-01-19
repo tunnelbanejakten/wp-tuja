@@ -4,6 +4,7 @@ namespace data\store;
 
 use data\model\ValidationException;
 use tuja\data\model\MessageTemplate;
+use tuja\util\DB;
 
 class MessageTemplateDao extends AbstractDao
 {
@@ -20,7 +21,7 @@ class MessageTemplateDao extends AbstractDao
             throw new ValidationException('name', 'Det finns redan en mall med detta namn.');
         }
 
-        $affected_rows = $this->wpdb->insert('message_template',
+        $affected_rows = $this->wpdb->insert(DB::get_table('message_template'),
             array(
                 'competition_id' => $message_template->competition_id,
                 'name' => $message_template->name,

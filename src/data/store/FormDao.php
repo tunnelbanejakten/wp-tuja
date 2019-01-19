@@ -3,6 +3,7 @@
 namespace tuja\data\store;
 
 use tuja\data\model\Form;
+use tuja\util\DB;
 
 class FormDao extends AbstractDao
 {
@@ -15,7 +16,7 @@ class FormDao extends AbstractDao
     {
         $form->validate();
 
-        $affected_rows = $this->wpdb->insert('form',
+        $affected_rows = $this->wpdb->insert(DB::get_table('form'),
             array(
                 'competition_id' => $form->competition_id,
                 'name' => $form->name,

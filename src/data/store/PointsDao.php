@@ -2,6 +2,8 @@
 
 namespace tuja\data\store;
 
+use tuja\util\DB;
+
 class PointsDao extends AbstractDao
 {
     function __construct($wpdb)
@@ -12,8 +14,10 @@ class PointsDao extends AbstractDao
     // TODO: Handle problems in case replace(...) or delete(...) fail.
     function set($group_id, $question_id, $points = null)
     {
+		$table = DB::get_table('form_question_points');
+
         if (isset($points)) {
-            $this->wpdb->replace('form_question_points',
+            $this->wpdb->replace($table,
                 array(
                     'form_question_id' => $question_id,
                     'team_id' => $group_id,
@@ -25,7 +29,7 @@ class PointsDao extends AbstractDao
                     '%d'
                 ));
         } else {
-            $this->wpdb->delete('form_question_points',
+            $this->wpdb->delete($table,
                 array(
                     'form_question_id' => $question_id,
                     'team_id' => $group_id
@@ -39,19 +43,23 @@ class PointsDao extends AbstractDao
 
     function get_by_group($group_id)
     {
+		$table = DB::get_table('form_question_points');
+
         return $this->get_objects(
             'data\store\AbstractDao::to_points',
-            'SELECT * FROM form_question_points WHERE team_id = %d',
+            'SELECT * FROM ' . $table . ' WHERE team_id = %d',
             $group_id);
     }
 
     function get_by_competition($competition_id)
     {
+		$table = DB::get_table('form_question_points');
+
         return $this->get_objects(
             'data\store\AbstractDao::to_points',
             '' .
             'SELECT p.* ' .
-            'FROM form_question_points p ' .
+            'FROM ' . $table . ' p ' .
             '  INNER JOIN form_question q ON p.form_question_id = q.id ' .
             '  INNER JOIN form f ON q.form_id = f.id ' .
             'WHERE f.competition_id = %d',

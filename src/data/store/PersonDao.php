@@ -3,6 +3,7 @@
 namespace tuja\data\store;
 
 use tuja\data\model\Person;
+use tuja\util\DB;
 
 class PersonDao extends AbstractDao
 {
@@ -15,7 +16,7 @@ class PersonDao extends AbstractDao
     {
         $person->validate();
 
-        $affected_rows = $this->wpdb->insert('person',
+        $affected_rows = $this->wpdb->insert(DB::get_table('person'),
             array(
                 'random_id' => $this->id->random_string(),
                 'name' => $person->name,

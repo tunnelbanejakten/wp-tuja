@@ -3,6 +3,7 @@
 namespace tuja\data\store;
 
 use tuja\data\model\Competition;
+use tuja\util\DB;
 
 class CompetitionDao extends AbstractDao
 {
@@ -13,7 +14,7 @@ class CompetitionDao extends AbstractDao
 
     function create(Competition $competition)
     {
-        $affected_rows = $this->wpdb->insert('competition',
+        $affected_rows = $this->wpdb->insert(DB::get_table('competition'),
             array(
                 'random_id' => $this->id->random_string(),
                 'name' => $competition->name,

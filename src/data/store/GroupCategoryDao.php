@@ -4,6 +4,7 @@ namespace tuja\data\store;
 
 use data\model\ValidationException;
 use tuja\data\model\GroupCategory;
+use tuja\util\DB;
 
 class GroupCategoryDao extends AbstractDao
 {
@@ -20,7 +21,7 @@ class GroupCategoryDao extends AbstractDao
             throw new ValidationException('name', 'Det finns redan en kategori med detta namn.');
         }
 
-        $affected_rows = $this->wpdb->insert('team_category',
+        $affected_rows = $this->wpdb->insert(DB::get_table('team_category'),
             array(
                 'competition_id' => $category->competition_id,
                 'name' => $category->name,
