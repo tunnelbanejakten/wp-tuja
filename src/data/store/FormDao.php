@@ -7,16 +7,18 @@ use tuja\util\DB;
 
 class FormDao extends AbstractDao
 {
-    function __construct($wpdb)
+
+    function __construct()
     {
-        parent::__construct($wpdb);
+		parent::__construct();
+		$this->table = DB::get_table('form');
     }
 
     function create(Form $form)
     {
         $form->validate();
 
-        $affected_rows = $this->wpdb->insert(DB::get_table('form'),
+        $affected_rows = $this->wpdb->insert($this->table,
             array(
                 'competition_id' => $form->competition_id,
                 'name' => $form->name,
@@ -40,7 +42,7 @@ class FormDao extends AbstractDao
     {
         $form->validate();
 
-        return $this->wpdb->update('form',
+        return $this->wpdb->update($this->table,
             array(
                 'name' => $form->name,
                 'submit_response_start' => self::to_db_date($form->submit_response_start),
@@ -57,7 +59,7 @@ class FormDao extends AbstractDao
             function ($row) {
                 return self::to_form($row);
             },
-            'SELECT * FROM form WHERE id = %d',
+            'SELECT * FROM ' . $this->table . ' WHERE id = %d',
             $id);
     }
 
@@ -67,7 +69,7 @@ class FormDao extends AbstractDao
             function ($row) {
                 return self::to_form($row);
             },
-            'SELECT * FROM form WHERE competition_id = %d',
+            'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d',
             $competition_id);
     }
 

@@ -8,9 +8,10 @@ use tuja\util\DB;
 
 class GroupCategoryDao extends AbstractDao
 {
-    function __construct($wpdb)
+    function __construct()
     {
-        parent::__construct($wpdb);
+		parent::__construct();
+		$this->table = DB::get_table('team_category');
     }
 
     function create(GroupCategory $category)
@@ -21,7 +22,7 @@ class GroupCategoryDao extends AbstractDao
             throw new ValidationException('name', 'Det finns redan en kategori med detta namn.');
         }
 
-        $affected_rows = $this->wpdb->insert(DB::get_table('team_category'),
+        $affected_rows = $this->wpdb->insert($this->table,
             array(
                 'competition_id' => $category->competition_id,
                 'name' => $category->name,
@@ -45,7 +46,7 @@ class GroupCategoryDao extends AbstractDao
             throw new ValidationException('name', 'Det finns redan en kategori med detta namn.');
         }
 
-        return $this->wpdb->update('team_category',
+        return $this->wpdb->update($this->table,
             array(
                 'name' => $category->name,
                 'is_crew' => $category->is_crew
@@ -59,7 +60,7 @@ class GroupCategoryDao extends AbstractDao
     {
         $db_results = $this->wpdb->get_results(
             $this->wpdb->prepare(
-                'SELECT id FROM team_category WHERE name = %s AND id != %d',
+                'SELECT id FROM ' . $this->table . ' WHERE name = %s AND id != %d',
                 $name,
                 $exclude_group_id),
             OBJECT);
@@ -70,7 +71,7 @@ class GroupCategoryDao extends AbstractDao
     {
         return $this->get_object(
             'data\store\AbstractDao::to_group_category',
-            'SELECT * FROM team_category WHERE id = %d',
+            'SELECT * FROM ' . $this->table . ' WHERE id = %d',
             $id);
     }
 
@@ -78,13 +79,13 @@ class GroupCategoryDao extends AbstractDao
     {
         return $this->get_objects(
             'data\store\AbstractDao::to_group_category',
-            'SELECT * FROM team_category WHERE competition_id = %d ORDER BY is_crew, name',
+            'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d ORDER BY is_crew, name',
             $competition_id);
     }
 
     function delete($id)
     {
-        $query_template = 'DELETE FROM team_category WHERE id = %d';
+        $query_template = 'DELETE FROM ' . $this->table . ' WHERE id = %d';
         return $this->wpdb->query($this->wpdb->prepare($query_template, $id));
     }
 

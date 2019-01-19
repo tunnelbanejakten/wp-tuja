@@ -7,9 +7,10 @@ use tuja\util\DB;
 
 class MessageDao extends AbstractDao
 {
-    function __construct($wpdb)
+    function __construct()
     {
-        parent::__construct($wpdb);
+		parent::__construct();
+		$this->table = DB::get_table('message');
     }
 
     function create(Message $message)
@@ -17,7 +18,7 @@ class MessageDao extends AbstractDao
         $message->validate();
 
         $query_template = '
-            INSERT INTO ' . DB::get_table('team_category') . ' (
+            INSERT INTO ' . $this->table . ' (
               form_question_id,
               team_id,
               text,
@@ -51,14 +52,14 @@ class MessageDao extends AbstractDao
     {
         return $this->get_objects(
             'data\store\AbstractDao::to_message',
-            'SELECT * FROM message ORDER BY date_received');
+            'SELECT * FROM ' . $this->table . ' ORDER BY date_received');
     }
 
     function get_by_group($group_id)
     {
         return $this->get_objects(
             'data\store\AbstractDao::to_message',
-            'SELECT * FROM message WHERE team_id = %d ORDER BY date_received',
+            'SELECT * FROM ' . $this->table . ' WHERE team_id = %d ORDER BY date_received',
             $group_id);
     }
 
@@ -66,14 +67,14 @@ class MessageDao extends AbstractDao
     {
         return $this->get_objects(
             'data\store\AbstractDao::to_message',
-            'SELECT * FROM message WHERE team_id IS NULL ORDER BY date_received');
+            'SELECT * FROM ' . $this->table . ' WHERE team_id IS NULL ORDER BY date_received');
     }
 
     function exists($source, $source_message_id)
     {
         $count = $this->wpdb->get_var(
             $this->wpdb->prepare(
-                'SELECT COUNT(*) FROM message WHERE source = %d AND source_message_id = %s',
+                'SELECT COUNT(*) FROM ' . $this->table . ' WHERE source = %d AND source_message_id = %s',
                 $source,
                 $source_message_id));
         return $count > 0;

@@ -19,10 +19,12 @@ use util\Phone;
 class AbstractDao
 {
     protected $id;
-    protected $wpdb;
+	protected $wpdb;
+	protected $table;
 
-    function __construct($wpdb)
+    function __construct()
     {
+		global $wpdb;
         $this->id = new Id();
         $this->wpdb = $wpdb;
     }

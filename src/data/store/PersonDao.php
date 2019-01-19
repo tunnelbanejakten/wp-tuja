@@ -7,16 +7,17 @@ use tuja\util\DB;
 
 class PersonDao extends AbstractDao
 {
-    function __construct($wpdb)
+    function __construct()
     {
-        parent::__construct($wpdb);
+		parent::__construct();
+		$this->table = DB::get_table('person');
     }
 
     function create(Person $person)
     {
         $person->validate();
 
-        $affected_rows = $this->wpdb->insert(DB::get_table('person'),
+        $affected_rows = $this->wpdb->insert($this->table,
             array(
                 'random_id' => $this->id->random_string(),
                 'name' => $person->name,
@@ -41,7 +42,7 @@ class PersonDao extends AbstractDao
     {
         $person->validate();
 
-        return $this->wpdb->update('person',
+        return $this->wpdb->update($this->table,
             array(
                 'name' => $person->name,
                 'email' => $person->email,
@@ -56,7 +57,7 @@ class PersonDao extends AbstractDao
     {
         return $this->get_object(
             'data\store\AbstractDao::to_person',
-            'SELECT * FROM person WHERE id = %d',
+            'SELECT * FROM ' . $this->table . ' WHERE id = %d',
             $id);
     }
 
@@ -64,7 +65,7 @@ class PersonDao extends AbstractDao
     {
         return $this->get_object(
             'data\store\AbstractDao::to_person',
-            'SELECT * FROM person WHERE random_id = %s',
+            'SELECT * FROM ' . $this->table . ' WHERE random_id = %s',
             $key);
     }
 
@@ -73,7 +74,7 @@ class PersonDao extends AbstractDao
     {
         return $this->get_objects(
             'data\store\AbstractDao::to_person',
-            'SELECT * FROM person WHERE team_id = %d',
+            'SELECT * FROM ' . $this->table . ' WHERE team_id = %d',
             $group_id);
     }
 
@@ -82,14 +83,14 @@ class PersonDao extends AbstractDao
         return $this->get_objects(
             'data\store\AbstractDao::to_person',
             'SELECT p.* '.
-            'FROM person AS p INNER JOIN team AS t ON p.team_id = t.id '.
+            'FROM ' . $this->table . ' AS p INNER JOIN team AS t ON p.team_id = t.id '.
             'WHERE t.competition_id = %d',
             $competition_id);
     }
 
     public function delete_by_key($key)
     {
-        $affected_rows = $this->wpdb->delete('person', array(
+        $affected_rows = $this->wpdb->delete($this->table, array(
             'random_id' => $key
         ));
         return $affected_rows !== false && $affected_rows === 1;

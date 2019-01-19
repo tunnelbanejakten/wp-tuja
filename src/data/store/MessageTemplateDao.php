@@ -8,9 +8,10 @@ use tuja\util\DB;
 
 class MessageTemplateDao extends AbstractDao
 {
-    function __construct($wpdb)
+    function __construct()
     {
-        parent::__construct($wpdb);
+		parent::__construct();
+		$this->table = DB::get_table('message_template');
     }
 
     function create(MessageTemplate $message_template)
@@ -21,7 +22,7 @@ class MessageTemplateDao extends AbstractDao
             throw new ValidationException('name', 'Det finns redan en mall med detta namn.');
         }
 
-        $affected_rows = $this->wpdb->insert(DB::get_table('message_template'),
+        $affected_rows = $this->wpdb->insert($this->table,
             array(
                 'competition_id' => $message_template->competition_id,
                 'name' => $message_template->name,
@@ -47,7 +48,7 @@ class MessageTemplateDao extends AbstractDao
             throw new ValidationException('name', 'Det finns redan en mall med detta namn.');
         }
 
-        return $this->wpdb->update('message_template',
+        return $this->wpdb->update($this->table,
             array(
                 'name' => $message_template->name,
                 'subject' => $message_template->subject,
@@ -62,7 +63,7 @@ class MessageTemplateDao extends AbstractDao
     {
         $db_results = $this->wpdb->get_results(
             $this->wpdb->prepare(
-                'SELECT id FROM message_template WHERE name = %s AND id != %d',
+                'SELECT id FROM ' . $this->table . ' WHERE name = %s AND id != %d',
                 $name,
                 $exclude_message_template_id),
             OBJECT);
@@ -75,7 +76,7 @@ class MessageTemplateDao extends AbstractDao
             function ($row) {
                 return self::to_message_template($row);
             },
-            'SELECT * FROM message_template WHERE competition_id = %d',
+            'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d',
             $competition_id);
     }
 
@@ -85,13 +86,13 @@ class MessageTemplateDao extends AbstractDao
             function ($row) {
                 return self::to_message_template($row);
             },
-            'SELECT * FROM message_template WHERE id = %d',
+            'SELECT * FROM ' . $this->table . ' WHERE id = %d',
             $id);
     }
 
     function delete($id)
     {
-        $query_template = 'DELETE FROM message_template WHERE id = %d';
+        $query_template = 'DELETE FROM ' . $this->table . ' WHERE id = %d';
         return $this->wpdb->query($this->wpdb->prepare($query_template, $id));
     }
 

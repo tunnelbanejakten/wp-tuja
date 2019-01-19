@@ -8,9 +8,10 @@ use tuja\util\DB;
 
 class GroupDao extends AbstractDao
 {
-    function __construct($wpdb)
+    function __construct()
     {
-        parent::__construct($wpdb);
+		parent::__construct();
+		$this->table = DB::get_table('team');
     }
 
     function create(Group $group)
@@ -21,7 +22,7 @@ class GroupDao extends AbstractDao
             throw new ValidationException('name', 'Det finns redan ett lag med detta namn.');
         }
 
-        $affected_rows = $this->wpdb->insert(DB::get_table('team'),
+        $affected_rows = $this->wpdb->insert($this->table,
             array(
                 'random_id' => $this->id->random_string(),
                 'competition_id' => $group->competition_id,
@@ -49,7 +50,7 @@ class GroupDao extends AbstractDao
             throw new ValidationException('name', 'Det finns redan ett lag med detta namn.');
         }
 
-        return $this->wpdb->update('team',
+        return $this->wpdb->update($this->table,
             array(
                 'name' => $group->name,
                 'category_id' => $group->category_id
@@ -63,7 +64,7 @@ class GroupDao extends AbstractDao
     {
         $db_results = $this->wpdb->get_results(
             $this->wpdb->prepare(
-                'SELECT id FROM team WHERE name = %s AND id != %d',
+                'SELECT id FROM ' . $this->table . ' WHERE name = %s AND id != %d',
                 $name,
                 $exclude_group_id),
             OBJECT);
@@ -74,7 +75,7 @@ class GroupDao extends AbstractDao
     {
         return $this->get_object(
             'data\store\AbstractDao::to_group',
-            'SELECT * FROM team WHERE id = %d',
+            'SELECT * FROM ' . $this->table . ' WHERE id = %d',
             $id);
     }
 
@@ -82,7 +83,7 @@ class GroupDao extends AbstractDao
     {
         return $this->get_object(
             'data\store\AbstractDao::to_group',
-            'SELECT * FROM team WHERE random_id = %s',
+            'SELECT * FROM ' . $this->table . ' WHERE random_id = %s',
             $key);
     }
 
@@ -90,7 +91,7 @@ class GroupDao extends AbstractDao
     {
         return $this->get_objects(
             'data\store\AbstractDao::to_group',
-            'SELECT * FROM team WHERE competition_id = %d',
+            'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d',
             $competition_id);
     }
 

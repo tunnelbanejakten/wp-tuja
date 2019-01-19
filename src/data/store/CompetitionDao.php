@@ -7,14 +7,15 @@ use tuja\util\DB;
 
 class CompetitionDao extends AbstractDao
 {
-    function __construct($wpdb)
+    function __construct()
     {
-        parent::__construct($wpdb);
+		parent::__construct();
+		$this->table = DB::get_table('competition');
     }
 
     function create(Competition $competition)
     {
-        $affected_rows = $this->wpdb->insert(DB::get_table('competition'),
+        $affected_rows = $this->wpdb->insert($this->table,
             array(
                 'random_id' => $this->id->random_string(),
                 'name' => $competition->name,
@@ -48,7 +49,7 @@ class CompetitionDao extends AbstractDao
     {
         $competition->validate();
 
-        return $this->wpdb->update('competition',
+        return $this->wpdb->update($this->table,
             array(
                 'name' => $competition->name,
                 'create_group_start' => self::to_db_date($competition->create_group_start),
@@ -71,7 +72,7 @@ class CompetitionDao extends AbstractDao
             function ($row) {
                 return self::to_competition($row);
             },
-            'SELECT * FROM competition WHERE id = %d',
+            'SELECT * FROM ' . $this->table . ' WHERE id = %d',
             $id);
     }
 
@@ -81,7 +82,7 @@ class CompetitionDao extends AbstractDao
             function ($row) {
                 return self::to_competition($row);
             },
-            'SELECT * FROM competition');
+            'SELECT * FROM ' . $this->table);
     }
 
     private static function to_competition($result): Competition
