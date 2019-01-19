@@ -1,28 +1,12 @@
-<?php
-
-namespace tuja\admin;
-
-use tuja\view\FieldImages;
-
-$competition = $db_competition->get($_GET['tuja_competition']);
-if (!$competition) {
-    print 'Could not find competition';
-    return;
-}
-
-$competition_url = add_query_arg(array(
-    'tuja_competition' => $competition->id,
-    'tuja_view' => 'competition'
-));
-?>
+<?php namespace tuja\admin; ?>
 
 <h1>Tunnelbanejakten</h1>
-<h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h2>
+<h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $this->competition->name) ?></h2>
 
 <h3>Importera</h3>
 <?php
 $import_url = add_query_arg(array(
-    'tuja_competition' => $competition->id,
+    'tuja_competition' => $this->competition->id,
     'tuja_view' => 'messages_import'
 ));
 printf('<p><a href="%s">Importera meddelanden</a></p>', $import_url);
@@ -31,7 +15,7 @@ printf('<p><a href="%s">Importera meddelanden</a></p>', $import_url);
 <h3>Skicka</h3>
 <?php
 $import_url = add_query_arg(array(
-    'tuja_competition' => $competition->id,
+    'tuja_competition' => $this->competition->id,
     'tuja_view' => 'messages_send'
 ));
 printf('<p><a href="%s">Skicka meddelanden</a></p>', $import_url);
@@ -44,7 +28,6 @@ printf('<p><a href="%s">Skicka meddelanden</a></p>', $import_url);
 
     <?php
     // TODO: Show messages nicer (also in group.php)
-    $messages = $db_message->get_without_group();
     foreach ($messages as $message) {
         if (is_array($message->image_ids) && count($message->image_ids) > 0) {
             $field = new FieldImages([]);
