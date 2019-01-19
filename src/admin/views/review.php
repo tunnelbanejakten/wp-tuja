@@ -1,62 +1,7 @@
-<?php
+<?php namespace tuja\admin; ?>
 
-namespace tuja\admin;
-
-use tuja\view\FieldImages;
-
-$competition = $db_competition->get($_GET['tuja_competition']);
-if (!$competition) {
-    print 'Could not find competition';
-    return;
-}
-
-$competition_url = add_query_arg(array(
-    'tuja_competition' => $competition->id,
-    'tuja_view' => 'competition'
-));
-
-if ($_POST['tuja_review_action'] === 'save') {
-    $form_values = array_filter($_POST, function ($key) {
-        return substr($key, 0, strlen('tuja_review_points')) === 'tuja_review_points';
-    }, ARRAY_FILTER_USE_KEY);
-
-    foreach ($form_values as $field_name => $field_value) {
-        list(, $question_id, $group_id) = explode('__', $field_name);
-        $db_points->set($group_id, $question_id, is_numeric($field_value) ? intval($field_value) : null);
-    }
-    $db_response->mark_as_reviewed(explode(',', $_POST['tuja_review_response_ids']));
-}
-
-$groups = $db_groups->get_all_in_competition($competition->id);
-$groups_map = array_combine(array_map(function ($group) {
-    return $group->id;
-}, $groups), array_values($groups));
-$forms = $db_form->get_all_in_competition($competition->id);
-
-//$score_calculator = new ScoreCalculator($competition->id, $db_question, $db_response, $db_groups, $db_points);
-//$calculated_scores_final = $score_calculator->score_per_question($group->id);
-//$calculated_scores_without_overrides = $score_calculator->score_per_question($group->id, false);
-$responses = $db_response->get_not_reviewed($competition->id);
-//$response_per_question = array_combine(array_map(function ($response) {
-//    return $response->form_question_id;
-//}, $responses), array_values($responses));
-//$points_overrides = $db_points->get_by_group($group->id);
-//$points_overrides_per_question = array_combine(array_map(function ($points) {
-//    return $points->form_question_id;
-//}, $points_overrides), array_values($points_overrides));
-
-//printf('<pre>%s</pre>', print_r($responses, true));
-
-$current_points = $db_points->get_by_competition($competition->id);
-$current_points = array_combine(
-    array_map(function ($points) {
-        return $points->form_question_id . '__' . $points->group_id;
-    }, $current_points),
-    array_values($current_points));
-
-?>
 <form method="post" action="<?= add_query_arg() ?>">
-    <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h1>
+    <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $this->competition->name) ?></h1>
 
     <?php
     if (empty($responses)) {
