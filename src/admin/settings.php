@@ -5,12 +5,10 @@ namespace tuja\admin;
 class Settings {
 	const TUJA_OPTION_FIELD_NAME_PREFIX = 'tuja_option__';
 
-	public function __constructor() {
-		add_action('init', array($this, 'handle_post'));
-	}
-
 
 	public function output() {
+		$this->handle_post();
+			
 		include('views/settings.php');
 	}
 

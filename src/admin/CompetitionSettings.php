@@ -16,10 +16,6 @@ use Exception;
 class CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
-	public function __constructor() {
-		add_action('init', array($this, 'handle_post'));
-	}
-
 
 	public function handle_post()
 	{
@@ -38,6 +34,8 @@ class CompetitionSettings {
 
 	public function output()
 	{
+		$this->handle_post();
+			
 		$competition_dao = new CompetitionDao($wpdb);
 		$competition = $competition_dao->get($_GET['tuja_competition']);
 		$message_template_dao = new MessageTemplateDao($wpdb);

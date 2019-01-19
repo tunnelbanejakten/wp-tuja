@@ -2,25 +2,24 @@
 
 namespace tuja\admin;
 
-use data\store\GroupCategoryDao;
 use tuja\data\model\Form;
 use tuja\data\model\Group;
 use util\score\ScoreCalculator;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
+use tuja\data\store\CompetitionDao;
 
 class Competition {
 
 	private $competition;
 
-	public function __constructor() {
+	public function __construct() {
+		$db_competition = new CompetitionDao();
 		$this->competition = $db_competition->get($_GET['tuja_competition']);
 		if (!$this->competition) {
 			print 'Could not find competition';
 			return;
 		}
-
-		add_action('init', array($this, 'handle_post'));
 	}
 
 
@@ -44,6 +43,8 @@ class Competition {
 
 
 	public function output() {
+		$this->handle_post();
+		
 		$db_form = new FormDao();
 		$db_groups = new GroupDao();
 		
