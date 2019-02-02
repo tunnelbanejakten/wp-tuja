@@ -3,9 +3,7 @@
 namespace tuja\view;
 
 use Exception;
-use util\ImageManager;
-
-include_once 'Field.php';
+use tuja\util\ImageManager;
 
 class FieldImagesImage
 {

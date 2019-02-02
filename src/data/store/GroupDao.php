@@ -2,7 +2,7 @@
 
 namespace tuja\data\store;
 
-use data\model\ValidationException;
+use tuja\data\model\ValidationException;
 use tuja\data\model\Group;
 use tuja\util\DB;
 
@@ -74,7 +74,7 @@ class GroupDao extends AbstractDao
     function get($id)
     {
         return $this->get_object(
-            'data\store\AbstractDao::to_group',
+	        'tuja\data\store\AbstractDao::to_group',
             'SELECT * FROM ' . $this->table . ' WHERE id = %d',
             $id);
     }
@@ -82,7 +82,7 @@ class GroupDao extends AbstractDao
     function get_by_key($key)
     {
         return $this->get_object(
-            'data\store\AbstractDao::to_group',
+	        'tuja\data\store\AbstractDao::to_group',
             'SELECT * FROM ' . $this->table . ' WHERE random_id = %s',
             $key);
     }
@@ -90,7 +90,7 @@ class GroupDao extends AbstractDao
     function get_all_in_competition($competition_id)
     {
         return $this->get_objects(
-            'data\store\AbstractDao::to_group',
+	        'tuja\data\store\AbstractDao::to_group',
             'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d',
             $competition_id);
     }

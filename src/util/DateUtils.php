@@ -1,9 +1,9 @@
 <?php
 
-namespace util;
+namespace tuja\util;
 
 
-use data\model\ValidationException;
+use tuja\data\model\ValidationException;
 use DateTime;
 use DateTimeZone;
 

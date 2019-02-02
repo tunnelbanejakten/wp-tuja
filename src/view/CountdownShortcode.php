@@ -1,10 +1,10 @@
 <?php
 
-namespace view;
+namespace tuja\view;
 
 
-use data\store\CompetitionDao;
-use data\store\FormDao;
+use tuja\data\store\CompetitionDao;
+use tuja\data\store\FormDao;
 use DateTime;
 
 class CountdownShortcode

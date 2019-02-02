@@ -1,8 +1,8 @@
 <?php
 
-namespace view;
+namespace tuja\view;
 
-use data\store\GroupDao;
+use tuja\data\store\GroupDao;
 
 class GroupNameShortcode
 {
@@ -11,7 +11,7 @@ class GroupNameShortcode
     public function __construct($wpdb, $group_key)
     {
         $this->group_key = $group_key;
-        $this->group_dao = new GroupDao($wpdb);
+	    $this->group_dao = new GroupDao();
     }
 
     public function render(): String

@@ -1,11 +1,9 @@
 <?php
 
-namespace util\messaging;
-
+namespace tuja\util\messaging;
 
 use Exception;
 use tuja\data\model\Person;
-use util\Phone;
 
 abstract class AbstractOutgoingMessage
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace util;
+namespace tuja\util;
 
 
 class Phone

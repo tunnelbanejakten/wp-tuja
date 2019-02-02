@@ -1,14 +1,14 @@
 <?php
 
-namespace view;
+namespace tuja\view;
 
-use data\model\ValidationException;
+use tuja\data\model\ValidationException;
 use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
-use util\messaging\MessageSender;
-use util\Recaptcha;
+use tuja\util\messaging\MessageSender;
+use tuja\util\Recaptcha;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.

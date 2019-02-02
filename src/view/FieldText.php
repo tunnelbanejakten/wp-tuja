@@ -2,8 +2,6 @@
 
 namespace tuja\view;
 
-include_once 'Field.php';
-
 class FieldText extends Field
 {
     function __construct()

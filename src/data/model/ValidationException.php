@@ -1,6 +1,6 @@
 <?php
 
-namespace data\model;
+namespace tuja\data\model;
 
 use Exception;
 

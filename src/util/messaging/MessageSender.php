@@ -1,8 +1,8 @@
 <?php
 
-namespace util\messaging;
+namespace tuja\util\messaging;
 
-use util\Template;
+use tuja\util\Template;
 
 class MessageSender
 {

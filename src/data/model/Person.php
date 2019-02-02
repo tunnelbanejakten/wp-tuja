@@ -2,8 +2,6 @@
 
 namespace tuja\data\model;
 
-use data\model\ValidationException;
-
 class Person
 {
     public $id;

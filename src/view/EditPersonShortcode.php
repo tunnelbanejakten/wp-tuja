@@ -1,8 +1,8 @@
 <?php
 
-namespace view;
+namespace tuja\view;
 
-use data\model\ValidationException;
+use tuja\data\model\ValidationException;
 use Exception;
 use tuja\data\model\Question;
 

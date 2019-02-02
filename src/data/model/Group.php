@@ -3,8 +3,6 @@
 namespace tuja\data\model;
 
 
-use data\model\ValidationException;
-
 class Group
 {
     public $id;

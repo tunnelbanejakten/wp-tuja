@@ -51,14 +51,14 @@ class MessageDao extends AbstractDao
     function get_all()
     {
         return $this->get_objects(
-            'data\store\AbstractDao::to_message',
+	        'tuja\data\store\AbstractDao::to_message',
             'SELECT * FROM ' . $this->table . ' ORDER BY date_received');
     }
 
     function get_by_group($group_id)
     {
         return $this->get_objects(
-            'data\store\AbstractDao::to_message',
+	        'tuja\data\store\AbstractDao::to_message',
             'SELECT * FROM ' . $this->table . ' WHERE team_id = %d ORDER BY date_received',
             $group_id);
     }
@@ -66,7 +66,7 @@ class MessageDao extends AbstractDao
     function get_without_group()
     {
         return $this->get_objects(
-            'data\store\AbstractDao::to_message',
+	        'tuja\data\store\AbstractDao::to_message',
             'SELECT * FROM ' . $this->table . ' WHERE team_id IS NULL ORDER BY date_received');
     }
 

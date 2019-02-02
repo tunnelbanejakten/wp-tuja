@@ -1,4 +1,10 @@
-<?php namespace tuja\admin; ?>
+<?php
+namespace tuja\admin;
+
+use DateTime;
+use tuja\view\FieldImages;
+
+?>
 
 <form method="post" action="<?= add_query_arg() ?>">
     <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $this->competition->name) ?></h1>

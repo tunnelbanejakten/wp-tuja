@@ -1,8 +1,8 @@
 <?php
 
-namespace data\store;
+namespace tuja\data\store;
 
-use data\model\ValidationException;
+use tuja\data\model\ValidationException;
 use tuja\data\model\MessageTemplate;
 use tuja\util\DB;
 

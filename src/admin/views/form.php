@@ -1,4 +1,12 @@
-<?php namespace tuja\admin; ?>
+<?php
+namespace tuja\admin;
+
+
+use tuja\data\model\Question;
+use tuja\view\Field;
+use tuja\util\DateUtils;
+
+?>
 
 <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h1>
 <h3>Formulär <?= $this->form->name ?></h3>

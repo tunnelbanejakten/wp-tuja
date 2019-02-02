@@ -1,8 +1,13 @@
 <?php namespace tuja\admin;
 
-      use tuja\util\score\ScoreCalculator;
-      use tuja\data\store\GroupCategoryDao;
- ?>
+use tuja\data\store\GroupCategoryDao;
+use tuja\data\store\GroupDao;
+use tuja\data\store\PointsDao;
+use tuja\data\store\QuestionDao;
+use tuja\data\store\ResponseDao;
+use tuja\util\score\ScoreCalculator;
+
+?>
 
 <form method="post" action="<?= add_query_arg() ?>">
     <h1>Tävling <?= $competition->name ?></h1>
@@ -54,7 +59,7 @@
     <table>
         <tbody>
         <?php
-        $calculator = new ScoreCalculator($competition->id, $db_question, $db_response, $db_groups, $db_points);
+        $calculator  = new ScoreCalculator( $competition->id, new QuestionDao(), new ResponseDao(), new GroupDao(), new PointsDao() );
         $score_board = $calculator->score_board();
         usort($score_board, function ($a, $b) {
             return $b['score'] - $a['score'];
@@ -72,7 +77,7 @@
     <input type="text" name="tuja_group_name"/>
     <select name="tuja_group_type">
         <?php
-        $category_dao = new GroupCategoryDao($wpdb);
+        $category_dao = new GroupCategoryDao();
         print join('', array_map(function ($category) {
             return sprintf('<option value="%d">%s (%s)</option>',
                 $category->id,

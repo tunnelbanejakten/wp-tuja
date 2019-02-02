@@ -188,13 +188,15 @@ abstract class Plugin {
 	public function autoloader($name) {
 		// Does $name start with our namespace?
 		if(strncmp($name, __NAMESPACE__, strlen(__NAMESPACE__)) !== 0) return;
-			
+
 		$classname = explode('\\', $name);
 		$classname = array_pop($classname);
-		
+
+
 		$paths = array(
 			self::PATH . '/data/store/' . $classname . '.php',
 			self::PATH . '/data/model/' . $classname . '.php',
+			self::PATH . '/util/markdown/' . $classname . '.php',
 			self::PATH . '/util/messaging/' . $classname . '.php',
 			self::PATH . '/util/score/' . $classname . '.php',
 			self::PATH . '/util/' . $classname . '.php',

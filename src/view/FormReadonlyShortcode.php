@@ -1,11 +1,10 @@
 <?php
 
-namespace view;
+namespace tuja\view;
 
-use data\store\FormDao;
-use data\store\GroupDao;
-use data\store\QuestionDao;
-use data\store\ResponseDao;
+use tuja\data\store\GroupDao;
+use tuja\data\store\QuestionDao;
+use tuja\data\store\ResponseDao;
 
 class FormReadonlyShortcode
 {
@@ -15,11 +14,11 @@ class FormReadonlyShortcode
 
     public function __construct($wpdb, $form_id, $group_key)
     {
-        $this->form_id = $form_id;
-        $this->group_key = $group_key;
-        $this->question_dao = new QuestionDao($wpdb);
-        $this->group_dao = new GroupDao($wpdb);
-        $this->response_dao = new ResponseDao($wpdb);
+	    $this->form_id      = $form_id;
+	    $this->group_key    = $group_key;
+	    $this->question_dao = new QuestionDao();
+	    $this->group_dao    = new GroupDao();
+	    $this->response_dao = new ResponseDao();
     }
 
     public function render(): String
