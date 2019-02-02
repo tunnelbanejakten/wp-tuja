@@ -36,7 +36,7 @@ class ResponseDao extends AbstractDao
     function get_by_group($group_id)
     {
 		return $this->get_objects(
-            'data\store\AbstractDao::to_response',
+			'tuja\data\store\AbstractDao::to_response',
             'SELECT * FROM ' . $this->table . ' WHERE team_id = %d ORDER BY id',
             $group_id);
     }
@@ -54,11 +54,11 @@ class ResponseDao extends AbstractDao
     function get_not_reviewed($competition_id)
     {
 		$all_responses = $this->get_objects(
-            'data\store\AbstractDao::to_response',
+			'tuja\data\store\AbstractDao::to_response',
             'SELECT r.* ' .
             'FROM ' . $this->table . ' r ' .
-            'INNER JOIN form_question fq ON r.form_question_id = fq.id ' .
-            'INNER JOIN form f ON (fq.form_id = f.id AND f.competition_id = %d) ' .
+            'INNER JOIN ' . DB::get_table( 'form_question' ) . ' fq ON r.form_question_id = fq.id ' .
+            'INNER JOIN ' . DB::get_table( 'form' ) . ' f ON (fq.form_id = f.id AND f.competition_id = %d) ' .
             'ORDER BY r.id',
             $competition_id);
 

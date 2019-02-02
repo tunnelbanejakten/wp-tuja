@@ -84,7 +84,7 @@ class QuestionDao extends AbstractDao
     function get_all_in_form($form_id)
     {
 		return $this->get_objects(
-            'data\store\AbstractDao::to_form_question',
+			'tuja\data\store\AbstractDao::to_form_question',
             '
                 SELECT * 
                 FROM ' . $this->table . ' 
@@ -96,10 +96,10 @@ class QuestionDao extends AbstractDao
     function get_all_in_competition($competition_id)
     {
 		return $this->get_objects(
-            'data\store\AbstractDao::to_form_question',
-            '
+			'tuja\data\store\AbstractDao::to_form_question',
+			'
                 SELECT q.* 
-                FROM ' . $this->table . ' AS q INNER JOIN form AS f ON q.form_id = f.id
+                FROM ' . $this->table . ' AS q INNER JOIN ' . DB::get_table( 'form' ) . ' AS f ON q.form_id = f.id
                 WHERE f.competition_id = %d
                 ORDER BY q.sort_order, q.id',
             $competition_id);

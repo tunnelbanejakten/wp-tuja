@@ -56,7 +56,7 @@ class PersonDao extends AbstractDao
     function get($id)
     {
         return $this->get_object(
-            'data\store\AbstractDao::to_person',
+	        'tuja\data\store\AbstractDao::to_person',
             'SELECT * FROM ' . $this->table . ' WHERE id = %d',
             $id);
     }
@@ -64,7 +64,7 @@ class PersonDao extends AbstractDao
     function get_by_key($key)
     {
         return $this->get_object(
-            'data\store\AbstractDao::to_person',
+	        'tuja\data\store\AbstractDao::to_person',
             'SELECT * FROM ' . $this->table . ' WHERE random_id = %s',
             $key);
     }
@@ -73,7 +73,7 @@ class PersonDao extends AbstractDao
     function get_all_in_group($group_id)
     {
         return $this->get_objects(
-            'data\store\AbstractDao::to_person',
+	        'tuja\data\store\AbstractDao::to_person',
             'SELECT * FROM ' . $this->table . ' WHERE team_id = %d',
             $group_id);
     }
@@ -81,10 +81,10 @@ class PersonDao extends AbstractDao
     function get_all_in_competition($competition_id)
     {
         return $this->get_objects(
-            'data\store\AbstractDao::to_person',
-            'SELECT p.* '.
-            'FROM ' . $this->table . ' AS p INNER JOIN team AS t ON p.team_id = t.id '.
-            'WHERE t.competition_id = %d',
+	        'tuja\data\store\AbstractDao::to_person',
+	        'SELECT p.* ' .
+	        'FROM ' . $this->table . ' AS p INNER JOIN ' . DB::get_table( 'team' ) . ' AS t ON p.team_id = t.id ' .
+	        'WHERE t.competition_id = %d',
             $competition_id);
     }
 
