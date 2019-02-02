@@ -2,9 +2,10 @@
 
 namespace tuja\admin;
 
-use util\ImageManager;
-use util\MessageImporter;
-use util\SmsBackupRestoreXmlFileProcessor;
+use tuja\data\store\CompetitionDao;
+use tuja\util\ImageManager;
+use tuja\util\MessageImporter;
+use tuja\util\SmsBackupRestoreXmlFileProcessor;
 use tuja\data\store\PersonDao;
 use tuja\data\store\MessageDao;
 use Exception;
@@ -15,7 +16,8 @@ class MessagesImport {
 	private $competition;
 
 	public function __construct() {
-		$this->competition = $db_competition->get($_GET['tuja_competition']);
+		$db_competition    = new CompetitionDao();
+		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
 		if (!$this->competition) {
 			print 'Could not find competition';
 			return;
@@ -30,9 +32,9 @@ class MessagesImport {
 		
 			if (isset($mms_messages)) {
 				$im = new ImageManager();
-		
-				$person_dao = new PersonDao($wpdb);
-				$message_dao = new MessageDao($wpdb);
+
+				$person_dao  = new PersonDao();
+				$message_dao = new MessageDao();
 		
 				$importer = new MessageImporter(
 					$message_dao,
@@ -68,6 +70,8 @@ class MessagesImport {
 
 	public function output() {
 		$this->handle_post();
+
+		$competition = $this->competition;
 
 		// TODO: Make helper function for generating URLs
 		$competition_url = add_query_arg(array(

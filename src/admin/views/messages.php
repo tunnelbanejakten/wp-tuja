@@ -1,4 +1,10 @@
-<?php namespace tuja\admin; ?>
+<?php
+namespace tuja\admin;
+
+use DateTime;
+use tuja\view\FieldImages;
+
+?>
 
 <h1>Tunnelbanejakten</h1>
 <h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $this->competition->name) ?></h2>
@@ -6,8 +12,8 @@
 <h3>Importera</h3>
 <?php
 $import_url = add_query_arg(array(
-    'tuja_competition' => $this->competition->id,
-    'tuja_view' => 'messages_import'
+	'tuja_competition' => $this->competition->id,
+	'tuja_view'        => 'MessagesImport'
 ));
 printf('<p><a href="%s">Importera meddelanden</a></p>', $import_url);
 ?>
@@ -15,8 +21,8 @@ printf('<p><a href="%s">Importera meddelanden</a></p>', $import_url);
 <h3>Skicka</h3>
 <?php
 $import_url = add_query_arg(array(
-    'tuja_competition' => $this->competition->id,
-    'tuja_view' => 'messages_send'
+	'tuja_competition' => $this->competition->id,
+	'tuja_view'        => 'MessagesSend'
 ));
 printf('<p><a href="%s">Skicka meddelanden</a></p>', $import_url);
 ?>
