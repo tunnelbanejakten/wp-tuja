@@ -1,14 +1,14 @@
 <?php
 
-namespace view;
+namespace tuja\view;
 
-use data\store\GroupCategoryDao;
-use data\store\GroupDao;
-use data\store\PointsDao;
-use data\store\QuestionDao;
 use DateTime;
 use Exception;
 use tuja\data\model\Question;
+use tuja\data\store\GroupCategoryDao;
+use tuja\data\store\GroupDao;
+use tuja\data\store\PointsDao;
+use tuja\data\store\QuestionDao;
 use tuja\view\Field;
 
 class PointsShortcode
@@ -31,11 +31,11 @@ class PointsShortcode
     public function __construct($wpdb, $competition_id, $group_key)
     {
         $this->competition_id = $competition_id;
-        $this->group_key = $group_key;
-        $this->question_dao = new QuestionDao($wpdb);
-        $this->group_dao = new GroupDao($wpdb);
-        $this->points_dao = new PointsDao($wpdb);
-        $this->category_dao = new GroupCategoryDao($wpdb);
+	    $this->group_key      = $group_key;
+	    $this->question_dao   = new QuestionDao();
+	    $this->group_dao      = new GroupDao();
+	    $this->points_dao     = new PointsDao();
+	    $this->category_dao   = new GroupCategoryDao();
     }
 
     public function update_points(): array

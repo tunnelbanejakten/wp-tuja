@@ -1,19 +1,19 @@
 <?php
 
-namespace view;
+namespace tuja\view;
 
-use data\store\CompetitionDao;
-use data\store\GroupCategoryDao;
-use data\store\GroupDao;
-use data\store\MessageTemplateDao;
-use data\store\PersonDao;
 use DateTime;
+use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
-use tuja\view\Field;
-use util\messaging\MessageSender;
-use util\messaging\OutgoingEmailMessage;
-use util\Template;
+use tuja\data\store\CompetitionDao;
+use tuja\data\store\GroupCategoryDao;
+use tuja\data\store\GroupDao;
+use tuja\data\store\MessageTemplateDao;
+use tuja\data\store\PersonDao;
+use tuja\util\messaging\MessageSender;
+use tuja\util\Template;
+use tuja\util\messaging\OutgoingEmailMessage;
 
 class AbstractGroupShortcode
 {
@@ -38,13 +38,13 @@ class AbstractGroupShortcode
 
     public function __construct($wpdb, $is_crew_form)
     {
-        $this->group_dao = new GroupDao($wpdb);
-        $this->person_dao = new PersonDao($wpdb);
-        $this->competition_dao = new CompetitionDao($wpdb);
-        $this->category_dao = new GroupCategoryDao($wpdb);
-        $this->message_template_dao = new MessageTemplateDao($wpdb);
-        $this->is_crew_form = $is_crew_form;
-        $this->message_sender = new MessageSender();
+	    $this->group_dao            = new GroupDao();
+	    $this->person_dao           = new PersonDao();
+	    $this->competition_dao      = new CompetitionDao();
+	    $this->category_dao         = new GroupCategoryDao();
+	    $this->message_template_dao = new MessageTemplateDao();
+	    $this->is_crew_form         = $is_crew_form;
+	    $this->message_sender       = new MessageSender();
     }
 
     protected function render_field($question, $field_name, $error_message, $read_only = false): string
