@@ -3,8 +3,6 @@
 namespace tuja\data\model;
 
 
-use Exception;
-
 class Question
 {
     public $id;
@@ -30,13 +28,13 @@ class Question
     public function validate()
     {
         if (strlen($this->text) > 500) {
-            throw new Exception('Frågan får inte var längre än 500 tecken.');
+	        throw new ValidationException( 'Frågan får inte var längre än 500 tecken.' );
         }
         if (strlen($this->text_hint) > 500) {
-            throw new Exception('Hjälptexten får inte var längre än 500 tecken.');
+	        throw new ValidationException( 'Hjälptexten får inte var längre än 500 tecken.' );
         }
         if (!empty($this->score_type) && !in_array($this->score_type, self::SCORING_METHODS)) {
-            throw new Exception('Ogiltig poängberäkningsmetod.');
+	        throw new ValidationException( 'Ogiltig poängberäkningsmetod.' );
         }
     }
 

@@ -3,8 +3,6 @@
 namespace tuja\data\model;
 
 
-use Exception;
-
 class Response
 {
     public $id;
@@ -23,7 +21,7 @@ class Response
     public function validate()
     {
         if (strlen(json_encode($this->answers) > 500)) {
-            throw new Exception('Du har svarat lite för mycket.');
+	        throw new ValidationException( 'Du har svarat lite för mycket.' );
         }
     }
 }
