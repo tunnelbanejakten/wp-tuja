@@ -32,18 +32,21 @@ class QuestionDao extends AbstractDao
                 %s,
                 %d,
                 %s 
-            )';
-        return $this->wpdb->query($this->wpdb->prepare($query_template,
-            $question->form_id,
-            $question->type,
-            json_encode(array(
-                'validation' => 'one_of',
-                'values' => $question->correct_answers,
-                'options' => $question->possible_answers
-            )),
-            $question->text,
-            $question->sort_order,
-            $question->text_hint));
+			)';
+		$query = $this->wpdb->prepare($query_template,
+			$question->form_id,
+			$question->type,
+			json_encode(array(
+				'validation' => 'one_of',
+				'values' => $question->correct_answers,
+				'options' => $question->possible_answers
+			)),
+			$question->text,
+			$question->sort_order,
+			$question->text_hint
+		);
+		
+        return $this->wpdb->query($query);
     }
 
     function delete($id)

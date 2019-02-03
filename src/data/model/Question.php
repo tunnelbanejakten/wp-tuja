@@ -17,33 +17,37 @@ class Question
     public $score_type;
     public $score_max;
 
-    const QUESTION_GRADING_TYPE_ONE_OF = "one_of";
-    const QUESTION_GRADING_TYPE_ALL_OF = "all_of";
+    const GRADING_TYPE_ONE_OF = "one_of";
+	const GRADING_TYPE_ALL_OF = "all_of";
+	const VALID_TYPES = ['text', 'number', 'header', 'pick_one', 'pick_multi'];
 
     const SCORING_METHODS = [
-        self::QUESTION_GRADING_TYPE_ALL_OF,
-        self::QUESTION_GRADING_TYPE_ONE_OF
+        self::GRADING_TYPE_ALL_OF,
+        self::GRADING_TYPE_ONE_OF
     ];
 
     public function validate()
     {
         if (strlen($this->text) > 500) {
-	        throw new ValidationException( 'Frågan får inte var längre än 500 tecken.' );
+	        throw new ValidationException('text', 'Frågan får inte var längre än 500 tecken.');
         }
         if (strlen($this->text_hint) > 500) {
-	        throw new ValidationException( 'Hjälptexten får inte var längre än 500 tecken.' );
+	        throw new ValidationException('text_hint', 'Hjälptexten får inte var längre än 500 tecken.');
         }
         if (!empty($this->score_type) && !in_array($this->score_type, self::SCORING_METHODS)) {
-	        throw new ValidationException( 'Ogiltig poängberäkningsmetod.' );
-        }
+	        throw new ValidationException('score_type', 'Ogiltig poängberäkningsmetod.');
+		}
+		if(!in_array($this->type, self::VALID_TYPES)) {
+			throw new ValidationException('type', 'Ogiltig frågetyp.');
+		}
     }
 
     public function score($answers)
     {
         $answers = array_map('strtolower', $answers);
         switch ($this->score_type) {
-            case self::QUESTION_GRADING_TYPE_ONE_OF:
-            case self::QUESTION_GRADING_TYPE_ALL_OF:
+            case self::GRADING_TYPE_ONE_OF:
+            case self::GRADING_TYPE_ALL_OF:
                 $correct_answers = array_map('strtolower', $this->correct_answers);
 
                 $answers_percent_correct = array_map(function ($answer) use ($correct_answers) {
@@ -60,7 +64,7 @@ class Question
                         return $percent > 80;
                     }));
 
-                $is_correct = $this->score_type == self::QUESTION_GRADING_TYPE_ALL_OF ?
+                $is_correct = $this->score_type == self::GRADING_TYPE_ALL_OF ?
                     count($answers) == count($correct_answers) && $count_correct_values == count($correct_answers) :
                     $count_correct_values > 0;
                 return $is_correct ? $this->score_max : 0;
