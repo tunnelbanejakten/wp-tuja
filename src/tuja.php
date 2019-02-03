@@ -97,7 +97,7 @@ abstract class Plugin {
 			CREATE TABLE IF NOT EXISTS " . DB::get_table('form_question') . " (
 				id         INTEGER AUTO_INCREMENT PRIMARY KEY,
 				form_id    INTEGER      NOT NULL,
-				type       VARCHAR(10)  NOT NULL CHECK (type IN ('text', 'number', 'header', 'pick_one', 'pick_multiple')),
+				type       VARCHAR(10)  NOT NULL,
 				answer     VARCHAR(500),
 				text       VARCHAR(500) NOT NULL,
 				sort_order SMALLINT,

@@ -10,7 +10,7 @@ use tuja\util\DateUtils;
 
 <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $competition->name) ?></h1>
 <h3>Formulär <?= $this->form->name ?></h3>
-<form method="post" action="<?= add_query_arg() ?>">
+<form method="post">
 
     <p><strong>Inställningar</strong></p>
 
@@ -46,7 +46,8 @@ use tuja\util\DateUtils;
 
         $render_id = uniqid();
         $field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $question->id . '__type';
-        $selected_value = $_POST[$field_name] ?: $question->type;
+		$selected_value = !empty($_POST[$field_name]) ? $_POST[$field_name] : $question->type;
+		
         // TODO: Extract question types to constants. DRY.
         $options = array(
             'text' => 'Fritext',
@@ -74,11 +75,11 @@ use tuja\util\DateUtils;
 
         $render_id = uniqid();
         $field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $question->id . '__scoretype';
-        $selected_value = $_POST[$field_name] ?: $question->score_type;
+        $selected_value = !empty($_POST[$field_name]) ? $_POST[$field_name] : $question->score_type;
         $options = array(
             '' => 'Rätta inte',
-            Question::QUESTION_GRADING_TYPE_ONE_OF => 'Ge poäng om minst ett korrekt svar angivits',
-            Question::QUESTION_GRADING_TYPE_ALL_OF => 'Ge poäng om alla korrekta svar angivits'
+            Question::GRADING_TYPE_ONE_OF => 'Ge poäng om minst ett korrekt svar angivits',
+            Question::GRADING_TYPE_ALL_OF => 'Ge poäng om alla korrekta svar angivits'
         );
         printf('<div class="tuja-admin-question-property tuja-admin-question-property-type"><label for="%s">%s</label><select id="%s" name="%s">%s</select></div>',
             $render_id,

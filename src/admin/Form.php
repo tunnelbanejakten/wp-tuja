@@ -32,6 +32,9 @@ class Form {
 
 	public function handle_post() {
 		global $wpdb;
+
+		if(!isset($_POST['tuja_action'])) return;
+
 		if($_POST['tuja_action'] == 'questions_update') {
 			$wpdb->show_errors();
 		
@@ -85,7 +88,7 @@ class Form {
 				}
 			}
 
-			Admin::notice($overall_success);
+			if(!$overall_success) AdminUtils::printError('Kunde inte uppdatera fråga.');
 		} elseif ($_POST['tuja_action'] == 'form_update') {
 			try {
 				$this->form->submit_response_start = DateUtils::from_date_local_value( $_POST['tuja-submit-response-start'] );
@@ -99,6 +102,8 @@ class Form {
 			$props->correct_answers  = array('Alice');
 			$props->possible_answers = array('Alice', 'Bob');
 			$props->form_id          = $this->form->id;
+			$props->type          = 'text';
+
 			try {
 				$affected_rows = $this->db_question->create( $props );
 				$success       = $affected_rows !== false && $affected_rows === 1;
@@ -106,7 +111,7 @@ class Form {
 				$success = false;
 			}
 			
-			Admin::notice($success);
+			if(!$success) AdminUtils::printError('Kunde inte skapa fråga.');
 		} elseif (substr($_POST['tuja_action'], 0, strlen(self::ACTION_NAME_DELETE_PREFIX)) == self::ACTION_NAME_DELETE_PREFIX) {
 			$wpdb->show_errors(); // TODO: Show nicer error message if question cannot be deleted (e.g. in case someone has answered the question already)
 		
@@ -115,7 +120,7 @@ class Form {
 			$affected_rows = $this->db_question->delete( $question_to_delete );
 			$success       = $affected_rows !== false && $affected_rows === 1;
 			
-			Admin::notice($success);
+			if(!$success) AdminUtils::printError('Kunde inte ta bort fråga.');
 		}
 	}
 

@@ -37,6 +37,8 @@ class Group {
 
 
 	public function handle_post() {
+		if(!isset($_POST['tuja_points_action'])) return;
+
 		if ( $_POST['tuja_points_action'] === 'save' ) {
 			$db_question = new QuestionDao();
 			$db_points   = new PointsDao();

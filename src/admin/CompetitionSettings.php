@@ -17,6 +17,8 @@ class CompetitionSettings {
 
 
 	public function handle_post() {
+		if(!isset($_POST['tuja_action'])) return;
+		
 		$competition_dao = new CompetitionDao();
 		$competition     = $competition_dao->get( $_GET['tuja_competition'] );
 

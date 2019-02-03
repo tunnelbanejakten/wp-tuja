@@ -25,6 +25,8 @@ class Competition {
 
 
 	public function handle_post() {
+		if(!isset($_POST['tuja_action'])) return;
+		
 		$db_groups = new GroupDao();
 		$db_form   = new FormDao();
 

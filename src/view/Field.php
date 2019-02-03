@@ -42,8 +42,12 @@ class Field
         }
         $field->label = $question->text;
         $field->hint = $question->text_hint;
-        $field->key = "question-" . $question->id;
-        $field->value = $question->latest_response->answers;
+		$field->key = "question-" . $question->id;
+
+		if(!is_null($question->latest_response)) {
+			$field->value = $question->latest_response->answers;
+		}
+		
         return $field;
     }
 }

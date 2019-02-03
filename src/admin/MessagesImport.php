@@ -27,6 +27,8 @@ class MessagesImport {
 
 
 	public function handle_post() {
+		if(!isset($_POST['tuja_points_action'])) return;
+		
 		if($_POST['tuja_points_action'] === 'import') {
 			$mms_messages = $this->get_mms_messages_to_import();
 		
