@@ -7,7 +7,7 @@ use tuja\util\DateUtils;
 
 ?>
 
-<form method="post" action="<?= add_query_arg() ?>">
+<form method="post">
     <h1>Tunnelbanejakten</h1>
     <h2>Tävling <?= sprintf( '<a href="%s">%s</a>', $competition_url, $competition->name ) ?></h2>
 
