@@ -54,7 +54,7 @@ class CompetitionSettings {
 
 
 	public function list_item_field_name( $list_name, $id, $field ) {
-		return join( self::FIELD_SEPARATOR, array( $list_name, $id, $field ) );
+		return join( self::FIELD_SEPARATOR, array( $list_name, $field, $id ) );
 	}
 
 
@@ -68,7 +68,7 @@ class CompetitionSettings {
 		// $all_ids will include duplicates (one for each of the name, email and phone fields).
 		// $all_ids will include empty strings because of the fields in the hidden template for new participant are submitted.
 		$all_ids = array_map( function ( $key ) {
-			list( , $id ) = explode( self::FIELD_SEPARATOR, $key );
+			list( , , $id ) = explode( self::FIELD_SEPARATOR, $key );
 
 			return $id;
 		}, $person_prop_field_names );
