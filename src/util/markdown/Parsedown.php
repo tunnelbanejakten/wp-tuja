@@ -1,5 +1,8 @@
 <?php
 
+// TODO: Don't put this in the tuja namespace (needs some kind of fix for the auto-loading mechanism).
+namespace tuja\util\markdown;
+
 #
 #
 # Parsedown

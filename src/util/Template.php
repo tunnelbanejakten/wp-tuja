@@ -2,7 +2,7 @@
 
 namespace tuja\util;
 
-use Parsedown;
+use tuja\util\markdown\Parsedown;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 
