@@ -38,8 +38,8 @@ use tuja\util\score\ScoreCalculator;
                 '<tr>' .
                 '<td><a href="%s">%s</a></td>' .
                 '<td><code>[tuja_form form="%d"]</code></td>' .
-                '<td><code>[tuja_create_group form="%d"]</code></td>' .
-                '<td><code>[tuja_points form="%d"]</code></td>' .
+                '<td><code>[tuja_create_group competition="%d"]</code></td>' .
+                '<td><code>[tuja_points competition="%d"]</code></td>' .
                 '</tr>', $url, $form->name, $form->id, $form->id, $form->id);
         }
         ?>
