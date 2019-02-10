@@ -27,6 +27,9 @@ class AbstractGroupShortcode
     const FIELD_PERSON_NAME = self::FIELD_PREFIX_PERSON . 'name';
     const FIELD_PERSON_EMAIL = self::FIELD_PREFIX_PERSON . 'email';
     const FIELD_PERSON_PHONE = self::FIELD_PREFIX_PERSON . 'phone';
+    const FIELD_PERSON_PNO = self::FIELD_PREFIX_PERSON . 'pno';
+    const FIELD_PERSON_FOOD = self::FIELD_PREFIX_PERSON . 'food';
+    const FIELD_PERSON_ROLES = self::FIELD_PREFIX_PERSON . 'roles';
 
     protected $person_dao;
     protected $group_dao;

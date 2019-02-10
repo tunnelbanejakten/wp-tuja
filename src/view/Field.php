@@ -36,6 +36,9 @@ class Field
             case 'images':
                 $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
                 break;
+	        case 'pno':
+		        $field = new FieldText( [ 'type' => 'text', 'pattern' => '^(19|20)?[0-9]{2}-?(0[1-9]|[1-2][0-9])-?[0-3][0-9](-*[0-9]{4})?$', 'placeholder' => 'ååmmdd-nnnn' ] );
+		        break;
             default:
                 $field = new FieldText();
                 break;
