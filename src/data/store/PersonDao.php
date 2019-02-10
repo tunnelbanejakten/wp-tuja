@@ -36,9 +36,9 @@ class PersonDao extends AbstractDao
                 '%d',
                 '%s',
 	            '%s',
-	            '%d',
-	            '%d',
 	            '%s',
+	            '%d',
+	            '%d',
                 '%s'
             ));
 
