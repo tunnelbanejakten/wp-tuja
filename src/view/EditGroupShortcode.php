@@ -13,7 +13,11 @@ class EditGroupShortcode extends AbstractGroupShortcode
 {
     const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
 
-    private $group_key;
+	const ROLE_ISCONTACT_LABEL = 'Ja, hen är kontaktperson för laget under tävlingen.';
+	const ROLE_ISNOTCOMPETING_LABEL = 'Ja, hen är med under dagen men är inte med och tävlar.';
+
+
+	private $group_key;
 
     public function __construct($wpdb, $group_key, $is_crew_form)
     {
@@ -123,14 +127,14 @@ class EditGroupShortcode extends AbstractGroupShortcode
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO . '__' . $random_id, $errors[ $random_id . '__pno' ], $read_only );
 
 	    $answer                = [
-		    ! $person->is_competing ? 'Ja, hen är med under dagen men är inte med och tävlar.' : null,
-		    $person->is_group_contact ? 'Ja, hen är kontaktperson för laget under tävlingen.' : null
+		    ! $person->is_competing ? self::ROLE_ISNOTCOMPETING_LABEL : null,
+		    $person->is_group_contact ? self::ROLE_ISCONTACT_LABEL : null
 	    ];
 	    $person_roles_question = Question::checkboxes(
 		    'Har den här personen någon speciell uppgift?',
 		    [
-			    'Ja, hen är kontaktperson för laget under tävlingen.',
-			    'Ja, hen är med under dagen men är inte med och tävlar.'
+			    self::ROLE_ISCONTACT_LABEL,
+			    self::ROLE_ISNOTCOMPETING_LABEL
 		    ],
 		    null,
 		    $answer
@@ -204,6 +208,12 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
         foreach ($created_ids as $id) {
             try {
+	            $is_competing = ! ( is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
+	                                && in_array( self::ROLE_ISNOTCOMPETING_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) );
+
+	            $is_group_contact = is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
+	                                && in_array( self::ROLE_ISCONTACT_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] );
+
 	            $new_person                   = new Person();
 	            $new_person->group_id         = $group_id;
 	            $new_person->name             = $_POST[ self::FIELD_PREFIX_PERSON . 'name__' . $id ];
@@ -211,8 +221,8 @@ class EditGroupShortcode extends AbstractGroupShortcode
 	            $new_person->phone            = $_POST[ self::FIELD_PREFIX_PERSON . 'phone__' . $id ];
 	            $new_person->pno              = $_POST[ self::FIELD_PREFIX_PERSON . 'pno__' . $id ];
 	            $new_person->food             = $_POST[ self::FIELD_PREFIX_PERSON . 'food__' . $id ];
-	            $new_person->is_competing     = ! ( is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) && in_array( 'Ja, hen är med under dagen men är inte med och tävlar.', $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) );
-	            $new_person->is_group_contact = is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) && in_array( 'Ja, hen är kontaktperson för laget under tävlingen.', $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] );
+	            $new_person->is_competing     = $is_competing;
+	            $new_person->is_group_contact = $is_group_contact;
 
                 $new_person_id = $this->person_dao->create($new_person);
                 $this_success = $new_person_id !== false;
@@ -228,13 +238,19 @@ class EditGroupShortcode extends AbstractGroupShortcode
         foreach ($updated_ids as $id) {
             if (isset($people_map[$id])) {
                 try {
+	                $is_competing = ! ( is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
+	                                    && in_array( self::ROLE_ISNOTCOMPETING_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) );
+
+	                $is_group_contact = is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
+	                                    && in_array( self::ROLE_ISCONTACT_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] );
+
 	                $people_map[ $id ]->name             = $_POST[ self::FIELD_PREFIX_PERSON . 'name__' . $id ];
 	                $people_map[ $id ]->email            = $_POST[ self::FIELD_PREFIX_PERSON . 'email__' . $id ];
 	                $people_map[ $id ]->phone            = $_POST[ self::FIELD_PREFIX_PERSON . 'phone__' . $id ];
 	                $people_map[ $id ]->pno              = $_POST[ self::FIELD_PREFIX_PERSON . 'pno__' . $id ];
 	                $people_map[ $id ]->food             = $_POST[ self::FIELD_PREFIX_PERSON . 'food__' . $id ];
-	                $people_map[ $id ]->is_competing     = ! ( is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) && in_array( 'Ja, hen är med under dagen men är inte med och tävlar.', $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) );
-	                $people_map[ $id ]->is_group_contact = is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) && in_array( 'Ja, hen är kontaktperson för laget under tävlingen.', $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] );
+	                $people_map[ $id ]->is_competing     = $is_competing;
+	                $people_map[ $id ]->is_group_contact = $is_group_contact;
 
                     $affected_rows = $this->person_dao->update($people_map[$id]);
                     $this_success = $affected_rows !== false;
