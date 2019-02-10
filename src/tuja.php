@@ -43,7 +43,7 @@ abstract class Plugin {
 		$charset = 'DEFAULT CHARACTER SET utf8 COLLATE utf8_swedish_ci';
 		
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('competition') . ' (
+			CREATE TABLE ' . DB::get_table('competition') . ' (
 				id                   INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id            VARCHAR(20) NOT NULL UNIQUE,
 				name                 VARCHAR(50) NOT NULL,
@@ -59,7 +59,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('team') . ' (
+			CREATE TABLE ' . DB::get_table('team') . ' (
 				id             INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id      VARCHAR(20)  NOT NULL UNIQUE,
 				competition_id INTEGER      NOT NULL,
@@ -71,20 +71,24 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('person') . ' (
-				id             INTEGER AUTO_INCREMENT PRIMARY KEY,
-				random_id      VARCHAR(20)  NOT NULL,
-				name           VARCHAR(100) NOT NULL,
-				team_id        INTEGER      NOT NULL,
-				phone          VARCHAR(50),
-				phone_verified BOOLEAN      NOT NULL DEFAULT FALSE,
-				email          VARCHAR(50),
-				email_verified BOOLEAN      NOT NULL DEFAULT FALSE,
+			CREATE TABLE ' . DB::get_table('person') . ' (
+				id               INTEGER AUTO_INCREMENT PRIMARY KEY,
+				random_id        VARCHAR(20)  NOT NULL,
+				name             VARCHAR(100) NOT NULL,
+				team_id          INTEGER      NOT NULL,
+				phone            VARCHAR(50),
+				phone_verified   BOOLEAN      NOT NULL DEFAULT FALSE,
+				email            VARCHAR(50),
+				email_verified   BOOLEAN      NOT NULL DEFAULT FALSE,
+				pno              VARCHAR(16),
+				food             VARCHAR(100),
+				is_competing     BOOLEAN      NOT NULL DEFAULT TRUE,
+				is_team_contact  BOOLEAN      NOT NULL DEFAULT FALSE,
 				UNIQUE KEY idx_person_token (random_id)
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('form') . ' (
+			CREATE TABLE ' . DB::get_table('form') . ' (
 				id                                INTEGER AUTO_INCREMENT PRIMARY KEY,
 				competition_id                    INTEGER      NOT NULL,
 				name                              VARCHAR(100) NOT NULL,
@@ -94,7 +98,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = "
-			CREATE TABLE IF NOT EXISTS " . DB::get_table('form_question') . " (
+			CREATE TABLE " . DB::get_table('form_question') . " (
 				id         INTEGER AUTO_INCREMENT PRIMARY KEY,
 				form_id    INTEGER      NOT NULL,
 				type       VARCHAR(10)  NOT NULL,
@@ -105,7 +109,7 @@ abstract class Plugin {
 			) " . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('form_question_response') . ' (
+			CREATE TABLE ' . DB::get_table('form_question_response') . ' (
 				id               INTEGER AUTO_INCREMENT PRIMARY KEY,
 				form_question_id INTEGER      NOT NULL,
 				team_id          INTEGER      NOT NULL,
@@ -115,7 +119,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('form_question_points') . ' (
+			CREATE TABLE ' . DB::get_table('form_question_points') . ' (
 				form_question_id INTEGER NOT NULL,
 				team_id          INTEGER NOT NULL,
 				points           INTEGER,
@@ -124,7 +128,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('message') . ' (
+			CREATE TABLE ' . DB::get_table('message') . ' (
 				id                INTEGER AUTO_INCREMENT PRIMARY KEY,
 				form_question_id  INTEGER,
 				team_id           INTEGER,
@@ -137,7 +141,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('team_category') . ' (
+			CREATE TABLE ' . DB::get_table('team_category') . ' (
 				id             INTEGER          AUTO_INCREMENT PRIMARY KEY,
 				competition_id INTEGER NOT NULL,
 				is_crew        BOOLEAN NOT NULL DEFAULT FALSE,
@@ -145,7 +149,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('message_template') . ' (
+			CREATE TABLE ' . DB::get_table('message_template') . ' (
 				id             INTEGER AUTO_INCREMENT PRIMARY KEY,
 				competition_id INTEGER NOT NULL,
 				name           VARCHAR(50),

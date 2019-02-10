@@ -51,4 +51,28 @@ class DateUtils
         return $start_date_value;
     }
 
+	public static function fix_pno( $input ) {
+		if ( empty( trim( $input ) ) ) {
+			return null;
+		}
+		$digits = preg_replace( "/[^0-9]/", "", $input );
+		if ( strlen( $digits ) == 6 ) {
+			// 831109
+			return DateTime::createFromFormat( 'ymd', $input )->format( 'Ymd' ) . '0000';
+		} else if ( strlen( $digits ) == 8 ) {
+			//19831109
+			return DateTime::createFromFormat( 'Ymd', $input )->format( 'Ymd' ) . '0000';
+		} else if ( strlen( $digits ) == 10 ) {
+			// 8311090123
+			// 8311090000
+			return DateTime::createFromFormat( 'ymd', substr( $input, 0, 6 ) )->format( 'Ymd' ) . substr( $input, 6, 4 );
+		} else if ( strlen( $digits ) == 12 ) {
+			// 198311090000
+			// 198311090123
+			return DateTime::createFromFormat( 'Ymd', substr( $input, 0, 8 ) )->format( 'Ymd' ) . substr( $input, 8, 4 );
+		} else {
+			throw new ValidationException( 'Ogiltigt datum eller personnummer.' );
+		}
+	}
+
 }

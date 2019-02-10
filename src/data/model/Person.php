@@ -12,6 +12,10 @@ class Person
     public $phone_verified;
     public $email;
     public $email_verified;
+    public $food;
+    public $is_competing;
+    public $is_group_contact;
+    public $pno;
 
     public function validate()
     {
@@ -32,6 +36,39 @@ class Person
         }
         if (!empty(trim($this->phone)) && preg_match('/^\+?[0-9 -]{6,}$/', $this->phone) !== 1) {
             throw new ValidationException('phone', 'Telefonnummer ser konstigt ut');
+        }
+        if (strlen($this->food) > 100) {
+            throw new ValidationException('food', 'Högst 100 tecken.');
+        }
+        if (empty(trim($this->pno))) {
+            throw new ValidationException('pno', 'Födelsedag och sånt måste fyllas i');
+        }
+        /*
+        Valid values:
+	        8311090123
+			831109-0123
+			198311090123
+			19831109-0123
+			831109
+			83-11-09
+			19831109
+			1983-11-09
+			198311090000
+			8311090000
+			1983-11-09--0123
+
+        Invalid values:
+			19831109-012
+			19831109-01
+			12345
+			198300000000
+			8300000000
+			830000000000
+			1234567890
+			nej
+        */
+        if (preg_match('/^(19|20)?[0-9]{2}-?(0[1-9]|[1-2][0-9])-?[0-3][0-9](-*[0-9]{4})?$/', $this->pno) !== 1) {
+            throw new ValidationException('pno', 'Födelsedag och sånt ser konstigt ut');
         }
     }
 
