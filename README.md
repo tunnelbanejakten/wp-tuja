@@ -134,6 +134,7 @@ Attributes:
 * future_format: Pattern string to use when the time has not yet passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
 
 # Deployment
+
 This repo is configured to auto deploy to tunnelbanejakten.se. This is done with a webhook and deploy key on the github side, and a mu-plugin on the server side.
     
 # To Do
