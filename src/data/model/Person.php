@@ -4,6 +4,32 @@ namespace tuja\data\model;
 
 class Person
 {
+	/*
+	Valid values:
+	- 8311090123
+	- 831109-0123
+	- 198311090123
+	- 19831109-0123
+	- 831109
+	- 83-11-09
+	- 19831109
+	- 1983-11-09
+	- 198311090000
+	- 8311090000
+	- 1983-11-09--0123
+
+	Examples of invalid values:
+	- 19831109-012
+	- 19831109-01
+	- 12345
+	- 198300000000
+	- 8300000000
+	- 830000000000
+	- 1234567890
+	- nej
+	*/
+	const PNO_PATTERN = '^(19|20)?[0-9]{2}-?(0[1-9]|[1-2][0-9])-?[0-3][0-9](-*[0-9]{4})?$';
+
     public $id;
     public $random_id;
     public $name;
@@ -43,31 +69,7 @@ class Person
         if (empty(trim($this->pno))) {
             throw new ValidationException('pno', 'Födelsedag och sånt måste fyllas i');
         }
-        /*
-        Valid values:
-	        8311090123
-			831109-0123
-			198311090123
-			19831109-0123
-			831109
-			83-11-09
-			19831109
-			1983-11-09
-			198311090000
-			8311090000
-			1983-11-09--0123
-
-        Invalid values:
-			19831109-012
-			19831109-01
-			12345
-			198300000000
-			8300000000
-			830000000000
-			1234567890
-			nej
-        */
-        if (preg_match('/^(19|20)?[0-9]{2}-?(0[1-9]|[1-2][0-9])-?[0-3][0-9](-*[0-9]{4})?$/', $this->pno) !== 1) {
+	    if ( preg_match( '/' . self::PNO_PATTERN . '/', $this->pno ) !== 1 ) {
             throw new ValidationException('pno', 'Födelsedag och sånt ser konstigt ut');
         }
     }
