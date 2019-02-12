@@ -1,6 +1,7 @@
 .tuja-signup-person {
-    margin: 0;
-    padding: 1em 0;
+    margin: 0 0 0.5em 0;
+    padding: 1em;
+    border: 1px solid #ccc
 }
 
 .tuja-field,
@@ -50,6 +51,7 @@
     margin: 1em 0;
 }
 
+.tuja-field input:invalid,
 .tuja-field-error input {
     border-color: lightcoral !important;
 }

@@ -2,6 +2,7 @@
 
 namespace tuja\view;
 
+use tuja\data\model\Person;
 use tuja\data\model\Question;
 
 class Field
@@ -36,6 +37,9 @@ class Field
             case 'images':
                 $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
                 break;
+	        case 'pno':
+		        $field = new FieldText( [ 'type' => 'text', 'pattern' => Person::PNO_PATTERN, 'placeholder' => 'ååmmdd-nnnn' ] );
+		        break;
             default:
                 $field = new FieldText();
                 break;
