@@ -8,7 +8,7 @@
 		$competitions = $db_competition->get_all();
 		foreach ($competitions as $competition) {
 			$url = add_query_arg(array(
-				'tuja_view' => 'competition',
+				'tuja_view' => 'Competition',
 				'tuja_competition' => $competition->id
 			));
 			printf('<p><a href="%s">%s</a></p>', $url, $competition->name);

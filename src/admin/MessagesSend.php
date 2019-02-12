@@ -43,7 +43,7 @@ class MessagesSend {
 		$competition     = $this->competition;
 		$competition_url = add_query_arg( array(
 			'tuja_competition' => $competition->id,
-			'tuja_view'        => 'competition'
+			'tuja_view'        => 'Competition'
 		) );
 
 		$group_category_dao = new GroupCategoryDao();

@@ -4,14 +4,14 @@ namespace tuja\data\store;
 
 use tuja\data\model\Person;
 use tuja\util\DateUtils;
-use tuja\util\DB;
+use tuja\util\Database;
 
 class PersonDao extends AbstractDao
 {
     function __construct()
     {
 		parent::__construct();
-		$this->table = DB::get_table('person');
+		$this->table = Database::get_table('person');
     }
 
     function create(Person $person)
@@ -96,7 +96,7 @@ class PersonDao extends AbstractDao
         return $this->get_objects(
 	        'tuja\data\store\AbstractDao::to_person',
 	        'SELECT p.* ' .
-	        'FROM ' . $this->table . ' AS p INNER JOIN ' . DB::get_table( 'team' ) . ' AS t ON p.team_id = t.id ' .
+	        'FROM ' . $this->table . ' AS p INNER JOIN ' . Database::get_table( 'team' ) . ' AS t ON p.team_id = t.id ' .
 	        'WHERE t.competition_id = %d',
             $competition_id);
     }
