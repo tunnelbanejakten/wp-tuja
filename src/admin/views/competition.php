@@ -20,7 +20,7 @@ use tuja\util\score\ScoreCalculator;
     printf('<p><a href="%s">Inställningar</a></p>', $settings_url);
     $messages_url = add_query_arg(array(
         'tuja_competition' => $competition->id,
-        'tuja_view' => 'messages'
+        'tuja_view' => 'Messages'
     ));
     printf('<p><a href="%s">Meddelanden, ex. MMS</a></p>', $messages_url);
     ?>
@@ -31,7 +31,7 @@ use tuja\util\score\ScoreCalculator;
         <?php
         foreach ($forms as $form) {
             $url = add_query_arg(array(
-                'tuja_view' => 'form',
+                'tuja_view' => 'Form',
                 'tuja_form' => $form->id
             ));
             printf('' .
@@ -52,7 +52,7 @@ use tuja\util\score\ScoreCalculator;
     <?php
     $review_url = add_query_arg(array(
         'tuja_competition' => $competition->id,
-        'tuja_view' => 'review'
+        'tuja_view' => 'Review'
     ));
     printf('<p><a href="%s">Gå igenom okontrollerade svar</a></p>', $review_url);
     ?>
@@ -67,7 +67,7 @@ use tuja\util\score\ScoreCalculator;
         foreach ($score_board as $team_score) {
             $group_url = add_query_arg(array(
                 'tuja_group' => $team_score['group_id'],
-                'tuja_view' => 'group'
+                'tuja_view' => 'Group'
             ));
             printf('<tr><td><a href="%s">%s</a></td><td>%d p</td></tr>', $group_url, htmlspecialchars($team_score['group_name']), $team_score['score']);
         }

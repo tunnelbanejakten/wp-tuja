@@ -46,7 +46,7 @@ class CompetitionSettings {
 
 		$competition_url = add_query_arg( array(
 			'tuja_competition' => $competition->id,
-			'tuja_view'        => 'competition'
+			'tuja_view'        => 'Competition'
 		) );
 
 		include( 'views/competition-settings.php' );

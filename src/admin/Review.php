@@ -47,7 +47,7 @@ class Review {
 
 		$competition_url = add_query_arg( array(
 			'tuja_competition' => $this->competition->id,
-			'tuja_view'        => 'competition'
+			'tuja_view'        => 'Competition'
 		) );
 
 		$db_groups   = new GroupDao();
