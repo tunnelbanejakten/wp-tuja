@@ -2,14 +2,14 @@
 
 namespace tuja\data\store;
 
-use tuja\util\DB;
+use tuja\util\Database;
 
 class PointsDao extends AbstractDao
 {
     function __construct()
     {
         parent::__construct();
-		$this->table = DB::get_table('form_question_points');
+		$this->table = Database::get_table('form_question_points');
     }
 
     // TODO: Handle problems in case replace(...) or delete(...) fail.
@@ -55,8 +55,8 @@ class PointsDao extends AbstractDao
             '' .
             'SELECT p.* ' .
             'FROM ' . $this->table . ' p ' .
-            '  INNER JOIN ' . DB::get_table( 'form_question' ) . ' q ON p.form_question_id = q.id ' .
-            '  INNER JOIN ' . DB::get_table( 'form' ) . ' f ON q.form_id = f.id ' .
+            '  INNER JOIN ' . Database::get_table( 'form_question' ) . ' q ON p.form_question_id = q.id ' .
+            '  INNER JOIN ' . Database::get_table( 'form' ) . ' f ON q.form_id = f.id ' .
             'WHERE f.competition_id = %d',
             $competition_id);
     }

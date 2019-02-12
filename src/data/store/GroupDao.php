@@ -4,14 +4,14 @@ namespace tuja\data\store;
 
 use tuja\data\model\ValidationException;
 use tuja\data\model\Group;
-use tuja\util\DB;
+use tuja\util\Database;
 
 class GroupDao extends AbstractDao
 {
     function __construct()
     {
 		parent::__construct();
-		$this->table = DB::get_table('team');
+		$this->table = Database::get_table('team');
     }
 
     function create(Group $group)

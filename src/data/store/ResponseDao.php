@@ -3,14 +3,14 @@
 namespace tuja\data\store;
 
 use tuja\data\model\Response;
-use tuja\util\DB;
+use tuja\util\Database;
 
 class ResponseDao extends AbstractDao
 {
     function __construct()
     {
 		parent::__construct();
-		$this->table = DB::get_table('form_question_response');
+		$this->table = Database::get_table('form_question_response');
     }
 
     function create(Response $response)
@@ -57,8 +57,8 @@ class ResponseDao extends AbstractDao
 			'tuja\data\store\AbstractDao::to_response',
             'SELECT r.* ' .
             'FROM ' . $this->table . ' r ' .
-            'INNER JOIN ' . DB::get_table( 'form_question' ) . ' fq ON r.form_question_id = fq.id ' .
-            'INNER JOIN ' . DB::get_table( 'form' ) . ' f ON (fq.form_id = f.id AND f.competition_id = %d) ' .
+            'INNER JOIN ' . Database::get_table( 'form_question' ) . ' fq ON r.form_question_id = fq.id ' .
+            'INNER JOIN ' . Database::get_table( 'form' ) . ' f ON (fq.form_id = f.id AND f.competition_id = %d) ' .
             'ORDER BY r.id',
             $competition_id);
 

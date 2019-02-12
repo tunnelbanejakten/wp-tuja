@@ -3,14 +3,14 @@
 namespace tuja\data\store;
 
 use tuja\data\model\Message;
-use tuja\util\DB;
+use tuja\util\Database;
 
 class MessageDao extends AbstractDao
 {
     function __construct()
     {
 		parent::__construct();
-		$this->table = DB::get_table('message');
+		$this->table = Database::get_table('message');
     }
 
     function create(Message $message)

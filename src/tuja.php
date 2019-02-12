@@ -9,7 +9,7 @@
 
 namespace tuja;
 
-use tuja\util\DB;
+use tuja\util\Database;
 
 abstract class Plugin {
 	const VERSION = '1.0.0';
@@ -43,7 +43,7 @@ abstract class Plugin {
 		$charset = 'DEFAULT CHARACTER SET utf8 COLLATE utf8_swedish_ci';
 		
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('competition') . ' (
+			CREATE TABLE IF NOT EXISTS ' . Database::get_table('competition') . ' (
 				id                   INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id            VARCHAR(20) NOT NULL UNIQUE,
 				name                 VARCHAR(50) NOT NULL,
@@ -59,7 +59,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('team') . ' (
+			CREATE TABLE IF NOT EXISTS ' . Database::get_table('team') . ' (
 				id             INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id      VARCHAR(20)  NOT NULL UNIQUE,
 				competition_id INTEGER      NOT NULL,
@@ -71,7 +71,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('person') . ' (
+			CREATE TABLE IF NOT EXISTS ' . Database::get_table('person') . ' (
 				id             INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id      VARCHAR(20)  NOT NULL,
 				name           VARCHAR(100) NOT NULL,
@@ -84,7 +84,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('form') . ' (
+			CREATE TABLE IF NOT EXISTS ' . Database::get_table('form') . ' (
 				id                                INTEGER AUTO_INCREMENT PRIMARY KEY,
 				competition_id                    INTEGER      NOT NULL,
 				name                              VARCHAR(100) NOT NULL,
@@ -94,7 +94,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = "
-			CREATE TABLE IF NOT EXISTS " . DB::get_table('form_question') . " (
+			CREATE TABLE IF NOT EXISTS " . Database::get_table('form_question') . " (
 				id         INTEGER AUTO_INCREMENT PRIMARY KEY,
 				form_id    INTEGER      NOT NULL,
 				type       VARCHAR(10)  NOT NULL,
@@ -105,7 +105,7 @@ abstract class Plugin {
 			) " . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('form_question_response') . ' (
+			CREATE TABLE IF NOT EXISTS ' . Database::get_table('form_question_response') . ' (
 				id               INTEGER AUTO_INCREMENT PRIMARY KEY,
 				form_question_id INTEGER      NOT NULL,
 				team_id          INTEGER      NOT NULL,
@@ -115,7 +115,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('form_question_points') . ' (
+			CREATE TABLE IF NOT EXISTS ' . Database::get_table('form_question_points') . ' (
 				form_question_id INTEGER NOT NULL,
 				team_id          INTEGER NOT NULL,
 				points           INTEGER,
@@ -124,7 +124,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('message') . ' (
+			CREATE TABLE IF NOT EXISTS ' . Database::get_table('message') . ' (
 				id                INTEGER AUTO_INCREMENT PRIMARY KEY,
 				form_question_id  INTEGER,
 				team_id           INTEGER,
@@ -137,7 +137,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('team_category') . ' (
+			CREATE TABLE IF NOT EXISTS ' . Database::get_table('team_category') . ' (
 				id             INTEGER          AUTO_INCREMENT PRIMARY KEY,
 				competition_id INTEGER NOT NULL,
 				is_crew        BOOLEAN NOT NULL DEFAULT FALSE,
@@ -145,7 +145,7 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE IF NOT EXISTS ' . DB::get_table('message_template') . ' (
+			CREATE TABLE IF NOT EXISTS ' . Database::get_table('message_template') . ' (
 				id             INTEGER AUTO_INCREMENT PRIMARY KEY,
 				competition_id INTEGER NOT NULL,
 				name           VARCHAR(50),
@@ -154,30 +154,30 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
-			ALTER TABLE ' . DB::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_team_admin) REFERENCES ' . DB::get_table('message_template') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_team_reporter) REFERENCES ' . DB::get_table('message_template') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_crew_member) REFERENCES ' . DB::get_table('message_template') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_noncrew_member) REFERENCES ' . DB::get_table('message_template') . ' (id) ON DELETE RESTRICT,
+			ALTER TABLE ' . Database::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_team_admin) REFERENCES ' . Database::get_table('message_template') . ' (id) ON DELETE RESTRICT,
+			ALTER TABLE ' . Database::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_team_reporter) REFERENCES ' . Database::get_table('message_template') . ' (id) ON DELETE RESTRICT,
+			ALTER TABLE ' . Database::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_crew_member) REFERENCES ' . Database::get_table('message_template') . ' (id) ON DELETE RESTRICT,
+			ALTER TABLE ' . Database::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_noncrew_member) REFERENCES ' . Database::get_table('message_template') . ' (id) ON DELETE RESTRICT,
 
-			ALTER TABLE ' . DB::get_table('team') . ' ADD FOREIGN KEY (competition_id) REFERENCES ' . DB::get_table('competition') . ' (id) ON DELETE CASCADE,
-			ALTER TABLE ' . DB::get_table('team') . ' ADD FOREIGN KEY (category_id) REFERENCES ' . DB::get_table('team_category') . ' (id) ON DELETE RESTRICT,
+			ALTER TABLE ' . Database::get_table('team') . ' ADD FOREIGN KEY (competition_id) REFERENCES ' . Database::get_table('competition') . ' (id) ON DELETE CASCADE,
+			ALTER TABLE ' . Database::get_table('team') . ' ADD FOREIGN KEY (category_id) REFERENCES ' . Database::get_table('team_category') . ' (id) ON DELETE RESTRICT,
 
-			ALTER TABLE ' . DB::get_table('person') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . DB::get_table('team') . ' (id) ON DELETE CASCADE,
+			ALTER TABLE ' . Database::get_table('person') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . Database::get_table('team') . ' (id) ON DELETE CASCADE,
 			
-			ALTER TABLE ' . DB::get_table('form') . ' ADD FOREIGN KEY (competition_id) REFERENCES ' . DB::get_table('competition') . ' (id) ON DELETE CASCADE,
+			ALTER TABLE ' . Database::get_table('form') . ' ADD FOREIGN KEY (competition_id) REFERENCES ' . Database::get_table('competition') . ' (id) ON DELETE CASCADE,
 			
-			ALTER TABLE ' . DB::get_table('form_question_response') . ' ADD FOREIGN KEY (form_question_id) REFERENCES ' . DB::get_table('form_question') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('form_question_response') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . DB::get_table('team') . ' (id) ON DELETE CASCADE,
+			ALTER TABLE ' . Database::get_table('form_question_response') . ' ADD FOREIGN KEY (form_question_id) REFERENCES ' . Database::get_table('form_question') . ' (id) ON DELETE RESTRICT,
+			ALTER TABLE ' . Database::get_table('form_question_response') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . Database::get_table('team') . ' (id) ON DELETE CASCADE,
 
-			ALTER TABLE ' . DB::get_table('form_question_points') . ' ADD FOREIGN KEY (form_question_id) REFERENCES ' . DB::get_table('form_question') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('form_question_points') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . DB::get_table('team') . ' (id) ON DELETE CASCADE,
+			ALTER TABLE ' . Database::get_table('form_question_points') . ' ADD FOREIGN KEY (form_question_id) REFERENCES ' . Database::get_table('form_question') . ' (id) ON DELETE RESTRICT,
+			ALTER TABLE ' . Database::get_table('form_question_points') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . Database::get_table('team') . ' (id) ON DELETE CASCADE,
 
-			ALTER TABLE ' . DB::get_table('message') . ' ADD FOREIGN KEY (form_question_id) REFERENCES ' . DB::get_table('form_question') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('message') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . DB::get_table('team') . ' (id) ON DELETE CASCADE,
+			ALTER TABLE ' . Database::get_table('message') . ' ADD FOREIGN KEY (form_question_id) REFERENCES ' . Database::get_table('form_question') . ' (id) ON DELETE RESTRICT,
+			ALTER TABLE ' . Database::get_table('message') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . Database::get_table('team') . ' (id) ON DELETE CASCADE,
 
-			ALTER TABLE ' . DB::get_table('team_category') . ' ADD FOREIGN KEY (competition_id) REFERENCES ' . DB::get_table('competition') . ' (id) ON DELETE CASCADE,
+			ALTER TABLE ' . Database::get_table('team_category') . ' ADD FOREIGN KEY (competition_id) REFERENCES ' . Database::get_table('competition') . ' (id) ON DELETE CASCADE,
 
-			ALTER TABLE ' . DB::get_table('message_template') . ' ADD FOREIGN KEY (competition_id) REFERENCES competition (id) ON DELETE CASCADE
+			ALTER TABLE ' . Database::get_table('message_template') . ' ADD FOREIGN KEY (competition_id) REFERENCES competition (id) ON DELETE CASCADE
 		';
 
 		foreach($tables as $table) {

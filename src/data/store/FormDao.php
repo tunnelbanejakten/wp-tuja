@@ -3,7 +3,7 @@
 namespace tuja\data\store;
 
 use tuja\data\model\Form;
-use tuja\util\DB;
+use tuja\util\Database;
 
 class FormDao extends AbstractDao
 {
@@ -11,7 +11,7 @@ class FormDao extends AbstractDao
     function __construct()
     {
 		parent::__construct();
-		$this->table = DB::get_table('form');
+		$this->table = Database::get_table('form');
     }
 
     function create(Form $form)

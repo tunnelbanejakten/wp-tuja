@@ -3,14 +3,14 @@
 namespace tuja\data\store;
 
 use tuja\data\model\Question;
-use tuja\util\DB;
+use tuja\util\Database;
 
 class QuestionDao extends AbstractDao
 {
     function __construct()
     {
 		parent::__construct();
-		$this->table = DB::get_table('form_question');
+		$this->table = Database::get_table('form_question');
     }
 
     function create(Question $question)
@@ -102,7 +102,7 @@ class QuestionDao extends AbstractDao
 			'tuja\data\store\AbstractDao::to_form_question',
 			'
                 SELECT q.* 
-                FROM ' . $this->table . ' AS q INNER JOIN ' . DB::get_table( 'form' ) . ' AS f ON q.form_id = f.id
+                FROM ' . $this->table . ' AS q INNER JOIN ' . Database::get_table( 'form' ) . ' AS f ON q.form_id = f.id
                 WHERE f.competition_id = %d
                 ORDER BY q.sort_order, q.id',
             $competition_id);
