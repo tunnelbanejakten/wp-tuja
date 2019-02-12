@@ -153,35 +153,46 @@ abstract class Plugin {
 				body           VARCHAR(50000)
 			) ' . $charset;
 
-		$tables[] = '
-			ALTER TABLE ' . DB::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_team_admin) REFERENCES ' . DB::get_table('message_template') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_team_reporter) REFERENCES ' . DB::get_table('message_template') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_crew_member) REFERENCES ' . DB::get_table('message_template') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('competition') . ' ADD FOREIGN KEY (message_template_new_noncrew_member) REFERENCES ' . DB::get_table('message_template') . ' (id) ON DELETE RESTRICT,
+		$keys = array(
+			['competition', 'message_template_new_team_admin', 'message_template', 'RESTRICT'],
+			['competition', 'message_template_new_team_reporter', 'message_template', 'RESTRICT'],
+			['competition', 'message_template_new_crew_member', 'message_template', 'RESTRICT'],
+			['competition', 'message_template_new_noncrew_member', 'message_template', 'RESTRICT'],
 
-			ALTER TABLE ' . DB::get_table('team') . ' ADD FOREIGN KEY (competition_id) REFERENCES ' . DB::get_table('competition') . ' (id) ON DELETE CASCADE,
-			ALTER TABLE ' . DB::get_table('team') . ' ADD FOREIGN KEY (category_id) REFERENCES ' . DB::get_table('team_category') . ' (id) ON DELETE RESTRICT,
+			['team', 'competition_id', 'competition', 'CASCADE'],
+			['team', 'category_id', 'team_category', 'RESTRICT'],
 
-			ALTER TABLE ' . DB::get_table('person') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . DB::get_table('team') . ' (id) ON DELETE CASCADE,
+			['person', 'team_id', 'team', 'CASCADE'],
 			
-			ALTER TABLE ' . DB::get_table('form') . ' ADD FOREIGN KEY (competition_id) REFERENCES ' . DB::get_table('competition') . ' (id) ON DELETE CASCADE,
+			['form', 'competition_id', 'competition', 'CASCADE'],
 			
-			ALTER TABLE ' . DB::get_table('form_question_response') . ' ADD FOREIGN KEY (form_question_id) REFERENCES ' . DB::get_table('form_question') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('form_question_response') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . DB::get_table('team') . ' (id) ON DELETE CASCADE,
+			['form_question_response', 'form_question_id', 'form_question', 'RESTRICT'],
+			['form_question_response', 'team_id', 'team', 'CASCADE'],
 
-			ALTER TABLE ' . DB::get_table('form_question_points') . ' ADD FOREIGN KEY (form_question_id) REFERENCES ' . DB::get_table('form_question') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('form_question_points') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . DB::get_table('team') . ' (id) ON DELETE CASCADE,
+			['form_question_points', 'form_question_id', 'form_question', 'RESTRICT'],
+			['form_question_points', 'team_id', 'team', 'CASCADE'],
 
-			ALTER TABLE ' . DB::get_table('message') . ' ADD FOREIGN KEY (form_question_id) REFERENCES ' . DB::get_table('form_question') . ' (id) ON DELETE RESTRICT,
-			ALTER TABLE ' . DB::get_table('message') . ' ADD FOREIGN KEY (team_id) REFERENCES ' . DB::get_table('team') . ' (id) ON DELETE CASCADE,
+			['message', 'form_question_id', 'form_question', 'RESTRICT'],
+			['message', 'team_id', 'team', 'CASCADE'],
 
-			ALTER TABLE ' . DB::get_table('team_category') . ' ADD FOREIGN KEY (competition_id) REFERENCES ' . DB::get_table('competition') . ' (id) ON DELETE CASCADE,
+			['team_category', 'competition_id', 'competition', 'CASCADE'],
 
-			ALTER TABLE ' . DB::get_table('message_template') . ' ADD FOREIGN KEY (competition_id) REFERENCES competition (id) ON DELETE CASCADE
-		';
+			['message_template', 'competition_id', 'competition', 'CASCADE']
+		);
 
 		foreach($tables as $table) {
 			dbDelta($table);
+		}
+
+		try {
+			DB::start_transaction();
+			foreach($keys as $key) {
+				DB::add_foreign_key($key[0], $key[1], $key[2], $key[3]);
+			}
+			DB::commit();
+		} catch(\Exception $e) {
+			DB::rollback();
+			error_log($e->getMessage());
 		}
 	}
 
@@ -191,7 +202,6 @@ abstract class Plugin {
 
 		$classname = explode('\\', $name);
 		$classname = array_pop($classname);
-
 
 		$paths = array(
 			self::PATH . '/data/store/' . $classname . '.php',
