@@ -66,10 +66,11 @@ class Person
         if (strlen($this->food) > 100) {
             throw new ValidationException('food', 'Högst 100 tecken.');
         }
-        if (empty(trim($this->pno))) {
-            throw new ValidationException('pno', 'Födelsedag och sånt måste fyllas i');
-        }
-	    if ( preg_match( '/' . self::PNO_PATTERN . '/', $this->pno ) !== 1 ) {
+        // TODO: Require birthday when adding new group members?
+//        if (empty(trim($this->pno))) {
+//            throw new ValidationException('pno', 'Födelsedag och sånt måste fyllas i');
+//        }
+	    if ( ! empty( trim( $this->pno ) ) && preg_match( '/' . self::PNO_PATTERN . '/', $this->pno ) !== 1 ) {
             throw new ValidationException('pno', 'Födelsedag och sånt ser konstigt ut');
         }
     }
