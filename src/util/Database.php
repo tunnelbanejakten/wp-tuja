@@ -4,7 +4,7 @@ namespace tuja\util;
 
 use tuja\Plugin;
 
-class DB {
+class Database {
 	
 	static public function get_table($name) {
 		global $wpdb;

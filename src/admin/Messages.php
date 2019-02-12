@@ -27,7 +27,7 @@ class Messages {
 
 		$competition_url = add_query_arg(array(
 			'tuja_competition' => $this->competition->id,
-			'tuja_view'        => 'competition'
+			'tuja_view'        => 'Competition'
 		));
 
 		include( 'views/messages.php' );

@@ -83,6 +83,16 @@ class Question
         return $question;
     }
 
+    public static function pno($text, $hint = null, $answer = null): Question
+    {
+        $question = new Question();
+        $question->type = 'pno';
+        $question->text = $text;
+        $question->text_hint = $hint;
+        $question->latest_response = new Response(isset($answer) && !empty($answer) ? [$answer] : []);
+        return $question;
+    }
+
     public static function dropdown($text, $options, $hint = null, $answer = null): Question
     {
         $question = new Question();
@@ -91,6 +101,17 @@ class Question
         $question->text_hint = $hint;
         $question->possible_answers = $options;
         $question->latest_response = new Response(isset($answer) && !empty($answer) ? [$answer] : []);
+        return $question;
+    }
+
+    public static function checkboxes($text, $options, $hint = null, $answer = null): Question
+    {
+        $question = new Question();
+        $question->type = 'pick_multi';
+        $question->text = $text;
+        $question->text_hint = $hint;
+        $question->possible_answers = $options;
+        $question->latest_response = new Response(isset($answer) && !empty($answer) ? $answer : []);
         return $question;
     }
 }

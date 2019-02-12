@@ -13,7 +13,11 @@ class EditGroupShortcode extends AbstractGroupShortcode
 {
     const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
 
-    private $group_key;
+	const ROLE_ISCONTACT_LABEL = 'Ja, hen är kontaktperson för laget under tävlingen.';
+	const ROLE_ISNOTCOMPETING_LABEL = 'Ja, hen är med under dagen men är inte med och tävlar.';
+
+
+	private $group_key;
 
     public function __construct($wpdb, $group_key, $is_crew_form)
     {
@@ -64,34 +68,34 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $group_name_question = Question::text('Vad heter ert lag?', null, $group->name);
         $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors['name'], $read_only);
 
-        $categories = $this->get_categories($group->competition_id);
-
-        $current_group_category_name = reset(array_filter($categories, function ($category) use ($group) {
-            return $category->id == $group->category_id;
-        }))->name;
-
-        $group_category_options = array_map(function ($category) {
-            return $category->name;
-        }, $categories);
-
-        $group_category_question = Question::dropdown(
-            'Vilken klass tävlar ni i?',
-            $group_category_options,
-            'Välj den som de flesta av deltagarna tillhör.',
-            $current_group_category_name
-        );
-        $html_sections[] = $this->render_field($group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only);
+//        $categories = $this->get_categories($group->competition_id);
+//
+//        $current_group_category_name = reset(array_filter($categories, function ($category) use ($group) {
+//            return $category->id == $group->category_id;
+//        }))->name;
+//
+//        $group_category_options = array_map(function ($category) {
+//            return $category->name;
+//        }, $categories);
+//
+//        $group_category_question = Question::dropdown(
+//            'Vilken klass tävlar ni i?',
+//            $group_category_options,
+//            'Välj den som de flesta av deltagarna tillhör.',
+//            $current_group_category_name
+//        );
+//        $html_sections[] = $this->render_field($group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only);
 
         $html_sections[] = sprintf('<h3>Deltagarna</h3>');
 
         if (is_array($people)) {
-            $html_sections[] = sprintf('<div class="tuja-people-existing">%s</div>', join(array_map(function ($person) use ($errors, $read_only) {
-                return $this->render_person_form($person, $errors, $read_only);
+	        $html_sections[] = sprintf( '<div class="tuja-people-existing">%s</div>', join( array_map( function ( $person ) use ( $errors, $read_only, $group ) {
+		        return $this->render_person_form( $person, $group->contact_person_id, $errors, $read_only );
             }, $people)));
         }
         if (!$read_only) {
             $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="button" name="%s" value="%s" class="tuja-add-person">%s</button></div>', self::ACTION_BUTTON_NAME, 'new_person', 'Lägg till deltagare');
-            $html_sections[] = sprintf('<div class="tuja-person-template">%s</div>', $this->render_person_form(new Person(), $errors, $read_only));
+	        $html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( new Person(), $group->contact_person_id, $errors, $read_only ) );
         }
 
         if (!$read_only) {
@@ -110,7 +114,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         return sprintf('<form method="post">%s</form>', join($html_sections));
     }
 
-    private function render_person_form($person, $errors = array(), $read_only = false): string
+	private function render_person_form( $person, $group_contact_person_id, $errors = array(), $read_only = false ): string
     {
         $html_sections = [];
 
@@ -119,18 +123,39 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $person_name_question = Question::text('Namn', null, $person->name);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME . '__' . $random_id, $errors[$random_id . '__name'], $read_only);
 
-        $person_name_question = Question::text('E-postadress', null, $person->email);
+	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar alla att fylla in fullständigt personnummer.', $person->pno );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO . '__' . $random_id, $errors[ $random_id . '__pno' ], $read_only );
+
+	    $answer                = [
+		    ! $person->is_competing ? self::ROLE_ISNOTCOMPETING_LABEL : null,
+		    $person->is_group_contact ? self::ROLE_ISCONTACT_LABEL : null
+	    ];
+	    $person_roles_question = Question::checkboxes(
+		    'Har den här personen någon speciell uppgift?',
+		    [
+			    self::ROLE_ISCONTACT_LABEL,
+			    self::ROLE_ISNOTCOMPETING_LABEL
+		    ],
+		    null,
+		    $answer
+	    );
+	    $html_sections[]       = $this->render_field( $person_roles_question, self::FIELD_PERSON_ROLES . '__' . $random_id, $errors[ $random_id . '__roles' ], $read_only );
+
+	    $person_name_question = Question::text( 'E-postadress', 'Obligatoriskt för lagledaren, rekommenderat för övriga.', $person->email );
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, $errors[$random_id . '__email'], $read_only);
 
-        $person_name_question = Question::text('Telefonnummer', null, $person->phone);
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, $errors[$random_id . '__phone'], $read_only);
+	    $person_name_question = Question::text( 'Telefonnummer', 'Obligatoriskt för lagledaren, rekommenderat för övriga.', $person->phone );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, $errors[ $random_id . '__phone' ], $read_only );
 
-        if (!$read_only) {
+	    $person_name_question = Question::text( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.', $person->food );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD . '__' . $random_id, $errors[ $random_id . '__food' ], $read_only );
+
+	    if ( ! $read_only ) {
             $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="button" name="%s" value="%s%s" class="tuja-delete-person">%s</button></div>',
                 self::ACTION_BUTTON_NAME,
                 self::ACTION_NAME_DELETE_PERSON_PREFIX,
                 $random_id,
-                'Ta bort');
+	            'Ta bort deltagare' );
         }
 
         return sprintf('<div class="tuja-signup-person">%s</div>', join($html_sections));
@@ -183,11 +208,21 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
         foreach ($created_ids as $id) {
             try {
-                $new_person = new Person();
-                $new_person->group_id = $group_id;
-                $new_person->name = $_POST[self::FIELD_PREFIX_PERSON . 'name__' . $id];
-                $new_person->email = $_POST[self::FIELD_PREFIX_PERSON . 'email__' . $id];
-                $new_person->phone = $_POST[self::FIELD_PREFIX_PERSON . 'phone__' . $id];
+	            $is_competing = ! ( is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
+	                                && in_array( self::ROLE_ISNOTCOMPETING_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) );
+
+	            $is_group_contact = is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
+	                                && in_array( self::ROLE_ISCONTACT_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] );
+
+	            $new_person                   = new Person();
+	            $new_person->group_id         = $group_id;
+	            $new_person->name             = $_POST[ self::FIELD_PREFIX_PERSON . 'name__' . $id ];
+	            $new_person->email            = $_POST[ self::FIELD_PREFIX_PERSON . 'email__' . $id ];
+	            $new_person->phone            = $_POST[ self::FIELD_PREFIX_PERSON . 'phone__' . $id ];
+	            $new_person->pno              = $_POST[ self::FIELD_PREFIX_PERSON . 'pno__' . $id ];
+	            $new_person->food             = $_POST[ self::FIELD_PREFIX_PERSON . 'food__' . $id ];
+	            $new_person->is_competing     = $is_competing;
+	            $new_person->is_group_contact = $is_group_contact;
 
                 $new_person_id = $this->person_dao->create($new_person);
                 $this_success = $new_person_id !== false;
@@ -203,9 +238,19 @@ class EditGroupShortcode extends AbstractGroupShortcode
         foreach ($updated_ids as $id) {
             if (isset($people_map[$id])) {
                 try {
-                    $people_map[$id]->name = $_POST[self::FIELD_PREFIX_PERSON . 'name__' . $id];
-                    $people_map[$id]->email = $_POST[self::FIELD_PREFIX_PERSON . 'email__' . $id];
-                    $people_map[$id]->phone = $_POST[self::FIELD_PREFIX_PERSON . 'phone__' . $id];
+	                $is_competing = ! ( is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
+	                                    && in_array( self::ROLE_ISNOTCOMPETING_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) );
+
+	                $is_group_contact = is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
+	                                    && in_array( self::ROLE_ISCONTACT_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] );
+
+	                $people_map[ $id ]->name             = $_POST[ self::FIELD_PREFIX_PERSON . 'name__' . $id ];
+	                $people_map[ $id ]->email            = $_POST[ self::FIELD_PREFIX_PERSON . 'email__' . $id ];
+	                $people_map[ $id ]->phone            = $_POST[ self::FIELD_PREFIX_PERSON . 'phone__' . $id ];
+	                $people_map[ $id ]->pno              = $_POST[ self::FIELD_PREFIX_PERSON . 'pno__' . $id ];
+	                $people_map[ $id ]->food             = $_POST[ self::FIELD_PREFIX_PERSON . 'food__' . $id ];
+	                $people_map[ $id ]->is_competing     = $is_competing;
+	                $people_map[ $id ]->is_group_contact = $is_group_contact;
 
                     $affected_rows = $this->person_dao->update($people_map[$id]);
                     $this_success = $affected_rows !== false;

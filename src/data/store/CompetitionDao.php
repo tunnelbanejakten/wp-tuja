@@ -3,14 +3,14 @@
 namespace tuja\data\store;
 
 use tuja\data\model\Competition;
-use tuja\util\DB;
+use tuja\util\Database;
 
 class CompetitionDao extends AbstractDao
 {
     function __construct()
     {
 		parent::__construct();
-		$this->table = DB::get_table('competition');
+		$this->table = Database::get_table('competition');
     }
 
     function create(Competition $competition)

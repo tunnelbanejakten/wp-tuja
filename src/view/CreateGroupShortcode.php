@@ -75,12 +75,12 @@ class CreateGroupShortcode extends AbstractGroupShortcode
             return $category->name;
         }, $categories);
 
-        $group_category_question = Question::dropdown(
-            'Vilken klass tävlar ni i?',
-            $group_category_options,
-            'Välj den som de flesta av deltagarna tillhör.'
-        );
-        $html_sections[] = $this->render_field($group_category_question, self::FIELD_GROUP_AGE, $errors[self::FIELD_GROUP_AGE]);
+//        $group_category_question = Question::dropdown(
+//            'Vilken klass tävlar ni i?',
+//            $group_category_options,
+//            'Välj den som de flesta av deltagarna tillhör.'
+//        );
+//        $html_sections[] = $this->render_field($group_category_question, self::FIELD_GROUP_AGE, $errors[self::FIELD_GROUP_AGE]);
 
         $person_name_question = Question::text('Vad heter du?');
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors[self::FIELD_PERSON_NAME]);
@@ -109,14 +109,14 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         $new_group->competition_id = $this->competition_id;
 
         // TODO: DRY... Very similar code in EditGroupShortcode.php
-        $selected_category = $_POST[self::FIELD_GROUP_AGE];
-        $categories = $this->get_categories($this->competition_id);
-        $found_category = array_filter($categories, function ($category) use ($selected_category) {
-            return $category->name == $selected_category;
-        });
-        if (count($found_category) == 1) {
-            $new_group->category_id = reset($found_category)->id;
-        }
+//        $selected_category = $_POST[self::FIELD_GROUP_AGE];
+//        $categories = $this->get_categories($this->competition_id);
+//        $found_category = array_filter($categories, function ($category) use ($selected_category) {
+//            return $category->name == $selected_category;
+//        });
+//        if (count($found_category) == 1) {
+//            $new_group->category_id = reset($found_category)->id;
+//        }
 
         try {
             $new_group->validate();

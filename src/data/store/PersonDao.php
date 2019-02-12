@@ -3,14 +3,15 @@
 namespace tuja\data\store;
 
 use tuja\data\model\Person;
-use tuja\util\DB;
+use tuja\util\DateUtils;
+use tuja\util\Database;
 
 class PersonDao extends AbstractDao
 {
     function __construct()
     {
 		parent::__construct();
-		$this->table = DB::get_table('person');
+		$this->table = Database::get_table('person');
     }
 
     function create(Person $person)
@@ -19,17 +20,25 @@ class PersonDao extends AbstractDao
 
         $affected_rows = $this->wpdb->insert($this->table,
             array(
-                'random_id' => $this->id->random_string(),
-                'name' => $person->name,
-                'team_id' => $person->group_id,
-                'phone' => $person->phone,
-                'email' => $person->email
+	            'random_id'       => $this->id->random_string(),
+	            'name'            => $person->name,
+	            'team_id'         => $person->group_id,
+	            'phone'           => $person->phone,
+	            'email'           => $person->email,
+	            'food'            => $person->food,
+	            'is_competing'    => boolval( $person->is_competing ) ? 1 : 0,
+	            'is_team_contact' => boolval( $person->is_group_contact ) ? 1 : 0,
+	            'pno'             => DateUtils::fix_pno( $person->pno )
             ),
             array(
                 '%s',
                 '%s',
                 '%d',
                 '%s',
+	            '%s',
+	            '%s',
+	            '%d',
+	            '%d',
                 '%s'
             ));
 
@@ -44,9 +53,13 @@ class PersonDao extends AbstractDao
 
         return $this->wpdb->update($this->table,
             array(
-                'name' => $person->name,
-                'email' => $person->email,
-                'phone' => $person->phone
+	            'name'            => $person->name,
+	            'email'           => $person->email,
+	            'phone'           => $person->phone,
+	            'food'            => $person->food,
+	            'is_competing'    => boolval( $person->is_competing ) ? 1 : 0,
+	            'is_team_contact' => boolval( $person->is_group_contact ) ? 1 : 0,
+	            'pno'             => DateUtils::fix_pno( $person->pno )
             ),
             array(
                 'id' => $person->id
@@ -83,7 +96,7 @@ class PersonDao extends AbstractDao
         return $this->get_objects(
 	        'tuja\data\store\AbstractDao::to_person',
 	        'SELECT p.* ' .
-	        'FROM ' . $this->table . ' AS p INNER JOIN ' . DB::get_table( 'team' ) . ' AS t ON p.team_id = t.id ' .
+	        'FROM ' . $this->table . ' AS p INNER JOIN ' . Database::get_table( 'team' ) . ' AS t ON p.team_id = t.id ' .
 	        'WHERE t.competition_id = %d',
             $competition_id);
     }

@@ -4,14 +4,14 @@ namespace tuja\data\store;
 
 use tuja\data\model\ValidationException;
 use tuja\data\model\MessageTemplate;
-use tuja\util\DB;
+use tuja\util\Database;
 
 class MessageTemplateDao extends AbstractDao
 {
     function __construct()
     {
 		parent::__construct();
-		$this->table = DB::get_table('message_template');
+		$this->table = Database::get_table('message_template');
     }
 
     function create(MessageTemplate $message_template)

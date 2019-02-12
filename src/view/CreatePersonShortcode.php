@@ -88,13 +88,19 @@ class CreatePersonShortcode extends AbstractGroupShortcode
         $person_name_question = Question::text('Vad heter du?');
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors[self::FIELD_PERSON_NAME]);
 
-        $person_name_question = Question::text('Vilken e-postadress har du?');
+	    $person_name_question = Question::pno( 'Vad har du för födelsdag/personnummer?', 'Vi rekommenderar att du fyller i fullständigt personnummer.' );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors[ self::FIELD_PERSON_PNO ] );
+
+	    $person_name_question = Question::text( 'Vilken e-postadress har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL, $errors[self::FIELD_PERSON_EMAIL]);
 
-        $person_name_question = Question::text('Vilket telefonnummer har du?');
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE, $errors[self::FIELD_PERSON_PHONE]);
+	    $person_name_question = Question::text( 'Vilket telefonnummer har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
+        $html_sections[]      = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE, $errors[self::FIELD_PERSON_PHONE]);
 
-        $recaptcha_sitekey = get_option('tuja_recaptcha_sitekey');
+	    $person_name_question = Question::text( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.' );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, $errors[ self::FIELD_PERSON_FOOD ] );
+
+	    $recaptcha_sitekey = get_option( 'tuja_recaptcha_sitekey' );
         if (!empty($recaptcha_sitekey)) {
             wp_enqueue_script('tuja-recaptcha-script');
             $html_sections[] = sprintf('<div class="tuja-robot-check"><div class="g-recaptcha" data-sitekey="%s"></div></div>', $recaptcha_sitekey);
@@ -112,6 +118,8 @@ class CreatePersonShortcode extends AbstractGroupShortcode
         $new_person->name = $_POST[self::FIELD_PERSON_NAME];
         $new_person->email = $_POST[self::FIELD_PERSON_EMAIL];
         $new_person->phone = $_POST[self::FIELD_PERSON_PHONE];
+        $new_person->pno = $_POST[self::FIELD_PERSON_PNO];
+        $new_person->food = $_POST[self::FIELD_PERSON_FOOD];
         try {
             $new_person_id = $this->person_dao->create($new_person);
             if ($new_person_id !== false) {

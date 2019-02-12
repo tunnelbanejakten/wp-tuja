@@ -58,14 +58,20 @@ class EditPersonShortcode extends AbstractGroupShortcode
         $person_name_question = Question::text('Namn', null, $person->name);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors['name'], $read_only);
 
-        $person_name_question = Question::text('E-postadress', null, $person->email);
+	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar att du fyller i fullständigt personnummer.', $person->pno );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors['pno'] );
+
+	    $person_name_question = Question::text( 'E-postadress', null, $person->email );
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL, $errors['email'], $read_only);
 
         $person_name_question = Question::text('Telefonnummer', null, $person->phone);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE, $errors['phone'], $read_only);
 
+	    $person_name_question = Question::text( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.', $person->food );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, $errors['food'] );
 
-        if (!$read_only) {
+
+	    if ( ! $read_only ) {
             $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>',
                 self::ACTION_BUTTON_NAME,
                 self::ACTION_NAME_SAVE,
@@ -88,6 +94,8 @@ class EditPersonShortcode extends AbstractGroupShortcode
         $person->name = $_POST[self::FIELD_PERSON_NAME];
         $person->email = $_POST[self::FIELD_PERSON_EMAIL];
         $person->phone = $_POST[self::FIELD_PERSON_PHONE];
+        $person->pno = $_POST[self::FIELD_PERSON_PNO];
+        $person->food = $_POST[self::FIELD_PERSON_FOOD];
 
         try {
             $affected_rows = $this->person_dao->update($person);
