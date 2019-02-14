@@ -9,7 +9,21 @@
     margin: 0.5em 0 0 0;
 }
 
-.tuja-field input {
+.tuja-field textarea,
+.tuja-field select,
+.tuja-field input[type=text],
+.tuja-field input[type=password],
+.tuja-field input[type=email],
+.tuja-field input[type=url],
+.tuja-field input[type=tel],
+.tuja-field input[type=date],
+.tuja-field input[type=datetime],
+.tuja-field input[type=datetime-local],
+.tuja-field input[type=time],
+.tuja-field input[type=month],
+.tuja-field input[type=week],
+.tuja-field input[type=number],
+.tuja-field input[type=search] {
     width: 90%;
 }
 
