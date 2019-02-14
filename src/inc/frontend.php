@@ -2,6 +2,7 @@
 
 namespace tuja;
 
+use tuja\util\Id;
 use tuja\view\CountdownShortcode;
 use tuja\view\CreateGroupShortcode;
 use tuja\view\CreatePersonShortcode;
@@ -123,18 +124,17 @@ class Frontend extends Plugin {
 		return CountdownShortcode::submit_form_response_closes( $atts );
 	}
 
-	public function query_vars( $vars ) {
+/*	public function query_vars( $vars ) {
 		$vars[] = 'group_id';
 
 		return $vars;
-	}
+	}*/
 
-
-	public function rewrite_rules( $rules ) {
+/*	public function rewrite_rules( $rules ) {
 		$rules = array( '([^/]+)/([' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '})$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]' ) + $rules;
 
 		return $rules;
-	}
+	}*/
 }
 
 new Frontend();
