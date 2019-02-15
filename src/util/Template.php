@@ -42,7 +42,9 @@ class Template
             'person_key' => $person->random_id,
             'person_name' => $person->name,
             'person_phone' => $person->phone,
-            'person_email' => $person->email
+            'person_email' => $person->email,
+            'person_food' => $person->food,
+            'person_pno' => $person->pno
         ];
     }
 

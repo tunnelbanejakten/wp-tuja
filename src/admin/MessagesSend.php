@@ -20,7 +20,7 @@ class MessagesSend {
 	public function __construct() {
 		$db_competition    = new CompetitionDao();
 		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if ( ! $competition ) {
+		if ( ! $this->competition ) {
 			print 'Could not find competition';
 
 			return;
@@ -146,15 +146,12 @@ class MessagesSend {
 
 		$is_preview = $_POST['tuja_messages_action'] === 'preview';
 		$is_send    = $_POST['tuja_messages_action'] === 'send';
+
 		include( 'views/messages-send.php' );
 
-		$this->preview_or_send();
-	}
-
-
-	public function preview_or_send() {
 		$is_preview = $_POST['tuja_messages_action'] === 'preview';
 		$is_send    = $_POST['tuja_messages_action'] === 'send';
+
 
 		if ( $is_preview || $is_send ) {
 
