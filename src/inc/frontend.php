@@ -28,8 +28,8 @@ class Frontend extends Plugin {
 		add_shortcode( 'tuja_form_opens_countdown', array( $this, 'form_opens_countdown_shortcode' ) );
 		add_shortcode( 'tuja_form_closes_countdown', array( $this, 'form_closes_countdown_shortcode' ) );
 
-		add_filter( 'query_vars', array( $this, 'query_vars' ) );
-		add_filter( 'rewrite_rules_array', array( $this, 'rewrite_rules' ) );
+//		add_filter( 'query_vars', array( $this, 'query_vars' ) );
+//		add_filter( 'rewrite_rules_array', array( $this, 'rewrite_rules' ) );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
 	}
