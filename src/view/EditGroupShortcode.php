@@ -68,23 +68,33 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $group_name_question = Question::text('Vad heter ert lag?', null, $group->name);
         $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors['name'], $read_only);
 
-//        $categories = $this->get_categories($group->competition_id);
-//
-//        $current_group_category_name = reset(array_filter($categories, function ($category) use ($group) {
-//            return $category->id == $group->category_id;
-//        }))->name;
-//
-//        $group_category_options = array_map(function ($category) {
-//            return $category->name;
-//        }, $categories);
-//
-//        $group_category_question = Question::dropdown(
-//            'Vilken klass tävlar ni i?',
-//            $group_category_options,
-//            'Välj den som de flesta av deltagarna tillhör.',
-//            $current_group_category_name
-//        );
-//        $html_sections[] = $this->render_field($group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only);
+	    $categories = $this->get_categories( $group->competition_id );
+
+	    $current_group_category_name = reset( array_filter( $categories, function ( $category ) use ( $group ) {
+		    return $category->id == $group->category_id;
+	    } ) )->name;
+
+	    $group_category_options = array_map( function ( $category ) {
+		    return $category->name;
+	    }, $categories );
+
+	    switch ( count( $group_category_options ) ) {
+		    case 0:
+			    break;
+		    case 1:
+			    $html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
+			    break;
+		    default:
+			    $group_category_question = Question::dropdown(
+				    'Vilken klass tävlar ni i?',
+				    $group_category_options,
+				    'Välj den som de flesta av deltagarna tillhör.',
+				    $current_group_category_name
+			    );
+			    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only );
+			    break;
+	    }
+
 
         $html_sections[] = sprintf('<h3>Deltagarna</h3>');
 

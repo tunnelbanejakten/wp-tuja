@@ -75,12 +75,21 @@ class CreateGroupShortcode extends AbstractGroupShortcode
             return $category->name;
         }, $categories);
 
-//        $group_category_question = Question::dropdown(
-//            'Vilken klass tävlar ni i?',
-//            $group_category_options,
-//            'Välj den som de flesta av deltagarna tillhör.'
-//        );
-//        $html_sections[] = $this->render_field($group_category_question, self::FIELD_GROUP_AGE, $errors[self::FIELD_GROUP_AGE]);
+	    switch ( count( $group_category_options ) ) {
+		    case 0:
+			    break;
+		    case 1:
+			    $html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
+			    break;
+		    default:
+			    $group_category_question = Question::dropdown(
+				    'Vilken klass tävlar ni i?',
+				    $group_category_options,
+				    'Välj den som de flesta av deltagarna tillhör.'
+			    );
+			    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors[ self::FIELD_GROUP_AGE ] );
+			    break;
+	    }
 
         $person_name_question = Question::text('Vad heter du?');
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors[self::FIELD_PERSON_NAME]);
