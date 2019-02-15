@@ -118,14 +118,14 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         $new_group->competition_id = $this->competition_id;
 
         // TODO: DRY... Very similar code in EditGroupShortcode.php
-//        $selected_category = $_POST[self::FIELD_GROUP_AGE];
-//        $categories = $this->get_categories($this->competition_id);
-//        $found_category = array_filter($categories, function ($category) use ($selected_category) {
-//            return $category->name == $selected_category;
-//        });
-//        if (count($found_category) == 1) {
-//            $new_group->category_id = reset($found_category)->id;
-//        }
+        $selected_category = $_POST[self::FIELD_GROUP_AGE];
+        $categories = $this->get_categories($this->competition_id);
+        $found_category = array_filter($categories, function ($category) use ($selected_category) {
+            return $category->name == $selected_category;
+        });
+        if (count($found_category) == 1) {
+            $new_group->category_id = reset($found_category)->id;
+        }
 
         try {
             $new_group->validate();
