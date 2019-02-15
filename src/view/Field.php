@@ -38,7 +38,20 @@ class Field
                 $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
                 break;
 	        case 'pno':
-		        $field = new FieldText( [ 'type' => 'text', 'pattern' => Person::PNO_PATTERN, 'placeholder' => 'ååmmdd-nnnn' ] );
+		        $field = new FieldText( [
+			        'type'        => 'number',
+			        'pattern'     => Person::PNO_PATTERN,
+			        'placeholder' => 'ååmmddnnnn'
+		        ] );
+		        break;
+	        case 'email':
+		        $field = new FieldText( [
+			        'type'         => 'email',
+			        'autocomplete' => 'autocomplete'
+		        ] );
+		        break;
+	        case 'phone':
+		        $field = new FieldText( [ 'type' => 'tel' ] );
 		        break;
             default:
                 $field = new FieldText();

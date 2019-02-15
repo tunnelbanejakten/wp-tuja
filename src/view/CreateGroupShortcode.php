@@ -85,7 +85,7 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         $person_name_question = Question::text('Vad heter du?');
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors[self::FIELD_PERSON_NAME]);
 
-        $person_name_question = Question::text(
+        $person_name_question = Question::email(
             'Vilken e-postadress har du?',
             'Vi kommer skicka viktig information inför tävlingen till denna adress. Ni kan ändra till en annan adress senare om det skulle behövas.');
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL, $errors[self::FIELD_PERSON_EMAIL]);

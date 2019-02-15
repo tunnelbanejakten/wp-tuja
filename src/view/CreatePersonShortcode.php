@@ -91,10 +91,10 @@ class CreatePersonShortcode extends AbstractGroupShortcode
 	    $person_name_question = Question::pno( 'Vad har du för födelsdag/personnummer?', 'Vi rekommenderar att du fyller i fullständigt personnummer.' );
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors[ self::FIELD_PERSON_PNO ] );
 
-	    $person_name_question = Question::text( 'Vilken e-postadress har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
+	    $person_name_question = Question::email( 'Vilken e-postadress har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL, $errors[self::FIELD_PERSON_EMAIL]);
 
-	    $person_name_question = Question::text( 'Vilket telefonnummer har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
+	    $person_name_question = Question::phone( 'Vilket telefonnummer har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
         $html_sections[]      = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE, $errors[self::FIELD_PERSON_PHONE]);
 
 	    $person_name_question = Question::text( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.' );

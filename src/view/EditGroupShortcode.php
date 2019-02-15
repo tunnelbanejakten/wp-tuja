@@ -123,7 +123,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $person_name_question = Question::text('Namn', null, $person->name);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME . '__' . $random_id, $errors[$random_id . '__name'], $read_only);
 
-	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar alla att fylla in fullständigt personnummer.', $person->pno );
+	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar alla att fylla in fullständigt personnummer.', $this->only_digits( $person->pno ) );
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO . '__' . $random_id, $errors[ $random_id . '__pno' ], $read_only );
 
 	    $answer                = [
@@ -141,10 +141,10 @@ class EditGroupShortcode extends AbstractGroupShortcode
 	    );
 	    $html_sections[]       = $this->render_field( $person_roles_question, self::FIELD_PERSON_ROLES . '__' . $random_id, $errors[ $random_id . '__roles' ], $read_only );
 
-	    $person_name_question = Question::text( 'E-postadress', 'Obligatoriskt för lagledaren, rekommenderat för övriga.', $person->email );
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, $errors[$random_id . '__email'], $read_only);
+	    $person_name_question = Question::email( 'E-postadress', 'Obligatoriskt för lagledaren, rekommenderat för övriga.', $person->email );
+        $html_sections[]      = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, $errors[$random_id . '__email'], $read_only);
 
-	    $person_name_question = Question::text( 'Telefonnummer', 'Obligatoriskt för lagledaren, rekommenderat för övriga.', $person->phone );
+	    $person_name_question = Question::phone( 'Telefonnummer', 'Obligatoriskt för lagledaren, rekommenderat för övriga.', $person->phone );
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, $errors[ $random_id . '__phone' ], $read_only );
 
 	    $person_name_question = Question::text( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.', $person->food );
