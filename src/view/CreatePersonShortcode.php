@@ -88,7 +88,7 @@ class CreatePersonShortcode extends AbstractGroupShortcode
         $person_name_question = Question::text('Vad heter du?');
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors[self::FIELD_PERSON_NAME]);
 
-	    $person_name_question = Question::pno( 'Vad har du för födelsdag/personnummer?', 'Vi rekommenderar att du fyller i fullständigt personnummer.' );
+	    $person_name_question = Question::pno( 'Vad har du för födelsedag/personnummer?', 'Vi rekommenderar att du fyller i fullständigt personnummer.' );
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors[ self::FIELD_PERSON_PNO ] );
 
 	    $person_name_question = Question::email( 'Vilken e-postadress har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
