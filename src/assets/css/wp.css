@@ -83,11 +83,11 @@
 
 .tuja-fieldimages-radiobutton label,
 .tuja-fieldchoices-radiobutton label {
-    /*display: inline-block;*/
+    display: inline;
 }
 
 .tuja-fieldchoices-checkbox label {
-    /*display: inline-block;*/
+    display: inline;
 }
 
 .tuja-fieldimages .tuja-image {
