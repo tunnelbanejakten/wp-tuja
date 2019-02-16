@@ -189,13 +189,13 @@ abstract class Plugin {
 		}
 
 		try {
-			DB::start_transaction();
+			Database::start_transaction();
 			foreach($keys as $key) {
-				DB::add_foreign_key($key[0], $key[1], $key[2], $key[3]);
+				Database::add_foreign_key($key[0], $key[1], $key[2], $key[3]);
 			}
-			DB::commit();
+			Database::commit();
 		} catch(\Exception $e) {
-			DB::rollback();
+			Database::rollback();
 			error_log($e->getMessage());
 		}
 	}
