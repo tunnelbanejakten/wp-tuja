@@ -56,13 +56,13 @@
 .tuja-message {
     border: 1px solid;
     margin: 1em 0;
-    padding: 0.5em;
     border-radius: 0.2em;
 }
 
+.tuja-message,
 p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.se */
 {
-    margin: 0 0 1em 0;
+    padding: 0.5em;
 }
 
 .tuja-message.tuja-message-error {
