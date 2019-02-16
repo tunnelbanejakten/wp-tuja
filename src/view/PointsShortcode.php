@@ -131,7 +131,7 @@ class PointsShortcode
 
             $html_sections[] = sprintf('<input type="hidden" name="%s" value="%s">', self::OPTIMISTIC_LOCK_FIELD_NAME, $optimistic_lock_value);
 
-            $html_sections[] = sprintf('<button type="submit" name="%s" value="update">Spara</button>', self::ACTION_FIELD_NAME);
+            $html_sections[] = sprintf('<div class="tuja-buttons"><button type="submit" name="%s" value="update">Spara</button></div>', self::ACTION_FIELD_NAME);
         }
 
         return sprintf('<form method="post">%s</form>', join($html_sections));

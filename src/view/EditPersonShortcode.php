@@ -58,13 +58,13 @@ class EditPersonShortcode extends AbstractGroupShortcode
         $person_name_question = Question::text('Namn', null, $person->name);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors['name'], $read_only);
 
-	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar att du fyller i fullständigt personnummer.', $person->pno );
+	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar att du fyller i fullständigt personnummer.', $this->only_digits( $person->pno ) );
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors['pno'] );
 
-	    $person_name_question = Question::text( 'E-postadress', null, $person->email );
+	    $person_name_question = Question::email( 'E-postadress', null, $person->email );
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL, $errors['email'], $read_only);
 
-        $person_name_question = Question::text('Telefonnummer', null, $person->phone);
+        $person_name_question = Question::phone('Telefonnummer', null, $person->phone);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE, $errors['phone'], $read_only);
 
 	    $person_name_question = Question::text( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.', $person->food );
@@ -72,7 +72,7 @@ class EditPersonShortcode extends AbstractGroupShortcode
 
 
 	    if ( ! $read_only ) {
-            $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>',
+            $html_sections[] = sprintf('<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>',
                 self::ACTION_BUTTON_NAME,
                 self::ACTION_NAME_SAVE,
                 'Spara');

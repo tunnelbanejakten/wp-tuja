@@ -32,7 +32,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         if (isset($group_key)) {
             $group = $this->group_dao->get_by_key($group_key);
             if ($group === false) {
-                return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
+                return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du är med i.');
             }
 
             $is_read_only = !$this->is_edit_allowed($group->competition_id);
@@ -47,7 +47,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
             }
             return $this->render_update_form($group, $errors, $is_read_only);
         } else {
-            return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
+            return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du är med i.');
         }
     }
 
@@ -68,23 +68,33 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $group_name_question = Question::text('Vad heter ert lag?', null, $group->name);
         $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors['name'], $read_only);
 
-//        $categories = $this->get_categories($group->competition_id);
-//
-//        $current_group_category_name = reset(array_filter($categories, function ($category) use ($group) {
-//            return $category->id == $group->category_id;
-//        }))->name;
-//
-//        $group_category_options = array_map(function ($category) {
-//            return $category->name;
-//        }, $categories);
-//
-//        $group_category_question = Question::dropdown(
-//            'Vilken klass tävlar ni i?',
-//            $group_category_options,
-//            'Välj den som de flesta av deltagarna tillhör.',
-//            $current_group_category_name
-//        );
-//        $html_sections[] = $this->render_field($group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only);
+	    $categories = $this->get_categories( $group->competition_id );
+
+	    $current_group_category_name = reset( array_filter( $categories, function ( $category ) use ( $group ) {
+		    return $category->id == $group->category_id;
+	    } ) )->name;
+
+	    $group_category_options = array_map( function ( $category ) {
+		    return $category->name;
+	    }, $categories );
+
+	    switch ( count( $group_category_options ) ) {
+		    case 0:
+			    break;
+		    case 1:
+			    $html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
+			    break;
+		    default:
+			    $group_category_question = Question::dropdown(
+				    'Vilken klass tävlar ni i?',
+				    $group_category_options,
+				    'Välj den som de flesta av deltagarna tillhör.',
+				    $current_group_category_name
+			    );
+			    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only );
+			    break;
+	    }
+
 
         $html_sections[] = sprintf('<h3>Deltagarna</h3>');
 
@@ -99,7 +109,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         }
 
         if (!$read_only) {
-            $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>',
+            $html_sections[] = sprintf('<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>',
                 self::ACTION_BUTTON_NAME,
                 self::ACTION_NAME_SAVE,
                 'Spara');
@@ -123,7 +133,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $person_name_question = Question::text('Namn', null, $person->name);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME . '__' . $random_id, $errors[$random_id . '__name'], $read_only);
 
-	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar alla att fylla in fullständigt personnummer.', $person->pno );
+	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar alla att fylla in fullständigt personnummer.', $this->only_digits( $person->pno ) );
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO . '__' . $random_id, $errors[ $random_id . '__pno' ], $read_only );
 
 	    $answer                = [
@@ -141,10 +151,10 @@ class EditGroupShortcode extends AbstractGroupShortcode
 	    );
 	    $html_sections[]       = $this->render_field( $person_roles_question, self::FIELD_PERSON_ROLES . '__' . $random_id, $errors[ $random_id . '__roles' ], $read_only );
 
-	    $person_name_question = Question::text( 'E-postadress', 'Obligatoriskt för lagledaren, rekommenderat för övriga.', $person->email );
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, $errors[$random_id . '__email'], $read_only);
+	    $person_name_question = Question::email( 'E-postadress', 'Obligatoriskt för lagledaren, rekommenderat för övriga.', $person->email );
+        $html_sections[]      = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, $errors[$random_id . '__email'], $read_only);
 
-	    $person_name_question = Question::text( 'Telefonnummer', 'Obligatoriskt för lagledaren, rekommenderat för övriga.', $person->phone );
+	    $person_name_question = Question::phone( 'Telefonnummer', 'Obligatoriskt för lagledaren, rekommenderat för övriga.', $person->phone );
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, $errors[ $random_id . '__phone' ], $read_only );
 
 	    $person_name_question = Question::text( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.', $person->food );

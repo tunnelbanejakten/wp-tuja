@@ -10,6 +10,7 @@
 namespace tuja;
 
 use tuja\util\Database;
+use tuja\util\Id;
 
 abstract class Plugin {
 	const VERSION = '1.0.0';
@@ -26,10 +27,15 @@ abstract class Plugin {
 	public function __construct() {
 		// Create/update database tables on activation
 		register_activation_hook(self::FILE, array($this, 'install'));
+		// TODO: Use register_activation_hook instead of calling add_filter for rewrite_rules_array on every page render
+//		register_activation_hook(self::FILE, array($this, 'install_rewrite_rules'));
 
 		// Autoload all classes
 		spl_autoload_register(array($this, 'autoloader'));
-		
+
+		add_filter( 'query_vars', array( $this, 'query_vars' ) );
+		add_filter( 'rewrite_rules_array', array( $this, 'rewrite_rules' ) );
+
 		$this->init();
 	}
 
@@ -37,11 +43,32 @@ abstract class Plugin {
 		// Overridden by child classes
 	}
 
+/*	public function install_rewrite_rules() {
+// 		global $wp_rewrite;
+
+		add_filter( 'query_vars', array( $this, 'query_vars' ) );
+		add_filter( 'rewrite_rules_array', array( $this, 'rewrite_rules' ) );
+
+		//$wp_rewrite->flush_rules();
+	}*/
+
+	public function query_vars( $vars ) {
+		$vars[] = 'group_id';
+
+		return $vars;
+	}
+
+	public function rewrite_rules( $rules ) {
+		$rules = array( '([^/]+)/([' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '})/?$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]' ) + $rules;
+
+		return $rules;
+	}
+
 	public function install() {
 		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 		$tables = array();
 		$charset = 'DEFAULT CHARACTER SET utf8 COLLATE utf8_swedish_ci';
-		
+
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table('competition') . ' (
 				id                   INTEGER AUTO_INCREMENT PRIMARY KEY,
@@ -220,7 +247,7 @@ abstract class Plugin {
 
 		foreach($paths as $path) {
 			if(!file_exists($path)) continue;
-			
+
 			include($path);
 		}
 	}

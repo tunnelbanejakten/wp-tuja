@@ -26,7 +26,7 @@ class Question
         self::GRADING_TYPE_ONE_OF
     ];
 
-    public function validate()
+	public function validate()
     {
         if (strlen($this->text) > 500) {
 	        throw new ValidationException('text', 'Frågan får inte var längre än 500 tecken.');
@@ -73,24 +73,30 @@ class Question
         }
     }
 
-    public static function text($text, $hint = null, $answer = null): Question
-    {
-        $question = new Question();
-        $question->type = 'text';
-        $question->text = $text;
-        $question->text_hint = $hint;
-        $question->latest_response = new Response(isset($answer) && !empty($answer) ? [$answer] : []);
-        return $question;
+	private static function create( $type, $text, $answer, $hint ): Question {
+		$question                  = new Question();
+		$question->type            = $type;
+		$question->text            = $text;
+		$question->text_hint       = $hint;
+		$question->latest_response = new Response( isset( $answer ) && ! empty( $answer ) ? [ $answer ] : [] );
+
+		return $question;
+	}
+
+	public static function text( $text, $hint = null, $answer = null ): Question {
+		return self::create( 'text', $text, $answer, $hint );
     }
 
-    public static function pno($text, $hint = null, $answer = null): Question
-    {
-        $question = new Question();
-        $question->type = 'pno';
-        $question->text = $text;
-        $question->text_hint = $hint;
-        $question->latest_response = new Response(isset($answer) && !empty($answer) ? [$answer] : []);
-        return $question;
+	public static function email( $text, $hint = null, $answer = null ): Question {
+		return self::create( 'email', $text, $answer, $hint );
+	}
+
+	public static function phone( $text, $hint = null, $answer = null ): Question {
+		return self::create( 'phone', $text, $answer, $hint );
+	}
+
+	public static function pno( $text, $hint = null, $answer = null ): Question {
+		return self::create( 'pno', $text, $answer, $hint );
     }
 
     public static function dropdown($text, $options, $hint = null, $answer = null): Question

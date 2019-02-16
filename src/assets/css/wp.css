@@ -7,9 +7,29 @@
 .tuja-field,
 .tuja-item-buttons {
     margin: 0.5em 0 0 0;
+    line-height: 1.2;
 }
 
-.tuja-field label {
+.tuja-field textarea,
+.tuja-field select,
+.tuja-field input[type=text],
+.tuja-field input[type=password],
+.tuja-field input[type=email],
+.tuja-field input[type=url],
+.tuja-field input[type=tel],
+.tuja-field input[type=date],
+.tuja-field input[type=datetime],
+.tuja-field input[type=datetime-local],
+.tuja-field input[type=time],
+.tuja-field input[type=month],
+.tuja-field input[type=week],
+.tuja-field input[type=number],
+.tuja-field input[type=search] {
+    width: 90%;
+}
+
+.tuja-field > label {
+    display: block;
     margin: 0;
 }
 
@@ -28,6 +48,11 @@
     font-size: 80%;
 }
 
+.tuja-buttons {
+    margin: 1em 0 0 0;
+}
+
+p.tuja-message:last-child /* <--- Overrides other styleing from tunnelbanejakten.se */,
 .tuja-message {
     border: 1px solid;
     margin: 1em 0;
@@ -64,11 +89,11 @@
 
 .tuja-fieldimages-radiobutton label,
 .tuja-fieldchoices-radiobutton label {
-    display: inline-block;
+    display: inline;
 }
 
 .tuja-fieldchoices-checkbox label {
-    display: inline-block;
+    display: inline;
 }
 
 .tuja-fieldimages .tuja-image {

@@ -115,4 +115,8 @@ class AbstractGroupShortcode
         } catch (Exception $e) {
         }
     }
+
+    protected function only_digits($input) {
+	    return preg_replace( '/[^0-9]/', '', $input );
+    }
 }

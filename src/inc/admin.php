@@ -39,19 +39,19 @@ class Admin extends Plugin {
 	public function route() {
 		if(empty($_GET['tuja_view'])) {
 			$db_competition = new CompetitionDao();
-			
+
 			if(isset($_POST['tuja_action']) && ($_POST['tuja_action'] === 'competition_create')) {
 				$props = new Competition();
 				$props->name = $_POST['tuja_competition_name'];
 				$db_competition->create( $props );
 			}
-			
+
 			include( Plugin::PATH . '/admin/views/index.php' );
 		} else {
 			$view = 'tuja\admin\\' . sanitize_text_field( $_GET['tuja_view'] );
 			if ( class_exists( $view ) ) {
 				$view = new $view();
-	
+
 				if ( method_exists( $view, 'output' ) ) {
 					$view->output();
 				}
