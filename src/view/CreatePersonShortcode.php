@@ -36,7 +36,7 @@ class CreatePersonShortcode extends AbstractGroupShortcode
         if (isset($group_key)) {
             $group = $this->group_dao->get_by_key($group_key);
             if ($group === false) {
-                return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
+                return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du vill anmäla dig till.');
             }
 
             if (!$this->is_edit_allowed($group->competition_id)) {
@@ -73,7 +73,7 @@ class CreatePersonShortcode extends AbstractGroupShortcode
                 return $this->render_create_form($group);
             }
         } else {
-            return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
+            return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du vill anmäla dig till.');
         }
     }
 
@@ -106,7 +106,7 @@ class CreatePersonShortcode extends AbstractGroupShortcode
             $html_sections[] = sprintf('<div class="tuja-robot-check"><div class="g-recaptcha" data-sitekey="%s"></div></div>', $recaptcha_sitekey);
         }
 
-        $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Jag anmäler mig');
+        $html_sections[] = sprintf('<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Jag anmäler mig');
 
         return sprintf('<form method="post">%s</form>', join($html_sections));
     }

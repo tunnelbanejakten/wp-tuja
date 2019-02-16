@@ -7,6 +7,7 @@
 .tuja-field,
 .tuja-item-buttons {
     margin: 0.5em 0 0 0;
+    line-height: 1.2;
 }
 
 .tuja-field textarea,
@@ -47,6 +48,11 @@
     font-size: 80%;
 }
 
+.tuja-buttons {
+    margin: 1em 0 0 0;
+}
+
+p.tuja-message:last-child /* <--- Overrides other styleing from tunnelbanejakten.se */,
 .tuja-message {
     border: 1px solid;
     margin: 1em 0;

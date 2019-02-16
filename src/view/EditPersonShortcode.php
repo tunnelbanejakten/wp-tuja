@@ -72,7 +72,7 @@ class EditPersonShortcode extends AbstractGroupShortcode
 
 
 	    if ( ! $read_only ) {
-            $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>',
+            $html_sections[] = sprintf('<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>',
                 self::ACTION_BUTTON_NAME,
                 self::ACTION_NAME_SAVE,
                 'Spara');

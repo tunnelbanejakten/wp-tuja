@@ -32,7 +32,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         if (isset($group_key)) {
             $group = $this->group_dao->get_by_key($group_key);
             if ($group === false) {
-                return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
+                return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du är med i.');
             }
 
             $is_read_only = !$this->is_edit_allowed($group->competition_id);
@@ -47,7 +47,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
             }
             return $this->render_update_form($group, $errors, $is_read_only);
         } else {
-            return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
+            return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du är med i.');
         }
     }
 
@@ -109,7 +109,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         }
 
         if (!$read_only) {
-            $html_sections[] = sprintf('<div><button type="submit" name="%s" value="%s">%s</button></div>',
+            $html_sections[] = sprintf('<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>',
                 self::ACTION_BUTTON_NAME,
                 self::ACTION_NAME_SAVE,
                 'Spara');

@@ -91,7 +91,7 @@ class FormShortcode
         $group_key = $this->group_key;
         $group = $this->group_dao->get_by_key($group_key);
         if ($group === false) {
-            return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Inget lag angivet.');
+            return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du tillhör.');
         }
 
         $group_category = $this->category_dao->get($group->category_id);
@@ -150,7 +150,7 @@ class FormShortcode
                     isset($errors[$field_name]) ? sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors[$field_name]) : '');
             }, $questions));
             if (!$is_read_only) {
-                $html_sections[] = sprintf('<button type="submit" name="tuja_formshortcode_action" value="update">Uppdatera svar</button>');
+                $html_sections[] = sprintf('<div class="tuja-buttons"><button type="submit" name="tuja_formshortcode_action" value="update">Uppdatera svar</button></div>');
             } else {
                 $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>',
                     'Svar får inte skickas in nu.');
