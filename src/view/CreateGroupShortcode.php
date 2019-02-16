@@ -136,6 +136,8 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         $new_person = new Person();
         $new_person->name = $_POST[self::FIELD_PERSON_NAME];
         $new_person->email = $_POST[self::FIELD_PERSON_EMAIL];
+	    $new_person->is_group_contact = true;
+	    $new_person->is_competing = true;
 
         try {
             // Person is validated before Group is created in order to catch simple input problems, like a missing name or email address.
