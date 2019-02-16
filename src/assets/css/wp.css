@@ -10,6 +10,7 @@
     line-height: 1.2;
 }
 
+.tuja-message,
 .tuja-field textarea,
 .tuja-field select,
 .tuja-field input[type=text],
@@ -52,12 +53,16 @@
     margin: 1em 0 0 0;
 }
 
-p.tuja-message:last-child /* <--- Overrides other styleing from tunnelbanejakten.se */,
 .tuja-message {
     border: 1px solid;
     margin: 1em 0;
     padding: 0.5em;
     border-radius: 0.2em;
+}
+
+p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.se */
+{
+    margin: 0 0 1em 0;
 }
 
 .tuja-message.tuja-message-error {

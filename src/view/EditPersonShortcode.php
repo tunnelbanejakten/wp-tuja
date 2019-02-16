@@ -58,7 +58,7 @@ class EditPersonShortcode extends AbstractGroupShortcode
         $person_name_question = Question::text('Namn', null, $person->name);
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors['name'], $read_only);
 
-	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar att du fyller i fullständigt personnummer.', $this->only_digits( $person->pno ) );
+	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar att du fyller i fullständigt personnummer.', $person->pno );
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors['pno'] );
 
 	    $person_name_question = Question::email( 'E-postadress', null, $person->email );

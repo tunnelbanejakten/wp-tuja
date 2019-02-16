@@ -39,7 +39,7 @@ class Field
                 break;
 	        case 'pno':
 		        $field = new FieldText( [
-			        'type'        => 'number',
+			        'type'        => 'tel',
 			        'pattern'     => Person::PNO_PATTERN,
 			        'placeholder' => 'ååmmddnnnn'
 		        ] );
