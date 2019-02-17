@@ -51,7 +51,10 @@ class Field
 		        ] );
 		        break;
 	        case 'phone':
-		        $field = new FieldText( [ 'type' => 'tel' ] );
+		        $field = new FieldText( [
+			        'type'    => 'tel',
+			        'pattern' => Person::PHONE_PATTERN
+		        ] );
 		        break;
             default:
                 $field = new FieldText();

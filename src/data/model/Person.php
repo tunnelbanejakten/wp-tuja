@@ -29,6 +29,7 @@ class Person
 	- nej
 	*/
 	const PNO_PATTERN = '^(19|20)?[0-9]{2}-?(0[1-9]|[1-2][0-9])-?[0-3][0-9](-*[0-9]{4})?$';
+	CONST PHONE_PATTERN = '^\+?[0-9 -]{6,}$';
 
     public $id;
     public $random_id;
@@ -60,7 +61,7 @@ class Person
         if (strlen($this->phone) > 50) {
             throw new ValidationException('phone', 'Telefonnumret får bara vara 50 tecken långt.');
         }
-        if (!empty(trim($this->phone)) && preg_match('/^\+?[0-9 -]{6,}$/', $this->phone) !== 1) {
+	    if ( !empty(trim($this->phone)) && preg_match( '/' . self::PHONE_PATTERN . '/', $this->phone) !== 1) {
             throw new ValidationException('phone', 'Telefonnummer ser konstigt ut');
         }
         if (strlen($this->food) > 100) {
