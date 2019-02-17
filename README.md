@@ -78,10 +78,11 @@ Known issues:
 
 Features:
 * Creates a new group member, i.e. person. Basically a sign-me-up-to-specific-team form.
-* Uses id string in URL to identify the group to which the person should be added. 
+* Uses id string in URL (by default) to identify the group to which the person should be added. 
 
 Attributes:
 * edit_link_template: Template for URL used to edit person once created. Needs to be an absolute URL.
+* group_id: If set, this group id is used instead of the one specified as a URL query parameter.
 
 Known issues:
 * 
