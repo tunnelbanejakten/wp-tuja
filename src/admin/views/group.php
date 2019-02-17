@@ -80,6 +80,43 @@ use tuja\view\FieldImages;
     </table>
     <button class="button button-primary" type="submit" name="tuja_points_action" value="save">Spara</button>
 
+    <h3>Deltagare</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Namn</th>
+            <th>Personnummer</th>
+            <th>Ålder</th>
+            <th>Medföljare</th>
+            <th>Lagledare</th>
+            <th>Telefon</th>
+            <th>E-post</th>
+        </tr>
+        </thead>
+        <tbody>
+		<?php
+		print join( '', array_map( function ( $person ) {
+			return sprintf( '<tr>' .
+			                '<td>%s</td>' .
+			                '<td>%s</td>' .
+			                '<td>%s</td>' .
+			                '<td>%s</td>' .
+			                '<td>%s</td>' .
+			                '<td>%s</td>' .
+			                '<td><a href="mailto:%s">%s</a></td>' .
+			                '</tr>',
+				$person->name,
+				$person->pno,
+				! empty( $person->pno ) ? date_diff( date_create_from_format( 'Ymd', substr( $person->pno, 0, 8 ) ), date_create() )->y : '',
+				! $person->is_competing ? 'Ja' : '' ,
+				$person->is_group_contact ? 'Ja' : '',
+				$person->phone,
+				$person->email,
+				$person->email);
+		}, $people ) );
+		?>
+        </tbody>
+    </table>
     <h3>Meddelanden</h3>
     <table>
         <tbody>

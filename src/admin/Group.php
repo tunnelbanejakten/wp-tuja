@@ -5,6 +5,7 @@ namespace tuja\admin;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\MessageDao;
+use tuja\data\store\PersonDao;
 use tuja\view\FieldImages;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\PointsDao;
@@ -82,6 +83,9 @@ class Group {
 		$points_overrides_per_question       = array_combine( array_map( function ( $points ) {
 			return $points->form_question_id;
 		}, $points_overrides), array_values($points_overrides));
+
+		$person_dao = new PersonDao();
+		$people = $person_dao->get_all_in_group( $group->id );
 
 		include('views/group.php');
 	}
