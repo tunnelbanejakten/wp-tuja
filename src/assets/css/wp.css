@@ -4,7 +4,6 @@
     border: 1px solid #ccc
 }
 
-.tuja-field,
 .tuja-item-buttons {
     margin: 0.5em 0 0 0;
     line-height: 1.2;
@@ -26,12 +25,13 @@
 .tuja-field input[type=week],
 .tuja-field input[type=number],
 .tuja-field input[type=search] {
-    width: 90%;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .tuja-field > label {
     display: block;
-    margin: 0;
+    margin: 0 0 5px 0;
 }
 
 .tuja-help,
@@ -121,6 +121,10 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 
 .tuja-image.tuja-image-existing {
     margin: 0 0 0.5em 0;
+}
+
+.tuja-question {
+	margin-bottom: 1.25em;
 }
 
 .tuja-question input[disabled] {
