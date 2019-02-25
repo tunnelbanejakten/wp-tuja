@@ -55,9 +55,26 @@ class EditGroupShortcode extends AbstractGroupShortcode
     {
         wp_enqueue_script('tuja-editgroup-script');
 
-        $people = $this->person_dao->get_all_in_group($group->id);
+	    // Get people already saved in database:
+	    $preexisting_people = $this->person_dao->get_all_in_group( $group->id );
+	    $preexisting_ids = array_map( function ( $person ) {
+		    return $person->random_id;
+	    }, $preexisting_people );
 
-        $html_sections = [];
+	    // Get people who should have been saved in the database but which were not (probably because of input validation problems):
+	    $unsaved_ids = array_diff( $this->get_submitted_person_ids(), $preexisting_ids );
+	    sort( $unsaved_ids );
+	    $unsaved_people = array_map( function ( $id ) {
+		    $person            = $this->init_posted_person( $id );
+		    $person->random_id = $id;
+
+		    return $person;
+	    }, $unsaved_ids );
+
+	    // Get all people, both saved and unsaved:
+	    $people = array_merge( $preexisting_people, $unsaved_people );
+
+	    $html_sections = [];
 
         if (isset($errors['__'])) {
             $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['__']);
@@ -100,12 +117,12 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
         if (is_array($people)) {
 	        $html_sections[] = sprintf( '<div class="tuja-people-existing">%s</div>', join( array_map( function ( $person ) use ( $errors, $read_only, $group ) {
-		        return $this->render_person_form( $person, $group->contact_person_id, $errors, $read_only );
+		        return $this->render_person_form( $person, $errors, $read_only );
             }, $people)));
         }
         if (!$read_only) {
             $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="button" name="%s" value="%s" class="tuja-add-person">%s</button></div>', self::ACTION_BUTTON_NAME, 'new_person', 'Lägg till deltagare');
-	        $html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( new Person(), $group->contact_person_id, $errors, $read_only ) );
+	        $html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( new Person(), $errors, $read_only ) );
         }
 
         if (!$read_only) {
@@ -124,7 +141,7 @@ class EditGroupShortcode extends AbstractGroupShortcode
         return sprintf('<form method="post">%s</form>', join($html_sections));
     }
 
-	private function render_person_form( $person, $group_contact_person_id, $errors = array(), $read_only = false ): string
+	private function render_person_form( $person, $errors = array(), $read_only = false ): string
     {
         $html_sections = [];
 
@@ -218,28 +235,27 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
         foreach ($created_ids as $id) {
             try {
-	            $is_competing = ! ( is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
-	                                && in_array( self::ROLE_ISNOTCOMPETING_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) );
-
-	            $is_group_contact = is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
-	                                && in_array( self::ROLE_ISCONTACT_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] );
-
-	            $new_person                   = new Person();
-	            $new_person->group_id         = $group_id;
-	            $new_person->name             = $_POST[ self::FIELD_PREFIX_PERSON . 'name__' . $id ];
-	            $new_person->email            = $_POST[ self::FIELD_PREFIX_PERSON . 'email__' . $id ];
-	            $new_person->phone            = $_POST[ self::FIELD_PREFIX_PERSON . 'phone__' . $id ];
-	            $new_person->pno              = $_POST[ self::FIELD_PREFIX_PERSON . 'pno__' . $id ];
-	            $new_person->food             = $_POST[ self::FIELD_PREFIX_PERSON . 'food__' . $id ];
-	            $new_person->is_competing     = $is_competing;
-	            $new_person->is_group_contact = $is_group_contact;
+	            $new_person           = $this->init_posted_person( $id );
+	            $new_person->group_id = $group_id;
 
                 $new_person_id = $this->person_dao->create($new_person);
                 $this_success = $new_person_id !== false;
+	            if ( $this_success ) {
+		            // Remove the POSTed data for the newly created person. This prevents the new person from being
+		            // printed twice when rendering the page after saving changes (the form for the person would have
+		            // been shown once when loading it from the database, since it is now an existing person, and once
+		            // when loading "people who should be created", since the incoming POSTed data still contains the
+		            // data entered by the user under the key $id (rather than the key generated during creation).
+		            foreach ( array_keys( $_POST ) as $key ) {
+			            if ( strpos( $key, $id ) !== false ) {
+				            unset( $_POST[ $key ] );
+			            }
+		            }
+	            }
                 $overall_success = ($overall_success and $this_success);
             } catch (ValidationException $e) {
-                $validation_errors['__' . $e->getField()] = $e->getMessage();
-                $overall_success = false;
+	            $validation_errors[ $id . '__' . $e->getField() ] = $e->getMessage();
+	            $overall_success                                  = false;
             } catch (Exception $e) {
                 $overall_success = false;
             }
@@ -289,7 +305,26 @@ class EditGroupShortcode extends AbstractGroupShortcode
         return $validation_errors;
     }
 
-    private function get_submitted_person_ids(): array
+	private function init_posted_person( $id ) {
+		$is_competing = ! ( is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
+		                    && in_array( self::ROLE_ISNOTCOMPETING_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] ) );
+
+		$is_group_contact = is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
+		                    && in_array( self::ROLE_ISCONTACT_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] );
+
+		$person                   = new Person();
+		$person->name             = $_POST[ self::FIELD_PREFIX_PERSON . 'name__' . $id ];
+		$person->email            = $_POST[ self::FIELD_PREFIX_PERSON . 'email__' . $id ];
+		$person->phone            = $_POST[ self::FIELD_PREFIX_PERSON . 'phone__' . $id ];
+		$person->pno              = $_POST[ self::FIELD_PREFIX_PERSON . 'pno__' . $id ];
+		$person->food             = $_POST[ self::FIELD_PREFIX_PERSON . 'food__' . $id ];
+		$person->is_competing     = $is_competing;
+		$person->is_group_contact = $is_group_contact;
+
+		return $person;
+	}
+
+	private function get_submitted_person_ids(): array
     {
         // $person_prop_field_names are the keys in $_POST which correspond to form values for the group members.
         $person_prop_field_names = array_filter(array_keys($_POST), function ($key) {
