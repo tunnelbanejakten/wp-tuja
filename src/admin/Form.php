@@ -102,7 +102,7 @@ class Form {
 			$props->correct_answers  = array('Alice');
 			$props->possible_answers = array('Alice', 'Bob');
 			$props->form_id          = $this->form->id;
-			$props->type          = 'text';
+			$props->type             = 'text'; // TODO: Use constant.
 
 			try {
 				$affected_rows = $this->db_question->create( $props );

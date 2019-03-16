@@ -34,6 +34,9 @@ class Field
             case 'pick_multi':
                 $field = new FieldChoices($question->possible_answers ?: $question->correct_answers, true);
                 break;
+            case 'text_multi':
+                $field = new FieldTextMulti($question->possible_answers ?: $question->correct_answers);
+                break;
             case 'images':
                 $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
                 break;

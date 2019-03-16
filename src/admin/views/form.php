@@ -53,7 +53,8 @@ use tuja\util\DateUtils;
             'text' => 'Fritext',
             'images' => 'Bilder',
             'pick_one' => 'Välj ett alternativ',
-            'pick_multi' => 'Välj flera alternativ'
+            'pick_multi' => 'Välj flera alternativ',
+            'text_multi' => 'Skriv flera alternativ'
         );
         printf('<div class="tuja-admin-question-property tuja-admin-question-property-type"><label for="%s">%s</label><select id="%s" name="%s">%s</select></div>',
             $render_id,
@@ -79,6 +80,8 @@ use tuja\util\DateUtils;
         $options = array(
             '' => 'Rätta inte',
             Question::GRADING_TYPE_ONE_OF => 'Ge poäng om minst ett korrekt svar angivits',
+            Question::GRADING_TYPE_ORDERED_PERCENT_OF=> 'Ge poäng utifrån andel korrekta svar (i ordning)',
+            Question::GRADING_TYPE_UNORDERED_PERCENT_OF => 'Ge poäng utifrån andel korrekta svar (oavsett ordning)',
             Question::GRADING_TYPE_ALL_OF => 'Ge poäng om alla korrekta svar angivits'
         );
         printf('<div class="tuja-admin-question-property tuja-admin-question-property-type"><label for="%s">%s</label><select id="%s" name="%s">%s</select></div>',
