@@ -48,7 +48,7 @@ use tuja\util\DateUtils;
         $field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $question->id . '__type';
 		$selected_value = !empty($_POST[$field_name]) ? $_POST[$field_name] : $question->type;
 		
-        // TODO: Extract question types to constants. DRY.
+        // TODO: Extract question types to constants. DRY. Sync with \tuja\data\model\Question::VALID_TYPES.
         $options = array(
             'text' => 'Fritext',
             'images' => 'Bilder',

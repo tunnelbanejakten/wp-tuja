@@ -19,7 +19,7 @@ class Question
 
     const GRADING_TYPE_ONE_OF = "one_of";
 	const GRADING_TYPE_ALL_OF = "all_of";
-	const VALID_TYPES = ['text', 'number', 'header', 'pick_one', 'pick_multi'];
+	const VALID_TYPES = ['text', 'number', 'header', 'pick_one', 'pick_multi', 'images'];
 
     const SCORING_METHODS = [
         self::GRADING_TYPE_ALL_OF,
