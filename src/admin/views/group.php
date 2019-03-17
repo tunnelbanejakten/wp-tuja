@@ -8,7 +8,7 @@ use tuja\view\FieldImages;
 
 <form method="post" action="<?= add_query_arg() ?>">
     <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $this->competition->name) ?></h1>
-    <h2>Grupp <?= htmlspecialchars($group->name) ?></h2>
+    <h2>Grupp <?= htmlspecialchars($group->name) ?> (id: <code><?= htmlspecialchars($group->random_id) ?></code>)</h2>
 
     <p><strong>Totalt <?= array_sum($calculated_scores_final) ?> poäng.</strong></p>
 
