@@ -77,26 +77,27 @@ class Form {
 				}
 			}
 		
-			$overall_success = true;
+			$success = true;
 			foreach ($updated_questions as $updated_question) {
 				try {
 					$affected_rows   = $this->db_question->update( $updated_question );
-					$this_success    = $affected_rows !== false && $affected_rows === 1;
-					$overall_success = ($overall_success and $this_success);
+					$success = $success && $affected_rows !== false;
 				} catch (Exception $e) {
-					$overall_success = false;
+					$success = false;
 				}
 			}
 
-			if(!$overall_success) AdminUtils::printError('Kunde inte uppdatera fråga.');
+			$success ? AdminUtils::printSuccess('Uppdaterat!') : AdminUtils::printError('Kunde inte uppdatera fråga.');
 		} elseif ($_POST['tuja_action'] == 'form_update') {
 			try {
 				$this->form->submit_response_start = DateUtils::from_date_local_value( $_POST['tuja-submit-response-start'] );
 				$this->form->submit_response_end   = DateUtils::from_date_local_value( $_POST['tuja-submit-response-end'] );
-				$this->db_form->update( $this->form );
+				$success = $this->db_form->update( $this->form );
 			} catch (Exception $e) {
-				AdminUtils::printException($e);
+				$success = false;
 			}
+
+			$success !== false ? AdminUtils::printSuccess('Uppdaterat!') : AdminUtils::printException($e);
 		} elseif ($_POST['tuja_action'] == 'question_create') {
 			$props                   = new Question();
 			$props->correct_answers  = array('Alice');
@@ -111,7 +112,7 @@ class Form {
 				$success = false;
 			}
 			
-			if(!$success) AdminUtils::printError('Kunde inte skapa fråga.');
+			$success ? AdminUtils::printSuccess('Fråga skapad!') : AdminUtils::printError('Kunde inte skapa fråga.');
 		} elseif (substr($_POST['tuja_action'], 0, strlen(self::ACTION_NAME_DELETE_PREFIX)) == self::ACTION_NAME_DELETE_PREFIX) {
 			$wpdb->show_errors(); // TODO: Show nicer error message if question cannot be deleted (e.g. in case someone has answered the question already)
 		
@@ -120,7 +121,7 @@ class Form {
 			$affected_rows = $this->db_question->delete( $question_to_delete );
 			$success       = $affected_rows !== false && $affected_rows === 1;
 			
-			if(!$success) AdminUtils::printError('Kunde inte ta bort fråga.');
+			$success ? AdminUtils::printSuccess('Fråga sparad!') : AdminUtils::printError('Kunde inte ta bort fråga.');
 		}
 	}
 

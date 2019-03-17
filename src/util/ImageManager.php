@@ -21,10 +21,12 @@ class ImageManager
     public function import_jpeg($file_path): string
     {
         if (file_exists($file_path)) {
-            // TODO: Use exif_imagetype if enabled
-//            function_exists()
-            $is_valid_jpeg = /*(exif_imagetype($file_path) == IMAGETYPE_JPEG) && */
-                (@imagecreatefromjpeg($file_path) !== false);
+			if(function_exists('exif_imagetype')) {
+				$is_valid_jpeg = exif_imagetype($file_path) == IMAGETYPE_JPEG;
+			} else {
+				$is_valid_jpeg = @imagecreatefromjpeg($file_path) !== false;
+			}
+
             if (!$is_valid_jpeg) {
                 throw new Exception('Not valid JPEG image.');
             }

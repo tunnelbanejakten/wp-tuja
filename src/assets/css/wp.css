@@ -89,7 +89,12 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 .tuja-field-error .tuja-message {
     font-size: 80%;
     margin-top: 0;
-    border-top: none;
+    border-top-width: 0;
+}
+
+.tuja-field.tuja-fieldimages ~ .tuja-message {
+    border-top-width: 1px;
+    margin-top: 5px;
 }
 
 .tuja-fieldimages-radiobutton label,
@@ -127,11 +132,9 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 	margin-bottom: 1.25em;
 }
 
-.tuja-question input[disabled] {
-    border: none;
-    padding: 0;
-    margin: 0;
-    color: inherit;
+.tuja-question input[disabled],
+.tuja-question textarea[disabled] {
+    background: #f5f5f5;
 }
 
 .tuja-person-template {

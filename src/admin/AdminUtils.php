@@ -19,4 +19,9 @@ class AdminUtils
             'Oj, något blev fel',
             $message);
 	}
+	
+
+	public static function printSuccess($message) {
+		printf('<div class="notice notice-success is-dismissable" style="margin-left: 2px"><p>%s</p></div>', $message);
+	}
 }

@@ -49,28 +49,27 @@ class FieldImages extends Field
         $answer = [];
         // TODO: Extract sub-field property names to constants.
         $is_regular_file_upload_attempted = isset($_FILES["$form_field-NEW-file"]) && $_FILES["$form_field-NEW-file"]['error'] !== UPLOAD_ERR_NO_FILE;
-        $is_base64_file_upload_attempted = isset($_POST["$form_field-NEW-file_resized"]);
+		$is_base64_file_upload_attempted = isset($_POST["$form_field-NEW-file_resized"]);
+		
         if ($is_regular_file_upload_attempted || $is_base64_file_upload_attempted) {
             // TODO: A "get method" should not have side-effects, like saving files.
             // Process upload of new image
             try {
-                $image_path = isset($_FILES["$form_field-NEW-file"]) ?
-                    $this->get_uploaded_file_path($_FILES["$form_field-NEW-file"]) :
-                    $this->save_base64_file($_POST["$form_field-NEW-file_resized"]);
-                $import_result = $this->image_manager->import_jpeg($image_path);
-                if ($import_result) {
-                    $answer['NEW'] = new FieldImagesImage(
-                        $import_result,
-                        $_POST["$form_field-NEW-option"],
-                        $_POST["$form_field-NEW-comment"]);
+                if(isset($_FILES["$form_field-NEW-file"])) {
+					$image_path = $this->get_uploaded_file_path($_FILES["$form_field-NEW-file"]);
+				} else {
+					$image_path = $this->save_base64_file($_POST["$form_field-NEW-file_resized"]);
+				}
+
+                if($import_result = $this->image_manager->import_jpeg($image_path)) {
+                    $answer['NEW'] = new FieldImagesImage($import_result, $_POST["$form_field-NEW-option"], $_POST["$form_field-NEW-comment"]);
                 }
             } catch (Exception $e) {
-                // TODO: Bad error handling here.
-                printf('<p>Image import failed. %s</p> ', $e->getMessage());
-            } finally {
-                if (isset($image_path) && file_exists($image_path)) {
-                    unlink($image_path);
+                if(isset($image_path) && file_exists($image_path)) {
+					unlink($image_path);
                 }
+				
+				throw $e;
             }
         }
 

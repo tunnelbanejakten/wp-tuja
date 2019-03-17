@@ -22,7 +22,7 @@ class FormShortcode
 
     const FORM_FIELD_NAME_PREFIX = 'tuja_formshortcode_response_';
 
-    const TEAMS_DROPDOWN_NAME = FORM_FIELD_NAME_PREFIX . 'group';
+    const TEAMS_DROPDOWN_NAME = self::FORM_FIELD_NAME_PREFIX . 'group';
 
     public function __construct($wpdb, $form_id, $group_key)
     {
@@ -48,27 +48,30 @@ class FormShortcode
         }
 
         foreach ($questions as $question) {
-            $user_answer = Field::create($question)->get_posted_answer(self::FORM_FIELD_NAME_PREFIX . $question->id);
-            if (isset($user_answer)) {
-                $user_answer_array = is_array($user_answer) ? $user_answer : array($user_answer);
-                if (!isset($responses[$question->id]) || $user_answer_array != $responses[$question->id]->answers) {
-                    try {
-                        $new_response = new Response();
-                        $new_response->group_id = $group_id;
-                        $new_response->form_question_id = $question->id;
-                        $new_response->answers = $user_answer_array;
+			try {
+				$user_answer = Field::create($question)->get_posted_answer(self::FORM_FIELD_NAME_PREFIX . $question->id);
+			
+				if (isset($user_answer)) {
+					$user_answer_array = is_array($user_answer) ? $user_answer : array($user_answer);
 
-                        $affected_rows = $this->response_dao->create($new_response);
+					if (!isset($responses[$question->id]) || $user_answer_array != $responses[$question->id]->answers) {
+						$new_response = new Response();
+						$new_response->group_id = $group_id;
+						$new_response->form_question_id = $question->id;
+						$new_response->answers = $user_answer_array;
 
-                        $this_success = $affected_rows !== false && $affected_rows === 1;
-                        $overall_success = ($overall_success and $this_success);
-                    } catch (Exception $e) {
-                        $overall_success = false;
-                        $errors[self::FORM_FIELD_NAME_PREFIX . $question->id] = $e->getMessage();
-                    }
-                }
-            }
-        }
+						$affected_rows = $this->response_dao->create($new_response);
+
+						$this_success = $affected_rows !== false && $affected_rows === 1;
+						$overall_success = ($overall_success and $this_success);
+					}
+				}
+			} catch (Exception $e) {
+				$overall_success = false;
+				$errors[self::FORM_FIELD_NAME_PREFIX . $question->id] = $e->getMessage();
+			}
+		}
+		
         return $errors;
     }
 
