@@ -146,21 +146,19 @@ class FieldImages extends Field
 
     private function render_options_list($field_name, $option_key)
     {
-        return join(array_map(function ($index, $value) use ($field_name, $option_key) {
-            $id = $field_name . '-' . $index;
-            $name = $field_name ?: $this->key;
-            return sprintf('<div class="tuja-%s-radiobutton"><input type="radio" name="%s-option" value="%s" class="tuja-%s tuja-%s-shortlist" id="%s" %s %s/><label for="%s">%s</label></div>',
-                strtolower((new \ReflectionClass($this))->getShortName()),
-                $name,
-                md5($value),
-                strtolower((new \ReflectionClass($this))->getShortName()),
-                strtolower((new \ReflectionClass($this))->getShortName()),
-                $id,
-                $option_key == md5($value) ? ' checked="checked"' : '',
-                $this->read_only ? ' disabled="disabled"' : '',
-                $id,
-                htmlspecialchars($value));
-        }, array_keys($this->options), array_values($this->options)));
+		$name = $field_name ?: $this->key;
+		$disabled = $this->read_only ? ' disabled="disabled"' : '';
+
+		ob_start();
+		printf('<select name="%s-option"%s>', $name, $disabled);
+		echo '<option value="">-- Välj --</option>';
+		foreach($this->options as $keys => $value) {
+			$selected = $option_key == md5($value) ? ' selected' : '';
+			printf('<option value="%s"%s>%s</option>', md5($value), $selected, $value);
+		}
+		echo '</select>';
+
+		return ob_get_clean();
     }
 
     private function render_comment_field($field_name, $comment)
