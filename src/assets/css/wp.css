@@ -27,11 +27,13 @@
 .tuja-field input[type=search] {
 	width: 100%;
 	box-sizing: border-box;
+	margin-bottom: 5px;
 }
 
 .tuja-field > label {
     display: block;
-    margin: 0 0 5px 0;
+	margin: 0 0 5px 0;
+	font-weight: bold;
 }
 
 .tuja-help,
@@ -95,6 +97,11 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 .tuja-field.tuja-fieldimages ~ .tuja-message {
     border-top-width: 1px;
     margin-top: 5px;
+}
+
+.tuja-fieldimages-radiobutton,
+.tuja-fieldchoices-radiobutton {
+	margin-bottom: 5px;
 }
 
 .tuja-fieldimages-radiobutton label,
