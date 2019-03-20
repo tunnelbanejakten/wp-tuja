@@ -8,6 +8,7 @@ use tuja\util\score\ScoreCalculator;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\CompetitionDao;
+use tuja\data\model\ValidationException;
 
 class Competition {
 
@@ -35,7 +36,12 @@ class Competition {
 			$props->name           = $_POST['tuja_group_name'];
 			$props->category_id    = $_POST['tuja_group_type'];
 			$props->competition_id = $this->competition->id;
-			$db_groups->create( $props );
+
+			try {
+				$db_groups->create( $props );
+			} catch(ValidationException $e) {
+				AdminUtils::printException($e);
+			}
 		} elseif ( $_POST['tuja_action'] == 'form_create' ) {
 			$props                 = new Form();
 			$props->name           = $_POST['tuja_form_name'];

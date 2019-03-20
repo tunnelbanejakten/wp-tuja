@@ -18,7 +18,7 @@ class GroupDao extends AbstractDao
     {
         $group->validate();
 
-        if ($this->exists($group->name, $group->id)) {
+        if ($this->exists($group)) {
             throw new ValidationException('name', 'Det finns redan ett lag med detta namn.');
         }
 
@@ -46,7 +46,7 @@ class GroupDao extends AbstractDao
     {
         $group->validate();
 
-        if ($this->exists($group->name, $group->id)) {
+        if ($this->exists($group)) {
             throw new ValidationException('name', 'Det finns redan ett lag med detta namn.');
         }
 
@@ -60,14 +60,17 @@ class GroupDao extends AbstractDao
             ));
     }
 
-    function exists($name, $exclude_group_id)
+    function exists($group)
     {
         $db_results = $this->wpdb->get_results(
             $this->wpdb->prepare(
-                'SELECT id FROM ' . $this->table . ' WHERE name = %s AND id != %d',
-                $name,
-                $exclude_group_id),
-            OBJECT);
+                'SELECT id FROM ' . $this->table . ' WHERE name = %s AND id != %d AND competition_id = %d',
+                $group->name,
+				$group->id,
+				$group->competition_id
+			),
+			OBJECT
+		);
         return $db_results !== false && count($db_results) > 0;
     }
 
