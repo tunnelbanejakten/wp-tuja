@@ -28,6 +28,9 @@ class Review {
 	public function handle_post() {
 		if(!isset($_POST['tuja_review_action'])) return;
 
+		$db_response = new ResponseDao();
+		$db_points = new PointsDao();
+
 		if ( $_POST['tuja_review_action'] === 'save' ) {
 			$form_values = array_filter( $_POST, function ( $key ) {
 				return substr( $key, 0, strlen( 'tuja_review_points' ) ) === 'tuja_review_points';
