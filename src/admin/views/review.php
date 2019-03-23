@@ -14,22 +14,22 @@ use tuja\view\FieldImages;
     } else {
         ?>
 
-        <table>
-            <thead>
-            <tr>
-                <th rowspan="2">Lag</th>
-                <th rowspan="2">Rätt svar</th>
-                <th rowspan="2">Lagets svar</th>
-                <th colspan="3">Poäng</th>
-            </tr>
-            <tr>
-                <td>Autom.</td>
-                <td>Manuell</td>
-                <td>Slutlig</td>
-            </tr>
-            </thead>
+        <p>Här ser du vilka svar som ännu inte kontrollerats manuellt.</p>
+        <p>
+            Du ser vilken poäng som kommer delas ut om du inte gör något. Om du fyller i poäng för ett svar är det din
+            poäng som räknas.
+        </p>
+        <table class="tuja-admin-review">
             <tbody>
-
+            <tr>
+                <td>
+                    <div class="spacer"></div>
+                </td>
+                <td>
+                    <div class="spacer"></div>
+                </td>
+                <td colspan="4"></td>
+            </tr>
             <?php
 
             $response_ids = [];
@@ -38,17 +38,21 @@ use tuja\view\FieldImages;
                 $questions = $db_question->get_all_in_form($form->id);
                 foreach ($questions as $question) {
                     $is_question_printed = false;
-//                $calculated_score_without_override = $calculated_scores_without_overrides[$question->id] ?: 0;
-//                $calculated_score_final = $calculated_scores_final[$question->id] ?: 0;
-//                $points_override = $points_overrides_per_question[$question->id] ? $points_overrides_per_question[$question->id]->points : '';
                     foreach ($responses as $response) {
                         if ($response->form_question_id === $question->id) {
                             if (!$is_form_name_printed) {
-                                printf('<tr><td colspan="6"><strong>%s</strong></td></tr>', $form->name);
+	                            printf( '<tr class="tuja-admin-review-form-row"><td colspan="6"><strong>%s</strong></td></tr>', $form->name );
                                 $is_form_name_printed = true;
                             }
                             if (!$is_question_printed) {
-                                printf('<tr><td colspan="6"><strong>%s</strong></td></tr>', $question->text);
+	                            printf( '<tr class="tuja-admin-review-question-row"><td></td><td colspan="5"><strong>%s</strong></td></tr>', $question->text );
+	                            printf( '' .
+	                                    '<tr class="tuja-admin-review-correctanswer-row">' .
+	                                    '  <td colspan="2"></td>' .
+	                                    '  <td valign="top">Rätt svar:</td>' .
+	                                    '  <td valign="top" colspan="3">%s</td>' .
+	                                    '</tr>',
+		                            join( '<br>', $question->correct_answers ) );
                                 $is_question_printed = true;
                             }
                             $response_ids[] = $response->id;
@@ -64,22 +68,31 @@ use tuja\view\FieldImages;
                                 }, $response->answers);
                             }
 
-                            printf('' .
-                                '<tr>' .
-                                '  <td valign="top">%s</td>' .
-                                '  <td valign="top">%s</td>' .
-                                '  <td valign="top">%s</td>' .
-                                '  <td valign="top">%s p</td>' .
-                                '  <td valign="top"><input type="text" name="%s" value="%s" size="5"></td>' .
-                                '  <td valign="top">%d p</td>' .
-                                '</tr>',
+	                        $group_url = add_query_arg( array(
+		                        'tuja_group' => $response->group_id,
+		                        'tuja_view'  => 'Group'
+	                        ) );
+
+	                        $score = $question->score( $response->answers );
+
+	                        $score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $score / $question->score_max ) : '';
+
+	                        printf( '' .
+	                                '<tr class="tuja-admin-review-response-row">' .
+	                                '  <td colspan="2"></td>' .
+	                                '  <td valign="top">Svar från <a href="%s">%s</a>:</td>' .
+	                                '  <td valign="top">%s</td>' .
+	                                '  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s p</span></td>' .
+	                                '  <td valign="top"><input type="number" name="%s" value="%s" size="5" min="0" max="%d"> p</td>' .
+	                                '</tr>',
+		                        $group_url,
                                 $groups_map[$response->group_id]->name,
-                                join(', ', $question->correct_answers),
                                 is_array($response->answers) ? join('<br>', $response->answers) : '<em>Ogiltigt svar</em>',
-                                '',
+		                        $score_class,
+		                        $score,
                                 sprintf('tuja_review_points__%s__%s', $response->form_question_id, $response->group_id),
-                                $field_value,
-                                '');
+		                        $field_value,
+		                        $question->score_max ?: 1000 );
                         }
                     }
                 }

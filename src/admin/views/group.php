@@ -12,31 +12,26 @@ use tuja\view\FieldImages;
 
     <p><strong>Totalt <?= array_sum($calculated_scores_final) ?> poäng.</strong></p>
 
-    <table>
+    <table class="tuja-admin-review">
         <thead>
         <tr>
-            <th rowspan="2">Fråga</th>
-            <th rowspan="2">Rätt svar</th>
-            <th rowspan="2">Lagets svar</th>
-            <th colspan="3">Poäng</th>
-        </tr>
-        <tr>
-            <td>Autom.</td>
-            <td>Manuell</td>
-            <td>Slutlig</td>
+            <th colspan="2">Fråga</th>
+            <th>Lagets svar</th>
+            <th>Rätt svar</th>
+            <th colspan="2">Poäng</th>
         </tr>
         </thead>
-        <tfoot>
-        <tr>
-            <td colspan="5"></td>
-            <td><?= array_sum($calculated_scores_final) ?> p</td>
-        </tr>
-        </tfoot>
         <tbody>
+        <tr>
+            <td>
+                <div class="spacer"></div>
+            </td>
+            <td colspan="5"></td>
+        </tr>
 
         <?php
         foreach ($forms as $form) {
-            printf('<tr><td colspan="6"><strong>%s</strong></td></tr>', $form->name);
+	        printf( '<tr class="tuja-admin-review-form-row"><td colspan="6"><strong>%s</strong></td></tr>', $form->name );
             $questions = $db_question->get_all_in_form($form->id);
             foreach ($questions as $question) {
                 $calculated_score_without_override = $calculated_scores_without_overrides[$question->id] ?: 0;
@@ -57,22 +52,23 @@ use tuja\view\FieldImages;
                     }, $response->answers);
                 }
 
-                printf('' .
-                    '<tr>' .
+	            $score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
+
+	            printf( '' .
+	                    '<tr class="tuja-admin-review-response-row"><td></td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top">%s</td>' .
-                    '  <td valign="top">%s p</td>' .
+                    '  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s p</span></td>' .
                     '  <td valign="top"><input type="text" name="%s" value="%s" size="5"></td>' .
-                    '  <td valign="top">%d p</td>' .
                     '</tr>',
                     $question->text,
-                    join(', ', $question->correct_answers),
+		            join( '<br>', $question->correct_answers ),
                     is_array($response->answers) ? join('<br>', $response->answers) : '<em>Ogiltigt svar</em>',
+		            $score_class,
                     $calculated_score_without_override,
                     'tuja_group_points__' . $question->id,
-                    $points_override,
-                    $calculated_score_final);
+		            $points_override );
             }
         }
         ?>
