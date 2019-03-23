@@ -46,7 +46,7 @@ class AbstractDao {
 		return $results;
 	}
 
-	// TODO: Move all to_* methods to the corresponding model classes. Already done for FormDao and CompetitionDao.
+	// TODO: Move all to_* methods to the corresponding model classes. Already done for FormDao, CompetitionDao and QuestionDao.
 	protected static function to_group( $result ): Group {
 		$g                 = new Group();
 		$g->id             = $result->id;
@@ -85,22 +85,6 @@ class AbstractDao {
 		$p->pno              = $result->pno;
 
 		return $p;
-	}
-
-	protected static function to_form_question( $result ): Question {
-		$q                   = new Question();
-		$q->id               = $result->id;
-		$q->form_id          = $result->form_id;
-		$q->type             = $result->type;
-		$q->possible_answers = json_decode( $result->answer, true )['options'];
-		$q->correct_answers  = json_decode( $result->answer, true )['values'];
-		$q->score_type       = json_decode( $result->answer, true )['score_type'];
-		$q->score_max        = json_decode( $result->answer, true )['score_max'];
-		$q->text             = $result->text;
-		$q->sort_order       = $result->sort_order;
-		$q->text_hint        = $result->text_hint;
-
-		return $q;
 	}
 
 	protected static function to_response( $result ): Response {

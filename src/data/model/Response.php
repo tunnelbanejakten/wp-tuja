@@ -17,10 +17,9 @@ class Response
         $this->answers = $answers;
     }
 
-
-    public function validate()
+	public function validate()
     {
-        if (strlen(json_encode($this->answers) > 500)) {
+	    if ( strlen( json_encode( $this->answers ) > 65000 ) ) {
 	        throw new ValidationException( 'Du har svarat lite för mycket.' );
         }
     }

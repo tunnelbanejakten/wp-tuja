@@ -10,6 +10,7 @@ class GroupCategory
     public $is_crew;
     public $name;
 
+    // TODO: 100, not 20
     public function validate()
     {
     }
