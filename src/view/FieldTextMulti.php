@@ -2,8 +2,6 @@
 
 namespace tuja\view;
 
-use tuja\admin\AdminUtils;
-
 class FieldTextMulti extends Field {
 	public $options;
 

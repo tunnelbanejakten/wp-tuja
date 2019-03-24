@@ -2,8 +2,6 @@
 
 namespace tuja\view;
 
-use DateTimeZone;
-use tuja\admin\AdminUtils;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
@@ -13,7 +11,6 @@ use DateTime;
 use Exception;
 use tuja\data\model\Question;
 use tuja\data\model\Response;
-use tuja\view\Field;
 
 class FormShortcode
 {
@@ -70,8 +67,6 @@ class FormShortcode
 		}
 
 		$updates = $this->get_new_answers( $group_id );
-
-//		AdminUtils::printError( sprintf( 'Updated questions: %s', join( array_keys( $updates ) ) ) );
 
 		if ( count( $updates ) > 0 ) {
 			try {
@@ -267,16 +262,11 @@ class FormShortcode
 			return $carry;
 		}, 0 );
 
-//		AdminUtils::printError( sprintf( 'get_optimistic_lock_value for questions %s returned %s', join( ', ', $response_question_ids ), $current_optimistic_lock_value ) );
-
 		return $current_optimistic_lock_value;
 	}
 
 	private function check_optimistic_lock( $group_id, array $response_question_ids ) {
 		$current_optimistic_lock_value = $this->get_optimistic_lock_value( $group_id, $response_question_ids );
-
-//		AdminUtils::printError( sprintf( 'Current lock value: %s', $current_optimistic_lock_value ) );
-//		AdminUtils::printError( sprintf( 'User lock value: %s', $_POST[ self::OPTIMISTIC_LOCK_FIELD_NAME ] ) );
 
 		if ( $current_optimistic_lock_value > $_POST[ self::OPTIMISTIC_LOCK_FIELD_NAME ] ) {
 			throw new Exception( '' .

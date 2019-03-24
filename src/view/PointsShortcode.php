@@ -2,14 +2,12 @@
 
 namespace tuja\view;
 
-use DateTime;
 use Exception;
 use tuja\data\model\Question;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
 use tuja\data\store\QuestionDao;
-use tuja\view\Field;
 
 class PointsShortcode
 {
