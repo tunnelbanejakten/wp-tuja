@@ -15,9 +15,8 @@ class GroupCategory
 		if (strlen(trim($this->name)) < 1) {
 			throw new ValidationException('name', 'Namnet måste fyllas i.');
 		}
-		// TODO: 100, not 20
-		if (strlen($this->name) > 20) {
-			throw new ValidationException('name', 'Namnet får inte vara längre än 20 bokstäver.');
+		if (strlen($this->name) > 100) {
+			throw new ValidationException('name', 'Namnet får inte vara längre än 100 bokstäver.');
 		}
 	}
 }
