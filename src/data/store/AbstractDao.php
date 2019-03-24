@@ -46,7 +46,7 @@ class AbstractDao {
 		return $results;
 	}
 
-	// TODO: Move all to_* methods to the corresponding model classes. Already done for FormDao and CompetitionDao.
+	// TODO: Move all to_* methods to the corresponding model classes. Already done for FormDao, CompetitionDao and QuestionDao.
 	protected static function to_group( $result ): Group {
 		$g                 = new Group();
 		$g->id             = $result->id;
@@ -87,20 +87,14 @@ class AbstractDao {
 		return $p;
 	}
 
-	protected static function to_form_question( $result ): Question {
-		$q                   = new Question();
-		$q->id               = $result->id;
-		$q->form_id          = $result->form_id;
-		$q->type             = $result->type;
-		$q->possible_answers = json_decode( $result->answer, true )['options'];
-		$q->correct_answers  = json_decode( $result->answer, true )['values'];
-		$q->score_type       = json_decode( $result->answer, true )['score_type'];
-		$q->score_max        = json_decode( $result->answer, true )['score_max'];
-		$q->text             = $result->text;
-		$q->sort_order       = $result->sort_order;
-		$q->text_hint        = $result->text_hint;
+	protected static function to_points( $result ): Points {
+		$p                   = new Points();
+		$p->form_question_id = $result->form_question_id;
+		$p->group_id         = $result->team_id;
+		$p->points           = $result->points;
+		$p->created          = self::from_db_date( $result->created_at );
 
-		return $q;
+		return $p;
 	}
 
 	protected static function to_message( $result ): Message {

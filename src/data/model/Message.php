@@ -17,5 +17,8 @@ class Message
 
     public function validate()
     {
+	    if (strlen($this->text) > 65000) {
+		    throw new ValidationException('text', 'Meddelandet är för långt.');
+	    }
     }
 }
