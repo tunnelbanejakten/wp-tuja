@@ -29,10 +29,13 @@ class ScoreCalculator
      */
     public function score_per_question($group_id, $consider_overrides = true)
     {
-        $points = $this->points_dao->get_by_group($group_id);
-        $points_overrides = array_combine(array_map(function ($points) {
-            return $points->form_question_id;
-        }, $points), $points);
+	    $points_overrides = array();
+	    if ( $consider_overrides ) {
+		    $points           = $this->points_dao->get_by_group($group_id);
+		    $points_overrides = array_combine(array_map(function ($points) {
+			    return $points->form_question_id;
+		    }, $points), $points);
+	    }
 
         $scores = [];
         $responses = $this->response_dao->get_latest_by_group($group_id);
