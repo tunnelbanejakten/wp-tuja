@@ -43,12 +43,17 @@ class ScoreCalculator
         // TODO: Cache response of get_all_in_competition? (Unnecessary to call it once per team.)
         $questions = $this->question_dao->get_all_in_competition($this->competition_id);
         foreach ($questions as $question) {
-            $answers = $responses[$question->id]->answers;
-            // TODO: How should the is_reviewed flag be used? Only count points for answers where is_reviewed = true?
-            if (isset($answers)) {
-                $scores[$question->id] = $question->score($answers);
-            }
-            if ($consider_overrides && isset($points_overrides[$question->id]) && $points_overrides[$question->id]->created > $responses[$question->id]->created) {
+	        if ( isset( $responses[ $question->id ] ) ) {
+		        $answers = $responses[ $question->id ]->answers;
+		        // TODO: How should the is_reviewed flag be used? Only count points for answers where is_reviewed = true?
+		        if ( isset( $answers ) ) {
+			        $scores[ $question->id ] = $question->score( $answers );
+		        }
+	        }
+	        if ( $consider_overrides
+	             && isset( $points_overrides[ $question->id ] )
+	             && isset( $responses[ $question->id ] )
+	             && $points_overrides[ $question->id ]->created > $responses[ $question->id ]->created ) {
                 $scores[$question->id] = $points_overrides[$question->id]->points;
             }
         }
