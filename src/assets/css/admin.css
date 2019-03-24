@@ -95,3 +95,52 @@ body.wp-admin th {
     padding: 10px;
     margin: 0 0 10px 0;
 }
+table.tuja-admin-review {
+    border-collapse: collapse;
+}
+tr.tuja-admin-review-form-row td {
+    border-top: 3px solid #aaa;
+    line-height: 3em;
+}
+
+tr.tuja-admin-review-question-row td {
+    border-top: 2px solid #aaa;
+}
+
+table.tuja-admin-review td div.spacer {
+    width: 2em;
+}
+
+tr.tuja-admin-review-correctanswer-row td div.spacer,
+tr.tuja-admin-review-response-row td div.spacer {
+    width: 4em;
+}
+
+tr.tuja-admin-review-correctanswer-row td,
+tr.tuja-admin-review-response-row td {
+    border-top: 1px solid #aaa;
+}
+tr.tuja-admin-review-question-row td:first-child,
+tr.tuja-admin-review-correctanswer-row td:first-child,
+tr.tuja-admin-review-response-row td:first-child {
+    border-top: none;
+}
+span.tuja-admin-review-autoscore {
+    display: inline-block;
+    border-radius: 3px;
+    border-width: 1px;
+    border-style: solid;
+    padding: 3px 5px;
+}
+span.tuja-admin-review-autoscore.tuja-admin-review-autoscore-good {
+    background-color: #d0e8af;
+    border-color: #719158;
+}
+span.tuja-admin-review-autoscore.tuja-admin-review-autoscore-poor {
+    background-color: #ffafa7;
+    border-color: #b96460;
+}
+span.tuja-admin-review-autoscore.tuja-admin-review-autoscore-decent {
+    background-color: #ffef9c;
+    border-color: #b5a556;
+}
