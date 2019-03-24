@@ -52,20 +52,20 @@ class Person
         if (strlen($this->name) > 100) {
             throw new ValidationException('name', 'Namnet får inte vara längre än 100 bokstäver.');
         }
-        if (strlen($this->email) > 50) {
-            throw new ValidationException('email', 'E-postadress får bara vara 50 tecken lång.');
+        if (strlen($this->email) > 100) {
+            throw new ValidationException('email', 'E-postadress får bara vara 100 tecken lång.');
         }
         if (!empty(trim($this->email)) && preg_match('/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i', $this->email) !== 1) {
             throw new ValidationException('email', 'E-postadressen ser konstig ut.');
         }
-        if (strlen($this->phone) > 50) {
-            throw new ValidationException('phone', 'Telefonnumret får bara vara 50 tecken långt.');
+        if (strlen($this->phone) > 100) {
+            throw new ValidationException('phone', 'Telefonnumret får bara vara 100 tecken långt.');
         }
 	    if ( !empty(trim($this->phone)) && preg_match( '/' . self::PHONE_PATTERN . '/', $this->phone) !== 1) {
-            throw new ValidationException('phone', 'Telefonnummer ser konstigt ut');
+            throw new ValidationException('phone', 'Telefonnummer ser konstigt ut.');
         }
-        if (strlen($this->food) > 100) {
-            throw new ValidationException('food', 'Högst 100 tecken.');
+        if (strlen($this->food) > 65000) {
+            throw new ValidationException('food', 'För lång text om mat och allergier.');
         }
         // TODO: Require birthday when adding new group members?
 //        if (empty(trim($this->pno))) {

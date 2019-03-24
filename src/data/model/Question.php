@@ -71,11 +71,11 @@ class Question
 
 	public function validate()
     {
-        if (strlen($this->text) > 500) {
-	        throw new ValidationException('text', 'Frågan får inte var längre än 500 tecken.');
+        if (strlen($this->text) > 65000) {
+	        throw new ValidationException('text', 'Frågan är för lång.');
         }
-        if (strlen($this->text_hint) > 500) {
-	        throw new ValidationException('text_hint', 'Hjälptexten får inte var längre än 500 tecken.');
+        if (strlen($this->text_hint) > 65000) {
+	        throw new ValidationException('text_hint', 'Hjälptexten är för lång.');
         }
         if (!empty($this->score_type) && !in_array($this->score_type, self::SCORING_METHODS)) {
 	        throw new ValidationException('score_type', 'Ogiltig poängberäkningsmetod.');

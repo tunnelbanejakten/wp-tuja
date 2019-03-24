@@ -22,6 +22,9 @@ class Competition
         if (strlen(trim($this->name)) < 1) {
             throw new ValidationException('name', 'Namnet måste fyllas i.');
         }
+        if (strlen($this->name) > 100) {
+            throw new ValidationException('name', 'Namnet är för långt.');
+        }
         if ($this->create_group_start !== null && $this->create_group_end !== null && $this->create_group_start->diff($this->create_group_end)->invert == 1) {
             throw new ValidationException('create_group_end', 'Perioden för att anmäla måste sluta efter att den börjar.');
         }
