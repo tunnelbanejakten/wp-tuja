@@ -18,7 +18,7 @@ class GroupCategoryDao extends AbstractDao
     {
         $category->validate();
 
-        if ($this->exists($category->name, $category->id)) {
+        if ($this->exists($category)) {
             throw new ValidationException('name', 'Det finns redan en kategori med detta namn.');
         }
 
@@ -42,7 +42,7 @@ class GroupCategoryDao extends AbstractDao
     {
         $category->validate();
 
-        if ($this->exists($category->name, $category->id)) {
+        if ($this->exists($category)) {
             throw new ValidationException('name', 'Det finns redan en kategori med detta namn.');
         }
 
@@ -56,13 +56,14 @@ class GroupCategoryDao extends AbstractDao
             ));
     }
 
-    function exists($name, $exclude_group_id)
+    function exists(GroupCategory $category)
     {
         $db_results = $this->wpdb->get_results(
             $this->wpdb->prepare(
-                'SELECT id FROM ' . $this->table . ' WHERE name = %s AND id != %d',
-                $name,
-                $exclude_group_id),
+                'SELECT id FROM ' . $this->table . ' WHERE name = %s AND id != %d AND competition_id = %d',
+	            $category->name,
+	            $category->id,
+	            $category->competition_id),
             OBJECT);
         return $db_results !== false && count($db_results) > 0;
     }

@@ -154,7 +154,9 @@ class CompetitionSettings {
 
 				$new_template_id = $message_template_dao->create( $new_template );
 			} catch ( ValidationException $e ) {
+				AdminUtils::printException( $e );
 			} catch ( Exception $e ) {
+				AdminUtils::printException( $e );
 			}
 		}
 
@@ -167,7 +169,9 @@ class CompetitionSettings {
 
 					$affected_rows = $message_template_dao->update( $message_template_map[ $id ] );
 				} catch ( ValidationException $e ) {
+					AdminUtils::printException( $e );
 				} catch ( Exception $e ) {
+					AdminUtils::printException( $e );
 				}
 			}
 		}
@@ -175,13 +179,15 @@ class CompetitionSettings {
 		foreach ( $deleted_ids as $id ) {
 			if ( isset( $message_template_map[ $id ] ) ) {
 				$delete_successful = $message_template_dao->delete( $id );
+				if ( ! $delete_successful ) {
+					AdminUtils::printError( 'Could not delete message template' );
+				}
 			}
 		}
 	}
 
 	public function competition_settings_save_group_categories( Competition $competition ) {
-		global $wpdb;
-		$category_dao = new GroupCategoryDao( $wpdb );
+		$category_dao = new GroupCategoryDao();
 
 		$categories = $category_dao->get_all_in_competition( $competition->id );
 
@@ -208,7 +214,9 @@ class CompetitionSettings {
 
 				$new_template_id = $category_dao->create( $new_template );
 			} catch ( ValidationException $e ) {
+				AdminUtils::printException( $e );
 			} catch ( Exception $e ) {
+				AdminUtils::printException( $e );
 			}
 		}
 
@@ -220,7 +228,9 @@ class CompetitionSettings {
 
 					$affected_rows = $category_dao->update( $category_map[ $id ] );
 				} catch ( ValidationException $e ) {
+					AdminUtils::printException( $e );
 				} catch ( Exception $e ) {
+					AdminUtils::printException( $e );
 				}
 			}
 		}
@@ -228,6 +238,9 @@ class CompetitionSettings {
 		foreach ( $deleted_ids as $id ) {
 			if ( isset( $category_map[ $id ] ) ) {
 				$delete_successful = $category_dao->delete( $id );
+				if ( ! $delete_successful ) {
+					AdminUtils::printError( 'Could not delete category' );
+				}
 			}
 		}
 	}
