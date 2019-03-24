@@ -4,15 +4,10 @@ namespace tuja\data\store;
 
 use DateTime;
 use DateTimeZone;
-use tuja\data\model\Competition;
-use tuja\data\model\Form;
 use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
 use tuja\data\model\Message;
 use tuja\data\model\Person;
-use tuja\data\model\Points;
-use tuja\data\model\Question;
-use tuja\data\model\Response;
 use tuja\util\Id;
 use tuja\util\Phone;
 
@@ -83,16 +78,6 @@ class AbstractDao {
 		$p->is_group_contact = $result->is_team_contact != 0;
 		$p->food             = $result->food;
 		$p->pno              = $result->pno;
-
-		return $p;
-	}
-
-	protected static function to_points( $result ): Points {
-		$p                   = new Points();
-		$p->form_question_id = $result->form_question_id;
-		$p->group_id         = $result->team_id;
-		$p->points           = $result->points;
-		$p->created          = self::from_db_date( $result->created_at );
 
 		return $p;
 	}

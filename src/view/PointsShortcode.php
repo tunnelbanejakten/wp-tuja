@@ -244,25 +244,22 @@ class PointsShortcode
     private function get_optimistic_lock_value(array $keys)
     {
         $current_points = $this->points_dao->get_by_competition($this->competition_id);
-        $current_points = array_combine(
+	    $points_by_key  = array_combine(
             array_map(function ($points) {
                 return $points->form_question_id . self::FIELD_NAME_PART_SEP . $points->group_id;
             }, $current_points),
             array_values($current_points));
 
-        $current_optimistic_lock_value = array_reduce($keys, function ($carry, PointsKey $key) use ($current_points) {
-            return $this->get_last_saved($carry, $current_points[$key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id]->created);
-        }, null);
+	    $current_optimistic_lock_value = array_reduce( $keys, function ( $carry, PointsKey $key ) use ( $points_by_key ) {
+		    $response = $points_by_key[ $key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id ];
+		    if ( $response->created != null ) {
+			    return max( $carry, $response->created->getTimestamp() );
+		    }
+
+		    return $carry;
+	    }, 0 );
 
         return $current_optimistic_lock_value;
-    }
-
-    private function get_last_saved(DateTime $last_saved = null, DateTime $current_datetime = null)
-    {
-        if ($last_saved != null && $current_datetime != null) {
-            return max($last_saved, $current_datetime);
-        }
-        return $last_saved;
     }
 
     private function check_optimistic_lock($form_values)
