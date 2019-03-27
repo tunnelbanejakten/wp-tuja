@@ -4,6 +4,7 @@ namespace tuja\util\messaging;
 
 use Exception;
 use tuja\data\model\Person;
+use tuja\util\Phone;
 
 class OutgoingSMSMessage extends AbstractOutgoingMessage {
 	private $body;
@@ -24,7 +25,7 @@ class OutgoingSMSMessage extends AbstractOutgoingMessage {
 		if ( empty( $phone_number ) ) {
 			throw new Exception( 'Saknar telefonnummer.' );
 		}
-		if ( substr( $phone_number, 0, strlen( self::MOBILE_PHONE_INTL_PREFIX ) ) == self::MOBILE_PHONE_INTL_PREFIX ) {
+		if ( substr( $phone_number, 0, strlen( self::MOBILE_PHONE_INTL_PREFIX ) ) !== self::MOBILE_PHONE_INTL_PREFIX ) {
 			throw new Exception( sprintf( 'Telefonnummer måste börja med %s', self::MOBILE_PHONE_INTL_PREFIX ) );
 		}
 	}
@@ -32,6 +33,8 @@ class OutgoingSMSMessage extends AbstractOutgoingMessage {
 	function send() {
 		$this->validate();
 
-		throw new Exception( 'SMS-stöd saknas.' );
+		$this->message_sender->send_sms(
+			Phone::fix_phone_number( $this->recipient->phone ),
+			$this->body );
 	}
 }
