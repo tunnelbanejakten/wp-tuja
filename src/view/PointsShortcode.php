@@ -252,11 +252,10 @@ class PointsShortcode
 	    $current_optimistic_lock_value = array_reduce( $keys, function ( $carry, PointsKey $key ) use ( $points_by_key ) {
 		    $temp_key = $key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id;
 
-		    $response_timestamp = isset( $points_by_key[ $temp_key ] )
-			    ? $points_by_key[ $temp_key ]->created != null
-				    ? $points_by_key[ $temp_key ]->created->getTimestamp()
-				    : 0
-			    : 0;
+		    $response_timestamp = 0;
+		    if ( isset( $points_by_key[ $temp_key ] ) && $points_by_key[ $temp_key ]->created != null ) {
+			    $response_timestamp = $points_by_key[ $temp_key ]->created->getTimestamp();
+		    }
 
 		    return max( $carry, $response_timestamp );
 	    }, 0 );
