@@ -58,20 +58,17 @@ class Group {
 	public function output() {
 		$this->handle_post();
 
-		$competition_url = add_query_arg(array(
-			'tuja_competition' => $this->competition->id,
-			'tuja_view'        => 'Competition'
-		));
+		$competition     = $this->competition;
 
 		$db_form     = new FormDao();
-		$forms       = $db_form->get_all_in_competition( $this->competition->id );
+		$forms       = $db_form->get_all_in_competition( $competition->id );
 		$db_question = new QuestionDao();
 		$db_response = new ResponseDao();
 		$db_groups   = new GroupDao();
 		$db_points   = new PointsDao();
 		$db_message  = new MessageDao();
 
-		$score_calculator                    = new ScoreCalculator( $this->competition->id, $db_question, $db_response, $db_groups, $db_points );
+		$score_calculator                    = new ScoreCalculator( $competition->id, $db_question, $db_response, $db_groups, $db_points );
 		$group                               = $this->group;
 		$calculated_scores_final             = $score_calculator->score_per_question( $group->id );
 		$calculated_scores_without_overrides = $score_calculator->score_per_question( $group->id, false );

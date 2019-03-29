@@ -7,11 +7,10 @@ use tuja\data\store\QuestionDao;
 use tuja\data\store\ResponseDao;
 use tuja\util\score\ScoreCalculator;
 
+AdminUtils::printTopMenu( $competition );
 ?>
 
 <form method="post" action="<?= add_query_arg() ?>">
-    <h1>Tävling <?= $competition->name ?></h1>
-
     <?php
     $settings_url = add_query_arg(array(
         'tuja_competition' => $competition->id,

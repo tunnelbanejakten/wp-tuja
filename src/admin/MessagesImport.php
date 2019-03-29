@@ -75,12 +75,6 @@ class MessagesImport {
 
 		$competition = $this->competition;
 
-		// TODO: Make helper function for generating URLs
-		$competition_url = add_query_arg(array(
-			'tuja_competition' => $competition->id,
-			'tuja_view' => 'Competition'
-		));
-
 		include('views/messages-import.php');
 	}
 

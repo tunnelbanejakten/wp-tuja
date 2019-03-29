@@ -132,11 +132,6 @@ class Form {
 		$db_question    = new QuestionDao();
 		$competition    = $db_competition->get($this->form->competition_id);
 
-		$competition_url = add_query_arg(array(
-			'tuja_view' => 'Competition',
-			'tuja_competition' => $competition->id
-		));
-
 		include('views/form.php');
 	}
 

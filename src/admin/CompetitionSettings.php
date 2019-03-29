@@ -44,11 +44,6 @@ class CompetitionSettings {
 
 		$message_templates = $message_template_dao->get_all_in_competition( $competition->id );
 
-		$competition_url = add_query_arg( array(
-			'tuja_competition' => $competition->id,
-			'tuja_view'        => 'Competition'
-		) );
-
 		include( 'views/competition-settings.php' );
 	}
 

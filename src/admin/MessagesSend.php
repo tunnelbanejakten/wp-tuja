@@ -41,10 +41,6 @@ class MessagesSend {
 
 		// TODO: Make helper function for generating URLs
 		$competition     = $this->competition;
-		$competition_url = add_query_arg( array(
-			'tuja_competition' => $competition->id,
-			'tuja_view'        => 'Competition'
-		) );
 
 		$group_category_dao = new GroupCategoryDao();
 		$group_categories   = $group_category_dao->get_all_in_competition( $competition->id );
