@@ -47,17 +47,6 @@ class AbstractDao {
 	}
 
 	// TODO: Move all to_* methods to the corresponding model classes. Already done for FormDao, CompetitionDao and QuestionDao.
-	protected static function to_group( $result ): Group {
-		$g                 = new Group();
-		$g->id             = $result->id;
-		$g->random_id      = $result->random_id;
-		$g->name           = $result->name;
-		$g->category_id    = $result->category_id;
-		$g->competition_id = $result->competition_id;
-
-		return $g;
-	}
-
 	protected static function to_group_category( $result ): GroupCategory {
 		$gc                 = new GroupCategory();
 		$gc->id             = $result->id;
