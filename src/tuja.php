@@ -239,6 +239,7 @@ abstract class Plugin {
 			self::PATH . '/data/model/' . $classname . '.php',
 			self::PATH . '/util/markdown/' . $classname . '.php',
 			self::PATH . '/util/messaging/' . $classname . '.php',
+			self::PATH . '/util/rules/' . $classname . '.php',
 			self::PATH . '/util/score/' . $classname . '.php',
 			self::PATH . '/util/' . $classname . '.php',
 			self::PATH . '/view/' . $classname . '.php',
