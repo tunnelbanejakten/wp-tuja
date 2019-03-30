@@ -17,6 +17,9 @@ class Template
 
     public function render($parameters = array(), $is_markdown = false)
     {
+	    if ( $is_markdown ) {
+		    $parameters = array_map( 'htmlspecialchars', $parameters );
+	    }
         $rendered_content = $this->content;
         foreach ($parameters as $name => $value) {
             $rendered_content = str_replace('{{' . $name . '}}', $value, $rendered_content);
@@ -51,8 +54,8 @@ class Template
     public static function group_parameters(Group $group)
     {
         return [
-            'group_name' => htmlspecialchars($group->name),
-            'group_key' => $group->random_id
+	        'group_name' => $group->name,
+	        'group_key'  => $group->random_id
         ];
     }
 
