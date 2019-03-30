@@ -2,14 +2,12 @@
 
 namespace tuja\view;
 
-use DateTime;
 use Exception;
 use tuja\data\model\Question;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
 use tuja\data\store\QuestionDao;
-use tuja\view\Field;
 
 class PointsShortcode
 {
@@ -88,7 +86,7 @@ class PointsShortcode
 
         $message_success = null;
         $message_error = null;
-        if ($_POST[self::ACTION_FIELD_NAME] == 'update') {
+	    if ( isset( $_POST[ self::ACTION_FIELD_NAME ] ) && $_POST[ self::ACTION_FIELD_NAME ] == 'update' ) {
             $errors = $this->update_points();
             if (empty($errors)) {
                 $message_success = 'Poängen har sparats.';
@@ -101,10 +99,10 @@ class PointsShortcode
         $html_sections[] = sprintf('<p>%s</p>', $this->get_filter_field());
 
         $groups = array_filter($this->get_participant_groups(), function ($group) {
-            return substr($_POST[self::FILTER_DROPDOWN_NAME], 0, strlen('group')) !== 'group' || $_POST[self::FILTER_DROPDOWN_NAME] == 'group' . $group->id;
+	        return isset( $_POST[ self::FILTER_DROPDOWN_NAME ] ) && ( substr( $_POST[ self::FILTER_DROPDOWN_NAME ], 0, strlen( 'group' ) ) !== 'group' || $_POST[ self::FILTER_DROPDOWN_NAME ] == 'group' . $group->id );
         });
         $questions = array_filter($this->question_dao->get_all_in_competition($this->competition_id), function ($question) {
-            return substr($_POST[self::FILTER_DROPDOWN_NAME], 0, strlen('question')) !== 'question' || $_POST[self::FILTER_DROPDOWN_NAME] == 'question' . $question->id;
+	        return isset( $_POST[ self::FILTER_DROPDOWN_NAME ] ) && ( substr( $_POST[ self::FILTER_DROPDOWN_NAME ], 0, strlen( 'question' ) ) !== 'question' || $_POST[ self::FILTER_DROPDOWN_NAME ] == 'question' . $question->id );
         });
 
         $current_points = $this->points_dao->get_by_competition($this->competition_id);
@@ -230,13 +228,14 @@ class PointsShortcode
 
     private function is_selected($value)
     {
-        return $value == $_POST[self::FILTER_DROPDOWN_NAME];
+	    return isset( $_POST[ self::FILTER_DROPDOWN_NAME ] ) && $value == $_POST[ self::FILTER_DROPDOWN_NAME ];
     }
 
     private function render_field($text, $max_score, $question_id, $group_id, $current_points): string
     {
-        $answer = $current_points[$question_id . self::FIELD_NAME_PART_SEP . $group_id];
-        $field = Field::create(Question::text($text, sprintf('Max %d poäng.', $max_score), $answer->points));
+	    $key        = $question_id . self::FIELD_NAME_PART_SEP . $group_id;
+	    $points     = isset( $current_points[ $key ] ) ? $current_points[ $key ]->points : null;
+	    $field      = Field::create( Question::text( $text, sprintf( 'Max %d poäng.', $max_score ), $points ) );
         $field_name = self::QUESTION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $question_id . self::FIELD_NAME_PART_SEP . $group_id;
         return $field->render($field_name);
     }
@@ -244,25 +243,24 @@ class PointsShortcode
     private function get_optimistic_lock_value(array $keys)
     {
         $current_points = $this->points_dao->get_by_competition($this->competition_id);
-        $current_points = array_combine(
+	    $points_by_key  = array_combine(
             array_map(function ($points) {
                 return $points->form_question_id . self::FIELD_NAME_PART_SEP . $points->group_id;
             }, $current_points),
             array_values($current_points));
 
-        $current_optimistic_lock_value = array_reduce($keys, function ($carry, PointsKey $key) use ($current_points) {
-            return $this->get_last_saved($carry, $current_points[$key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id]->created);
-        }, null);
+	    $current_optimistic_lock_value = array_reduce( $keys, function ( $carry, PointsKey $key ) use ( $points_by_key ) {
+		    $temp_key = $key->question_id . self::FIELD_NAME_PART_SEP . $key->group_id;
+
+		    $response_timestamp = 0;
+		    if ( isset( $points_by_key[ $temp_key ] ) && $points_by_key[ $temp_key ]->created != null ) {
+			    $response_timestamp = $points_by_key[ $temp_key ]->created->getTimestamp();
+		    }
+
+		    return max( $carry, $response_timestamp );
+	    }, 0 );
 
         return $current_optimistic_lock_value;
-    }
-
-    private function get_last_saved(DateTime $last_saved = null, DateTime $current_datetime = null)
-    {
-        if ($last_saved != null && $current_datetime != null) {
-            return max($last_saved, $current_datetime);
-        }
-        return $last_saved;
     }
 
     private function check_optimistic_lock($form_values)
