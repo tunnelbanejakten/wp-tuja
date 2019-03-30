@@ -16,5 +16,16 @@
         </tbody>
     </table>
 
-    <button type="submit" name="tuja_action" value="save">Spara</button>
+    <h2 class="title">SMS</h2>
+
+    <p>För att kunna skicka SMS behöver du ett konto hos <a href="https://46elks.se/" target="_blank">46elks</a>.</p>
+
+    <table class="form-table">
+        <tbody>
+        <?php $this->print_option_row('Användarnamn', 'tuja_46elks_username') ?>
+        <?php $this->print_option_row('Lösenord', 'tuja_46elks_password') ?>
+        </tbody>
+    </table>
+
+    <button type="submit" class="button" name="tuja_action" value="save">Spara</button>
 </form>

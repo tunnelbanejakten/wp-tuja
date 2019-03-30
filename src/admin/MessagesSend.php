@@ -107,7 +107,7 @@ class MessagesSend {
 			'primary_contacts' => array(
 				'label'    => 'Enbart valda gruppers primära kontaktpersoner',
 				'selector' => function ( $person ) {
-					return $person->is_primary_contact;
+					return $person->is_group_contact;
 				}
 			)
 		);
