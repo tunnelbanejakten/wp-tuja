@@ -35,6 +35,8 @@ class Frontend extends Plugin {
 		wp_register_script( 'tuja-recaptcha-script', 'https://www.google.com/recaptcha/api.js' );
 		wp_register_script( 'tuja-dropzone', static::get_url() . '/assets/js/dropzone.min.js' );
 		wp_register_script( 'tuja-upload-script', static::get_url() . '/assets/js/upload.js' );
+		wp_localize_script( 'tuja-upload-script', 'WPAjax', array('ajaxUrl' => admin_url( 'admin-ajax.php' ) ));
+
 		wp_register_script( 'tuja-countdown-script', static::get_url() . '/assets/js/countdown.js' );
 		wp_register_script( 'tuja-editgroup-script', static::get_url() . '/assets/js/edit-group.js' );
 
@@ -122,18 +124,6 @@ class Frontend extends Plugin {
 	public function form_closes_countdown_shortcode( $atts ) {
 		return CountdownShortcode::submit_form_response_closes( $atts );
 	}
-
-/*	public function query_vars( $vars ) {
-		$vars[] = 'group_id';
-
-		return $vars;
-	}*/
-
-/*	public function rewrite_rules( $rules ) {
-		$rules = array( '([^/]+)/([' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '})$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]' ) + $rules;
-
-		return $rules;
-	}*/
 }
 
 new Frontend();

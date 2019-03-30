@@ -138,14 +138,12 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 	min-height: 0;
 }
 
-.tuja-fieldimages .tuja-image-select .dz-progress,
-.tuja-fieldimages .tuja-image-select .dz-success-mark,
-.tuja-fieldimages .tuja-image-select .dz-error-mark {
-	display: none;
+.tuja-image .dz-image img {
+	margin: 0;
 }
 
-.dz-preview ~ label,
-.dz-preview ~ p {
+.tuja-image .dz-preview ~ label,
+.tuja-image .dz-preview ~ p {
 	display: none;
 }
 

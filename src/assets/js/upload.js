@@ -7,33 +7,21 @@
 
 		$('.dropzone').each(function(i, el) {
 			var dz = new Dropzone(el, {
-				url: window.location.pathname,
-				autoProcessQueue: false,
+				url: WPAjax.ajaxUrl,
 				resizeWidth: 600,
-				resizeHeight: 600,
-				resizeMethod: 'contain',
 				acceptedFiles: 'image/*',
-				parallelUploads: 100,
-				maxFiles: 100,
-				uploadMultiple: false,
-				paramName: 'file-' + i,
-				dictDefaultMessage: 'Klicka här för att ladda upp bild'
+				parallelUploads: 2,
+				maxFiles: 2,
+				uploadMultiple: true,
+				dictDefaultMessage: 'Klicka här för att ladda upp bild',
+				init: function() {
+					this.on('sending', function(file, xhr, formData) {
+						formData.append('action', 'tuja_upload_images');
+						formData.append('group', $('input[name="group"]').val());
+					});
+				}
 			});
 			dropzones.push(dz);
-		});
-
-		$('button[type="submit"]').click(function(e) {
-			// e.preventDefault();
-			// e.stopPropagation();
-
-			var form = new FormData(document.getElementById('main-form'));
-			$.each(dropzones, function(i, dz) {
-				$.each(dz.files, function(j, file) {
-					form.append(dz.options.paramName + '[' + j + ']', file);
-				});
-			});
-
-			// $(this).closest('form').append('<input type="hidden" name="tuja_formshortcode_action" value="update"').submit();
 		});
 	
 		$('button.remove').click(function() {
