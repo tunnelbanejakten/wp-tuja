@@ -130,18 +130,30 @@ class FieldImages extends Field
 
     private function render_images_list($field_name)
     {
-        return join(array_map(function ($index, $val) use ($field_name) {
-            $image = FieldImagesImage::from_string($val);
-            if (empty($image->image_id)) {
-                return '';
-            }
-            return sprintf('<div class="tuja-image tuja-image-existing"><div class="tuja-image-preview">%s</div><div class="tuja-image-options">%s%s%s</div></div>',
-                $this->render_image("$field_name$index", $image->image_id),
-                $this->render_options_list("$field_name$index", $image->option),
-                $this->render_comment_field("$field_name$index", $image->comment),
-                // TODO: Should removing an image be handled in the same way as removing a group member? The former uses Javascript, the latter regular submit action.
-                !$this->read_only ? sprintf('<div class="tuja-item-buttons"><button type="button" onclick="this.parentNode.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode.parentNode)">Ta bort</button></div>') : '');
-        }, array_keys($this->value), array_values($this->value)));
+		ob_start();
+		foreach($this->value as $index => $val) {
+			$image = FieldImagesImage::from_string($val);
+			if (empty($image->image_id)) continue;
+
+			?>
+			<div class="tuja-image tuja-image-existing">
+				<div class="tuja-image-preview">
+					<?php echo $this->render_image("$field_name$index", $image->image_id); ?>
+				</div>
+				<div class="tuja-image-options">
+					<?php echo $this->render_options_list("$field_name$index", $image->option); ?>
+					<?php echo $this->render_comment_field("$field_name$index", $image->comment); ?>
+					<?php if(!$this->read_only): ?>
+						<div class="tuja-item-buttons">
+							<button type="button" class="remove">Ta bort</button>
+						</div>
+					<?php endif; ?>
+				</div>
+			</div>
+			<?php
+		}
+
+		return ob_get_clean();
     }
 
     private function render_options_list($field_name, $option_key)
@@ -170,19 +182,26 @@ class FieldImages extends Field
             $this->read_only ? ' disabled="disabled"' : '');
     }
 
-    private function render_file_upload_field($field_name)
-    {
-        // TODO: Add configuration parameter in admin GUI for disabling the resizing feature (in case it causes problem for users)
-        wp_enqueue_script('tuja-upload-script');
-        return sprintf('<input type="file" name="%s-file" onchange="tujaUpload.onSelect(this)">', $field_name);
-    }
-
     private function render_image_upload($field_name)
     {
-        return sprintf('<div class="tuja-image tuja-image-new"><div class="tuja-image-select"><label for="">Välj ny bild att ladda upp:</label>%s<p class="tuja-help">Bilden laddas upp när du trycker på Uppdatera svar.</p></div><div class="tuja-image-options"><label>Beskriv den nya bilden:</label>%s%s</div></div>',
-            $this->render_file_upload_field($field_name),
-            $this->render_options_list($field_name, ''),
-            $this->render_comment_field($field_name, ''));
+		wp_enqueue_script('tuja-dropzone');
+		wp_enqueue_script('tuja-upload-script');
+
+		ob_start();
+		?>
+		<div class="tuja-image tuja-image-new" id="<?php printf('%s-file', $field_name); ?>">
+			<div class="tuja-image-select dropzone"></div>
+			<div class="tuja-image-options">
+				<label>Beskriv den nya bilden:</label>
+				<?php
+					echo $this->render_options_list($field_name, '');
+					echo $this->render_comment_field($field_name, '');
+				?>
+			</div>
+		</div>
+		<?php
+
+		return ob_get_clean();
     }
 
     private function render_image($field_name, $image_id)
