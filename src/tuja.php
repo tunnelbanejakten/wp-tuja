@@ -11,6 +11,7 @@ namespace tuja;
 
 use tuja\util\Database;
 use tuja\util\Id;
+use tuja\data\store\GroupDao;
 
 abstract class Plugin
 {
@@ -37,7 +38,63 @@ abstract class Plugin
 		add_filter('query_vars', array($this, 'query_vars'));
 		add_filter('rewrite_rules_array', array($this, 'rewrite_rules'));
 
+		add_action('wp_ajax_tuja_upload_images', array($this, 'handle_image_upload'));
+		add_action('wp_ajax_nopriv_tuja_upload_images', array($this, 'handle_image_upload'));
+
 		$this->init();
+	}
+
+
+	/**
+	 * TODO:
+	 * Create hash file name and send back to form.
+	 * Populate input field with file names for each question.
+	 * Use saved hashed names go show correct images on page load using https://github.com/enyo/dropzone/wiki/FAQ#how-to-show-files-already-stored-on-server
+	 */ 
+	public function handle_image_upload() {
+		if(!empty($_FILES['file']) && !empty($_POST['group'])) {
+			$group_dao = new GroupDao();
+			$group = $group_dao->get_by_key( sanitize_text_field( $_POST['group'] ) );
+
+			$upload_dir = '/tuja/group-' . $group->id;
+			add_filter('upload_dir', function ($dirs) use ($upload_dir) {
+				$dirs['subdir'] = $upload_dir;
+				$dirs['path'] = $dirs['basedir'] . $upload_dir;
+				$dirs['url'] = $dirs['baseurl'] . $upload_dir;
+
+				if(!file_exists($dirs['basedir'] . $upload_dir)) {
+					mkdir($dirs['basedir'] . $upload_dir, 0777, true);
+				}
+			
+				return $dirs;
+			});
+
+			$upload_overrides = array( 'test_form' => false );
+
+			$file = $_FILES['file'];
+			if(isset($file['error'][0])) {
+				$file = array_map(function($e) { return $e[0]; }, $file);
+			}
+
+			$movefile = wp_handle_upload($file, $upload_overrides);
+
+			if ( $movefile && ! isset( $movefile['error'] ) ) {
+				wp_send_json(array(
+					'error' => false
+				));
+				exit;
+			}
+
+			wp_send_json_error(array(
+				'error' => $movefile['error']
+			), 500);
+			exit;
+		}
+
+		wp_send_json_error(array(
+			'error' => 'Invalid input'
+		), 400);
+		exit;
 	}
 
 	public function init()

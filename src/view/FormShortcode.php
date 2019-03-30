@@ -188,6 +188,7 @@ class FormShortcode extends AbstractShortcode
 					$question_ids );
 
 				$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::OPTIMISTIC_LOCK_FIELD_NAME, $optimistic_lock_value );
+				$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', 'group', $group_key );
 
 				$html_sections[] = sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="update">Uppdatera svar</button></div>', self::ACTION_FIELD_NAME );
 			} else {
@@ -197,7 +198,7 @@ class FormShortcode extends AbstractShortcode
 
 		}
 
-		return sprintf( '<form method="post" enctype="multipart/form-data" onsubmit="if (tujaUpload) { tujaUpload.removeRedundantFileFields() }">%s</form>', join( $html_sections ) );
+		return sprintf( '<form method="post" enctype="multipart/form-data">%s</form>', join( $html_sections ) );
 	}
 
 	private function get_groups_dropdown( $participant_groups ): string {
