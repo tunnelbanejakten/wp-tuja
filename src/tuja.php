@@ -12,6 +12,8 @@ namespace tuja;
 use tuja\util\Database;
 use tuja\util\Id;
 use tuja\data\store\GroupDao;
+use tuja\data\model\Response;
+use tuja\data\store\ResponseDao;
 
 abstract class Plugin
 {
@@ -52,11 +54,18 @@ abstract class Plugin
 	 * Use saved hashed names go show correct images on page load using https://github.com/enyo/dropzone/wiki/FAQ#how-to-show-files-already-stored-on-server
 	 */ 
 	public function handle_image_upload() {
-		if(!empty($_FILES['file']) && !empty($_POST['group'])) {
+		if(!empty($_FILES['file']) && !empty($_POST['group']) && !empty($_POST['question'])) {
 			$group_dao = new GroupDao();
 			$group = $group_dao->get_by_key( sanitize_text_field( $_POST['group'] ) );
+			$question = (int)$_POST['question'];
 
-			$upload_dir = '/tuja/group-' . $group->id;
+			$response_dao = new ResponseDao();
+			$old_responses = $response_dao->get($group->id, $question, true);
+			$response = array_pop($old_responses);
+
+			// TODO: Check lock
+
+			$upload_dir = '/tuja/group-' . $group->random_id;
 			add_filter('upload_dir', function ($dirs) use ($upload_dir) {
 				$dirs['subdir'] = $upload_dir;
 				$dirs['path'] = $dirs['basedir'] . $upload_dir;
@@ -69,7 +78,13 @@ abstract class Plugin
 				return $dirs;
 			});
 
-			$upload_overrides = array( 'test_form' => false );
+			$upload_overrides = array(
+				'test_form' => false,
+				'unique_filename_callback' => function($dir, $name, $ext) use($question) {
+					$name = md5($name . $question);
+					return $name.$ext;
+				}
+			);
 
 			$file = $_FILES['file'];
 			if(isset($file['error'][0])) {
@@ -79,8 +94,27 @@ abstract class Plugin
 			$movefile = wp_handle_upload($file, $upload_overrides);
 
 			if ( $movefile && ! isset( $movefile['error'] ) ) {
+				$filename = explode('/', $movefile['file']);
+				$filename = array_pop($filename);
+
+				// Create new question response
+				$response->answers[0] = json_decode($response->answers[0], true);
+
+				if($response->answers[0]['images'][0] === '') {
+					$response->answers[0]['images'][0] = $filename;
+				} else {
+					$response->answers[0]['images'][] = $filename;
+				}
+
+				$response->answers[0]['images'] = array_unique($response->answers[0]['images']);
+				$response->answers[0] = json_encode($response->answers[0]);
+				
+				$response = $response_dao->create($response);
+
 				wp_send_json(array(
-					'error' => false
+					'error' => false,
+					'image' => $filename,
+					'lock' => $response->created_at
 				));
 				exit;
 			}

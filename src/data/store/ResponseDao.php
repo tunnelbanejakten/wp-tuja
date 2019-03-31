@@ -29,11 +29,33 @@ class ResponseDao extends AbstractDao
                 %d
             )';
 
-		return $this->wpdb->query( $this->wpdb->prepare( $query_template,
-			$response->form_question_id,
-			$response->group_id,
-			json_encode( $response->answers ),
-			self::to_db_date( new DateTime() ) ) );
+		$answer = json_encode( $response->answers );
+		$lock = self::to_db_date(new DateTime());
+
+		$result = $this->wpdb->query( $this->wpdb->prepare( $query_template, $response->form_question_id, $response->group_id, $answer, $lock ) );
+
+		if(empty($result)) {
+			return false;
+		}
+
+		$response->created_at = $lock;
+		return $response;
+	}
+
+	public function get($group_id, $question_id, $latest = false) {
+		$query = 'SELECT * FROM ' . $this->table . ' WHERE team_id = %d AND form_question_id = %d ORDER BY id';
+		if($latest) {
+			$query .= ' DESC LIMIT 1';
+		}
+
+		return $this->get_objects(
+			function ( $row ) {
+				return self::to_response( $row );
+			},
+			$query,
+			$group_id,
+			$question_id
+		);
 	}
 
 	function get_by_group( $group_id ) {
