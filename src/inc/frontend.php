@@ -35,7 +35,7 @@ class Frontend extends Plugin {
 		wp_register_script( 'tuja-recaptcha-script', 'https://www.google.com/recaptcha/api.js' );
 		wp_register_script( 'tuja-dropzone', static::get_url() . '/assets/js/dropzone.min.js' );
 		wp_register_script( 'tuja-upload-script', static::get_url() . '/assets/js/upload.js' );
-		wp_localize_script( 'tuja-upload-script', 'WPAjax', array('ajaxUrl' => admin_url( 'admin-ajax.php' ) ));
+		wp_localize_script( 'tuja-upload-script', 'WPAjax', array('ajaxUrl' => admin_url('admin-ajax.php'), 'base_image_url' => wp_get_upload_dir()['baseurl'] . '/tuja/' ));
 
 		wp_register_script( 'tuja-countdown-script', static::get_url() . '/assets/js/countdown.js' );
 		wp_register_script( 'tuja-editgroup-script', static::get_url() . '/assets/js/edit-group.js' );

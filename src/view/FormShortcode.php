@@ -91,7 +91,7 @@ class FormShortcode extends AbstractShortcode
 
 				$affected_rows = $this->response_dao->create( $new_response );
 
-				$this_success    = $affected_rows !== false && $affected_rows === 1;
+				$this_success    = $affected_rows !== false;
 				$overall_success = ( $overall_success and $this_success );
 			} catch ( Exception $e ) {
 				$overall_success                                           = false;
@@ -174,8 +174,9 @@ class FormShortcode extends AbstractShortcode
 				$field->read_only = $is_read_only;
 				$html_field       = $field->render( $field_name );
 
-				return sprintf( '<div class="tuja-question %s">%s%s</div>',
+				return sprintf( '<div class="tuja-question %s" data-id="%d">%s%s</div>',
 					isset( $errors[ $field_name ] ) ? 'tuja-field-error' : '',
+					$question->id,
 					$html_field,
 					isset( $errors[ $field_name ] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors[ $field_name ] ) : '' );
 			}, $questions ) );

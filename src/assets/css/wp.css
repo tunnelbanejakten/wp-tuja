@@ -143,8 +143,24 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 }
 
 .tuja-image .dz-preview ~ label,
-.tuja-image .dz-preview ~ p {
+.tuja-image .dz-preview ~ p,
+.tuja-image .dropzone .dz-preview .dz-details {
 	display: none;
+}
+
+.tuja-image .dropzone .dz-preview .dz-image {
+	border-radius: 0;
+}
+
+.tuja-image .dropzone .dz-preview:hover .dz-image img {
+	-webkit-transform: none;
+    -moz-transform: none;
+    -ms-transform: none;
+    -o-transform: none;
+    transform: none;
+    -webkit-filter: none;
+	filter: none;
+	opacity: 0.75;
 }
 
 .tuja-image-preview img {
