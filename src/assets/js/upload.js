@@ -35,7 +35,6 @@
 
 					dz.emit('addedfile', mockFile);
 					dz.emit('thumbnail', mockFile, imageUrl);
-					dz.createThumbnailFromUrl(mockFile, imageUrl);
 					dz.emit('complete', mockFile);
 				});
 			}
