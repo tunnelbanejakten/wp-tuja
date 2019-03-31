@@ -5,12 +5,10 @@ use tuja\data\model\GroupCategory;
 use tuja\data\model\MessageTemplate;
 use tuja\util\DateUtils;
 
+AdminUtils::printTopMenu( $competition );
 ?>
 
 <form method="post">
-    <h1>Tunnelbanejakten</h1>
-    <h2>Tävling <?= sprintf( '<a href="%s">%s</a>', $competition_url, $competition->name ) ?></h2>
-
     <div class="nav-tab-wrapper">
         <a class="nav-tab nav-tab-active" data-tab-id="tuja-tab-dates">Datum och tider</a>
         <a class="nav-tab" data-tab-id="tuja-tab-messagetemplates">Meddelandemallar</a>

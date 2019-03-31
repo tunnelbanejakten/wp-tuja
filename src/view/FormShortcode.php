@@ -12,7 +12,7 @@ use Exception;
 use tuja\data\model\Question;
 use tuja\data\model\Response;
 
-class FormShortcode
+class FormShortcode extends AbstractShortcode
 {
 	private $question_dao;
 	private $group_dao;
@@ -123,9 +123,9 @@ class FormShortcode
 			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du tillhör.' );
 		}
 
-		$group_category = $this->category_dao->get( $group->category_id );
-		if ( $group_category->is_crew ) {
-			$participant_groups = $this->get_participant_groups();
+	    $group_category = $this->get_group_category( $group );
+	    if ( isset( $group_category ) && $group_category->is_crew ) {
+            $participant_groups = $this->get_participant_groups();
 
 			$html_sections[] = sprintf( '<p>%s</p>', $this->get_groups_dropdown( $participant_groups ) );
 
@@ -229,13 +229,14 @@ class FormShortcode
 			return $category->id;
 		}, $participant_categories );
 
-		$competition_groups = $this->group_dao->get_all_in_competition( $competition_id );
-		$participant_groups = array_filter( $competition_groups, function ( $group ) use ( $ids ) {
-			return in_array( $group->category_id, $ids );
-		} );
+        $competition_groups = $this->group_dao->get_all_in_competition($competition_id);
+        $participant_groups = array_filter($competition_groups, function ($group) use ($ids) {
+	        $group_category = $this->get_group_category( $group );
 
-		return $participant_groups;
-	}
+	        return isset( $group_category ) && in_array( $group_category->id, $ids );
+        });
+        return $participant_groups;
+    }
 
 	private function get_selected_group( $participant_groups ) {
 		$selected_group_name = $_POST[ self::TEAMS_DROPDOWN_NAME ];

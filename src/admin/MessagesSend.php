@@ -9,6 +9,7 @@ use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\MessageTemplateDao;
 use tuja\data\store\PersonDao;
+use tuja\util\GroupCategoryCalculator;
 use tuja\util\Template;
 use tuja\util\messaging\MessageSender;
 use tuja\util\messaging\OutgoingEmailMessage;
@@ -29,8 +30,10 @@ class MessagesSend {
 
 
 	public function handle_post() {
-		if(!isset($_POST['tuja_points_action'])) return;
-		
+		if ( ! isset( $_POST['tuja_points_action'] ) ) {
+			return;
+		}
+
 		if ( $_POST['tuja_points_action'] === 'send' ) {
 			// TODO?
 		}
@@ -40,15 +43,12 @@ class MessagesSend {
 		$this->handle_post();
 
 		// TODO: Make helper function for generating URLs
-		$competition     = $this->competition;
-		$competition_url = add_query_arg( array(
-			'tuja_competition' => $competition->id,
-			'tuja_view'        => 'Competition'
-		) );
+		$competition = $this->competition;
 
-		$group_category_dao = new GroupCategoryDao();
-		$group_categories   = $group_category_dao->get_all_in_competition( $competition->id );
-		$crew_category_ids  = array_map( function ( $category ) {
+		$group_category_dao  = new GroupCategoryDao();
+		$category_calculator = new GroupCategoryCalculator( $competition->id );
+		$group_categories    = $group_category_dao->get_all_in_competition( $competition->id );
+		$crew_category_ids   = array_map( function ( $category ) {
 			return $category->id;
 		}, array_filter( $group_categories, function ( $category ) {
 			return $category->is_crew;
@@ -65,23 +65,29 @@ class MessagesSend {
 				),
 				array(
 					'label'    => 'Alla tävlande grupper',
-					'selector' => function ( $group ) use ( $crew_category_ids ) {
-						return ! in_array( $group->category_id, $crew_category_ids );
+					'selector' => function ( $group ) use ( $crew_category_ids, $category_calculator ) {
+						$category = $category_calculator->get_category( $group );
+
+						return ! in_array( $category->id, $crew_category_ids );
 					}
 				),
 				array(
 					'label'    => 'Alla funktionärsgrupper',
-					'selector' => function ( $group ) use ( $crew_category_ids ) {
-						return in_array( $group->category_id, $crew_category_ids );
+					'selector' => function ( $group ) use ( $crew_category_ids, $category_calculator ) {
+						$category = $category_calculator->get_category( $group );
+
+						return in_array( $category->id, $crew_category_ids );
 					}
 				),
 			),
 			array_map(
-				function ( $category ) {
+				function ( $category ) use ( $category_calculator ) {
 					return array(
 						'label'    => 'Alla grupper i kategorin ' . $category->name,
-						'selector' => function ( $group ) use ( $category ) {
-							return $group->category_id === $category->id;
+						'selector' => function ( $group ) use ( $category, $category_calculator ) {
+							$group_category = $category_calculator->get_category( $group );
+
+							return $group_category->id === $category->id;
 						}
 					);
 				},
@@ -174,11 +180,25 @@ class MessagesSend {
 				$body_template    = Template::string( $_POST['tuja_messages_body'] );
 				$subject_template = Template::string( $_POST['tuja_messages_subject'] );
 
-				$variables = array_merge( $body_template->get_variables(), $subject_template->get_variables() );
+				$variables = array_merge(
+					$body_template->get_variables(),
+					$subject_template->get_variables() );
+
 				printf( '<table>' );
-				printf( '<thead><tr><td colspan="2"><strong>Mottagare</strong></td>%s<td><strong>Förhandsgranskning</strong></td></tr></thead>', join( array_map( function ( $variable ) {
-					return sprintf( '<td><strong>%s</strong></td>', $variable );
-				}, $variables ) ) );
+				printf( '<thead>' .
+				        '  <tr>' .
+				        '    <td colspan="2" rowspan="2" valign="top"><strong>Mottagare</strong>' .
+				        '    <td colspan="%d"><strong>Variabler</strong></td>' .
+				        '    <td colspan="2" rowspan="2" valign="top"><strong>Förhandsgranskning</strong></td>' .
+				        '  </tr>' .
+				        '  <tr>' .
+				        '    %s' .
+				        '  </tr>' .
+				        '</thead>',
+					count( $variables ),
+					join( array_map( function ( $variable ) {
+						return sprintf( '<td>%s</td>', $variable );
+					}, $variables ) ) );
 				printf( '<tbody>%s</tbody>', join( array_map( function ( $person ) use ( $delivery_method, $variables, $groups, $subject_template, $body_template, $is_send ) {
 					$group               = reset( array_filter( $groups, function ( $grp ) use ( $person ) {
 						return $grp->id == $person->group_id;
@@ -186,23 +206,32 @@ class MessagesSend {
 					$template_parameters = $this->get_parameters( $person, $group );
 					$message_generator   = $delivery_method['message_generator'];
 					$outgoing_message    = $message_generator( $person, $subject_template, $body_template, $template_parameters );
-					$is_valid            = 'OK';
+					$message             = 'OK';
+					$message_css_class   = 'tuja-admin-review-autoscore-good';
 					try {
 						if ( $is_send ) {
 							$outgoing_message->send();
-							$is_valid = 'Meddelande har skickats';
+							$message = 'Meddelande har skickats';
 						} else {
 							$outgoing_message->validate();
 						}
 					} catch ( Exception $e ) {
-						$is_valid = $e->getMessage();
+						$message           = $e->getMessage();
+						$message_css_class = 'tuja-admin-review-autoscore-poor';
 					}
 
-					return sprintf( '<tr><td valign="top">%s</td><td valign="top">%s</td>%s<td valign="top">%s</td></tr>',
+					return sprintf(
+						'<tr>' .
+						'  <td valign="top">%s</td>' .
+						'  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s</span></td>' .
+						'  %s' .
+						'  <td valign="top">%s</td>' .
+						'</tr>',
 						$person->name,
-						$is_valid,
+						$message_css_class,
+						$message,
 						join( array_map( function ( $variable ) use ( $template_parameters ) {
-							return sprintf( '<td valign="top">%s</td>', $template_parameters[ $variable ] );
+							return sprintf( '<td valign="top"><code>%s</code></td>', $template_parameters[ $variable ] );
 						}, $variables ) ),
 						sprintf( '<div class="tuja-message-preview">%s</div><div class="tuja-message-preview %s">%s</div>',
 							strip_tags( $subject_template->render( $template_parameters ) ),

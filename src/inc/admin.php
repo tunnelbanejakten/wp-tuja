@@ -52,6 +52,7 @@ class Admin extends Plugin {
 			if ( class_exists( $view ) ) {
 				$view = new $view();
 
+
 				if ( method_exists( $view, 'output' ) ) {
 					$view->output();
 				}

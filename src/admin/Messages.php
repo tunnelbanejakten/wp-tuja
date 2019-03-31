@@ -25,10 +25,7 @@ class Messages {
 		$db_message = new MessageDao();
 		$messages   = $db_message->get_without_group();
 
-		$competition_url = add_query_arg(array(
-			'tuja_competition' => $this->competition->id,
-			'tuja_view'        => 'Competition'
-		));
+		$competition = $this->competition;
 
 		include( 'views/messages.php' );
 	}

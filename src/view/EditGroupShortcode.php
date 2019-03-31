@@ -87,8 +87,10 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
 	    $categories = $this->get_categories( $group->competition_id );
 
-	    $current_group_category_name = reset( array_filter( $categories, function ( $category ) use ( $group ) {
-		    return $category->id == $group->category_id;
+	    $group_category = $this->get_group_category( $group );
+
+	    $current_group_category_name = reset( array_filter( $categories, function ( $category ) use ( $group_category ) {
+		    return isset( $group_category ) && $group_category->id == $category->id;
 	    } ) )->name;
 
 	    $group_category_options = array_map( function ( $category ) {

@@ -9,7 +9,7 @@ use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
 use tuja\data\store\QuestionDao;
 
-class PointsShortcode
+class PointsShortcode extends AbstractShortcode
 {
     private $competition_id;
     private $question_dao;
@@ -77,8 +77,8 @@ class PointsShortcode
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Vi vet inte vilken grupp du tillhör.');
         }
 
-        $group_category = $this->category_dao->get($crew_group->category_id);
-        if (!$group_category->is_crew) {
+	    $group_category = $this->get_group_category( $crew_group );
+	    if ( isset( $group_category ) && ! $group_category->is_crew ) {
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Bara funktionärer får använda detta formulär.');
         }
 
@@ -220,7 +220,9 @@ class PointsShortcode
 
             $competition_groups = $this->group_dao->get_all_in_competition($this->competition_id);
             $this->participant_groups = array_filter($competition_groups, function ($group) use ($ids) {
-                return in_array($group->category_id, $ids);
+	            $group_category = $this->get_group_category( $group );
+
+	            return isset( $group_category ) && in_array( $group_category->id, $ids );
             });
         }
         return $this->participant_groups;

@@ -4,13 +4,15 @@ namespace tuja\admin;
 
 use tuja\data\model\Form;
 use tuja\data\model\Group;
+use tuja\data\store\GroupCategoryDao;
+use tuja\util\GroupCategoryCalculator;
 use tuja\util\score\ScoreCalculator;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\CompetitionDao;
 use tuja\data\model\ValidationException;
 
-class Competition {
+class Scoreboard {
 
 	private $competition;
 
@@ -26,33 +28,22 @@ class Competition {
 
 
 	public function handle_post() {
-		if ( ! isset( $_POST['tuja_action'] ) ) {
-			return;
-		}
-
-		if ( $_POST['tuja_action'] == 'form_create' ) {
-			$props                 = new Form();
-			$props->name           = $_POST['tuja_form_name'];
-			$props->competition_id = $this->competition->id;
-			try {
-				$db_form = new FormDao();
-				$db_form->create( $props );
-			} catch ( ValidationException $e ) {
-				AdminUtils::printException( $e );
-			}
-		}
 	}
 
 
 	public function output() {
 		$this->handle_post();
 
-		$db_form   = new FormDao();
+		$db_groups = new GroupDao();
+		$db_group_categories = new GroupCategoryDao();
+
+		$groups = $db_groups->get_all_in_competition( $this->competition->id );
+		$group_categories = $db_group_categories->get_all_in_competition( $this->competition->id );
 
 		$competition = $this->competition;
 
-		$forms  = $db_form->get_all_in_competition( $competition->id );
+		$category_calculator = new GroupCategoryCalculator( $competition->id );
 
-		include( 'views/competition.php' );
+		include( 'views/scoreboard.php' );
 	}
 }
