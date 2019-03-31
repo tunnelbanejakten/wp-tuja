@@ -5,9 +5,12 @@ namespace tuja\data\store;
 use tuja\data\model\Person;
 use tuja\util\DateUtils;
 use tuja\util\Database;
+use tuja\util\Phone;
 
 class PersonDao extends AbstractDao
 {
+	const QUERY_COLUMNS = 'p.*, (DATEDIFF(CURDATE(), STR_TO_DATE(LEFT(p.pno, 8), \'%%Y%%m%%d\')) / 365.25) age';
+
     function __construct()
     {
 		parent::__construct();
@@ -69,16 +72,20 @@ class PersonDao extends AbstractDao
     function get($id)
     {
         return $this->get_object(
-	        'tuja\data\store\AbstractDao::to_person',
-            'SELECT * FROM ' . $this->table . ' WHERE id = %d',
+	        function ( $row ) {
+		        return self::to_person( $row );
+	        },
+	        'SELECT ' . self::QUERY_COLUMNS . ' FROM ' . $this->table . ' AS p WHERE id = %d',
             $id);
     }
 
     function get_by_key($key)
     {
         return $this->get_object(
-	        'tuja\data\store\AbstractDao::to_person',
-            'SELECT * FROM ' . $this->table . ' WHERE random_id = %s',
+	        function ( $row ) {
+		        return self::to_person( $row );
+	        },
+	        'SELECT ' . self::QUERY_COLUMNS . ' FROM ' . $this->table . ' AS p WHERE random_id = %s',
             $key);
     }
 
@@ -86,16 +93,20 @@ class PersonDao extends AbstractDao
     function get_all_in_group($group_id)
     {
         return $this->get_objects(
-	        'tuja\data\store\AbstractDao::to_person',
-            'SELECT * FROM ' . $this->table . ' WHERE team_id = %d',
+	        function ( $row ) {
+		        return self::to_person( $row );
+	        },
+	        'SELECT ' . self::QUERY_COLUMNS . ' FROM ' . $this->table . ' AS p WHERE team_id = %d',
             $group_id);
     }
 
     function get_all_in_competition($competition_id)
     {
         return $this->get_objects(
-	        'tuja\data\store\AbstractDao::to_person',
-	        'SELECT p.* ' .
+	        function ( $row ) {
+		        return self::to_person( $row );
+	        },
+	        'SELECT ' . self::QUERY_COLUMNS . ' ' .
 	        'FROM ' . $this->table . ' AS p INNER JOIN ' . Database::get_table( 'team' ) . ' AS t ON p.team_id = t.id ' .
 	        'WHERE t.competition_id = %d',
             $competition_id);
@@ -109,4 +120,22 @@ class PersonDao extends AbstractDao
         return $affected_rows !== false && $affected_rows === 1;
     }
 
+	protected static function to_person( $result ): Person {
+		$p                   = new Person();
+		$p->id               = $result->id;
+		$p->random_id        = $result->random_id;
+		$p->name             = $result->name;
+		$p->group_id         = $result->team_id;
+		$p->phone            = Phone::fix_phone_number( $result->phone ); // TODO: Should normalizing the phone number be something we do when we read it from the database? Why not when stored?
+		$p->phone_verified   = $result->phone_verified;
+		$p->email            = $result->email;
+		$p->email_verified   = $result->email_verified;
+		$p->is_competing     = $result->is_competing != 0;
+		$p->is_group_contact = $result->is_team_contact != 0;
+		$p->food             = $result->food;
+		$p->pno              = $result->pno;
+		$p->age              = $result->age;
+
+		return $p;
+	}
 }

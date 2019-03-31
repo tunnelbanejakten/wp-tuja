@@ -43,6 +43,7 @@ class Person
     public $is_competing;
     public $is_group_contact;
     public $pno;
+	public $age;
 
 	public static function is_valid_email_address( $email ) {
 		return preg_match( '/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i', $email ) === 1;

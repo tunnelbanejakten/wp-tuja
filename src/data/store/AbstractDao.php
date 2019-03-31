@@ -52,25 +52,6 @@ class AbstractDao {
 		return $gc;
 	}
 
-	protected static function to_person( $result ): Person {
-		$p                   = new Person();
-		$p->id               = $result->id;
-		$p->random_id        = $result->random_id;
-		$p->name             = $result->name;
-		$p->group_id         = $result->team_id;
-		// TODO: Should normalizing the phone number be something we do when we read it from the database? Why not when stored?
-		$p->phone            = Phone::fix_phone_number( $result->phone );
-		$p->phone_verified   = $result->phone_verified;
-		$p->email            = $result->email;
-		$p->email_verified   = $result->email_verified;
-		$p->is_competing     = $result->is_competing != 0;
-		$p->is_group_contact = $result->is_team_contact != 0;
-		$p->food             = $result->food;
-		$p->pno              = $result->pno;
-
-		return $p;
-	}
-
 	protected static function to_message( $result ): Message {
 		$m                    = new Message();
 		$m->id                = $result->id;
