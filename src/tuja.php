@@ -1,5 +1,5 @@
 <?php
-/*
+ /*
     Plugin Name: Tuja
     Description: Made for Tunnelbanejakten.se
     Version: 1.0.0
@@ -12,7 +12,8 @@ namespace tuja;
 use tuja\util\Database;
 use tuja\util\Id;
 
-abstract class Plugin {
+abstract class Plugin
+{
 	const VERSION = '1.0.0';
 	const SLUG = 'tuja';
 	const TABLE_PREFIX = 'tuja_';
@@ -20,51 +21,46 @@ abstract class Plugin {
 	const PATH = __DIR__;
 	const EMAIL_ADDRESS = '';
 
-	static public function get_url() {
+	static public function get_url()
+	{
 		return plugin_dir_url(self::FILE);
 	}
 
-	public function __construct() {
+	public function __construct()
+	{
 		// Create/update database tables on activation
 		register_activation_hook(self::FILE, array($this, 'install'));
-		// TODO: Use register_activation_hook instead of calling add_filter for rewrite_rules_array on every page render
-//		register_activation_hook(self::FILE, array($this, 'install_rewrite_rules'));
 
 		// Autoload all classes
 		spl_autoload_register(array($this, 'autoloader'));
 
-		add_filter( 'query_vars', array( $this, 'query_vars' ) );
-		add_filter( 'rewrite_rules_array', array( $this, 'rewrite_rules' ) );
+		add_filter('query_vars', array($this, 'query_vars'));
+		add_filter('rewrite_rules_array', array($this, 'rewrite_rules'));
 
 		$this->init();
 	}
 
-	public function init() {
+	public function init()
+	{
 		// Overridden by child classes
 	}
 
-/*	public function install_rewrite_rules() {
-// 		global $wp_rewrite;
-
-		add_filter( 'query_vars', array( $this, 'query_vars' ) );
-		add_filter( 'rewrite_rules_array', array( $this, 'rewrite_rules' ) );
-
-		//$wp_rewrite->flush_rules();
-	}*/
-
-	public function query_vars( $vars ) {
+	public function query_vars($vars)
+	{
 		$vars[] = 'group_id';
 
 		return $vars;
 	}
 
-	public function rewrite_rules( $rules ) {
-		$rules = array( '([^/]+)/([' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '})/?$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]' ) + $rules;
+	public function rewrite_rules($rules)
+	{
+		$rules = array('([^/]+)/([' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '})/?$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]') + $rules;
 
 		return $rules;
 	}
 
-	public function install() {
+	public function install()
+	{
 		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 		$tables = array();
 		$charset = 'DEFAULT CHARACTER SET utf8 COLLATE utf8_swedish_ci';
@@ -194,9 +190,9 @@ abstract class Plugin {
 			['team', 'category_id', 'team_category', 'RESTRICT'],
 
 			['person', 'team_id', 'team', 'CASCADE'],
-			
+
 			['form', 'competition_id', 'competition', 'CASCADE'],
-			
+
 			['form_question_response', 'form_question_id', 'form_question', 'RESTRICT'],
 			['form_question_response', 'team_id', 'team', 'CASCADE'],
 
@@ -211,25 +207,26 @@ abstract class Plugin {
 			['message_template', 'competition_id', 'competition', 'CASCADE']
 		);
 
-		foreach($tables as $table) {
+		foreach ($tables as $table) {
 			dbDelta($table);
 		}
 
 		try {
 			Database::start_transaction();
-			foreach($keys as $key) {
+			foreach ($keys as $key) {
 				Database::add_foreign_key($key[0], $key[1], $key[2], $key[3]);
 			}
 			Database::commit();
-		} catch(\Exception $e) {
+		} catch (\Exception $e) {
 			Database::rollback();
 			error_log($e->getMessage());
 		}
 	}
 
-	public function autoloader($name) {
+	public function autoloader($name)
+	{
 		// Does $name start with our namespace?
-		if(strncmp($name, __NAMESPACE__, strlen(__NAMESPACE__)) !== 0) return;
+		if (strncmp($name, __NAMESPACE__, strlen(__NAMESPACE__)) !== 0) return;
 
 		$classname = explode('\\', $name);
 		$classname = array_pop($classname);
@@ -245,17 +242,16 @@ abstract class Plugin {
 			self::PATH . '/admin/' . $classname . '.php',
 		);
 
-		foreach($paths as $path) {
-			if(!file_exists($path)) continue;
+		foreach ($paths as $path) {
+			if (!file_exists($path)) continue;
 
 			include($path);
 		}
 	}
 }
 
-if(is_admin()) {
+if (is_admin()) {
 	require_once(Plugin::PATH . '/inc/admin.php');
-}
-else {
+} else {
 	require_once(Plugin::PATH . '/inc/frontend.php');
 }

@@ -17,6 +17,12 @@ class FieldText extends Field
         $render_id = $field_name ?: uniqid();
         $hint = isset($this->hint) ? sprintf('<br><span class="tuja-question-hint">%s</span>', $this->hint) : '';
 
+	    $value = isset( $_POST[ $field_name ] )
+		    ? $_POST[ $field_name ]
+		    : is_array( $this->value ) && isset( $this->value[0] )
+			    ? $this->value[0]
+			    : '';
+
 	    return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label><input %s id="%s" name="%s" value="%s" class="tuja-%s" %s/></div>',
             $render_id,
             $this->label,
@@ -26,7 +32,7 @@ class FieldText extends Field
 		    }, array_keys( $this->html_props ), array_values( $this->html_props ) ) ),
             $render_id,
             $field_name ?: $this->key,
-            htmlspecialchars(isset($_POST[$field_name]) ? $_POST[$field_name] : $this->value[0]),
+		    htmlspecialchars( $value ),
             strtolower((new \ReflectionClass($this))->getShortName()),
             $this->read_only ? ' disabled="disabled"' : '');
     }
