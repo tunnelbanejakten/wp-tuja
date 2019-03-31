@@ -28,17 +28,70 @@ class MessagesSend {
 	}
 
 
-	public function handle_post() {
-		if(!isset($_POST['tuja_points_action'])) return;
-		
-		if ( $_POST['tuja_points_action'] === 'send' ) {
-			// TODO?
+	public function handle_post( $group_selectors, $people_selectors, $delivery_methods, $groups ) {
+		if ( ! isset( $_POST['tuja_messages_action'] ) ) {
+			return [];
+		}
+
+		$is_preview = $_POST['tuja_messages_action'] === 'preview';
+		$is_send    = $_POST['tuja_messages_action'] === 'send';
+
+		if ( $is_preview || $is_send ) {
+			$group_selector  = $group_selectors[ intval( $_POST['tuja_messages_group_selector'] ) ];
+			$people_selector = $people_selectors[ $_POST['tuja_messages_people_selector'] ];
+			$delivery_method = $delivery_methods[ $_POST['tuja_messages_delivery_method'] ];
+			if ( isset( $group_selector ) && isset( $people_selector ) && isset( $delivery_method ) ) {
+				$selected_groups = array_filter( $groups, $group_selector['selector'] );
+
+				$person_dao = new PersonDao();
+				$people     = [];
+				foreach ( $selected_groups as $selected_group ) {
+					$group_members = array_filter( $person_dao->get_all_in_group( $selected_group->id ), $people_selector['selector'] );
+					$people        = array_merge( $people, $group_members );
+				}
+
+				$body_template    = Template::string( $_POST['tuja_messages_body'] );
+				$subject_template = Template::string( $_POST['tuja_messages_subject'] );
+
+				$variables = array_merge( $body_template->get_variables(), $subject_template->get_variables() );
+
+				return [
+					'body_template'    => $body_template,
+					'subject_template' => $subject_template,
+					'variables'        => $variables,
+					'recipients'       => array_map( function ( $person ) use ( $delivery_method, $variables, $groups, $subject_template, $body_template, $is_send ) {
+						$group               = reset( array_filter( $groups, function ( $grp ) use ( $person ) {
+							return $grp->id == $person->group_id;
+						} ) );
+						$template_parameters = $this->get_parameters( $person, $group );
+						$message_generator   = $delivery_method['message_generator'];
+						$outgoing_message    = $message_generator( $person, $subject_template, $body_template, $template_parameters );
+						$is_valid            = 'OK';
+						try {
+							if ( $is_send ) {
+								$outgoing_message->send();
+								$is_valid = 'Meddelande har skickats';
+							} else {
+								$outgoing_message->validate();
+							}
+						} catch ( Exception $e ) {
+							$is_valid = $e->getMessage();
+						}
+
+						return [
+							'template_parameters' => $template_parameters,
+							'is_valid'            => $is_valid,
+							'person_name'         => $person->name,
+							'is_plain_text_body'  => $delivery_method['is_plain_text_body']
+						];
+					}, $people )
+
+				];
+			}
 		}
 	}
 
 	public function output() {
-		$this->handle_post();
-
 		// TODO: Make helper function for generating URLs
 		$competition     = $this->competition;
 		$competition_url = add_query_arg( array(
@@ -55,6 +108,7 @@ class MessagesSend {
 		} ) );
 
 		$group_dao       = new GroupDao();
+		$groups          = $group_dao->get_all_in_competition( $competition->id );
 		$group_selectors = array_merge(
 			array(
 				array(
@@ -65,6 +119,12 @@ class MessagesSend {
 				),
 				array(
 					'label'    => 'Alla tävlande grupper',
+					'selector' => function ( $group ) use ( $crew_category_ids ) {
+						return ! in_array( $group->category_id, $crew_category_ids );
+					}
+				),
+				array(
+					'label'    => 'Alla tävlande grupper med ofullständiga anmälningar',
 					'selector' => function ( $group ) use ( $crew_category_ids ) {
 						return ! in_array( $group->category_id, $crew_category_ids );
 					}
@@ -95,7 +155,7 @@ class MessagesSend {
 						}
 					);
 				},
-				( $group_dao )->get_all_in_competition( $competition->id ) ) );
+				$groups ) );
 
 		$people_selectors = array(
 			'all'              => array(
@@ -136,6 +196,10 @@ class MessagesSend {
 			)
 		);
 
+		$groups = $group_dao->get_all_in_competition( $this->competition->id );
+
+		$action_result = $this->handle_post( $group_selectors, $people_selectors, $delivery_methods, $groups );
+
 		$message_template_dao = new MessageTemplateDao();
 		$templates            = $message_template_dao->get_all_in_competition( $competition->id );
 
@@ -148,72 +212,6 @@ class MessagesSend {
 		$is_send    = $_POST['tuja_messages_action'] === 'send';
 
 		include( 'views/messages-send.php' );
-
-		$is_preview = $_POST['tuja_messages_action'] === 'preview';
-		$is_send    = $_POST['tuja_messages_action'] === 'send';
-
-
-		if ( $is_preview || $is_send ) {
-
-			ob_start();
-
-			$group_selector  = $group_selectors[ intval( $_POST['tuja_messages_group_selector'] ) ];
-			$people_selector = $people_selectors[ $_POST['tuja_messages_people_selector'] ];
-			$delivery_method = $delivery_methods[ $_POST['tuja_messages_delivery_method'] ];
-			if ( isset( $group_selector ) && isset( $people_selector ) && isset( $delivery_method ) ) {
-				$groups          = $group_dao->get_all_in_competition( $this->competition->id );
-				$selected_groups = array_filter( $groups, $group_selector['selector'] );
-
-				$person_dao = new PersonDao();
-				$people     = [];
-				foreach ( $selected_groups as $selected_group ) {
-					$group_members = array_filter( $person_dao->get_all_in_group( $selected_group->id ), $people_selector['selector'] );
-					$people        = array_merge( $people, $group_members );
-				}
-
-				$body_template    = Template::string( $_POST['tuja_messages_body'] );
-				$subject_template = Template::string( $_POST['tuja_messages_subject'] );
-
-				$variables = array_merge( $body_template->get_variables(), $subject_template->get_variables() );
-				printf( '<table>' );
-				printf( '<thead><tr><td colspan="2"><strong>Mottagare</strong></td>%s<td><strong>Förhandsgranskning</strong></td></tr></thead>', join( array_map( function ( $variable ) {
-					return sprintf( '<td><strong>%s</strong></td>', $variable );
-				}, $variables ) ) );
-				printf( '<tbody>%s</tbody>', join( array_map( function ( $person ) use ( $delivery_method, $variables, $groups, $subject_template, $body_template, $is_send ) {
-					$group               = reset( array_filter( $groups, function ( $grp ) use ( $person ) {
-						return $grp->id == $person->group_id;
-					} ) );
-					$template_parameters = $this->get_parameters( $person, $group );
-					$message_generator   = $delivery_method['message_generator'];
-					$outgoing_message    = $message_generator( $person, $subject_template, $body_template, $template_parameters );
-					$is_valid            = 'OK';
-					try {
-						if ( $is_send ) {
-							$outgoing_message->send();
-							$is_valid = 'Meddelande har skickats';
-						} else {
-							$outgoing_message->validate();
-						}
-					} catch ( Exception $e ) {
-						$is_valid = $e->getMessage();
-					}
-
-					return sprintf( '<tr><td valign="top">%s</td><td valign="top">%s</td>%s<td valign="top">%s</td></tr>',
-						$person->name,
-						$is_valid,
-						join( array_map( function ( $variable ) use ( $template_parameters ) {
-							return sprintf( '<td valign="top">%s</td>', $template_parameters[ $variable ] );
-						}, $variables ) ),
-						sprintf( '<div class="tuja-message-preview">%s</div><div class="tuja-message-preview %s">%s</div>',
-							strip_tags( $subject_template->render( $template_parameters ) ),
-							$delivery_method['is_plain_text_body'] ? 'tuja-message-preview-plaintext' : 'tuja-message-preview-html',
-							$body_template->render( $template_parameters, ! $delivery_method['is_plain_text_body'] ) ) );
-				}, $people ) ) );
-				printf( '</table>' );
-			}
-
-			echo ob_get_clean();
-		}
 	}
 
 

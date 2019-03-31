@@ -1,8 +1,9 @@
-<?php 
-	namespace tuja\admin; 
-	
-	use tuja\data\model\Group;
-	use tuja\data\model\Person;
+<?php
+
+namespace tuja\admin;
+
+use tuja\data\model\Group;
+use tuja\data\model\Person;
 ?>
 
 <h1>Tunnelbanejakten</h1>
@@ -116,3 +117,50 @@
 		</div>
 	<?php } ?>
 </form>
+	<?php
+if ( ! empty( $action_result ) ) {
+	$variables        = $action_result['variables'];
+	$body_template    = $action_result['body_template'];
+	$subject_template = $action_result['subject_template'];
+
+	$variables_headers_html = join( array_map( function ( $variable ) {
+		return sprintf( '<td><strong>%s</strong></td>', $variable );
+	}, $variables ) );
+
+	printf( '<table>' .
+	        '  <thead>' .
+	        '    <tr>' .
+	        '      <td colspan="2"><strong>Mottagare</strong></td>' .
+	        '      %s' .
+	        '      <td><strong>Förhandsgranskning</strong></td>' .
+	        '    </tr>' .
+	        '  </thead>' .
+	        '  <tbody>' .
+	        '    %s' .
+	        '  </tbody>' .
+	        '</table>',
+		$variables_headers_html,
+		join( array_map( function ( $result ) use ( $variables, $subject_template, $body_template ) {
+			$person              = $result['person_name'];
+			$template_parameters = $result['template_parameters'];
+			$is_valid            = $result['is_valid'];
+			$is_plain_text_body  = $result['is_plain_text_body'];
+
+			$variables_values_html = join( array_map( function ( $variable ) use ( $template_parameters ) {
+				return sprintf( '<td valign="top">%s</td>', $template_parameters[ $variable ] );
+			}, $variables ) );
+
+			$preview_html = sprintf( '<div class="tuja-message-preview">%s</div><div class="tuja-message-preview %s">%s</div>',
+				strip_tags( $subject_template->render( $template_parameters ) ),
+				$is_plain_text_body ? 'tuja-message-preview-plaintext' : 'tuja-message-preview-html',
+				$body_template->render( $template_parameters, ! $is_plain_text_body ) );
+
+			return sprintf( '<tr><td valign="top">%s</td><td valign="top">%s</td>%s<td valign="top">%s</td></tr>',
+				$person,
+				$is_valid,
+				$variables_values_html,
+				$preview_html );
+		}, $action_result['recipients'] ) ) );
+}
+
+?>

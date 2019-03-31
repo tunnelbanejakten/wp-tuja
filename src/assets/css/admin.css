@@ -88,6 +88,14 @@ body.wp-admin th {
 .tuja-message-preview.tuja-message-preview-plaintext {
     white-space: pre;
 }
+
+.tuja-message-preview.tuja-message-preview-html ul {
+    list-style: disc;
+}
+
+.tuja-message-preview.tuja-message-preview-html li {
+    margin: 0 0 6px 24px;
+}
 .tuja-tab {
     border-bottom: 1px solid #ccc;
     border-right: 1px solid #ccc;

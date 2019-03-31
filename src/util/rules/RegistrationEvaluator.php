@@ -61,7 +61,7 @@ class RegistrationEvaluator {
 		} );
 
 		return array_reduce( $contacts, function ( $carry, Person $person ) {
-			$rule_name = 'Kontaktperson ' . htmlspecialchars( $person->name );
+			$rule_name = 'Kontaktpersonen ' . htmlspecialchars( $person->name );
 			if ( ! empty( $person->phone ) ) {
 				if ( Person::is_valid_phone_number( $person->phone ) ) {
 					$carry[] = new RuleResult( $rule_name, RuleResult::OK, 'Telefonnumret till kontaktperson ser rimligt ut.' );
