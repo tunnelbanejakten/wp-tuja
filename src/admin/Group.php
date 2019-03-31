@@ -84,7 +84,7 @@ class Group {
 		$person_dao = new PersonDao();
 		$people = $person_dao->get_all_in_group( $group->id );
 
-		$registration_evaluator  = new RegistrationEvaluator( $this->competition->id );
+		$registration_evaluator  = new RegistrationEvaluator();
 		$registration_evaluation = $registration_evaluator->evaluate( $group );
 
 		include('views/group.php');

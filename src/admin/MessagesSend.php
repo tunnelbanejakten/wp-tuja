@@ -3,13 +3,13 @@
 namespace tuja\admin;
 
 use Exception;
+use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\MessageTemplateDao;
 use tuja\data\store\PersonDao;
-use tuja\util\GroupCategoryCalculator;
 use tuja\util\rules\RegistrationEvaluator;
 use tuja\util\rules\RuleResult;
 use tuja\util\Template;
@@ -101,8 +101,7 @@ class MessagesSend {
 		$competition = $this->competition;
 
 		$group_category_dao     = new GroupCategoryDao();
-		$category_calculator    = new GroupCategoryCalculator( $competition->id );
-		$registration_evaluator = new RegistrationEvaluator( $competition->id );
+		$registration_evaluator = new RegistrationEvaluator();
 		$group_categories       = $group_category_dao->get_all_in_competition( $competition->id );
 		$crew_category_ids      = array_map( function ( $category ) {
 			return $category->id;
@@ -116,24 +115,24 @@ class MessagesSend {
 			array(
 				array(
 					'label'    => 'Alla grupper, inkl. funk',
-					'selector' => function ( $group ) {
+					'selector' => function ( Group $group ) {
 						return true;
 					}
 				),
 				array(
 					'label'    => 'Alla tävlande grupper',
-					'selector' => function ( $group ) use ( $crew_category_ids, $category_calculator ) {
-						$category = $category_calculator->get_category( $group );
+					'selector' => function ( Group $group ) use ( $crew_category_ids ) {
+						$category = $group->get_derived_group_category();
 
-						return ! in_array( $category->id, $crew_category_ids );
+						return isset( $category ) && ! in_array( $category->id, $crew_category_ids );
 					}
 				),
 				array(
 					'label'    => 'Alla tävlande grupper med ofullständiga anmälningar',
-					'selector' => function ( $group ) use ( $crew_category_ids, $category_calculator, $registration_evaluator ) {
-						$category = $category_calculator->get_category( $group );
+					'selector' => function ( Group $group ) use ( $crew_category_ids, $registration_evaluator ) {
+						$category = $group->get_derived_group_category();
 
-						$is_competing_group = ! in_array( $category->id, $crew_category_ids );
+						$is_competing_group = isset( $category ) && ! in_array( $category->id, $crew_category_ids );
 
 						if ( $is_competing_group ) {
 							$result = $registration_evaluator->evaluate( $group );
@@ -150,21 +149,21 @@ class MessagesSend {
 				),
 				array(
 					'label'    => 'Alla funktionärsgrupper',
-					'selector' => function ( $group ) use ( $crew_category_ids, $category_calculator ) {
-						$category = $category_calculator->get_category( $group );
+					'selector' => function ( Group $group ) use ( $crew_category_ids ) {
+						$category = $group->get_derived_group_category();
 
-						return in_array( $category->id, $crew_category_ids );
+						return isset( $category ) && in_array( $category->id, $crew_category_ids );
 					}
 				),
 			),
 			array_map(
-				function ( $category ) use ( $category_calculator ) {
+				function ( $category ) {
 					return array(
 						'label'    => 'Alla grupper i kategorin ' . $category->name,
-						'selector' => function ( $group ) use ( $category, $category_calculator ) {
-							$group_category = $category_calculator->get_category( $group );
+						'selector' => function ( Group $group ) use ( $category ) {
+							$group_category = $group->get_derived_group_category();
 
-							return $group_category->id === $category->id;
+							return isset( $group_category ) && $group_category->id === $category->id;
 						}
 					);
 				},
@@ -173,7 +172,7 @@ class MessagesSend {
 				function ( $selected_group ) {
 					return array(
 						'label'    => 'Gruppen ' . $selected_group->name,
-						'selector' => function ( $group ) use ( $selected_group ) {
+						'selector' => function ( Group $group ) use ( $selected_group ) {
 							return $group->id === $selected_group->id;
 						}
 					);
@@ -183,13 +182,13 @@ class MessagesSend {
 		$people_selectors = array(
 			'all'              => array(
 				'label'    => 'Alla personer i valda grupper',
-				'selector' => function ( $person ) {
+				'selector' => function ( Person $person ) {
 					return true;
 				}
 			),
 			'primary_contacts' => array(
 				'label'    => 'Enbart valda gruppers primära kontaktpersoner',
-				'selector' => function ( $person ) {
+				'selector' => function ( Person $person ) {
 					return $person->is_group_contact;
 				}
 			)

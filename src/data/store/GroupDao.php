@@ -59,7 +59,7 @@ class GroupDao extends AbstractDao {
 
 	function generate_query( $where ) {
 		$age_subquery = function ( $fn, $column_name ) {
-			return '(SELECT ' . $fn . '(DATEDIFF(CURDATE(), STR_TO_DATE(LEFT(PNO, 8), \'%%Y%%m%%d\')) / 365.25)' .
+			return '(SELECT ' . $fn . '(DATEDIFF(CURDATE(), STR_TO_DATE(LEFT(pno, 8), \'%%Y%%m%%d\')) / 365.25)' .
 			       ' FROM wp_tuja_person' .
 			       ' WHERE team_id = g.id' .
 			       ' AND is_competing = TRUE) AS ' . $column_name;

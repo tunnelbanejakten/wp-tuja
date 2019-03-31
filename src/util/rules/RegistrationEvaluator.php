@@ -3,40 +3,80 @@
 namespace tuja\util\rules;
 
 
+use DateTime;
+use Exception;
 use tuja\data\model\Group;
-use tuja\data\model\GroupCategory;
 use tuja\data\model\Person;
-use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\PersonDao;
+use tuja\util\DateUtils;
 
 class RegistrationEvaluator {
 	private $person_dao;
-	private $group_categories;
 
-	public function __construct( $competition_id ) {
-		$this->person_dao       = new PersonDao();
-		$this->group_categories = $this->get_group_categories( $competition_id );
-	}
-
-	private function get_group_categories( $competition_id ) {
-		$group_category_dao = new GroupCategoryDao();
-		$categories         = $group_category_dao->get_all_in_competition( $competition_id );
-
-		return array_combine( array_map( function ( GroupCategory $category ) {
-			return $category->id;
-		}, $categories ), array_values( $categories ) );
+	public function __construct() {
+		$this->person_dao = new PersonDao();
 	}
 
 	public function evaluate( Group $group ) {
-		$group_category = $this->group_categories[ $group->category_id ];
-		$people         = $this->person_dao->get_all_in_group( $group->id );
+		$people = $this->person_dao->get_all_in_group( $group->id );
 
 		return array_merge(
 			self::rule_has_contacts( $people ),
 			self::rule_person_names( $people ),
+			self::rule_person_pno( $people ),
+			self::rule_adult_supervision( $group, $people ),
 			self::rule_contacts_have_phone_and_email( $people ),
 			self::rule_group_size( $people )
 		);
+	}
+
+	private static function rule_person_pno( array $people ) {
+		return array_reduce( $people, function ( $carry, Person $person ) {
+			if ( $person->is_competing ) {
+				$rule_name = 'Deltagare ' . htmlspecialchars( $person->name );
+				if ( ! empty( $person->pno ) ) {
+					try {
+						$pno  = DateUtils::fix_pno( $person->pno );
+						$date = DateTime::createFromFormat( 'Ymd', substr( $pno, 0, 8 ) );
+						if ( $date !== false ) {
+							if ( substr( $pno, 9, 4 ) === '0000' ) {
+								$carry[] = new RuleResult( $rule_name, RuleResult::WARNING, 'Vi rekommenderar att ange hela personnumret.' );
+							}
+						} else {
+							$carry[] = new RuleResult( $rule_name, RuleResult::WARNING, 'Personnummer/födelsedag verkar inte vara korrekt.' );
+						}
+					} catch ( Exception $e ) {
+						$carry[] = new RuleResult( $rule_name, RuleResult::WARNING, 'Personnummer/födelsedag verkar inte vara korrekt.' );
+					}
+				} else {
+					$carry[] = new RuleResult( $rule_name, RuleResult::BLOCKER, 'Personnummer/födelsedag har inget angetts.' );
+				}
+			}
+
+			return $carry;
+		}, [] );
+	}
+
+	private static function rule_adult_supervision( Group $group, array $people ) {
+		$children = array_filter( $people, function ( Person $person ) {
+			return isset( $person->age ) && $person->is_competing && $person->age < 15;
+		} );
+		$adults   = array_filter( $people, function ( Person $person ) {
+			return isset( $person->age ) && $person->age >= 18;
+		} );
+
+		$group_has_child = count( $children ) > 0;
+		$gruop_has_adult = count( $adults ) > 0;
+		if ( $group_has_child && ! $gruop_has_adult ) {
+			if ( $group->age_competing_avg < 15 ) {
+				return [ new RuleResult( 'Vuxen i laget', RuleResult::BLOCKER, 'Laget måste ha med sig en vuxen under dagen eftersom de flesta är under 15.' ) ];
+			} else {
+				// Not all are under 15 but at least one is.
+				return [ new RuleResult( 'Vuxen i laget', RuleResult::WARNING, 'Vi rekommenderar att alla lag med deltagare under 15 också har med sig en vuxen under dagen.' ) ];
+			}
+		}
+
+		return [ new RuleResult( 'Vuxen i laget', RuleResult::OK, 'Laget uppfyller våra krav för när det måste finnas vuxna i laget.' ) ];
 	}
 
 	private static function rule_has_contacts( array $people ) {

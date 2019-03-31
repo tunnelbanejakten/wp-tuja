@@ -55,7 +55,7 @@ class Template
 
 	public static function group_parameters( Group $group )
     {
-	    $registration_evaluator = new RegistrationEvaluator( $group->competition_id );
+	    $registration_evaluator = new RegistrationEvaluator();
 	    $evaluation_result      = $registration_evaluator->evaluate( $group );
         return [
 	        'group_name' => $group->name,
