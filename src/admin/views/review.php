@@ -3,11 +3,10 @@
 namespace tuja\admin;
 use tuja\view\FieldImages;
 
+AdminUtils::printTopMenu( $competition );
 ?>
 
 <form method="post" action="<?= add_query_arg() ?>">
-    <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $this->competition->name) ?></h1>
-
     <?php
     if (empty($responses)) {
         printf('<p>Allt är redan kontrollerat. Bra jobbat!</p>');

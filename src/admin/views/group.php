@@ -5,11 +5,11 @@ use DateTime;
 use tuja\util\rules\RuleResult;
 use tuja\view\FieldImages;
 
+AdminUtils::printTopMenu( $competition );
 ?>
 
 <form method="post" action="<?= add_query_arg() ?>">
-    <h1>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $this->competition->name) ?></h1>
-    <h2>Grupp <?= htmlspecialchars($group->name) ?> (id: <code><?= htmlspecialchars($group->random_id) ?></code>)</h2>
+    <h3>Grupp <?= htmlspecialchars($group->name) ?> (id: <code><?= htmlspecialchars($group->random_id) ?></code>)</h3>
 
     <h3>Status för anmälan</h3>
 

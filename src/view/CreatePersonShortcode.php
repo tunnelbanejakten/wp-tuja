@@ -139,9 +139,9 @@ class CreatePersonShortcode extends AbstractGroupShortcode
     {
         $competition = $this->competition_dao->get($group->competition_id);
 
-        $group_category = $this->category_dao->get($group->category_id);
+	    $group_category = $this->get_group_category( $group );
 
-        $template_id = $group_category->is_crew ?
+	    $template_id = isset( $group_category ) && $group_category->is_crew ?
             $competition->message_template_id_new_crew_member :
             $competition->message_template_id_new_noncrew_member;
 

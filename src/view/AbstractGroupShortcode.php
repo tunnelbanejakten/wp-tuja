@@ -15,7 +15,7 @@ use tuja\util\messaging\MessageSender;
 use tuja\util\Template;
 use tuja\util\messaging\OutgoingEmailMessage;
 
-class AbstractGroupShortcode
+class AbstractGroupShortcode extends AbstractShortcode
 {
     const ACTION_BUTTON_NAME = 'tuja-action';
     const ACTION_NAME_SAVE = 'save';
@@ -41,6 +41,7 @@ class AbstractGroupShortcode
 
     public function __construct($wpdb, $is_crew_form)
     {
+	    parent::__construct();
 	    $this->group_dao            = new GroupDao();
 	    $this->person_dao           = new PersonDao();
 	    $this->competition_dao      = new CompetitionDao();

@@ -1,8 +1,11 @@
-<?php namespace tuja\admin; ?>
+<?php
 
-<h1>Tunnelbanejakten</h1>
-<h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $this->competition->name) ?></h2>
-<h2>Importera SMS och MMS</h2>
+namespace tuja\admin;
+
+AdminUtils::printTopMenu( $competition );
+?>
+
+<h3>Importera SMS och MMS</h3>
 
 <form method="post" action="<?= add_query_arg() ?>" enctype="multipart/form-data">
 

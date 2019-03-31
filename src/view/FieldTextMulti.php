@@ -14,6 +14,7 @@ class FieldTextMulti extends Field {
 		return count( $this->options ) == 0 || ( count( $this->options ) == 1 && empty( $this->options[0] ) );
 	}
 
+	// TODO: Fix bad practice of return either scalar or array.
 	public function get_posted_answer( $form_field ) {
 		$user_answer = parent::get_posted_answer( $form_field );
 
@@ -28,7 +29,19 @@ class FieldTextMulti extends Field {
 		$render_id = $field_name ?: uniqid();
 		$hint      = isset( $this->hint ) ? sprintf( '<br><span class="tuja-question-hint">%s</span>', $this->hint ) : '';
 
-		$value = $this->get_posted_answer( $field_name ) ?: $this->value ?: array();
+		$posted_answer = $this->get_posted_answer( $field_name );
+
+		$value = array();
+
+		$is_not_empty_string_and_not_empty_array = ! empty( $posted_answer )
+		                                           && ! ( count( $posted_answer ) == 1
+		                                                  &&
+		                                                  empty( $posted_answer[0] ) );
+		if ( $is_not_empty_string_and_not_empty_array ) {
+			$value = $posted_answer;
+		} elseif ( ! empty( $this->value ) ) {
+			$value = $this->value;
+		}
 
 		return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label>%s</div>',
 			$render_id,

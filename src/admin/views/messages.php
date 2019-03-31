@@ -4,10 +4,8 @@ namespace tuja\admin;
 use DateTime;
 use tuja\view\FieldImages;
 
+AdminUtils::printTopMenu( $competition );
 ?>
-
-<h1>Tunnelbanejakten</h1>
-<h2>Tävling <?= sprintf('<a href="%s">%s</a>', $competition_url, $this->competition->name) ?></h2>
 
 <h3>Importera</h3>
 <?php

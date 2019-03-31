@@ -48,10 +48,7 @@ class Review {
 	public function output() {
 		$this->handle_post();
 
-		$competition_url = add_query_arg( array(
-			'tuja_competition' => $this->competition->id,
-			'tuja_view'        => 'Competition'
-		) );
+		$competition = $this->competition;
 
 		$db_groups   = new GroupDao();
 		$db_form     = new FormDao();
@@ -59,15 +56,15 @@ class Review {
 		$db_points   = new PointsDao();
 		$db_question = new QuestionDao();
 
-		$groups     = $db_groups->get_all_in_competition( $this->competition->id );
+		$groups     = $db_groups->get_all_in_competition( $competition->id );
 		$groups_map = array_combine( array_map( function ( $group ) {
 			return $group->id;
 		}, $groups ), array_values( $groups ) );
-		$forms      = $db_form->get_all_in_competition( $this->competition->id );
+		$forms      = $db_form->get_all_in_competition( $competition->id );
 
-		$responses = $db_response->get_not_reviewed( $this->competition->id );
+		$responses = $db_response->get_not_reviewed( $competition->id );
 
-		$current_points = $db_points->get_by_competition( $this->competition->id );
+		$current_points = $db_points->get_by_competition( $competition->id );
 		$current_points = array_combine(
 			array_map( function ( $points ) {
 				return $points->form_question_id . '__' . $points->group_id;

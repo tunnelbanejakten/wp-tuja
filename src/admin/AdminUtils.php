@@ -32,4 +32,35 @@ class AdminUtils
 			return 'tuja-admin-review-autoscore-decent';
 		}
 	}
+
+	public static function printTopMenu( $competition ) {
+		printf( '<h1>%s</h1>', $competition->name );
+
+		$menu_config = [
+			'Competition'         => 'Start',
+			'Groups'              => 'Grupper',
+			'Scoreboard'          => 'Poängställning',
+			'CompetitionSettings' => 'Inställningar',
+			'Review'              => 'Svar att rätta',
+			'Messages'            => 'Meddelanden'
+		];
+
+		printf( '<nav class="tuja">%s</nav>',
+			join( ' | ', array_map(
+				function ( $view, $label ) {
+					$is_view_selected = sanitize_text_field( $_GET['tuja_view'] ) === $view;
+
+					return $is_view_selected
+						? sprintf( '<strong>%s</strong>', $label )
+						: sprintf( '<a href="%s">%s</a>',
+							add_query_arg( array(
+								'tuja_competition' => $_GET['tuja_competition'],
+								'tuja_view'        => $view
+							) ),
+							$label );
+				},
+				array_keys( $menu_config ),
+				array_values( $menu_config ) ) ) );
+
+	}
 }

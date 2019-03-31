@@ -4,15 +4,10 @@ namespace tuja\data\store;
 
 use DateTime;
 use DateTimeZone;
-use tuja\data\model\Competition;
-use tuja\data\model\Form;
 use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
 use tuja\data\model\Message;
 use tuja\data\model\Person;
-use tuja\data\model\Points;
-use tuja\data\model\Question;
-use tuja\data\model\Response;
 use tuja\util\Id;
 use tuja\util\Phone;
 
@@ -47,17 +42,6 @@ class AbstractDao {
 	}
 
 	// TODO: Move all to_* methods to the corresponding model classes. Already done for FormDao, CompetitionDao and QuestionDao.
-	protected static function to_group( $result ): Group {
-		$g                 = new Group();
-		$g->id             = $result->id;
-		$g->random_id      = $result->random_id;
-		$g->name           = $result->name;
-		$g->category_id    = $result->category_id;
-		$g->competition_id = $result->competition_id;
-
-		return $g;
-	}
-
 	protected static function to_group_category( $result ): GroupCategory {
 		$gc                 = new GroupCategory();
 		$gc->id             = $result->id;
@@ -83,28 +67,6 @@ class AbstractDao {
 		$p->is_group_contact = $result->is_team_contact != 0;
 		$p->food             = $result->food;
 		$p->pno              = $result->pno;
-
-		return $p;
-	}
-
-	protected static function to_response( $result ): Response {
-		$r                   = new Response();
-		$r->id               = $result->id;
-		$r->form_question_id = $result->form_question_id;
-		$r->group_id         = $result->team_id;
-		$r->answers          = json_decode( $result->answer );
-		$r->created          = self::from_db_date( $result->created_at );
-		$r->is_reviewed      = $result->is_reviewed;
-
-		return $r;
-	}
-
-	protected static function to_points( $result ): Points {
-		$p                   = new Points();
-		$p->form_question_id = $result->form_question_id;
-		$p->group_id         = $result->team_id;
-		$p->points           = $result->points;
-		$p->created          = self::from_db_date( $result->created_at );
 
 		return $p;
 	}
