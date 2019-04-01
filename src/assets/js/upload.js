@@ -53,5 +53,13 @@
 			$(this).closest('.tuja-image').remove();
 		});
 
+		$('button.clear-image-field').click(function() {
+			var $image = $(this).closest('.tuja-image');
+			$image.find('input').first().val('');
+			$image.find('input').slice(1).remove();
+			$image.find('.tuja-image-select').removeClass('dz-started');
+			$image.find('.dz-preview').remove();
+		});
+
 	});
 })();

@@ -60,15 +60,16 @@ abstract class Plugin
 			$response_dao = new ResponseDao();
 			$response = $response_dao->get($group->id, $question, true);
 
-			// Check lock
-			$lock_res = $response_dao->get($group->id, 0, true);
-			$lock_res = $lock_res->created->getTimestamp();
-			$lock = (int)$_POST['lock'];
-			if($lock === 0 || $lock_res !== $lock) {
-				wp_send_json_error(array(
-					'error' => 'Din bild kunde inte laddas upp eftersom någon annan i ditt lag har uppdaterat era svar. Ladda om sidan och prova igen.'
-				), 401);
-				exit;
+			// Check lock. If lock is empty no answers has been sent so just proceed.
+			if($lock_res = $response_dao->get($group->id, 0, true)) {
+				$lock_res = $lock_res->created->getTimestamp();
+				$lock = (int)$_POST['lock'];
+				if($lock === 0 || $lock_res !== $lock) {
+					wp_send_json_error(array(
+						'error' => 'Din bild kunde inte laddas upp eftersom någon annan i ditt lag har uppdaterat era svar. Ladda om sidan och prova igen.'
+					), 401);
+					exit;
+				}
 			}
 
 			$upload_dir = '/tuja/group-' . $group->random_id;
@@ -103,16 +104,27 @@ abstract class Plugin
 				$filename = explode('/', $movefile['file']);
 				$filename = array_pop($filename);
 
-				// Create new question response
-				$response->answers[0] = json_decode($response->answers[0], true);
-
-				if($response->answers[0]['images'][0] === '') {
-					$response->answers[0]['images'][0] = $filename;
+				// Create new question response and merge the latest one's images if applicable.
+				if($response) {
+					$response->answers[0] = json_decode($response->answers[0], true);
+	
+					if($response->answers[0]['images'][0] === '') {
+						$response->answers[0]['images'][0] = $filename;
+					} else {
+						$response->answers[0]['images'][] = $filename;
+					}
+	
+					$response->answers[0]['images'] = array_unique($response->answers[0]['images']);
+					$response->answers[0] = json_encode($response->answers[0]);
 				} else {
-					$response->answers[0]['images'][] = $filename;
+					$response = new Response();
+					$response->answers = array(
+						'images' => array($filename)
+					);
+					$response->form_question_id = $question;
+					$response->group_id = $group->id;
 				}
 
-				$response->answers[0]['images'] = array_unique($response->answers[0]['images']);
 				$response->answers[0] = json_encode($response->answers[0]);
 				$response = $response_dao->create($response);
 
