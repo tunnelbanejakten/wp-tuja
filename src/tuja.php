@@ -47,12 +47,10 @@ abstract class Plugin
 	}
 
 
+
 	/**
-	 * TODO:
-	 * Create hash file name and send back to form.
-	 * Populate input field with file names for each question.
-	 * Use saved hashed names go show correct images on page load using https://github.com/enyo/dropzone/wiki/FAQ#how-to-show-files-already-stored-on-server
-	 */ 
+	 * Handles image uploads from FromShortcode via AJAX.
+	 */
 	public function handle_image_upload() {
 		if(!empty($_FILES['file']) && !empty($_POST['group']) && !empty($_POST['question'])) {
 			$group_dao = new GroupDao();
