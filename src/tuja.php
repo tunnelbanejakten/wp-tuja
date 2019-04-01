@@ -60,10 +60,18 @@ abstract class Plugin
 			$question = (int)$_POST['question'];
 
 			$response_dao = new ResponseDao();
-			$old_responses = $response_dao->get($group->id, $question, true);
-			$response = array_pop($old_responses);
+			$response = $response_dao->get($group->id, $question, true);
 
-			// TODO: Check lock
+			// Check lock
+			$lock_res = $response_dao->get($group->id, 0, true);
+			$lock_res = $lock_res->created->getTimestamp();
+			$lock = (int)$_POST['lock'];
+			if($lock === 0 || $lock_res !== $lock) {
+				wp_send_json_error(array(
+					'error' => 'Din bild kunde inte laddas upp eftersom någon annan i ditt lag har uppdaterat era svar. Ladda om sidan och prova igen.'
+				), 401);
+				exit;
+			}
 
 			$upload_dir = '/tuja/group-' . $group->random_id;
 			add_filter('upload_dir', function ($dirs) use ($upload_dir) {
@@ -108,7 +116,6 @@ abstract class Plugin
 
 				$response->answers[0]['images'] = array_unique($response->answers[0]['images']);
 				$response->answers[0] = json_encode($response->answers[0]);
-				
 				$response = $response_dao->create($response);
 
 				wp_send_json(array(
@@ -119,14 +126,14 @@ abstract class Plugin
 				exit;
 			}
 
-			wp_send_json_error(array(
-				'error' => $movefile['error']
+			wp_send_json(array(
+				'error' => 'Din bild kunde inte sparas. Ladda om sidan och prova igen eller kontakta kundtjänst.'
 			), 500);
 			exit;
 		}
 
-		wp_send_json_error(array(
-			'error' => 'Invalid input'
+		wp_send_json(array(
+			'error' => 'Datan som skickades är ogiltig.'
 		), 400);
 		exit;
 	}

@@ -9,6 +9,7 @@
 		$('.dropzone').each(function(i, el) {
 			var answerName = $(this).closest('.tuja-image').attr('id');
 			var questionId = $(this).closest('.tuja-question').data('id');
+			var $lock = $(this).closest('form').find('input[name="tuja_formshortcode__optimistic_lock"]');
 
 			var dz = new Dropzone(el, {
 				url: WPAjax.ajaxUrl,
@@ -23,7 +24,13 @@
 						formData.append('action', 'tuja_upload_images');
 						formData.append('group', groupId);
 						formData.append('question', questionId);
+						formData.append('lock', $lock.val());
 					});
+				},
+				success: function(f, res)  {
+					if(res.lock) {
+						$lock.val(res.lock);
+					}
 				}
 			});
 
