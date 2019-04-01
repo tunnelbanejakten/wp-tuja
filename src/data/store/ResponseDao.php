@@ -42,13 +42,14 @@ class ResponseDao extends AbstractDao
 		return $response;
 	}
 
-	public function get($group_id, $question_id, $latest = false) {
-		$query = 'SELECT * FROM ' . $this->table . ' WHERE team_id = %d AND form_question_id = %d ORDER BY id';
+	public function get($group_id, $question_id = 0, $latest = false) {
+		$query = 'SELECT * FROM ' . $this->table . ' WHERE team_id = %d AND form_question_id ' . ($question_id ? '=' : '!=') . ' %d ORDER BY id';
+		
 		if($latest) {
 			$query .= ' DESC LIMIT 1';
 		}
 
-		return $this->get_objects(
+		$responses = $this->get_objects(
 			function ( $row ) {
 				return self::to_response( $row );
 			},
@@ -56,6 +57,12 @@ class ResponseDao extends AbstractDao
 			$group_id,
 			$question_id
 		);
+
+		if($latest) {
+			return end($responses);
+		}
+
+		return $responses;
 	}
 
 	function get_by_group( $group_id ) {
