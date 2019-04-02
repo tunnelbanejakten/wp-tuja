@@ -115,11 +115,13 @@ abstract class Plugin
 					}
 	
 					$response->answers[0]['images'] = array_unique($response->answers[0]['images']);
-					$response->answers[0] = json_encode($response->answers[0]);
 				} else {
 					$response = new Response();
 					$response->answers = array(
-						'images' => array($filename)
+						array(
+							'images' => array($filename),
+							'comment' => ''
+						)
 					);
 					$response->form_question_id = $question;
 					$response->group_id = $group->id;
