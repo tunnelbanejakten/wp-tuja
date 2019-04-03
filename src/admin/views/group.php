@@ -2,6 +2,7 @@
 namespace tuja\admin;
 
 use DateTime;
+use tuja\util\rules\RuleResult;
 use tuja\view\FieldImages;
 
 AdminUtils::printTopMenu( $competition );
@@ -10,6 +11,25 @@ AdminUtils::printTopMenu( $competition );
 <form method="post" action="<?= add_query_arg() ?>">
     <h3>Grupp <?= htmlspecialchars($group->name) ?> (id: <code><?= htmlspecialchars($group->random_id) ?></code>)</h3>
 
+    <h3>Status för anmälan</h3>
+
+	<?php
+
+	$css_class_mapping = [
+		RuleResult::OK      => 'notice-success',
+		RuleResult::WARNING => 'notice-warning',
+		RuleResult::BLOCKER => 'notice-error'
+	];
+
+	foreach ( $registration_evaluation as $result ) {
+		printf( '<div class="notice %s" style="margin-left: 2px"><p><strong>%s: </strong>%s</p></div>',
+			$css_class_mapping[ $result->status ],
+			$result->rule_name,
+			$result->details );
+	}
+	?>
+
+    <h3>Svar och poäng</h3>
     <p><strong>Totalt <?= array_sum($calculated_scores_final) ?> poäng.</strong></p>
 
     <table class="tuja-admin-review">

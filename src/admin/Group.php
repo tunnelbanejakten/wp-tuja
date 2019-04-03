@@ -6,7 +6,7 @@ use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\MessageDao;
 use tuja\data\store\PersonDao;
-use tuja\view\FieldImages;
+use tuja\util\rules\RegistrationEvaluator;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\PointsDao;
 use tuja\util\score\ScoreCalculator;
@@ -83,6 +83,9 @@ class Group {
 
 		$person_dao = new PersonDao();
 		$people = $person_dao->get_all_in_group( $group->id );
+
+		$registration_evaluator  = new RegistrationEvaluator();
+		$registration_evaluation = $registration_evaluator->evaluate( $group );
 
 		include('views/group.php');
 	}

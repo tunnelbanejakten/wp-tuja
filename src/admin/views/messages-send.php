@@ -119,3 +119,62 @@ AdminUtils::printTopMenu( $competition );
         </div>
 	<?php } ?>
 </form>
+	<?php
+if ( ! empty( $action_result ) ) {
+	$variables        = $action_result['variables'];
+	$body_template    = $action_result['body_template'];
+	$subject_template = $action_result['subject_template'];
+
+	$variables_headers_html = join( array_map( function ( $variable ) {
+		return sprintf( '<td><strong>%s</strong></td>', $variable );
+	}, $variables ) );
+
+	printf( '<table>' .
+	        '  <thead>' .
+	        '  <tr>' .
+	        '    <td colspan="2" rowspan="2" valign="top"><strong>Mottagare</strong>' .
+	        '    <td colspan="%d"><strong>Variabler</strong></td>' .
+	        '    <td colspan="2" rowspan="2" valign="top"><strong>Förhandsgranskning</strong></td>' .
+	        '  </tr>' .
+	        '  <tr>' .
+	        '    %s' .
+	        '  </tr>' .
+	        '  </thead>' .
+	        '  <tbody>' .
+	        '    %s' .
+	        '  </tbody>' .
+	        '</table>',
+		count( $variables ),
+		$variables_headers_html,
+		join( array_map( function ( $result ) use ( $variables, $subject_template, $body_template ) {
+			$person_name         = $result['person_name'];
+			$template_parameters = $result['template_parameters'];
+			$message             = $result['message'];
+			$message_css_class   = $result['message_css_class'];
+			$is_plain_text_body  = $result['is_plain_text_body'];
+
+			$variables_values_html = join( array_map( function ( $variable ) use ( $template_parameters ) {
+				return sprintf( '<td valign="top"><code>%s</code></td>', $template_parameters[ $variable ] );
+			}, $variables ) );
+
+			$preview_html = sprintf( '<div class="tuja-message-preview">%s</div><div class="tuja-message-preview %s">%s</div>',
+				strip_tags( $subject_template->render( $template_parameters ) ),
+				$is_plain_text_body ? 'tuja-message-preview-plaintext' : 'tuja-message-preview-html',
+				$body_template->render( $template_parameters, ! $is_plain_text_body ) );
+
+			return sprintf(
+				'<tr>' .
+				'  <td valign="top">%s</td>' .
+				'  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s</span></td>' .
+				'  %s' .
+				'  <td valign="top">%s</td>' .
+				'</tr>',
+				$person_name,
+				$message_css_class,
+				$message,
+				$variables_values_html,
+				$preview_html );
+		}, $action_result['recipients'] ) ) );
+}
+
+?>
