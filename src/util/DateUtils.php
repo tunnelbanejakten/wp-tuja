@@ -88,4 +88,8 @@ class DateUtils
 		}
 	}
 
+	private static function is_20th_century( $digits ): bool {
+		return intval( substr( $digits, 0, 2 ) ) < 20;
+	}
+
 }
