@@ -11,9 +11,6 @@ namespace tuja;
 
 use tuja\util\Database;
 use tuja\util\Id;
-use tuja\data\store\GroupDao;
-use tuja\data\model\Response;
-use tuja\data\store\ResponseDao;
 
 abstract class Plugin
 {
@@ -39,115 +36,11 @@ abstract class Plugin
 
 		add_filter('query_vars', array($this, 'query_vars'));
 		add_filter('rewrite_rules_array', array($this, 'rewrite_rules'));
-
-		add_action('wp_ajax_tuja_upload_images', array($this, 'handle_image_upload'));
-		add_action('wp_ajax_nopriv_tuja_upload_images', array($this, 'handle_image_upload'));
+		
+		add_action('wp_ajax_tuja_upload_images', array('tuja\util\ImageManager', 'handle_image_upload'));
+		add_action('wp_ajax_nopriv_tuja_upload_images', array('tuja\util\ImageManager', 'handle_image_upload'));
 
 		$this->init();
-	}
-
-
-
-	/**
-	 * Handles image uploads from FromShortcode via AJAX.
-	 */
-	public function handle_image_upload() {
-		if(!empty($_FILES['file']) && !empty($_POST['group']) && !empty($_POST['question'])) {
-			$group_dao = new GroupDao();
-			$group = $group_dao->get_by_key( sanitize_text_field( $_POST['group'] ) );
-			$question = (int)$_POST['question'];
-
-			$response_dao = new ResponseDao();
-			$response = $response_dao->get($group->id, $question, true);
-
-			// Check lock. If lock is empty no answers has been sent so just proceed.
-			if($lock_res = $response_dao->get($group->id, 0, true)) {
-				$lock_res = $lock_res->created->getTimestamp();
-				$lock = (int)$_POST['lock'];
-				if($lock === 0 || $lock_res !== $lock) {
-					wp_send_json_error(array(
-						'error' => 'Din bild kunde inte laddas upp eftersom någon annan i ditt lag har uppdaterat era svar. Ladda om sidan och prova igen.'
-					), 401);
-					exit;
-				}
-			}
-
-			$upload_dir = '/tuja/group-' . $group->random_id;
-			add_filter('upload_dir', function ($dirs) use ($upload_dir) {
-				$dirs['subdir'] = $upload_dir;
-				$dirs['path'] = $dirs['basedir'] . $upload_dir;
-				$dirs['url'] = $dirs['baseurl'] . $upload_dir;
-
-				if(!file_exists($dirs['basedir'] . $upload_dir)) {
-					mkdir($dirs['basedir'] . $upload_dir, 0777, true);
-				}
-			
-				return $dirs;
-			});
-
-			$upload_overrides = array(
-				'test_form' => false,
-				'unique_filename_callback' => function($dir, $name, $ext) use($question) {
-					$name = md5($name . $question);
-					return $name.$ext;
-				}
-			);
-
-			$file = $_FILES['file'];
-			if(isset($file['error'][0])) {
-				$file = array_map(function($e) { return $e[0]; }, $file);
-			}
-
-			$movefile = wp_handle_upload($file, $upload_overrides);
-
-			if ( $movefile && ! isset( $movefile['error'] ) ) {
-				$filename = explode('/', $movefile['file']);
-				$filename = array_pop($filename);
-
-				// Create new question response and merge the latest one's images if applicable.
-				if($response) {
-					$response->answers[0] = json_decode($response->answers[0], true);
-	
-					if($response->answers[0]['images'][0] === '') {
-						$response->answers[0]['images'][0] = $filename;
-					} else {
-						$response->answers[0]['images'][] = $filename;
-					}
-	
-					$response->answers[0]['images'] = array_unique($response->answers[0]['images']);
-				} else {
-					$response = new Response();
-					$response->answers = array(
-						array(
-							'images' => array($filename),
-							'comment' => ''
-						)
-					);
-					$response->form_question_id = $question;
-					$response->group_id = $group->id;
-				}
-
-				$response->answers[0] = json_encode($response->answers[0]);
-				$response = $response_dao->create($response);
-
-				wp_send_json(array(
-					'error' => false,
-					'image' => $filename,
-					'lock' => $response->created_at
-				));
-				exit;
-			}
-
-			wp_send_json(array(
-				'error' => 'Din bild kunde inte sparas. Ladda om sidan och prova igen eller kontakta kundtjänst.'
-			), 500);
-			exit;
-		}
-
-		wp_send_json(array(
-			'error' => 'Datan som skickades är ogiltig.'
-		), 400);
-		exit;
 	}
 
 	public function init()

@@ -13,7 +13,7 @@
 
 			var dz = new Dropzone(el, {
 				url: WPAjax.ajaxUrl,
-				resizeWidth: 600,
+				resizeWidth: 1000,
 				acceptedFiles: 'image/*',
 				parallelUploads: 2,
 				maxFiles: 2,
@@ -28,14 +28,22 @@
 					});
 				},
 				success: function(f, res)  {
-					if(res.lock) {
-						$lock.val(res.lock);
+					if(res.error === false && res.image) {
+						var $oldImage = $('input[name="' + answerName + '[images][]"]').first();
+
+						if($oldImage.val() === '') {
+							$oldImage.val(res.image);
+						} else {
+							var $newImage = $('input[name="' + answerName + '[images][]"]').first().clone(false);
+							$newImage.val(res.image);
+							$oldImage.after($newImage);
+						}
 					}
 				}
 			});
 
 			if($('input[name="' + answerName + '[images][]"]').val() !== '') {
-				var mockFile = { name: "Filename", size: 12345 };
+				var mockFile = { name: "Bild", size: 12345 };
 
 				$('input[name="' + answerName + '[images][]"]').each(function(i, o) {
 					var imageUrl = WPAjax.base_image_url + 'group-' + groupId + '/' + $(o).val();
