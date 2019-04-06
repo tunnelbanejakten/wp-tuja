@@ -63,21 +63,33 @@ class DateUtils
 		$digits = preg_replace( "/[^0-9]/", "", $input );
 		if ( strlen( $digits ) == 6 ) {
 			// 831109
-			return DateTime::createFromFormat( 'ymd', $digits )->format( 'Ymd' ) . '-0000';
+			return DateTime::createFromFormat( 'Ymd',
+					self::is_20th_century( $digits ) ? "20$digits" : "19$digits"
+				)->format( 'Ymd' ) . '-0000';
 		} else if ( strlen( $digits ) == 8 ) {
 			//19831109
-			return DateTime::createFromFormat( 'Ymd', $digits )->format( 'Ymd' ) . '-0000';
+			return DateTime::createFromFormat( 'Ymd',
+					$digits
+				)->format( 'Ymd' ) . '-0000';
 		} else if ( strlen( $digits ) == 10 ) {
 			// 8311090123
 			// 8311090000
-			return DateTime::createFromFormat( 'ymd', substr( $digits, 0, 6 ) )->format( 'Ymd' ) . '-' . substr( $digits, 6, 4 );
+			return DateTime::createFromFormat( 'Ymd',
+					substr( self::is_20th_century( $digits ) ? "20$digits" : "19$digits", 0, 8 )
+				)->format( 'Ymd' ) . '-' . substr( $digits, 6, 4 );
 		} else if ( strlen( $digits ) == 12 ) {
 			// 198311090000
 			// 198311090123
-			return DateTime::createFromFormat( 'Ymd', substr( $digits, 0, 8 ) )->format( 'Ymd' ) . '-' . substr( $digits, 8, 4 );
+			return DateTime::createFromFormat( 'Ymd',
+					substr( $digits, 0, 8 )
+				)->format( 'Ymd' ) . '-' . substr( $digits, 8, 4 );
 		} else {
 			throw new ValidationException( null, 'Ogiltigt datum eller personnummer.' );
 		}
+	}
+
+	private static function is_20th_century( $digits ): bool {
+		return intval( substr( $digits, 0, 2 ) ) < 20;
 	}
 
 }
