@@ -142,7 +142,7 @@ AdminUtils::printTopMenu( $competition );
 
         printf('</div>');
 
-        printf('<button type="submit" class="button" name="tuja_action" value="%s%d">Ta bort</button>', self::ACTION_NAME_DELETE_PREFIX, $question->id);
+        printf('<button type="submit" class="button" name="tuja_action" value="%s%d">Ta bort</button>', self::ACTION_NAME_DELETE_PREFIX, $question->question_group_id);
 
         $html_field = Field::create($question)->render('tuja_' . uniqid());
         printf('<div class="tuja-admin-question-preview"><p>Förhandsgranskning av fråga <br>(uppdateras när du sparar ändringarna): </p>%s</div>', $html_field);
