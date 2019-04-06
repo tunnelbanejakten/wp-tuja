@@ -124,14 +124,25 @@ abstract class Plugin
 			) ' . $charset;
 
 		$tables[] = "
-			CREATE TABLE " . Database::get_table('form_question') . " (
+			CREATE TABLE " . Database::get_table('form_question_group') . " (
 				id         INTEGER AUTO_INCREMENT PRIMARY KEY,
+				random_id  VARCHAR(20)  NOT NULL,
 				form_id    INTEGER      NOT NULL,
-				type       VARCHAR(100) NOT NULL,
-				answer     TEXT,
-				text       TEXT         NOT NULL,
-				sort_order SMALLINT,
-				text_hint  TEXT
+				text       TEXT,
+				sort_order SMALLINT
+			) " . $charset;
+
+		$tables[] = "
+			CREATE TABLE " . Database::get_table('form_question') . " (
+				id                 INTEGER AUTO_INCREMENT PRIMARY KEY,
+				random_id          VARCHAR(20),
+				form_id            INTEGER,
+				question_group_id  INTEGER,
+				type               VARCHAR(100) NOT NULL,
+				answer             TEXT,
+				text               TEXT         NOT NULL,
+				sort_order         SMALLINT,
+				text_hint          TEXT
 			) " . $charset;
 
 		$tables[] = '
@@ -196,6 +207,10 @@ abstract class Plugin
 
 			['form', 'competition_id', 'competition', 'CASCADE'],
 
+			['form_question_group', 'form_id', 'form', 'CASCADE'],
+
+			['form_question', 'question_group_id', 'form_question_group', 'CASCADE'],
+
 			['form_question_response', 'form_question_id', 'form_question', 'RESTRICT'],
 			['form_question_response', 'team_id', 'team', 'CASCADE'],
 
@@ -219,6 +234,9 @@ abstract class Plugin
 			foreach ($keys as $key) {
 				Database::add_foreign_key($key[0], $key[1], $key[2], $key[3]);
 			}
+
+			Database::fix_questions_not_in_group();
+
 			Database::commit();
 		} catch (\Exception $e) {
 			Database::rollback();
