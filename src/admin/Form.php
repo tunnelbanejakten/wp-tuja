@@ -5,8 +5,10 @@ namespace tuja\admin;
 use Exception;
 use tuja\Admin;
 use tuja\data\model\Question;
+use tuja\data\model\QuestionGroup;
 use tuja\data\store\FormDao;
 use tuja\data\store\QuestionDao;
+use tuja\data\store\QuestionGroupDao;
 use tuja\util\DateUtils;
 use tuja\data\store\CompetitionDao;
 
@@ -17,11 +19,13 @@ class Form {
 	private $form;
 	private $db_form;
 	private $db_question;
+	private $db_question_group;
 
 	public function __construct() {
-		$this->db_form     = new FormDao();
-		$this->db_question = new QuestionDao();
-		$this->form        = $this->db_form->get( $_GET['tuja_form'] );
+		$this->db_form           = new FormDao();
+		$this->db_question       = new QuestionDao();
+		$this->db_question_group = new QuestionGroupDao();
+		$this->form              = $this->db_form->get( $_GET['tuja_form'] );
 
 		if(!$this->form) {
 			print 'Could not find form';
@@ -99,26 +103,41 @@ class Form {
 
 			$success !== false ? AdminUtils::printSuccess('Uppdaterat!') : AdminUtils::printException($e);
 		} elseif ($_POST['tuja_action'] == 'question_create') {
-			$props                   = new Question();
-			$props->correct_answers  = array('Alice');
-			$props->possible_answers = array('Alice', 'Bob');
-			$props->form_id          = $this->form->id;
-			$props->type             = 'text'; // TODO: Use constant.
 
-			try {
-				$affected_rows = $this->db_question->create( $props );
-				$success       = $affected_rows !== false && $affected_rows === 1;
-			} catch (Exception $e) {
-				$success = false;
+			$success = false;
+
+			$group_props          = new QuestionGroup();
+			$group_props->text    = null;
+			$group_props->form_id = $this->form->id;
+
+			$question_group_id = $this->db_question_group->create( $group_props );
+
+			error_log( '😱' . $question_group_id );
+
+			if ( $question_group_id !== false ) {
+
+				$props                    = new Question();
+				$props->correct_answers   = array( 'Alice' );
+				$props->possible_answers  = array( 'Alice', 'Bob' );
+				$props->question_group_id = $question_group_id;
+				$props->type              = 'text'; // TODO: Use constant.
+
+				try {
+					$affected_rows = $this->db_question->create( $props );
+					$success       = $affected_rows !== false && $affected_rows === 1;
+				} catch ( Exception $e ) {
+					$success = false;
+				}
 			}
-			
+
 			$success ? AdminUtils::printSuccess('Fråga skapad!') : AdminUtils::printError('Kunde inte skapa fråga.');
 		} elseif (substr($_POST['tuja_action'], 0, strlen(self::ACTION_NAME_DELETE_PREFIX)) == self::ACTION_NAME_DELETE_PREFIX) {
 			$wpdb->show_errors(); // TODO: Show nicer error message if question cannot be deleted (e.g. in case someone has answered the question already)
-		
-			$question_to_delete = substr($_POST['tuja_action'], strlen(self::ACTION_NAME_DELETE_PREFIX));
 
-			$affected_rows = $this->db_question->delete( $question_to_delete );
+			$question_group_id_to_delete = substr( $_POST['tuja_action'], strlen( self::ACTION_NAME_DELETE_PREFIX ) );
+
+			// TODO: Delete question group instead of individual question (assume one-to-one relationship for now)
+			$affected_rows = $this->db_question_group->delete( $question_group_id_to_delete );
 			$success       = $affected_rows !== false && $affected_rows === 1;
 			
 			$success ? AdminUtils::printSuccess('Fråga sparad!') : AdminUtils::printError('Kunde inte ta bort fråga.');
