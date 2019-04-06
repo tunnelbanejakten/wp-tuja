@@ -1,5 +1,6 @@
 ;(function() {
 	Dropzone.autoDiscover = false;
+	var maxFilesCount = 2;
 	
 	jQuery(document).ready(function($) {
 
@@ -8,7 +9,7 @@
 
 		$('.dropzone').each(function(i, el) {
 			var answerName = $(this).closest('.tuja-image').attr('id');
-			var questionId = $(this).closest('.tuja-question').data('id');
+			var $question = $(this).closest('.tuja-question');
 			var $lock = $(this).closest('form').find('input[name="tuja_formshortcode__optimistic_lock"]');
 
 			var dz = new Dropzone(el, {
@@ -16,15 +17,26 @@
 				resizeWidth: 1000,
 				acceptedFiles: 'image/*',
 				parallelUploads: 2,
-				maxFiles: 2,
-				uploadMultiple: true,
+				maxFiles: maxFilesCount,
+				uploadMultiple: false,
 				dictDefaultMessage: 'Klicka här för att ladda upp bilder',
 				init: function() {
-					this.on('sending', function(file, xhr, formData) {
+					var self = this;
+
+					self.on('sending', function(file, xhr, formData) {
 						formData.append('action', 'tuja_upload_images');
 						formData.append('group', groupId);
-						formData.append('question', questionId);
+						formData.append('question', $question.data('id'));
 						formData.append('lock', $lock.val());
+					});
+
+					$question.on('click', '.clear-image-field', function() {
+						$question.find('input').first().val('');
+						$question.find('input').slice(1).remove();
+						$question.find('.dz-preview').remove();
+						self.removeAllFiles();
+						self.options.maxFiles = maxFilesCount;
+						self.emit('reset');
 					});
 				},
 				success: function(f, res)  {
@@ -51,23 +63,11 @@
 					dz.emit('addedfile', mockFile);
 					dz.emit('thumbnail', mockFile, imageUrl);
 					dz.emit('complete', mockFile);
+					dz.options.maxFiles = dz.options.maxFiles - 1;
 				});
 			}
 
 			dropzones.push(dz);
 		});
-	
-		$('button.remove').click(function() {
-			$(this).closest('.tuja-image').remove();
-		});
-
-		$('button.clear-image-field').click(function() {
-			var $image = $(this).closest('.tuja-image');
-			$image.find('input').first().val('');
-			$image.find('input').slice(1).remove();
-			$image.find('.tuja-image-select').removeClass('dz-started');
-			$image.find('.dz-preview').remove();
-		});
-
 	});
 })();
