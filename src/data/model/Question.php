@@ -6,7 +6,7 @@ namespace tuja\data\model;
 class Question
 {
     public $id;
-    public $form_id;
+    public $question_group_id;
     public $type;
     public $correct_answers;
     public $possible_answers;
