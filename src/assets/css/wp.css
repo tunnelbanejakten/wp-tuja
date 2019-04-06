@@ -123,8 +123,44 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
     margin-right: 1em;
 }
 
-.tuja-fieldimages .tuja-image input[type='file'] {
-    width: 100%;
+.tuja-fieldimages .tuja-image-select {
+	border: 2px dashed #ccc;
+	border-radius: 5px;
+	padding: 10px;
+	cursor: pointer;
+}
+
+.tuja-fieldimages .tuja-image-select > * {
+	cursor: pointer;
+}
+
+.tuja-image .dropzone {
+	min-height: 0;
+}
+
+.tuja-image .dz-image img {
+	margin: 0;
+}
+
+.tuja-image .dz-preview ~ label,
+.tuja-image .dz-preview ~ p,
+.tuja-image .dropzone .dz-preview .dz-details {
+	display: none;
+}
+
+.tuja-image .dropzone .dz-preview .dz-image {
+	border-radius: 0;
+}
+
+.tuja-image .dropzone .dz-preview:hover .dz-image img {
+	-webkit-transform: none;
+    -moz-transform: none;
+    -ms-transform: none;
+    -o-transform: none;
+    transform: none;
+    -webkit-filter: none;
+	filter: none;
+	opacity: 0.75;
 }
 
 .tuja-image-preview img {

@@ -36,6 +36,9 @@ abstract class Plugin
 
 		add_filter('query_vars', array($this, 'query_vars'));
 		add_filter('rewrite_rules_array', array($this, 'rewrite_rules'));
+		
+		add_action('wp_ajax_tuja_upload_images', array('tuja\util\ImageManager', 'handle_image_upload'));
+		add_action('wp_ajax_nopriv_tuja_upload_images', array('tuja\util\ImageManager', 'handle_image_upload'));
 
 		$this->init();
 	}
