@@ -55,6 +55,7 @@ Features:
 Attributes:
 * is_crew_form: Sets which group categories to show in the form. The value "yes" means that only crew categories 
   are shown, otherwise only non-crew categories are shown. 
+* enable_group_category_selection: Enables (default) the user to pick a group category when editing group registration. 
 
 Known issues:
 * 

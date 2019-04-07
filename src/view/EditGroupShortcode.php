@@ -18,11 +18,18 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
 
 	private $group_key;
+	private $enable_group_category_selection;
 
-    public function __construct($wpdb, $group_key, $is_crew_form)
+	public function __construct(
+		$wpdb,
+		$group_key,
+		$is_crew_form,
+		$enable_group_category_selection = true
+	)
     {
         parent::__construct($wpdb, $is_crew_form);
-        $this->group_key = $group_key;
+	    $this->group_key                       = $group_key;
+	    $this->enable_group_category_selection = $enable_group_category_selection;
     }
 
     public function render(): String
@@ -85,35 +92,36 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $group_name_question = Question::text('Vad heter ert lag?', null, $group->name);
         $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors['name'], $read_only);
 
-	    $categories = $this->get_categories( $group->competition_id );
+	    if ( $this->enable_group_category_selection ) {
+		    $categories = $this->get_categories( $group->competition_id );
 
-	    $group_category = $this->get_group_category( $group );
+		    $group_category = $this->get_group_category( $group );
 
-	    $current_group_category_name = reset( array_filter( $categories, function ( $category ) use ( $group_category ) {
-		    return isset( $group_category ) && $group_category->id == $category->id;
-	    } ) )->name;
+		    $current_group_category_name = reset( array_filter( $categories, function ( $category ) use ( $group_category ) {
+			    return isset( $group_category ) && $group_category->id == $category->id;
+		    } ) )->name;
 
-	    $group_category_options = array_map( function ( $category ) {
-		    return $category->name;
-	    }, $categories );
+		    $group_category_options = array_map( function ( $category ) {
+			    return $category->name;
+		    }, $categories );
 
-	    switch ( count( $group_category_options ) ) {
-		    case 0:
-			    break;
-		    case 1:
-			    $html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
-			    break;
-		    default:
-			    $group_category_question = Question::dropdown(
-				    'Vilken klass tävlar ni i?',
-				    $group_category_options,
-				    'Välj den som de flesta av deltagarna tillhör.',
-				    $current_group_category_name
-			    );
-			    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only );
-			    break;
+		    switch ( count( $group_category_options ) ) {
+			    case 0:
+				    break;
+			    case 1:
+				    $html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
+				    break;
+			    default:
+				    $group_category_question = Question::dropdown(
+					    'Vilken klass tävlar ni i?',
+					    $group_category_options,
+					    'Välj den som de flesta av deltagarna tillhör.',
+					    $current_group_category_name
+				    );
+				    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only );
+				    break;
+		    }
 	    }
-
 
         $html_sections[] = sprintf('<h3>Deltagarna</h3>');
 
@@ -198,14 +206,16 @@ class EditGroupShortcode extends AbstractGroupShortcode
         $group_id = $group->id;
 
         $group->name = $_POST[self::FIELD_GROUP_NAME];
-        $selected_category = $_POST[self::FIELD_GROUP_AGE];
-        $categories = $this->get_categories($group->competition_id);
-        $found_category = array_filter($categories, function ($category) use ($selected_category) {
-            return $category->name == $selected_category;
-        });
-        if (count($found_category) == 1) {
-            $group->category_id = reset($found_category)->id;
-        }
+	    if ( $this->enable_group_category_selection ) {
+		    $selected_category = $_POST[self::FIELD_GROUP_AGE];
+		    $categories        = $this->get_categories($group->competition_id);
+		    $found_category    = array_filter($categories, function ($category) use ($selected_category) {
+			    return $category->name == $selected_category;
+		    });
+		    if ( count($found_category) == 1) {
+			    $group->category_id = reset($found_category)->id;
+		    }
+	    }
 
         try {
             $affected_rows = $this->group_dao->update($group);

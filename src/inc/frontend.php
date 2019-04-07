@@ -75,9 +75,15 @@ class Frontend extends Plugin {
 
 	public function edit_group_shortcode( $atts ) {
 		global $wp_query, $wpdb;
-		$group_id     = $wp_query->query_vars['group_id'];
-		$is_crew_form = $atts['is_crew_form'] === 'yes';
-		$component    = new EditGroupShortcode( $wpdb, $group_id, $is_crew_form );
+		$group_id                        = $wp_query->query_vars['group_id'];
+		$is_crew_form                    = $atts['is_crew_form'] === 'yes';
+		$enable_group_category_selection = $atts['enable_group_category_selection'] !== 'no'; // Enabled if omitted, disable with 'no'.
+
+		$component = new EditGroupShortcode(
+			$wpdb,
+			$group_id,
+			$is_crew_form,
+			$enable_group_category_selection );
 
 		return $component->render();
 	}
