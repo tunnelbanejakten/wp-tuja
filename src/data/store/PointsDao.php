@@ -59,8 +59,9 @@ class PointsDao extends AbstractDao
 			'' .
 			'SELECT p.* ' .
 			'FROM ' . $this->table . ' p ' .
-			'  INNER JOIN ' . Database::get_table( 'form_question' ) . ' q ON p.form_question_id = q.id ' .
-			'  INNER JOIN ' . Database::get_table( 'form' ) . ' f ON q.form_id = f.id ' .
+			'INNER JOIN ' . Database::get_table( 'form_question' ) . ' fq ON p.form_question_id = fq.id ' .
+			'INNER JOIN ' . Database::get_table( 'form_question_group' ) . ' fqg ON fq.question_group_id = fqg.id ' .
+			'INNER JOIN ' . Database::get_table( 'form' ) . ' f ON fqg.form_id = f.id ' .
 			'WHERE f.competition_id = %d',
 			$competition_id );
 	}
