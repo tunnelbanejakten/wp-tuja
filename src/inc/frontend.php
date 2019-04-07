@@ -84,10 +84,17 @@ class Frontend extends Plugin {
 
 	public function create_group_shortcode( $atts ) {
 		global $wpdb;
-		$competition_id     = $atts['competition'];
-		$edit_link_template = $atts['edit_link_template'];
-		$is_crew_form       = $atts['is_crew_form'] === 'yes';
-		$component          = new CreateGroupShortcode( $wpdb, $competition_id, $edit_link_template, $is_crew_form );
+		$competition_id                  = $atts['competition'];
+		$edit_link_template              = $atts['edit_link_template'];
+		$is_crew_form                    = $atts['is_crew_form'] === 'yes';
+		$enable_group_category_selection = $atts['enable_group_category_selection'] !== 'no'; // Enabled if omitted, disable with 'no'.
+
+		$component = new CreateGroupShortcode(
+			$wpdb,
+			$competition_id,
+			$edit_link_template,
+			$is_crew_form,
+			$enable_group_category_selection );
 
 		return $component->render();
 	}
