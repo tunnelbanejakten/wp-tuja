@@ -42,7 +42,8 @@ class AdminUtils
 			'Scoreboard'          => 'Poängställning',
 			'CompetitionSettings' => 'Inställningar',
 			'Review'              => 'Svar att rätta',
-			'Messages'            => 'Meddelanden'
+			'Messages'            => 'Meddelanden',
+			'Shortcodes'          => 'Shortcodes'
 		];
 
 		printf( '<nav class="tuja">%s</nav>',
