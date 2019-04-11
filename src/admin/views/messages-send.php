@@ -124,6 +124,13 @@ if ( ! empty( $action_result ) ) {
 	$variables        = $action_result['variables'];
 	$body_template    = $action_result['body_template'];
 	$subject_template = $action_result['subject_template'];
+	$warnings         = $action_result['warnings'];
+
+	if ( count( $warnings ) > 0 ) {
+		foreach ( $warnings as $warning ) {
+			AdminUtils::printError( $warning );
+		}
+	}
 
 	$variables_headers_html = join( array_map( function ( $variable ) {
 		return sprintf( '<td><strong>%s</strong></td>', $variable );
