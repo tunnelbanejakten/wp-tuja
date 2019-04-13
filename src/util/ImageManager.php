@@ -99,7 +99,7 @@ class ImageManager
 			$response_dao = new ResponseDao();
 
 			// Check lock. If lock is empty no answers has been sent so just proceed.
-			if($lock_res = $response_dao->get($group->id, 0, true)) {
+			if(($lock_res = $response_dao->get($group->id, 0, true)) && !empty($lock_res->created)) {
 				$lock_res = $lock_res->created->getTimestamp();
 				$lock = (int)$_POST['lock'];
 				if($lock === 0 || $lock_res !== $lock) {
