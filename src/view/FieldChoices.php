@@ -88,7 +88,7 @@ class FieldChoices extends Field
     {
         $selected_values = [];
         if ($this->is_multichoice) {
-            if (is_array($_POST[$field_name])) {
+            if (isset($_POST[$field_name]) && is_array($_POST[$field_name])) {
                 $selected_values = $_POST[$field_name];
             } elseif (is_array($this->value)) {
                 $selected_values = $this->value;
