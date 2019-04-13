@@ -46,10 +46,16 @@ class MessagesSend {
 			if ( isset( $group_selector ) && isset( $people_selector ) && isset( $delivery_method ) ) {
 				$selected_groups = array_filter( $groups, $group_selector['selector'] );
 
+				$warnings   = [];
 				$person_dao = new PersonDao();
 				$people     = [];
 				foreach ( $selected_groups as $selected_group ) {
 					$group_members = array_filter( $person_dao->get_all_in_group( $selected_group->id ), $people_selector['selector'] );
+					if ( count( $group_members ) == 0 ) {
+						$warnings[] = sprintf( 'Inga kontakter för %s', $selected_group->name );
+					} else if ( count( $group_members ) > 2 ) {
+						$warnings[] = sprintf( 'Fler än två kontakter för %s', $selected_group->name );
+					}
 					$people        = array_merge( $people, $group_members );
 				}
 
@@ -62,6 +68,7 @@ class MessagesSend {
 					'body_template'    => $body_template,
 					'subject_template' => $subject_template,
 					'variables'        => $variables,
+					'warnings'         => $warnings,
 					'recipients'       => array_map( function ( $person ) use ( $delivery_method, $variables, $groups, $subject_template, $body_template, $is_send ) {
 						$group               = reset( array_filter( $groups, function ( $grp ) use ( $person ) {
 							return $grp->id == $person->group_id;
@@ -181,15 +188,21 @@ class MessagesSend {
 
 		$people_selectors = array(
 			'all'              => array(
-				'label'    => 'Alla personer i valda grupper',
+				'label'    => 'Alla',
 				'selector' => function ( Person $person ) {
 					return true;
 				}
 			),
-			'primary_contacts' => array(
-				'label'    => 'Enbart valda gruppers primära kontaktpersoner',
+			'contacts' => array(
+				'label'    => 'Kontaktpersoner',
 				'selector' => function ( Person $person ) {
 					return $person->is_group_contact;
+				}
+			),
+			'contacts_and_non_competitors' => array(
+				'label'    => 'Kontaktpersoner och medföljare',
+				'selector' => function ( Person $person ) {
+					return $person->is_group_contact || ! $person->is_competing;
 				}
 			)
 		);
