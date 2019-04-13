@@ -46,22 +46,16 @@ class AdminUtils
 			'Shortcodes'          => 'Shortcodes'
 		];
 
-		printf( '<nav class="tuja">%s</nav>',
-			join( ' | ', array_map(
-				function ( $view, $label ) {
-					$is_view_selected = sanitize_text_field( $_GET['tuja_view'] ) === $view;
+		$menu = array();
+		foreach($menu_config as $view => $label) {
+			$is_view_selected = sanitize_text_field( $_GET['tuja_view'] ) === $view;
+			if($is_view_selected) {
+				$menu[] = sprintf( '<strong>%s</strong>', $label );
+			} else {
+				$menu[] = sprintf( '<a href="%s">%s</a>', add_query_arg( array('tuja_competition' => $competition->id, 'tuja_view' => $view ) ), $label );
+			}
+		}
 
-					return $is_view_selected
-						? sprintf( '<strong>%s</strong>', $label )
-						: sprintf( '<a href="%s">%s</a>',
-							add_query_arg( array(
-								'tuja_competition' => $_GET['tuja_competition'],
-								'tuja_view'        => $view
-							) ),
-							$label );
-				},
-				array_keys( $menu_config ),
-				array_values( $menu_config ) ) ) );
-
+		printf( '<nav class="tuja">%s</nav>', join( ' | ', $menu ) );
 	}
 }
