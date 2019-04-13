@@ -41,7 +41,8 @@ nav.tuja {
 .tuja-admin-question textarea,
 .tuja-admin-question select {
     display: block;
-    width: 100%;
+	width: 100%;
+	max-width: 70em;
 }
 
 .tuja-admin-question-preview {

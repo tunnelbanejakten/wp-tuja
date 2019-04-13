@@ -95,6 +95,20 @@ class QuestionDao extends AbstractDao
             $form_id);
     }
 
+    function get_all_in_group($group_id)
+    {
+		return $this->get_objects(
+			function ( $row ) {
+				return self::to_form_question( $row );
+			},
+			'
+                SELECT q.* 
+                FROM ' . $this->table . ' AS q 
+				WHERE q.question_group_id = %d
+                ORDER BY q.sort_order, q.id',
+            $group_id);
+    }
+
     function get_all_in_competition($competition_id)
     {
 		return $this->get_objects(

@@ -39,7 +39,7 @@ class QuestionGroupDao extends AbstractDao {
 		return $this->wpdb->query( $this->wpdb->prepare( $query_template, $id ) );
 	}
 
-	function update( Question $group ) {
+	function update( QuestionGroup $group ) {
 		$group->validate();
 
 		return $this->wpdb->update( $this->table,
@@ -56,7 +56,7 @@ class QuestionGroupDao extends AbstractDao {
     {
         return $this->get_object(
             function ($row) {
-                return self::to_form($row);
+                return self::to_question_group($row);
             },
             'SELECT * FROM ' . $this->table . ' WHERE id = %d',
             $id);

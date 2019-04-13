@@ -7,6 +7,7 @@ use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\ResponseDao;
+use tuja\data\store\QuestionGroupDao;
 use DateTime;
 use Exception;
 use tuja\data\model\Question;
@@ -28,6 +29,7 @@ class FormShortcode extends AbstractShortcode
 		$this->form_id      = $form_id;
 		$this->group_key    = $group_key;
 		$this->question_dao = new QuestionDao();
+		$this->question_group_dao = new QuestionGroupDao();
 		$this->group_dao    = new GroupDao();
 		$this->response_dao = new ResponseDao();
 		$this->form_dao     = new FormDao();
@@ -142,7 +144,9 @@ class FormShortcode extends AbstractShortcode
 			$message_success = null;
 			$message_error   = null;
 			$errors          = array();
-			if ( $_POST[ self::ACTION_FIELD_NAME ] == 'update' ) {
+			$is_update = isset($_POST[ self::ACTION_FIELD_NAME ]) && $_POST[ self::ACTION_FIELD_NAME ] === 'update';
+
+			if ($is_update) {
 				$errors = $this->update_answers( $group_id );
 				if ( empty( $errors ) ) {
 					$message_success = 'Era svar har sparats.';
@@ -155,31 +159,44 @@ class FormShortcode extends AbstractShortcode
 					$html_sections[] = sprintf( '<p class="tuja-message tuja-message-error">%s</p>', trim( $message_error ) );
 				}
 			}
-			// We do not want to present the previously inputted values in case the user changed from one group to another.
-			// The responses inputted for the previously selected group are not relevant anymore (they are, in fact, probably incorrect).
-			// Keep the previous form values if the user clicked "Update responses", not otherwise.
-			$ignore_previous_form_values = $_POST[ self::ACTION_FIELD_NAME ] != 'update';
 
 			$responses = $this->response_dao->get_latest_by_group( $group_id );
-			$questions = $this->question_dao->get_all_in_form( $this->form_id );
-
-			$html_sections[] = join( array_map( function ( $question ) use ( $responses, $errors, $ignore_previous_form_values, $is_read_only ) {
-				$question->latest_response = $responses[ $question->id ];
-				$field_name                = self::RESPONSE_FIELD_NAME_PREFIX . $question->id;
-				if ( $ignore_previous_form_values ) {
-					// Clear input field value from previous submission:
-					unset( $_POST[ $field_name ] );
+			$question_groups = $this->question_group_dao->get_all_in_form( $this->form_id );
+			
+			foreach($question_groups as $question_group) {
+				$current_group = '<section class="tuja-question-group">';
+				if($question_group->text) {
+					$current_group .= sprintf('<h2 class="tuja-question-group-title">%s</h2>', $question_group->text);
 				}
-				$field            = Field::create( $question );
-				$field->read_only = $is_read_only;
-				$html_field       = $field->render( $field_name );
 
-				return sprintf( '<div class="tuja-question %s" data-id="%d">%s%s</div>',
-					isset( $errors[ $field_name ] ) ? 'tuja-field-error' : '',
-					$question->id,
-					$html_field,
-					isset( $errors[ $field_name ] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors[ $field_name ] ) : '' );
-			}, $questions ) );
+				$questions = $this->question_dao->get_all_in_group($question_group->id);
+				foreach($questions as $question) {
+					$question->latest_response = isset($responses[ $question->id ]) ? $responses[ $question->id ] : null;
+					$field_name                = self::RESPONSE_FIELD_NAME_PREFIX . $question->id;
+
+					// We do not want to present the previously inputted values in case the user changed from one group to another.
+					// The responses inputted for the previously selected group are not relevant anymore (they are, in fact, probably incorrect).
+					// Keep the previous form values if the user clicked "Update responses", not otherwise.
+					if ( !$is_update ) {
+						// Clear input field value from previous submission:
+						unset( $_POST[ $field_name ] );
+					}
+					$field            = Field::create( $question );
+					$field->read_only = $is_read_only;
+					$html_field       = $field->render( $field_name );
+					
+					$current_group .= sprintf( '<div class="tuja-question %s" data-id="%d">%s%s</div>',
+						isset( $errors[ $field_name ] ) ? 'tuja-field-error' : '',
+						$question->id,
+						$html_field,
+						isset( $errors[ $field_name ] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors[ $field_name ] ) : ''
+					);
+				}
+
+				$current_group .= '</section>';
+				$html_sections[] = $current_group;
+			}
+
 			if ( ! $is_read_only ) {
 				$question_ids          = array_map( function ( $question ) {
 					return $question->id;
@@ -257,8 +274,8 @@ class FormShortcode extends AbstractShortcode
 		}, $responses ), $responses );
 
 		$current_optimistic_lock_value = array_reduce( $response_question_ids, function ( $carry, $response_question_id ) use ( $response_by_question ) {
-			$response = $response_by_question[ $response_question_id ];
-			if ( $response->created != null ) {
+			$response = isset($response_by_question[ $response_question_id ]) ? $response_by_question[ $response_question_id ] : null;
+			if ($response && !is_null($response->created) ) {
 				return max( $carry, $response->created->getTimestamp() );
 			}
 
