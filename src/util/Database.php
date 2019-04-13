@@ -100,7 +100,7 @@ class Database {
 				array(
 					'random_id'         => $id->random_string(),
 					'question_group_id' => $question_group_id,
-					// 'form_id'           => null
+					'form_id'           => null
 				),
 				array(
 					'id' => $result->id
