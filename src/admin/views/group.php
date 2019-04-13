@@ -115,7 +115,7 @@ AdminUtils::printTopMenu( $competition );
 			return sprintf( '<tr>' .
 			                '<td>%s</td>' .
 			                '<td>%s</td>' .
-			                '<td>%s</td>' .
+			                '<td>%.1f</td>' .
 			                '<td>%s</td>' .
 			                '<td>%s</td>' .
 			                '<td>%s</td>' .
@@ -123,7 +123,7 @@ AdminUtils::printTopMenu( $competition );
 			                '</tr>',
 				$person->name,
 				$person->pno,
-				! empty( $person->pno ) ? date_diff( date_create_from_format( 'Ymd', substr( $person->pno, 0, 8 ) ), date_create() )->y : '',
+				$person->age,
 				! $person->is_competing ? 'Ja' : '' ,
 				$person->is_group_contact ? 'Ja' : '',
 				$person->phone,
