@@ -15,7 +15,7 @@ class AdminUtils
 
 	public static function printError($message) {
 		printf('<div class="notice notice-error is-dismissable" style="margin-left: 2px"><p><strong>%s: </strong>%s</p></div>',
-            'Oj, något blev fel',
+            'Fel',
             $message);
 	}
 
