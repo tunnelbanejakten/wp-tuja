@@ -52,6 +52,16 @@ class QuestionGroupDao extends AbstractDao {
 			) );
 	}
 
+	function get($id)
+    {
+        return $this->get_object(
+            function ($row) {
+                return self::to_form($row);
+            },
+            'SELECT * FROM ' . $this->table . ' WHERE id = %d',
+            $id);
+    }
+
 	function get_all_in_form( $form_id ) {
 		return $this->get_objects(
 			function ( $row ) {

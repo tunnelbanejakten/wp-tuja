@@ -52,15 +52,23 @@ class Question
 	 */
 	const GRADING_TYPE_ALL_OF = "all_of";
 
+	const QUESTION_TYPE_TEXT = 'text';
+	const QUESTION_TYPE_NUMBER = 'number';
+	const QUESTION_TYPE_HEADER = 'header';
+	const QUESTION_TYPE_PICK_ONE = 'pick_one';
+	const QUESTION_TYPE_PICK_MULTI = 'pick_multi';
+	const QUESTION_TYPE_IMAGES = 'images';
+	const QUESTION_TYPE_TEXT_MULTI = 'text_multi';
+
 	const VALID_TYPES = [
-		'text',
-		'number',
-		'header',
-		'pick_one',
-		'pick_multi',
-		'images',
-		'text_multi'
-	]; // TODO: Use constants.
+		self::QUESTION_TYPE_TEXT,
+		self::QUESTION_TYPE_NUMBER,
+		self::QUESTION_TYPE_HEADER,
+		self::QUESTION_TYPE_PICK_ONE,
+		self::QUESTION_TYPE_PICK_MULTI,
+		self::QUESTION_TYPE_IMAGES,
+		self::QUESTION_TYPE_TEXT_MULTI
+	];
 
     const SCORING_METHODS = [
         self::GRADING_TYPE_ALL_OF,
@@ -163,7 +171,7 @@ class Question
     public static function dropdown($text, $options, $hint = null, $answer = null): Question
     {
         $question = new Question();
-        $question->type = 'pick_one';
+        $question->type = self::QUESTION_TYPE_PICK_ONE;
         $question->text = $text;
         $question->text_hint = $hint;
         $question->possible_answers = $options;
@@ -174,7 +182,7 @@ class Question
     public static function checkboxes($text, $options, $hint = null, $answer = null): Question
     {
         $question = new Question();
-        $question->type = 'pick_multi';
+        $question->type = self::QUESTION_TYPE_PICK_MULTI;
         $question->text = $text;
         $question->text_hint = $hint;
         $question->possible_answers = $options;

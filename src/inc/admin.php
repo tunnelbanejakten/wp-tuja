@@ -3,12 +3,6 @@
 namespace tuja;
 
 use tuja\data\store\CompetitionDao;
-use tuja\data\store\FormDao;
-use tuja\data\store\GroupDao;
-use tuja\data\store\QuestionDao;
-use tuja\data\store\ResponseDao;
-use tuja\data\store\PointsDao;
-use tuja\data\store\MessageDao;
 use tuja\data\model\Competition;
 
 class Admin extends Plugin {
@@ -51,7 +45,6 @@ class Admin extends Plugin {
 			$view = 'tuja\admin\\' . sanitize_text_field( $_GET['tuja_view'] );
 			if ( class_exists( $view ) ) {
 				$view = new $view();
-
 
 				if ( method_exists( $view, 'output' ) ) {
 					$view->output();

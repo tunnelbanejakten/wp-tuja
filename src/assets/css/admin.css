@@ -1,3 +1,7 @@
+.toplevel_page_tuja #wpcontent {
+	padding: 0 20px;
+}
+
 .tuja ol,
 .tuja ul {
     padding: 0 0 0 1em;
@@ -59,6 +63,10 @@ nav.tuja {
 .tuja-admin-question-properties {
     display: flex;
     flex-wrap: wrap;
+}
+
+.tuja-admin-question-properties textarea {
+	margin-bottom: 5px;
 }
 
 .tuja-admin-question-property {

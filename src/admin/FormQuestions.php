@@ -12,7 +12,7 @@ use tuja\data\store\QuestionGroupDao;
 use tuja\util\DateUtils;
 use tuja\data\store\CompetitionDao;
 
-class Form {
+class FormQuestions {
 	const FORM_FIELD_NAME_PREFIX = 'tuja-question';
 	const ACTION_NAME_DELETE_PREFIX = 'question_delete__';
 
@@ -25,7 +25,9 @@ class Form {
 		$this->db_form           = new FormDao();
 		$this->db_question       = new QuestionDao();
 		$this->db_question_group = new QuestionGroupDao();
-		$this->form              = $this->db_form->get( $_GET['tuja_form'] );
+
+		$this->question_group    = $this->db_question_group->get($_GET['tuja_question_group']);
+		$this->form              = $this->db_form->get( $this->question_group->form_id );
 
 		if(!$this->form) {
 			print 'Could not find form';
