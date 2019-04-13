@@ -7,6 +7,7 @@ use tuja\data\model\Form;
 use tuja\data\model\Group;
 use tuja\data\store\GroupCategoryDao;
 use tuja\util\GroupCategoryCalculator;
+use tuja\util\rules\RegistrationEvaluator;
 use tuja\util\score\ScoreCalculator;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
@@ -88,6 +89,8 @@ class Groups {
 		$group_categories = $db_group_categories->get_all_in_competition( $competition->id );
 
 		$category_calculator = new GroupCategoryCalculator( $competition->id );
+
+		$registration_evaluator  = new RegistrationEvaluator();
 
 		include( 'views/groups.php' );
 	}
