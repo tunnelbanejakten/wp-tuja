@@ -15,7 +15,7 @@ class FieldText extends Field
     public function render($field_name)
     {
         $render_id = $field_name ?: uniqid();
-        $hint = isset($this->hint) ? sprintf('<br><span class="tuja-question-hint">%s</span>', $this->hint) : '';
+        $hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';
 
 	    $value = isset( $_POST[ $field_name ] )
 		    ? $_POST[ $field_name ]

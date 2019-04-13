@@ -14,7 +14,7 @@ class FieldPno extends Field
     public function render($field_name)
     {
         $render_id = $field_name ?: uniqid();
-        $hint = isset($this->hint) ? sprintf('<br><span class="tuja-question-hint">%s</span>', $this->hint) : '';
+        $hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';
 
 	    $field_slug = strtolower( ( new ReflectionClass( $this ) )->getShortName() );
 	    $html_date  = sprintf( '<input type="text" id="%s" name="%s_date" value="%s" class="tuja-%s tuja-%s-date" %s placeholder="ååmmdd"/>',
