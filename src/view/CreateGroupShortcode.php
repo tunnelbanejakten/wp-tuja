@@ -16,12 +16,20 @@ class CreateGroupShortcode extends AbstractGroupShortcode
 
     private $competition_id;
     private $edit_link_template;
+	private $enable_group_category_selection;
 
-    public function __construct($wpdb, $competition_id, $edit_link_template, $is_crew_form)
+	public function __construct(
+		$wpdb,
+		$competition_id,
+		$edit_link_template,
+		$is_crew_form,
+		$enable_group_category_selection = true
+	)
     {
         parent::__construct($wpdb, $is_crew_form);
-        $this->competition_id = $competition_id;
-        $this->edit_link_template = $edit_link_template;
+	    $this->competition_id                  = $competition_id;
+	    $this->edit_link_template              = $edit_link_template;
+	    $this->enable_group_category_selection = $enable_group_category_selection;
     }
 
     public function render(): String
@@ -69,26 +77,28 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         $group_name_question = Question::text('Vad heter ert lag?');
         $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors[self::FIELD_GROUP_NAME]);
 
-        $categories = $this->get_categories($this->competition_id);
+	    if ( $this->enable_group_category_selection ) {
+		    $categories = $this->get_categories( $this->competition_id );
 
-        $group_category_options = array_map(function ($category) {
-            return $category->name;
-        }, $categories);
+		    $group_category_options = array_map( function ( $category ) {
+			    return $category->name;
+		    }, $categories );
 
-	    switch ( count( $group_category_options ) ) {
-		    case 0:
-			    break;
-		    case 1:
-			    $html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
-			    break;
-		    default:
-			    $group_category_question = Question::dropdown(
-				    'Vilken klass tävlar ni i?',
-				    $group_category_options,
-				    'Välj den som de flesta av deltagarna tillhör.'
-			    );
-			    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors[ self::FIELD_GROUP_AGE ] );
-			    break;
+		    switch ( count( $group_category_options ) ) {
+			    case 0:
+				    break;
+			    case 1:
+				    $html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
+				    break;
+			    default:
+				    $group_category_question = Question::dropdown(
+					    'Vilken klass tävlar ni i?',
+					    $group_category_options,
+					    'Välj den som de flesta av deltagarna tillhör.'
+				    );
+				    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors[ self::FIELD_GROUP_AGE ] );
+				    break;
+		    }
 	    }
 
         $person_name_question = Question::text('Vad heter du?');
@@ -117,15 +127,17 @@ class CreateGroupShortcode extends AbstractGroupShortcode
         $new_group->name = $_POST[self::FIELD_GROUP_NAME];
         $new_group->competition_id = $this->competition_id;
 
-        // TODO: DRY... Very similar code in EditGroupShortcode.php
-        $selected_category = $_POST[self::FIELD_GROUP_AGE];
-        $categories = $this->get_categories($this->competition_id);
-        $found_category = array_filter($categories, function ($category) use ($selected_category) {
-            return $category->name == $selected_category;
-        });
-        if (count($found_category) == 1) {
-            $new_group->category_id = reset($found_category)->id;
-        }
+	    if ( $this->enable_group_category_selection ) {
+		    // TODO: DRY... Very similar code in EditGroupShortcode.php
+		    $selected_category = $_POST[ self::FIELD_GROUP_AGE ];
+		    $categories        = $this->get_categories( $this->competition_id );
+		    $found_category    = array_filter( $categories, function ( $category ) use ( $selected_category ) {
+			    return $category->name == $selected_category;
+		    } );
+		    if ( count( $found_category ) == 1 ) {
+			    $new_group->category_id = reset( $found_category )->id;
+		    }
+	    }
 
         try {
             $new_group->validate();
