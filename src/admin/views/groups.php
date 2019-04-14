@@ -1,5 +1,7 @@
 <?php namespace tuja\admin;
 
+use tuja\data\model\GroupCategory;
+use tuja\util\rules\RuleResult;
 use tuja\data\store\GroupCategoryDao;
 
 AdminUtils::printTopMenu( $competition );
@@ -9,10 +11,11 @@ AdminUtils::printTopMenu( $competition );
     <table>
         <thead>
         <tr>
-            <th rowspan="2">Namn</th>
-            <th rowspan="2">Ålder</th>
-            <th colspan="2">Tävlingsklass</th>
-            <th colspan="3">Antal</th>
+            <th rowspan="2" valign="top">Namn</th>
+            <th rowspan="2" valign="top">Ålder</th>
+            <th colspan="2" valign="top">Tävlingsklass</th>
+            <th colspan="3" valign="top">Antal</th>
+            <th rowspan="2" valign="top">Anmälningsstatus</th>
         </tr>
         <tr>
             <td>Vald</td>
@@ -24,47 +27,68 @@ AdminUtils::printTopMenu( $competition );
         </thead>
         <tbody>
 		<?php
-		foreach ( $groups as $group ) {
-			$group_url = add_query_arg( array(
-				'tuja_group' => $group->id,
-				'tuja_view'  => 'Group'
-			) );
-			$category  = $category_calculator->get_category( $group );
-			printf( '<tr>' .
-			        '<td><a href="%s">%s</a></td>' .
-			        '<td>%.1f (%.1f-%.1f) år</td>' .
-			        '<td>%s</td>' .
-			        '<td>%s</td>' .
-			        '<td>%d st</td>' .
-			        '<td>%d st</td>' .
-			        '<td>%d st</td>' .
-			        '</tr>',
-				$group_url,
+		foreach ( $groups_data as $group_data ) {
+			$group = $group_data['model'];
+
+			print '<tr>';
+
+			// Print name and age range
+			printf( '<td><a href="%s">%s</a></td>' .
+			        '<td>%.1f (%.1f-%.1f) år</td>',
+				$group_data['details_link'],
 				htmlspecialchars( $group->name ),
 				$group->age_competing_avg,
 				$group->age_competing_min,
-				$group->age_competing_max,
-				sprintf( '    <select name="tuja_group__%d__category">%s</select>',
-					$group->id,
-					join( '',
-						array_merge(
-							[ '<option value="0">Systemet väljer</option>' ],
-							array_map( function ( $category ) use ( $group ) {
-								return sprintf( '<option value="%d" %s>%s (%s)</option>',
-									$category->id,
-									$category->id === $_POST[ 'tuja_group_type__' . $group->id ] || $category->id === $group->category_id ? 'selected="selected"' : '',
-									$category->name,
-									$category->is_crew ? 'Funktionär' : 'Tävlande' );
-							}, $group_categories ) ) ) ),
-				$category ? $category->name : '',
+				$group->age_competing_max
+			);
+
+			// Print group category selector
+			$category_options = [];
+			foreach ( $group_category_map as $id => $label ) {
+				$category_options[] = sprintf( '<option value="%d" %s>%s</option>',
+					$id,
+					$id === $_POST[ 'tuja_group_type__' . $id ] || $id == $group->category_id ? 'selected="selected"' : '',
+					$label );
+			}
+			printf( '<td><select name="tuja_group__%d__category"><option value="0">Systemet väljer</option>%s</select></td>' .
+			        '<td>%s</td>',
+				$group->id,
+				join( '', $category_options ),
+				$group_data['category'] ? $group_data['category']->name : ''
+			);
+
+			// Print summary of group members
+			printf( '<td>%d st</td>' .
+			        '<td>%d st</td>' .
+			        '<td>%d st</td>',
 				$group->count_competing,
 				$group->count_follower,
 				$group->count_team_contact
 			);
+
+			// Print summary sign-up status
+			printf( '<td>%s %s %s</td>',
+				$group_data['registration_blocker_count'] > 0 ?
+					sprintf(
+						'<span class="tuja-admin-review-autoscore tuja-admin-review-autoscore-poor">%s problem</span>',
+						$group_data['registration_blocker_count'] )
+					: '',
+				$group_data['registration_warning_count'] > 0 ?
+					sprintf(
+						'<span class="tuja-admin-review-autoscore tuja-admin-review-autoscore-decent">%s varningar</span>',
+						$group_data['registration_warning_count'] ) :
+					'',
+				$group_data['registration_blocker_count'] == 0 && $group_data['registration_warning_count'] == 0 ?
+					sprintf( '<span class="tuja-admin-review-autoscore tuja-admin-review-autoscore-good">Komplett och korrekt</span>' ) :
+					''
+			);
+
+			print '</tr>';
 		}
 		?>
         </tbody>
     </table>
+
     <div class="tuja-buttons">
         <button type="submit" class="button" name="tuja_action" value="group_update">Uppdatera</button>
     </div>
@@ -72,16 +96,33 @@ AdminUtils::printTopMenu( $competition );
     <input type="text" name="tuja_new_group_name"/>
     <select name="tuja_new_group_type">
 		<?php
-		$category_dao = new GroupCategoryDao();
-		print join( '', array_map( function ( $category ) {
-			return sprintf( '<option value="%d">%s (%s)</option>',
-				$category->id,
-				$category->name,
-				$category->is_crew ? 'Funktionär' : 'Tävlande' );
-		}, $category_dao->get_all_in_competition( $competition->id ) ) );
+		foreach ( $group_category_map as $id => $label ) {
+			printf( '<option value="%d">%s</option>', $id, $label );
+		}
 		?>
     </select>
     <div class="tuja-buttons">
         <button type="submit" class="button" name="tuja_action" value="group_create">Skapa</button>
     </div>
 </form>
+
+<h3>Statistik</h3>
+
+<table>
+    <tbody>
+    <tr>
+        <td>Antal tävlande personer:</td>
+        <td><?= $people_competing ?> st</td>
+    </tr>
+    <tr>
+        <td>Antal tävlande lag:</td>
+        <td><?= $groups_competing ?> st</td>
+    </tr>
+	<?php foreach ( $groups_per_category as $name => $count ) { ?>
+        <tr>
+            <td style="padding-left: 2em">varav i kategori <?= $name ?>:</td>
+            <td><?= $count ?> st</td>
+        </tr>
+	<?php } ?>
+    </tbody>
+</table>
