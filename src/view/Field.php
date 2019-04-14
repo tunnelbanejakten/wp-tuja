@@ -22,7 +22,7 @@ class Field
 
     public function get_posted_answer($form_field)
     {
-        return $_POST[$form_field];
+        return @$_POST[$form_field];
     }
 
     static function create(Question $question)

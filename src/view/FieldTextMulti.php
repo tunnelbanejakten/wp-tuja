@@ -65,7 +65,7 @@ class FieldTextMulti extends Field {
 				htmlspecialchars( $value ),
 				$name,
 				$index,
-				htmlspecialchars( $_POST[ $name ][ $index ] ?: $this->value[ $index ] ),
+				htmlspecialchars( @$_POST[ $name ][ $index ] ?: $this->value[ $index ] ),
 				strtolower( ( new \ReflectionClass( $this ) )->getShortName() ),
 				strtolower( ( new \ReflectionClass( $this ) )->getShortName() ),
 				$id,

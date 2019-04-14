@@ -198,12 +198,11 @@ class FormShortcode extends AbstractShortcode
 			}
 
 			if ( ! $is_read_only ) {
-				$question_ids          = array_map( function ( $question ) {
+				$questions = $this->question_dao->get_all_in_form($question_group->form_id);
+				$question_ids = array_map( function ( $question ) {
 					return $question->id;
 				}, $questions );
-				$optimistic_lock_value = $this->get_optimistic_lock_value(
-					$group_id,
-					$question_ids );
+				$optimistic_lock_value = $this->get_optimistic_lock_value($group_id, (array)$question_ids);
 
 				$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::OPTIMISTIC_LOCK_FIELD_NAME, $optimistic_lock_value );
 				$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', 'group', $group_key );
