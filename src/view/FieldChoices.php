@@ -31,7 +31,7 @@ class FieldChoices extends Field
     public function render($field_name)
     {
         $render_id = $field_name ?: uniqid();
-        $hint = isset($this->hint) ? sprintf('<br><span class="tuja-question-hint">%s</span>', $this->hint) : '';
+        $hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';
         return sprintf('<div class="tuja-field"><label for="%s">%s%s</label>%s</div>',
             $render_id,
             $this->label,
@@ -88,7 +88,7 @@ class FieldChoices extends Field
     {
         $selected_values = [];
         if ($this->is_multichoice) {
-            if (is_array($_POST[$field_name])) {
+            if (isset($_POST[$field_name]) && is_array($_POST[$field_name])) {
                 $selected_values = $_POST[$field_name];
             } elseif (is_array($this->value)) {
                 $selected_values = $this->value;

@@ -92,8 +92,9 @@ class ResponseDao extends AbstractDao
 			'SELECT r.* ' .
 			'FROM ' . $this->table . ' r ' .
 			'INNER JOIN ' . Database::get_table( 'form_question' ) . ' fq ON r.form_question_id = fq.id ' .
-			'INNER JOIN ' . Database::get_table( 'form' ) . ' f ON (fq.form_id = f.id AND f.competition_id = %d) ' .
-			'ORDER BY r.id',
+			'INNER JOIN ' . Database::get_table( 'form_question_group' ) . ' fqg ON fq.question_group_id = fqg.id ' .
+			'INNER JOIN ' . Database::get_table( 'form' ) . ' f ON fqg.form_id = f.id ' .
+			'WHERE f.competition_id = %d',
 			$competition_id );
 
 		$latest_responses = [];

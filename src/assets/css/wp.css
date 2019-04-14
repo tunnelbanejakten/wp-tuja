@@ -30,6 +30,11 @@
 	margin-bottom: 5px;
 }
 
+.tuja-question-group .tuja-question-group-title {
+	font-size: 1.25em;
+	padding: 10px 0;
+}
+
 .tuja-field > label {
     display: block;
 	margin: 0 0 5px 0;
@@ -40,7 +45,9 @@
 .tuja-question-hint {
     font-size: 80%;
     font-weight: normal;
-    color: #666;
+	color: #666;
+	display: block;
+	line-height: 1.5em;
 }
 
 .tuja-item-buttons {
@@ -142,6 +149,10 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 	margin: 0;
 }
 
+.tuja-image .dropzone .dz-preview {
+	margin: 5px;
+}
+
 .tuja-image .dz-preview ~ label,
 .tuja-image .dz-preview ~ p,
 .tuja-image .dropzone .dz-preview .dz-details {
@@ -182,4 +193,14 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 
 .tuja-person-template {
     display: none;
+}
+
+@media (max-width: 768px) {
+	.tuja-fieldimages .tuja-image {
+		flex-direction: column;
+	}
+
+	.tuja-fieldimages .tuja-image > div {
+		margin-bottom: 10px;
+	}
 }

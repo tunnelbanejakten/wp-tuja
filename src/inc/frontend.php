@@ -47,7 +47,7 @@ class Frontend extends Plugin {
 	public function form_shortcode( $atts ) {
 		global $wp_query, $wpdb;
 		$form_id     = $atts['form'];
-		$is_readonly = in_array( strtolower( $atts['readonly'] ), [ 'yes', 'true' ] );
+		$is_readonly = isset($atts['readonly']) && in_array( strtolower( $atts['readonly'] ), [ 'yes', 'true' ] );
 		$group_id    = $wp_query->query_vars['group_id'];
 		$component   = $is_readonly ?
 			new FormReadonlyShortcode( $wpdb, $form_id, $group_id ) :

@@ -2,13 +2,14 @@
 
 namespace tuja\util;
 
+use Exception;
 use tuja\Plugin;
 
 class Database {
-	
+
 	static public function get_table($name) {
 		global $wpdb;
-			
+
 		return $wpdb->prefix . Plugin::TABLE_PREFIX . $name;
 	}
 
@@ -30,7 +31,7 @@ class Database {
 			$error = $wpdb->last_error;
 
 			if ( $error ) {
-				throw new \Exception( "Unable to create foreign key $table.$key. $error" );
+				throw new Exception( "Unable to create foreign key $table.$key. $error" );
 			}
 		}
 
@@ -67,5 +68,47 @@ class Database {
 	static public function rollback() {
 		global $wpdb;
 		$wpdb->query('ROLLBACK');
+	}
+
+	public static function fix_questions_not_in_group() {
+		global $wpdb;
+		$id = new Id();
+
+		$query = 'SELECT id, form_id, sort_order FROM ' . self::get_table( 'form_question' ) . ' WHERE question_group_id IS NULL';
+
+		$db_results = $wpdb->get_results( $wpdb->prepare( $query, [] ), OBJECT );
+		foreach ( $db_results as $result ) {
+
+			$affected_rows = $wpdb->insert( self::get_table( 'form_question_group' ),
+				array(
+					'random_id'  => $id->random_string(),
+					'form_id'    => $result->form_id,
+					'sort_order' => $result->sort_order
+				),
+				array(
+					'%s',
+					'%d',
+					'%d'
+				) );
+
+			$question_group_id = $wpdb->insert_id;
+			if ( $affected_rows === false || $affected_rows !== 1 || ! is_numeric( $question_group_id ) ) {
+				throw new Exception( 'Could not create question group for question ' . $result->id );
+			}
+
+			$affected_rows = $wpdb->update( self::get_table( 'form_question' ),
+				array(
+					'random_id'         => $id->random_string(),
+					'question_group_id' => $question_group_id,
+					'form_id'           => null
+				),
+				array(
+					'id' => $result->id
+				) );
+
+			if ( $affected_rows === false || $affected_rows !== 1 ) {
+				throw new Exception( 'Could not update question ' . $result->id );
+			}
+		}
 	}
 }
