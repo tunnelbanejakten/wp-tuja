@@ -5,9 +5,11 @@ namespace tuja\admin;
 use Exception;
 use tuja\data\model\Form;
 use tuja\data\model\Group;
+use tuja\data\model\GroupCategory;
 use tuja\data\store\GroupCategoryDao;
 use tuja\util\GroupCategoryCalculator;
 use tuja\util\rules\RegistrationEvaluator;
+use tuja\util\rules\RuleResult;
 use tuja\util\score\ScoreCalculator;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
@@ -85,13 +87,65 @@ class Groups {
 
 		$competition = $this->competition;
 
-		$groups           = $db_groups->get_all_in_competition( $competition->id );
-		$group_categories = $db_group_categories->get_all_in_competition( $competition->id );
+		$groups_per_category = [];
+		$groups_competing    = 0;
+		$people_competing    = 0;
 
-		$category_calculator = new GroupCategoryCalculator( $competition->id );
+		$category_unknown          = new GroupCategory();
+		$category_unknown->name    = 'okänd';
+		$category_unknown->is_crew = false;
 
-		$registration_evaluator  = new RegistrationEvaluator();
+		$category_calculator    = new GroupCategoryCalculator( $competition->id );
+		$registration_evaluator = new RegistrationEvaluator();
+
+		$groups_data = [];
+		$groups      = $db_groups->get_all_in_competition( $competition->id );
+
+		foreach ( $groups as $group ) {
+			$group_data          = [];
+			$group_data['model'] = $group;
+
+			$registration_evaluation = $registration_evaluator->evaluate( $group );
+
+			$group_data['registration_warning_count'] = count( array_filter( $registration_evaluation, function ( RuleResult $res ) {
+				return $res->status === RuleResult::WARNING;
+			} ) );
+
+			$group_data['registration_blocker_count'] = count( array_filter( $registration_evaluation, function ( RuleResult $res ) {
+				return $res->status === RuleResult::BLOCKER;
+			} ) );
+
+			$group_data['details_link'] = add_query_arg( array(
+				'tuja_group' => $group->id,
+				'tuja_view'  => 'Group'
+			) );
+			$group_data['category']     = $category_calculator->get_category( $group ) ?: $category_unknown;
+
+			if ( ! $group_data['category']->is_crew ) {
+				$groups_competing                                     += 1;
+				$people_competing                                     += $group->count_competing;
+				$groups_per_category[ $group_data['category']->name ] += 1;
+			}
+
+			$groups_data[] = $group_data;
+		}
+
+		$group_categories   = $db_group_categories->get_all_in_competition( $competition->id );
+		$group_category_map = $this->categories_by_id( $group_categories );
 
 		include( 'views/groups.php' );
+	}
+
+	private function categories_by_id( array $group_categories ) {
+		return array_combine(
+			array_map( function ( GroupCategory $category ) {
+				return $category->id;
+			}, $group_categories ),
+			array_map( function ( GroupCategory $category ) {
+				return sprintf( '%s (%s)',
+					$category->name,
+					$category->is_crew ? 'Funktionär' : 'Tävlande' );
+			}, $group_categories )
+		);
 	}
 }
