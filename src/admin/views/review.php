@@ -62,8 +62,9 @@ AdminUtils::printTopMenu( $competition );
                             if (is_array($response->answers) && $question->type == 'images') {
                                 $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
                                 // For each user-provided answer, render the photo description and a photo thumbnail:
-                                $response->answers = array_map(function ($answer) use ($field) {
-                                    return $field->render_admin_preview($answer);
+	                            $group_key = $groups_map[ $response->group_id ]->random_id;
+                                $response->answers = array_map(function ($answer) use ($field, $group_key) {
+                                    return $field->render_admin_preview($answer, $group_key);
                                 }, $response->answers);
                             }
 

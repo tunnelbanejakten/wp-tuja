@@ -6,6 +6,7 @@ use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\MessageDao;
 use tuja\data\store\PersonDao;
+use tuja\data\store\QuestionGroupDao;
 use tuja\util\rules\RegistrationEvaluator;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\PointsDao;
@@ -60,18 +61,24 @@ class Group {
 
 		$competition     = $this->competition;
 
-		$db_form     = new FormDao();
-		$forms       = $db_form->get_all_in_competition( $competition->id );
-		$db_question = new QuestionDao();
-		$db_response = new ResponseDao();
-		$db_groups   = new GroupDao();
-		$db_points   = new PointsDao();
-		$db_message  = new MessageDao();
+		$db_form           = new FormDao();
+		$forms             = $db_form->get_all_in_competition( $competition->id );
+		$db_question       = new QuestionDao();
+		$db_question_group = new QuestionGroupDao();
+		$db_response       = new ResponseDao();
+		$db_groups         = new GroupDao();
+		$db_points         = new PointsDao();
+		$db_message        = new MessageDao();
 
-		$score_calculator                    = new ScoreCalculator( $competition->id, $db_question, $db_response, $db_groups, $db_points );
 		$group                               = $this->group;
+
+		$score_calculator                    = new ScoreCalculator( $competition->id, $db_question, $db_question_group, $db_response, $db_groups, $db_points );
+		// TODO: Return ScoreResult with all data from score() instead of having two different methods with different arguments.
 		$calculated_scores_final             = $score_calculator->score_per_question( $group->id );
 		$calculated_scores_without_overrides = $score_calculator->score_per_question( $group->id, false );
+		$questions_score                     = $score_calculator->score( $group->id, false );
+		$final_score                         = $score_calculator->score( $group->id, true );
+
 		$responses                           = $db_response->get_latest_by_group( $group->id );
 		$response_per_question               = array_combine( array_map( function ( $response ) {
 			return $response->form_question_id;

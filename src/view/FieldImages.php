@@ -3,17 +3,18 @@
 namespace tuja\view;
 
 
+use tuja\util\ImageManager;
+
 class FieldImages extends Field
 {
 	const SHORT_LIST_LIMIT = 5;
 
-	public function get_posted_answer($form_field)
-	{
+	public function get_posted_answer($form_field) {
 		$answer = array();
 		if (isset($_POST[$form_field])) {
-			$data = sanitize_post($_POST[$form_field]);
+			$data   = sanitize_post($_POST[$form_field]);
 			$answer = array(
-				'images' => $data['images'],
+				'images'  => $data['images'],
 				'comment' => $data['comment']
 			);
 			$answer = json_encode($answer);
@@ -22,19 +23,27 @@ class FieldImages extends Field
 		return array($answer);
 	}
 
-	public function render_admin_preview($answer)
-	{
+	// TODO: Move to AdminUtils.
+	public function render_admin_preview( $answer, $group_key = null ) {
 		$answer = json_decode($answer, true);
 		if (empty($answer['images'])) {
 			return '';
 		}
-		return '<div class="tuja-image tuja-image-existing">Under konstruktion</div>';
+
+		$image_manager = new ImageManager();
+
+		return join( array_map( function ( $image_id ) use ( $image_manager, $group_key ) {
+			$resized_image_url = $image_manager->get_resized_image_url( $image_id, 200 * 200, $group_key );
+
+			// TODO: Show fullsize image in modal popup when clicking image (see https://codex.wordpress.org/ThickBox)
+			return $resized_image_url ? sprintf( '<img src="%s">', $resized_image_url ) : 'Kan inte visa bild.';
+		}, $answer['images'] ) );
 	}
 
 
-	public function render($field_name)
-	{
+	public function render($field_name) {
 		$hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';
+
 		return sprintf(
 			'<div class="tuja-field tuja-%s"><label>%s%s</label>%s</div>',
 			strtolower((new \ReflectionClass($this))->getShortName()),
@@ -45,8 +54,7 @@ class FieldImages extends Field
 	}
 
 
-	private function render_comment_field($field_name, $comment)
-	{
+	private function render_comment_field($field_name, $comment) {
 		ob_start();
 		echo '<label for="' . $field_name . '-comment' . '">Kommentar</label>';
 		printf(
@@ -60,8 +68,7 @@ class FieldImages extends Field
 		return ob_get_clean();
 	}
 
-	private function render_image_upload($field_name)
-	{
+	private function render_image_upload($field_name) {
 		wp_enqueue_script('tuja-dropzone');
 		wp_enqueue_script('tuja-upload-script');
 
@@ -81,14 +88,14 @@ class FieldImages extends Field
 
 		ob_start();
 		?>
-		<div class="tuja-image" id="<?php echo $field_name; ?>">
-			<div class="tuja-image-select dropzone"></div>
+        <div class="tuja-image" id="<?php echo $field_name; ?>">
+            <div class="tuja-image-select dropzone"></div>
 			<?php echo implode('', $images); ?>
-			<div class="tuja-image-options">
+            <div class="tuja-image-options">
 				<?php echo $this->render_comment_field($field_name, isset($answer) ? $answer['comment'] : ''); ?>
-				<button type="button" class="clear-image-field">Rensa bilder</button>
-			</div>
-		</div>
+                <button type="button" class="clear-image-field">Rensa bilder</button>
+            </div>
+        </div>
 		<?php
 
 		return ob_get_clean();

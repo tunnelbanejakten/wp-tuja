@@ -30,7 +30,14 @@ AdminUtils::printTopMenu( $competition );
 	?>
 
     <h3>Svar och poäng</h3>
-    <p><strong>Totalt <?= array_sum($calculated_scores_final) ?> poäng.</strong></p>
+    <p>
+        <strong>Totalt <?= $final_score ?> poäng.</strong>
+		<?php
+		if ( $questions_score != $final_score ) {
+			printf( '%d poäng har dragits av pga. att maximal poäng uppnåtts på vissa frågegrupper.', $questions_score - $final_score );
+		}
+		?>
+    </p>
 
     <table class="tuja-admin-review">
         <thead>
@@ -64,11 +71,13 @@ AdminUtils::printTopMenu( $competition );
                     ? $points_overrides_per_question[$question->id]->points
                     : '';
 
+                // TODO: Rewrite is a hack for getting HTML into $response->answers
                 if (is_array($response->answers) && $question->type == 'images') {
                     $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
                     // For each user-provided answer, render the photo description and a photo thumbnail:
-                    $response->answers = array_map(function ($answer) use ($field) {
-                        return $field->render_admin_preview($answer);
+	                $group_key         = $group->random_id;
+	                $response->answers = array_map( function ( $answer ) use ( $field, $group_key ) {
+		                return $field->render_admin_preview( $answer, $group_key );
                     }, $response->answers);
                 }
 

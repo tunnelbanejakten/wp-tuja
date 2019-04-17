@@ -50,14 +50,17 @@ class ImageManager
         }
     }
 
-    public function get_resized_image_url($file_id, $pixels)
+	public function get_resized_image_url( $file_id, $pixels, $group_key = null )
     {
-        $dst_filename = "$file_id-$pixels.jpg";
-        $dst_path = $this->directory . $dst_filename;
+	    list ( $file_id, $ext ) = explode( '.', $file_id );
+	    $dst_filename  = "$file_id-$pixels.$ext";
+	    $sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
+	    $dst_path      = $this->directory . $sub_directory . $dst_filename;
         if (file_exists($dst_path)) {
-            return $this->public_url_directory . $dst_filename;
+	        return $this->public_url_directory . $sub_directory . $dst_filename;
         }
-        $src_path = $this->directory . "$file_id.jpg";
+
+	    $src_path  = $this->directory . $sub_directory . "$file_id.$ext";
         $src_image = @imagecreatefromjpeg($src_path);
         if ($src_image !== false) {
             list($width, $height) = getimagesize($src_path);
@@ -66,7 +69,7 @@ class ImageManager
             $dst_image = imagecreatetruecolor($dst_width, $dst_height);
             if (@imagecopyresampled($dst_image, $src_image, 0, 0, 0, 0, $dst_width, $dst_height, $width, $height)) {
                 if (@imagejpeg($dst_image, $dst_path)) {
-                    return $this->public_url_directory . $dst_filename;
+	                return $this->public_url_directory . $sub_directory . $dst_filename;
                 }
             }
         }

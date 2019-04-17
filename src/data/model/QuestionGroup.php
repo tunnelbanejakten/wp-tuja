@@ -9,6 +9,7 @@ class QuestionGroup {
 	public $form_id;
 	public $text;
 	public $sort_order;
+	public $score_max = 20; // TODO: Make configurable and persistable
 
 	public function validate() {
 		if ( strlen( $this->text ) > 65000 ) {
