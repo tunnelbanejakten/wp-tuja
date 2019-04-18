@@ -14,13 +14,18 @@ class QuestionGroupDao extends AbstractDao {
 
 	private static function get_config_string( QuestionGroup $question_group ) {
 		return json_encode( array(
-			'score_max' => floatval( $question_group->score_max )
+			'score_max' => isset( $question_group->score_max )
+				? floatval( $question_group->score_max )
+				: null
 		) );
 	}
 
 	private static function set_config( QuestionGroup $question_group, $json_string ) {
-		$conf                      = json_decode( $json_string, true );
-		$question_group->score_max = $conf['score_max'];
+		$conf = json_decode( $json_string, true );
+
+		$question_group->score_max = isset( $conf['score_max'] )
+			? $conf['score_max']
+			: null;
 	}
 
 	function create( QuestionGroup $group ) {
@@ -66,15 +71,14 @@ class QuestionGroupDao extends AbstractDao {
 			) );
 	}
 
-	function get($id)
-    {
-        return $this->get_object(
-            function ($row) {
-                return self::to_question_group($row);
-            },
-            'SELECT * FROM ' . $this->table . ' WHERE id = %d',
-            $id);
-    }
+	function get( $id ) {
+		return $this->get_object(
+			function ( $row ) {
+				return self::to_question_group( $row );
+			},
+			'SELECT * FROM ' . $this->table . ' WHERE id = %d',
+			$id );
+	}
 
 	function get_all_in_form( $form_id ) {
 		return $this->get_objects(
@@ -110,7 +114,7 @@ class QuestionGroupDao extends AbstractDao {
 		$q->random_id  = $result->random_id;
 		$q->text       = $result->text;
 		$q->sort_order = $result->sort_order;
-//		self::set_config( $q, $result->config );
+		self::set_config( $q, $result->config );
 
 		return $q;
 	}

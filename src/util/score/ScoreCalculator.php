@@ -63,7 +63,7 @@ class ScoreCalculator
 		// ...and then map question group id to the maximum score per question group, for easy access.
 		$question_group_max = [];
 		foreach ( $this->question_groups as $question_group ) {
-			$question_group_max[ $question_group->id ] = $question_group->score_max;
+			$question_group_max[ $question_group->id ] = $question_group->score_max ?: PHP_INT_MAX;
 		}
 
 		// Count how many points the team has been awarded for each question group:
