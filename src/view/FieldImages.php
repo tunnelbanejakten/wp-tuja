@@ -3,8 +3,6 @@
 namespace tuja\view;
 
 
-use tuja\util\ImageManager;
-
 class FieldImages extends Field
 {
 	const SHORT_LIST_LIMIT = 5;
