@@ -31,10 +31,10 @@ AdminUtils::printTopMenu( $competition );
 
     <h3>Svar och poäng</h3>
     <p>
-        <strong>Totalt <?= $final_score ?> poäng.</strong>
+        <strong>Totalt <?= $score_result->total_final ?> poäng.</strong>
 		<?php
-		if ( $questions_score != $final_score ) {
-			printf( '%d poäng har dragits av pga. att maximal poäng uppnåtts på vissa frågegrupper.', $questions_score - $final_score );
+		if ( $score_result->total_without_question_group_max_limits != $score_result->total_final ) {
+			printf( '%d poäng har dragits av pga. att maximal poäng uppnåtts på vissa frågegrupper.', $score_result->total_without_question_group_max_limits - $score_result->total_final );
 		}
 		?>
     </p>
@@ -61,8 +61,13 @@ AdminUtils::printTopMenu( $competition );
 	        printf( '<tr class="tuja-admin-review-form-row"><td colspan="6"><strong>%s</strong></td></tr>', $form->name );
             $questions = $db_question->get_all_in_form($form->id);
             foreach ($questions as $question) {
-                $calculated_score_without_override = $calculated_scores_without_overrides[$question->id] ?: 0;
-                $calculated_score_final = $calculated_scores_final[$question->id] ?: 0;
+
+	            $calculated_score_without_override = isset( $score_result->questions[ $question->id ] )
+		            ? $score_result->questions[ $question->id ]->auto
+		            : 0;
+	            $calculated_score_final            = isset( $score_result->questions[ $question->id ] )
+		            ? $score_result->questions[ $question->id ]->final
+		            : 0;
 
                 $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
                 $response = $response_per_question[$question->id]; // TODO: One line to late?
