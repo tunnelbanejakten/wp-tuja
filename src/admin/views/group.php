@@ -34,7 +34,8 @@ AdminUtils::printTopMenu( $competition );
         <strong>Totalt <?= $score_result->total_final ?> poäng.</strong>
 		<?php
 		if ( $score_result->total_without_question_group_max_limits != $score_result->total_final ) {
-			printf( '%d poäng har dragits av pga. att maximal poäng uppnåtts på vissa frågegrupper.', $score_result->total_without_question_group_max_limits - $score_result->total_final );
+			printf( '%d poäng har dragits av pga. att maximal poäng uppnåtts på vissa frågegrupper.',
+				$score_result->total_without_question_group_max_limits - $score_result->total_final );
 		}
 		?>
     </p>
@@ -76,13 +77,12 @@ AdminUtils::printTopMenu( $competition );
                     ? $points_overrides_per_question[$question->id]->points
                     : '';
 
-                // TODO: Rewrite is a hack for getting HTML into $response->answers
+	            // TODO: Rewrite this hack for getting HTML into $response->answers
                 if (is_array($response->answers) && $question->type == 'images') {
-                    $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
                     // For each user-provided answer, render the photo description and a photo thumbnail:
 	                $group_key         = $group->random_id;
-	                $response->answers = array_map( function ( $answer ) use ( $field, $group_key ) {
-		                return $field->render_admin_preview( $answer, $group_key );
+	                $response->answers = array_map( function ( $answer ) use ( $group_key ) {
+		                return AdminUtils::get_image_thumbnails_html( $answer, $group_key );
                     }, $response->answers);
                 }
 
@@ -156,10 +156,9 @@ AdminUtils::printTopMenu( $competition );
         $messages = $db_message->get_by_group($group->id);
         foreach ($messages as $message) {
             if (is_array($message->image_ids)) {
-                $field = new FieldImages([]);
                 // For each user-provided answer, render the photo description and a photo thumbnail:
-                $images = array_map(function ($image_id) use ($field) {
-                    return $field->render_admin_preview("$image_id,,");
+                $images = array_map(function ($image_id) {
+	                return AdminUtils::get_image_thumbnails_html( [ 'images' => [ $image_id ] ], null );
                 }, $message->image_ids);
             }
 

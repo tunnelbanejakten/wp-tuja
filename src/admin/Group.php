@@ -74,7 +74,14 @@ class Group {
 
 		$group = $this->group;
 
-		$score_calculator = new ScoreCalculator( $competition->id, $db_question, $db_question_group, $db_response, $db_groups, $db_points );
+		$score_calculator = new ScoreCalculator(
+			$competition->id,
+			$db_question,
+			$db_question_group,
+			$db_response,
+			$db_groups,
+			$db_points
+		);
 		$score_result     = $score_calculator->score( $group->id );
 
 		$responses                     = $db_response->get_latest_by_group( $group->id );

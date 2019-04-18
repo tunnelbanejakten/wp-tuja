@@ -23,24 +23,6 @@ class FieldImages extends Field
 		return array($answer);
 	}
 
-	// TODO: Move to AdminUtils.
-	public function render_admin_preview( $answer, $group_key = null ) {
-		$answer = json_decode($answer, true);
-		if (empty($answer['images'])) {
-			return '';
-		}
-
-		$image_manager = new ImageManager();
-
-		return join( array_map( function ( $image_id ) use ( $image_manager, $group_key ) {
-			$resized_image_url = $image_manager->get_resized_image_url( $image_id, 200 * 200, $group_key );
-
-			// TODO: Show fullsize image in modal popup when clicking image (see https://codex.wordpress.org/ThickBox)
-			return $resized_image_url ? sprintf( '<img src="%s">', $resized_image_url ) : 'Kan inte visa bild.';
-		}, $answer['images'] ) );
-	}
-
-
 	public function render($field_name) {
 		$hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';
 
@@ -52,7 +34,6 @@ class FieldImages extends Field
 			$this->render_image_upload($field_name)
 		);
 	}
-
 
 	private function render_comment_field($field_name, $comment) {
 		ob_start();
