@@ -9,6 +9,7 @@ use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\store\PersonDao;
 use tuja\util\DateUtils;
+use tuja\view\EditGroupShortcode;
 
 class RegistrationEvaluator {
 	private $person_dao;
@@ -21,11 +22,11 @@ class RegistrationEvaluator {
 		$people = $this->person_dao->get_all_in_group( $group->id );
 
 		return array_merge(
-			self::rule_has_contacts( $people ),
+			self::rule_contacts_defined( $group, $people ),
+			self::rule_contacts_have_phone_and_email( $people ),
 			self::rule_person_names( $people ),
 			self::rule_person_pno( $people ),
 			self::rule_adult_supervision( $group, $people ),
-			self::rule_contacts_have_phone_and_email( $people ),
 			self::rule_group_size( $people )
 		);
 	}
@@ -58,16 +59,29 @@ class RegistrationEvaluator {
 	}
 
 	private static function rule_adult_supervision( Group $group, array $people ) {
-		$children = array_filter( $people, function ( Person $person ) {
+		$children           = array_filter( $people, function ( Person $person ) {
 			return isset( $person->age ) && $person->is_competing && $person->age < 15;
 		} );
-		$adults   = array_filter( $people, function ( Person $person ) {
+		$adults             = array_filter( $people, function ( Person $person ) {
 			return isset( $person->age ) && $person->age >= 18;
 		} );
+		$adult_participants = array_filter( $people, function ( Person $person ) {
+			return $person->is_competing && isset( $person->age ) && $person->age >= 18;
+		} );
 
-		$group_has_child = count( $children ) > 0;
-		$gruop_has_adult = count( $adults ) > 0;
-		if ( $group_has_child && ! $gruop_has_adult ) {
+		$count_children           = count( $children );
+		$count_adults             = count( $adults );
+		$count_adult_participants = count( $adult_participants );
+		if ( $count_children > 3 && $count_adult_participants > 0 ) {
+			return [
+				new RuleResult(
+					'Vuxen i laget',
+					RuleResult::WARNING,
+					'Laget har ' . $count_children . ' tävlande barn och ' . $count_adult_participants .
+					' tävlande vuxna. Kryssa i "' . EditGroupShortcode::ROLE_ISNOTCOMPETING_LABEL . '" för vuxna som inte tävlar, och som därför inte behöver betala anmälningsavgift.'
+				)
+			];
+		} elseif ( $count_children > 0 && $count_adults == 0 ) {
 			if ( $group->age_competing_avg < 15 ) {
 				return [ new RuleResult( 'Vuxen i laget', RuleResult::BLOCKER, 'Laget måste ha med sig en vuxen under dagen eftersom de flesta är under 15.' ) ];
 			} else {
@@ -79,19 +93,39 @@ class RegistrationEvaluator {
 		return [ new RuleResult( 'Vuxen i laget', RuleResult::OK, 'Laget uppfyller våra krav för när det måste finnas vuxna i laget.' ) ];
 	}
 
-	private static function rule_has_contacts( array $people ) {
+	private static function rule_contacts_defined( Group $group, array $people ) {
 		$contacts = array_filter( $people, function ( Person $person ) {
 			return $person->is_group_contact;
 		} );
 		switch ( count( $contacts ) ) {
 			case 0:
-				return [ new RuleResult( 'Kontaktperson', RuleResult::BLOCKER, 'Kontaktperson saknas.' ) ];
+				$potential_contacts = array_filter( $people, function ( Person $person ) {
+					return ( ! empty( $person->email ) && Person::is_valid_email_address( $person->email ) )
+					       || ( ! empty( $person->phone ) && Person::is_valid_phone_number( $person->phone ) );
+				} );
+				if ( count( $potential_contacts ) > 0 ) {
+					return [ new RuleResult( 'Kontaktperson', RuleResult::BLOCKER, 'Ingen av deltagarna med telefonnummer/e-postadress har markerats som er kontaktperson/lagledare.' ) ];
+				} else {
+					return [ new RuleResult( 'Kontaktperson', RuleResult::BLOCKER, 'Kontaktperson/lagledare saknas.' ) ];
+				}
 			case 1:
-				return [ new RuleResult( 'Kontaktperson', RuleResult::OK, 'En kontaktperson har angivits.' ) ];
+				if ( array_pop( $contacts )->is_competing ) {
+					return [ new RuleResult( 'Kontaktperson', RuleResult::OK, 'En kontaktperson/lagledare har angivits.' ) ];
+				} else {
+					if ( $group->age_competing_avg < 15 ) {
+						return [ new RuleResult( 'Kontaktperson', RuleResult::WARNING, 'Vi rekommenderar att även en av de tävlande är kontaktperson och lagledare.' ) ];
+					} else {
+						return [ new RuleResult( 'Kontaktperson', RuleResult::WARNING, 'Vi rekommenderar att en av de tävlande är kontaktperson och lagledare.' ) ];
+					}
+				}
 			case 2:
-				return [ new RuleResult( 'Kontaktperson', RuleResult::WARNING, 'Ni har angett att två personer är kontaktpersoner. Vanligtvis räcker det med en.' ) ];
+				if ( $group->age_competing_avg < 15 ) {
+					return [ new RuleResult( 'Kontaktperson', RuleResult::OK, 'Två kontaktpersoner har angivits.' ) ];
+				} else {
+					return [ new RuleResult( 'Kontaktperson', RuleResult::WARNING, 'Ni har angett att två personer är kontaktpersoner och lagledare. Vanligtvis räcker det med en.' ) ];
+				}
 			default:
-				return [ new RuleResult( 'Kontaktperson', RuleResult::BLOCKER, 'Bara en eller två personer kan vara kontaktpersoner.' ) ];
+				return [ new RuleResult( 'Kontaktperson', RuleResult::BLOCKER, 'Bara en eller två personer kan vara kontaktpersoner/lagledare.' ) ];
 		}
 	}
 
@@ -100,29 +134,45 @@ class RegistrationEvaluator {
 			return $person->is_group_contact;
 		} );
 
-		return array_reduce( $contacts, function ( $carry, Person $person ) {
+		if ( count( $contacts ) == 0 ) {
+			// Nothing to do here. Function rule_contacts_defined deals with groups without contacts.
+			return [];
+		}
+
+		$results              = [];
+		$is_phone_contact_set = false;
+		$is_email_contact_set = false;
+
+		foreach ( $contacts as $person ) {
+
 			$rule_name = 'Kontaktpersonen ' . htmlspecialchars( $person->name );
 			if ( ! empty( $person->phone ) ) {
 				if ( Person::is_valid_phone_number( $person->phone ) ) {
-					$carry[] = new RuleResult( $rule_name, RuleResult::OK, 'Telefonnumret till kontaktperson ser rimligt ut.' );
+					$results[]            = new RuleResult( $rule_name, RuleResult::OK, 'Telefonnumret till kontaktperson ser rimligt ut.' );
+					$is_phone_contact_set = true;
 				} else {
-					$carry[] = new RuleResult( $rule_name, RuleResult::WARNING, 'Telefonnumret till kontaktperson verkar inte vara korrekt.' );
+					$results[] = new RuleResult( $rule_name, RuleResult::WARNING, 'Telefonnumret till kontaktperson verkar inte vara korrekt.' );
 				}
-			} else {
-				$carry[] = new RuleResult( $rule_name, RuleResult::BLOCKER, 'Kontaktperson måste ha ett telefonnummer.' );
 			}
 			if ( ! empty( $person->email ) ) {
 				if ( Person::is_valid_email_address( $person->email ) ) {
-					$carry[] = new RuleResult( $rule_name, RuleResult::OK, 'E-postadress till kontaktperson ser rimlig ut.' );
+					$results[]            = new RuleResult( $rule_name, RuleResult::OK, 'E-postadress till kontaktperson ser rimlig ut.' );
+					$is_email_contact_set = true;
 				} else {
-					$carry[] = new RuleResult( $rule_name, RuleResult::WARNING, 'E-postadress till kontaktperson verkar inte vara korrekt.' );
+					$results[] = new RuleResult( $rule_name, RuleResult::WARNING, 'E-postadress till kontaktperson verkar inte vara korrekt.' );
 				}
-			} else {
-				$carry[] = new RuleResult( $rule_name, RuleResult::BLOCKER, 'Kontaktperson måste ha en e-postadress.' );
 			}
+		}
 
-			return $carry;
-		}, [] );
+		if ( ! $is_phone_contact_set && ! $is_email_contact_set ) {
+			$results[] = new RuleResult( 'Kontaktperson', RuleResult::BLOCKER, 'Ni saknar telefonnummer och e-post för kontaktperson.' );
+		} elseif ( ! $is_phone_contact_set ) {
+			$results[] = new RuleResult( 'Kontaktperson', RuleResult::BLOCKER, 'Ni har ingen kontaktperson med (giltigt) telefonnummer.' );
+		} elseif ( ! $is_email_contact_set ) {
+			$results[] = new RuleResult( 'Kontaktperson', RuleResult::BLOCKER, 'Ni har ingen kontaktperson med (rimlig) e-postadress.' );
+		}
+
+		return $results;
 	}
 
 	private static function rule_group_size( array $people ) {
