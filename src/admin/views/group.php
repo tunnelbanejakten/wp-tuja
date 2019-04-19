@@ -89,12 +89,12 @@ AdminUtils::printTopMenu( $competition );
 	            $score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
 
 	            printf( '' .
-	                    '<tr class="tuja-admin-review-response-row"><td></td>' .
+                    '<tr class="tuja-admin-review-response-row"><td></td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s p</span></td>' .
-                    '  <td valign="top"><input type="text" name="%s" value="%s" size="5"></td>' .
+                    '  <td valign="top"><input type="number" name="%s" value="%s" size="5" min="0" max="%d"> p</td>' .
                     '</tr>',
                     $question->text,
 		            join( '<br>', $question->correct_answers ),
@@ -102,7 +102,8 @@ AdminUtils::printTopMenu( $competition );
 		            $score_class,
                     $calculated_score_without_override,
                     'tuja_group_points__' . $question->id,
-		            $points_override );
+		            $points_override,
+		            $question->score_max ?: 1000 );
             }
         }
         ?>
