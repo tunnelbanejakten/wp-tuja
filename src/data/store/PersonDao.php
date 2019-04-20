@@ -60,6 +60,7 @@ class PersonDao extends AbstractDao
 	            'email'           => $person->email,
 	            'phone'           => $person->phone,
 	            'food'            => $person->food,
+	            'team_id'         => $person->group_id,
 	            'is_competing'    => boolval( $person->is_competing ) ? 1 : 0,
 	            'is_team_contact' => boolval( $person->is_group_contact ) ? 1 : 0,
 	            'pno'             => DateUtils::fix_pno( $person->pno )

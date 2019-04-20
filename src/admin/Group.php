@@ -2,6 +2,7 @@
 
 namespace tuja\admin;
 
+use Exception;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\MessageDao;
@@ -17,10 +18,11 @@ class Group {
 
 	private $group;
 	private $competition;
+	private $group_dao;
 
 	public function __construct() {
-		$db_groups   = new GroupDao();
-		$this->group = $db_groups->get($_GET['tuja_group']);
+		$this->group_dao = new GroupDao();
+		$this->group     = $this->group_dao->get( $_GET['tuja_group'] );
 		if (!$this->group) {
 			print 'Could not find group';
 
@@ -51,6 +53,41 @@ class Group {
 					$db_points->set($this->group->id, $question->id, is_numeric($value) ? intval($value) : null);
 				}
 			}
+		} elseif ( $_POST['tuja_points_action'] === 'move_people' ) {
+
+			if ( ! isset( $_POST['tuja_group_people'] ) || ! is_array( $_POST['tuja_group_people'] ) ) {
+				AdminUtils::printError( 'No people choosen.' );
+
+				return;
+			}
+
+			if ( ! isset( $_POST['tuja_group_move_people_to'] ) || ! is_numeric( $_POST['tuja_group_move_people_to'] ) ) {
+				AdminUtils::printError( 'No group choosen.' );
+
+				return;
+			}
+
+			$move_to_group = $this->group_dao->get( intval( $_POST['tuja_group_move_people_to'] ) );
+
+			if ( ! isset( $_POST['tuja_group_people'] ) || ! is_array( $_POST['tuja_group_people'] ) || $move_to_group === false ) {
+				AdminUtils::printError( 'No people choosen.' );
+
+				return;
+			}
+
+			foreach ( $_POST['tuja_group_people'] as $person_id ) {
+				$person_dao       = new PersonDao();
+				$person           = $person_dao->get( $person_id );
+				$person->group_id = $move_to_group->id;
+				try {
+					$affected_rows = $person_dao->update( $person );
+					if ( $affected_rows === false ) {
+						AdminUtils::printError( sprintf( 'Could not move %s to %s.', $person->name, $move_to_group->name ) );
+					}
+				} catch ( Exception $e ) {
+					AdminUtils::printException( $e );
+				}
+			}
 		}
 	}
 
@@ -58,7 +95,7 @@ class Group {
 	public function output() {
 		$this->handle_post();
 
-		$competition     = $this->competition;
+		$competition = $this->competition;
 
 		$db_form     = new FormDao();
 		$forms       = $db_form->get_all_in_competition( $competition->id );
@@ -68,25 +105,27 @@ class Group {
 		$db_points   = new PointsDao();
 		$db_message  = new MessageDao();
 
-		$score_calculator                    = new ScoreCalculator( $competition->id, $db_question, $db_response, $db_groups, $db_points );
-		$group                               = $this->group;
-		$calculated_scores_final             = $score_calculator->score_per_question( $group->id );
+		$score_calculator              = new ScoreCalculator( $competition->id, $db_question, $db_response, $db_groups, $db_points );
+		$group                         = $this->group;
+		$calculated_scores_final       = $score_calculator->score_per_question( $group->id );
 		$calculated_scores_without_overrides = $score_calculator->score_per_question( $group->id, false );
-		$responses                           = $db_response->get_latest_by_group( $group->id );
-		$response_per_question               = array_combine( array_map( function ( $response ) {
+		$responses                     = $db_response->get_latest_by_group( $group->id );
+		$response_per_question         = array_combine( array_map( function ( $response ) {
 			return $response->form_question_id;
 		}, $responses), array_values($responses));
-		$points_overrides                    = $db_points->get_by_group( $group->id );
-		$points_overrides_per_question       = array_combine( array_map( function ( $points ) {
+		$points_overrides              = $db_points->get_by_group( $group->id );
+		$points_overrides_per_question = array_combine( array_map( function ( $points ) {
 			return $points->form_question_id;
 		}, $points_overrides), array_values($points_overrides));
 
 		$person_dao = new PersonDao();
-		$people = $person_dao->get_all_in_group( $group->id );
+		$people     = $person_dao->get_all_in_group( $group->id );
 
 		$registration_evaluator  = new RegistrationEvaluator();
 		$registration_evaluation = $registration_evaluator->evaluate( $group );
 
-		include('views/group.php');
+		$groups                              = $db_groups->get_all_in_competition( $competition->id );
+
+		include( 'views/group.php' );
 	}
 }

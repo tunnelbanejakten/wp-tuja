@@ -26,5 +26,5 @@ AdminUtils::printTopMenu( $competition );
         </tbody>
     </table>
     <input type="text" name="tuja_form_name"/>
-    <button type="submit" name="tuja_action" value="form_create">Skapa</button>
+    <button type="submit" class="button" name="tuja_action" value="form_create">Skapa</button>
 </form>
