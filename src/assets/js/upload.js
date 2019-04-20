@@ -17,6 +17,7 @@
 				resizeWidth: 1000,
 				acceptedFiles: 'image/*',
 				parallelUploads: 2,
+				thumbnailMethod: 'contain',
 				maxFiles: maxFilesCount,
 				uploadMultiple: false,
 				dictDefaultMessage: 'Klicka här för att ladda upp bilder',

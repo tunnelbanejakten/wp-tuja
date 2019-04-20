@@ -163,6 +163,14 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 	border-radius: 0;
 }
 
+.tuja-image .dropzone .dz-preview .dz-image img {
+    /* Height and width matches default Dropzone values. */
+    height: 120px;
+    width: 120px;
+    object-fit: contain;
+    object-position: center center;
+}
+
 .tuja-image .dropzone .dz-preview:hover .dz-image img {
 	-webkit-transform: none;
     -moz-transform: none;
