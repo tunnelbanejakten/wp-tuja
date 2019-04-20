@@ -8,6 +8,8 @@ use tuja\data\store\ResponseDao;
 
 class ImageManager
 {
+	const DEFAULT_THUMBNAIL_PIXEL_COUNT = 200 * 200;
+
     public function __construct()
     {
         $dir = wp_upload_dir('tuja', true, false);

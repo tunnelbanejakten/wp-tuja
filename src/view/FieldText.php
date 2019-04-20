@@ -2,6 +2,8 @@
 
 namespace tuja\view;
 
+use tuja\data\model\Group;
+
 class FieldText extends Field
 {
 	private $html_props;
@@ -12,7 +14,7 @@ class FieldText extends Field
 	    $this->html_props = $html_props;
     }
 
-    public function render($field_name)
+    public function render($field_name, Group $group )
     {
         $render_id = $field_name ?: uniqid();
         $hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';

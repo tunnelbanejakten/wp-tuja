@@ -2,6 +2,8 @@
 
 namespace tuja\view;
 
+use tuja\data\model\Group;
+
 class FieldChoices extends Field
 {
     public $options;
@@ -28,7 +30,7 @@ class FieldChoices extends Field
         return $user_answer;
     }
 
-    public function render($field_name)
+    public function render($field_name, Group $group )
     {
         $render_id = $field_name ?: uniqid();
         $hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';
