@@ -81,17 +81,19 @@ class QuestionDao extends AbstractDao
 	}
 	
 	public function get($question_id) {
-		return reset($this->get_objects(
+		$objects = $this->get_objects(
 			function ( $row ) {
 				return self::to_form_question( $row );
 			},
 			'
-                SELECT q.* 
+				SELECT q.* 
                 FROM ' . $this->table . ' AS q
                 WHERE q.id = %d
-                ORDER BY q.sort_order, q.id',
+				ORDER BY q.sort_order, q.id
+			',
 			$question_id
-		));
+		);	
+		return reset($objects);
 	}
 
     function get_all_in_form($form_id)

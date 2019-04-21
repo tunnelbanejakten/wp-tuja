@@ -64,9 +64,7 @@ class PointsShortcode extends AbstractShortcode
 
         foreach ($form_values as $field_name => $field_value) {
 			try {
-				$question_id = (int)$_POST[self::FILTER_QUESTIONS];
-				$group_id = (int)$_POST[self::FILTER_GROUPS];
-
+				list(,, $question_id, $group_id) = explode(self::FIELD_NAME_PART_SEP, $field_name);
 				$question = $this->question_dao->get($question_id);
 
 				if($question->score_max < $field_value) throw new Exception('För hög poäng. Max poäng är ' . $question->score_max);
