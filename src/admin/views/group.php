@@ -115,6 +115,7 @@ AdminUtils::printTopMenu( $competition );
     <table>
         <thead>
         <tr>
+            <th></th>
             <th>Namn</th>
             <th>Personnummer</th>
             <th>Ålder</th>
@@ -124,11 +125,29 @@ AdminUtils::printTopMenu( $competition );
             <th>E-post</th>
         </tr>
         </thead>
+        <tfoot>
+        <tr>
+            <td colspan="8">
+                Flytta markerade deltagare till detta lag: <br>
+                <select name="tuja_group_move_people_to">
+                    <option value="0">Välj lag</option>
+                    <?= join(array_map(function($g) use ($group) {
+	                    return sprintf( '<option value="%s" %s>%s</option>',
+                            $g->id,
+		                    $group->id == $g->id ? 'disabled="disabled"' : '',
+		                    $g->name);
+                    }, $groups)) ?>
+                </select>
+                <button class="button" type="submit" name="tuja_points_action" value="move_people">Flytta</button>
+            </td>
+        </tr>
+        </tfoot>
         <tbody>
 		<?php
 		print join( '', array_map( function ( $person ) {
 			return sprintf( '<tr>' .
-			                '<td>%s</td>' .
+			                '<td><input type="checkbox" name="tuja_group_people[]" value="%d" id="tuja_group_people__person_%d"></td>' .
+			                '<td><label for="tuja_group_people__person_%d">%s</label></td>' .
 			                '<td>%s</td>' .
 			                '<td>%.1f</td>' .
 			                '<td>%s</td>' .
@@ -136,6 +155,9 @@ AdminUtils::printTopMenu( $competition );
 			                '<td>%s</td>' .
 			                '<td><a href="mailto:%s">%s</a></td>' .
 			                '</tr>',
+				$person->id,
+				$person->id,
+				$person->id,
 				$person->name,
 				$person->pno,
 				$person->age,

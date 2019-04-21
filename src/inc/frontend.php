@@ -46,12 +46,13 @@ class Frontend extends Plugin {
 
 	public function form_shortcode( $atts ) {
 		global $wp_query, $wpdb;
-		$form_id     = $atts['form'];
-		$is_readonly = isset($atts['readonly']) && in_array( strtolower( $atts['readonly'] ), [ 'yes', 'true' ] );
-		$group_id    = $wp_query->query_vars['group_id'];
-		$component   = $is_readonly ?
+		$form_id          = $atts['form'];
+		$is_readonly      = self::bool_attr( $atts, 'readonly' );
+		$is_crew_override = self::bool_attr( $atts, 'crew_override' );
+		$group_id         = $wp_query->query_vars['group_id'];
+		$component        = $is_readonly ?
 			new FormReadonlyShortcode( $wpdb, $form_id, $group_id ) :
-			new FormShortcode( $wpdb, $form_id, $group_id );
+			new FormShortcode( $wpdb, $form_id, $group_id, $is_crew_override );
 
 		return $component->render();
 	}
@@ -76,7 +77,7 @@ class Frontend extends Plugin {
 	public function edit_group_shortcode( $atts ) {
 		global $wp_query, $wpdb;
 		$group_id                        = $wp_query->query_vars['group_id'];
-		$is_crew_form                    = $atts['is_crew_form'] === 'yes';
+		$is_crew_form                    = self::bool_attr( $atts, 'is_crew_form' );
 		$enable_group_category_selection = $atts['enable_group_category_selection'] !== 'no'; // Enabled if omitted, disable with 'no'.
 
 		$component = new EditGroupShortcode(
@@ -92,7 +93,7 @@ class Frontend extends Plugin {
 		global $wpdb;
 		$competition_id                  = $atts['competition'];
 		$edit_link_template              = $atts['edit_link_template'];
-		$is_crew_form                    = $atts['is_crew_form'] === 'yes';
+		$is_crew_form                    = self::bool_attr( $atts, 'is_crew_form' );
 		$enable_group_category_selection = $atts['enable_group_category_selection'] !== 'no'; // Enabled if omitted, disable with 'no'.
 
 		$component = new CreateGroupShortcode(
@@ -136,6 +137,13 @@ class Frontend extends Plugin {
 
 	public function form_closes_countdown_shortcode( $atts ) {
 		return CountdownShortcode::submit_form_response_closes( $atts );
+	}
+
+	private static function bool_attr( $attributes, $attr_name ): bool {
+		return isset( $attributes[ $attr_name ] ) && in_array( strtolower( $attributes[ $attr_name ] ), [
+				'yes',
+				'true'
+			] );
 	}
 }
 

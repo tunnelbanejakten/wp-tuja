@@ -13,8 +13,8 @@ class EditGroupShortcode extends AbstractGroupShortcode
 {
     const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
 
-	const ROLE_ISCONTACT_LABEL = 'Ja, hen är kontaktperson för laget under tävlingen.';
-	const ROLE_ISNOTCOMPETING_LABEL = 'Ja, hen är med under dagen men är inte med och tävlar.';
+	const ROLE_ISCONTACT_LABEL = 'Är kontaktperson och lagledare';
+	const ROLE_ISNOTCOMPETING_LABEL = 'Är inte med och tävlar utan följer bara med';
 
 
 	private $group_key;
