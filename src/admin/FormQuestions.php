@@ -69,10 +69,10 @@ class FormQuestions {
 						case 'text_hint':
 							$updated_questions[$id]->text_hint = $field_value;
 							break;
-						case 'scoretype':
+						case 'score_type':
 							$updated_questions[$id]->score_type = !empty($field_value) ? $field_value : null;
 							break;
-						case 'scoremax':
+						case 'score_max':
 							$updated_questions[$id]->score_max = $field_value;
 							break;
 						case 'correct_answers':
