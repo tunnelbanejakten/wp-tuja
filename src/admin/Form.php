@@ -65,6 +65,9 @@ class Form {
 						case 'sort_order':
 							$updated_groups[$id]->sort_order = $field_value;
 							break;
+						case 'score_max':
+							$updated_groups[$id]->score_max = is_numeric($field_value) ? floatval($field_value) : null;
+							break;
 					}
 				}
 			}

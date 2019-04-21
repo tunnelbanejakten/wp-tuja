@@ -7,17 +7,34 @@ AdminUtils::printTopMenu( $competition );
 ?>
 
 <form method="post" action="<?= add_query_arg() ?>">
-    <?php
+    <p>
+        Svar att visa:
+		<?php
+		foreach ( $question_filters as $question_filter ) {
+			if ( $question_filter['selected'] == true ) {
+				printf( ' <strong>%s</strong>', $question_filter['label'] );
+			} else {
+				printf( ' <a href="%s">%s</a>',
+					add_query_arg( array(
+						Review::QUESTION_FILTER_URL_PARAM => $question_filter['key'],
+					) ),
+					$question_filter['label'] );
+			}
+		}
+		?>
+    </p>
+
+	<?php
     if (empty($responses)) {
         printf('<p>Allt är redan kontrollerat. Bra jobbat!</p>');
     } else {
         ?>
 
-        <p>Här ser du vilka svar som ännu inte kontrollerats manuellt.</p>
         <p>
             Du ser vilken poäng som kommer delas ut om du inte gör något. Om du fyller i poäng för ett svar är det din
             poäng som räknas.
         </p>
+
         <table class="tuja-admin-review">
             <tbody>
             <tr>
@@ -44,7 +61,7 @@ AdminUtils::printTopMenu( $competition );
                                 $is_form_name_printed = true;
                             }
                             if (!$is_question_printed) {
-	                            printf( '<tr class="tuja-admin-review-question-row"><td></td><td colspan="5"><strong>%s</strong></td></tr>', $question->text );
+	                            printf( '<tr class="tuja-admin-review-question-row"><td></td><td colspan="5"><strong>%s</strong, > %s, %s</td></tr>', $question->text, $question->type, $question->score_type );
 	                            printf( '' .
 	                                    '<tr class="tuja-admin-review-correctanswer-row">' .
 	                                    '  <td colspan="2"></td>' .
@@ -60,11 +77,11 @@ AdminUtils::printTopMenu( $competition );
                             $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
 
                             if (is_array($response->answers) && $question->type == 'images') {
-                                $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
                                 // For each user-provided answer, render the photo description and a photo thumbnail:
-                                $response->answers = array_map(function ($answer) use ($field) {
-                                    return $field->render_admin_preview($answer);
-                                }, $response->answers);
+	                            $group_key = $groups_map[ $response->group_id ]->random_id;
+	                            $response->answers = array_map( function ( $answer ) use ( $group_key ) {
+		                            return AdminUtils::get_image_thumbnails_html( $answer, $group_key );
+	                            }, $response->answers);
                             }
 
 	                        $group_url = add_query_arg( array(
@@ -89,7 +106,7 @@ AdminUtils::printTopMenu( $competition );
                                 is_array($response->answers) ? join('<br>', $response->answers) : '<em>Ogiltigt svar</em>',
 		                        $score_class,
 		                        $score,
-                                sprintf('tuja_review_points__%s__%s', $response->form_question_id, $response->group_id),
+		                        sprintf( 'tuja_review_points__%s', $response->id ),
 		                        $field_value,
 		                        $question->score_max ?: 1000 );
                         }

@@ -37,7 +37,7 @@ printf('<p><a href="%s">Skicka meddelanden</a></p>', $import_url);
             $field = new FieldImages([]);
             // For each user-provided answer, render the photo description and a photo thumbnail:
             $images = array_map(function ($image_id) use ($field) {
-                return $field->render_admin_preview("$image_id,,");
+                return AdminUtils::get_image_thumbnails_html( [ 'images' => [ $image_id ] ], null );
             }, $message->image_ids);
         } else {
             $images = [];
