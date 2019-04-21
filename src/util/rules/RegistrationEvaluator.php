@@ -180,11 +180,11 @@ class RegistrationEvaluator {
 			return $person->is_competing;
 		} );
 		if ( count( $participants ) < 4 ) {
-			return [ new RuleResult( 'Antal deltagare', RuleResult::WARNING, 'Ni har färre än fyra deltagare. Det blir lättare, och säkert roligare, om ni är fler.' ) ];
+			return [ new RuleResult( 'Antal deltagare', RuleResult::BLOCKER, 'Ett lag måste ha minst fyra tävlande. Kontakta ' . get_bloginfo( 'admin_email' ) . ' om detta skapar problem för er.' ) ];
 		} elseif ( count( $participants ) > 8 ) {
-			return [ new RuleResult( 'Antal deltagare', RuleResult::WARNING, 'Vi tycker lag ska ha högst åtta deltagare.' ) ];
+			return [ new RuleResult( 'Antal deltagare', RuleResult::BLOCKER, 'Ett lag får bara ha åtta tävlande. Kontakta ' . get_bloginfo( 'admin_email' ) . ' om detta skapar problem för er.' ) ];
 		} else {
-			return [ new RuleResult( 'Antal deltagare', RuleResult::OK, 'Ni verkar ha lagom många deltagare.' ) ];
+			return [ new RuleResult( 'Antal deltagare', RuleResult::OK, 'Ni verkar ha lagom många tävlande.' ) ];
 		}
 	}
 
