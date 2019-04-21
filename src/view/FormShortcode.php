@@ -138,12 +138,11 @@ class FormShortcode extends AbstractShortcode
 
 			$selected_participant_group = $this->get_selected_group( $participant_groups );
 
-			$target_group_id = $selected_participant_group->id;
 		    $target_group = $selected_participant_group;
 		} else {
 			$target_group = $group;
-			$target_group_id = $group->id;
 		}
+		$target_group_id = $group->id;
 
 		$is_read_only = ! $this->is_submit_allowed();
 
