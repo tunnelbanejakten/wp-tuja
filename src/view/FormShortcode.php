@@ -19,21 +19,24 @@ class FormShortcode extends AbstractShortcode
 	private $group_dao;
 	private $response_dao;
 	private $category_dao;
+	private $is_crew_override;
 
 	const RESPONSE_FIELD_NAME_PREFIX = 'tuja_formshortcode__response__';
 	const ACTION_FIELD_NAME = 'tuja_formshortcode__action';
 	const OPTIMISTIC_LOCK_FIELD_NAME = 'tuja_formshortcode__optimistic_lock';
 	const TEAMS_DROPDOWN_NAME = 'tuja_formshortcode__group';
 
-	public function __construct( $wpdb, $form_id, $group_key ) {
-		$this->form_id      = $form_id;
-		$this->group_key    = $group_key;
-		$this->question_dao = new QuestionDao();
+	public function __construct( $wpdb, $form_id, $group_key, $is_crew_override ) {
+		parent::__construct();
+		$this->form_id            = $form_id;
+		$this->group_key          = $group_key;
+		$this->is_crew_override   = $is_crew_override;
+		$this->question_dao       = new QuestionDao();
 		$this->question_group_dao = new QuestionGroupDao();
-		$this->group_dao    = new GroupDao();
-		$this->response_dao = new ResponseDao();
-		$this->form_dao     = new FormDao();
-		$this->category_dao = new GroupCategoryDao();
+		$this->group_dao          = new GroupDao();
+		$this->response_dao       = new ResponseDao();
+		$this->form_dao           = new FormDao();
+		$this->category_dao       = new GroupCategoryDao();
 	}
 
 	/**
@@ -125,8 +128,10 @@ class FormShortcode extends AbstractShortcode
 			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du tillhör.' );
 		}
 
-	    $group_category = $this->get_group_category( $group );
-	    if ( isset( $group_category ) && $group_category->is_crew ) {
+		$group_category              = $this->get_group_category( $group );
+		$crew_user_must_select_group = $this->is_crew_override;
+		$user_is_crew                = isset( $group_category ) && $group_category->is_crew;
+		if ( $user_is_crew && $crew_user_must_select_group ) {
             $participant_groups = $this->get_participant_groups();
 
 			$html_sections[] = sprintf( '<p>%s</p>', $this->get_groups_dropdown( $participant_groups ) );

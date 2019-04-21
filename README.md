@@ -30,6 +30,7 @@ Features:
 Attributes:
 * form: The integer id (i.e. primary key in the database) for the form to display.
 * readonly: Boolean flag for whether or not user should be able to provide answers or if only current answer for each question is displayed. 
+* crew_override: Boolean flag for whether or not crew members answer for themselves (if omitted or `no`) or on behalf of another team (if `yes`). 
 
 Known issues:
 * 
