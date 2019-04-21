@@ -3,6 +3,7 @@
 namespace tuja\admin;
 
 use Exception;
+use tuja\util\ImageManager;
 
 class AdminUtils
 {
@@ -57,5 +58,21 @@ class AdminUtils
 		}
 
 		printf( '<nav class="tuja">%s</nav>', join( ' | ', $menu ) );
+	}
+
+	public static function get_image_thumbnails_html( $answer, $group_key = null ) {
+		$answer = json_decode($answer, true);
+		if (empty($answer['images'])) {
+			return '';
+		}
+
+		$image_manager = new ImageManager();
+
+		return join( array_map( function ( $image_id ) use ( $image_manager, $group_key ) {
+			$resized_image_url = $image_manager->get_resized_image_url( $image_id, 200 * 200, $group_key );
+
+			// TODO: Show fullsize image in modal popup when clicking image (see https://codex.wordpress.org/ThickBox)
+			return $resized_image_url ? sprintf( '<img src="%s">', $resized_image_url ) : 'Kan inte visa bild.';
+		}, $answer['images'] ) );
 	}
 }

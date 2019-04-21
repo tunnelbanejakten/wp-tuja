@@ -129,7 +129,8 @@ abstract class Plugin
 				random_id  VARCHAR(20)  NOT NULL,
 				form_id    INTEGER      NOT NULL,
 				text       TEXT,
-				sort_order SMALLINT
+				sort_order SMALLINT,
+				config     TEXT
 			) " . $charset;
 
 		$tables[] = "

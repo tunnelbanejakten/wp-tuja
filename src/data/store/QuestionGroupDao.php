@@ -12,6 +12,22 @@ class QuestionGroupDao extends AbstractDao {
 		$this->table = Database::get_table( 'form_question_group' );
 	}
 
+	private static function get_config_string( QuestionGroup $question_group ) {
+		return json_encode( array(
+			'score_max' => isset( $question_group->score_max )
+				? floatval( $question_group->score_max )
+				: null
+		) );
+	}
+
+	private static function set_config( QuestionGroup $question_group, $json_string ) {
+		$conf = json_decode( $json_string, true );
+
+		$question_group->score_max = isset( $conf['score_max'] )
+			? $conf['score_max']
+			: null;
+	}
+
 	function create( QuestionGroup $group ) {
 		$group->validate();
 
@@ -20,13 +36,15 @@ class QuestionGroupDao extends AbstractDao {
 				'random_id'  => $this->id->random_string(),
 				'form_id'    => $group->form_id,
 				'text'       => $group->text,
-				'sort_order' => $group->sort_order
+				'sort_order' => $group->sort_order,
+				'config'     => self::get_config_string( $group )
 			),
 			array(
 				'%s',
 				'%d',
 				'%s',
-				'%d'
+				'%d',
+				'%s'
 			) );
 		$success       = $affected_rows !== false && $affected_rows === 1;
 
@@ -45,22 +63,22 @@ class QuestionGroupDao extends AbstractDao {
 		return $this->wpdb->update( $this->table,
 			array(
 				'text'       => $group->text,
-				'sort_order' => $group->sort_order
+				'sort_order' => $group->sort_order,
+				'config'     => self::get_config_string( $group )
 			),
 			array(
 				'id' => $group->id
 			) );
 	}
 
-	function get($id)
-    {
-        return $this->get_object(
-            function ($row) {
-                return self::to_question_group($row);
-            },
-            'SELECT * FROM ' . $this->table . ' WHERE id = %d',
-            $id);
-    }
+	function get( $id ) {
+		return $this->get_object(
+			function ( $row ) {
+				return self::to_question_group( $row );
+			},
+			'SELECT * FROM ' . $this->table . ' WHERE id = %d',
+			$id );
+	}
 
 	function get_all_in_form( $form_id ) {
 		return $this->get_objects(
@@ -96,6 +114,7 @@ class QuestionGroupDao extends AbstractDao {
 		$q->random_id  = $result->random_id;
 		$q->text       = $result->text;
 		$q->sort_order = $result->sort_order;
+		self::set_config( $q, $result->config );
 
 		return $q;
 	}

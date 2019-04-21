@@ -30,7 +30,15 @@ AdminUtils::printTopMenu( $competition );
 	?>
 
     <h3>Svar och poäng</h3>
-    <p><strong>Totalt <?= array_sum($calculated_scores_final) ?> poäng.</strong></p>
+    <p>
+        <strong>Totalt <?= $score_result->total_final ?> poäng.</strong>
+		<?php
+		if ( $score_result->total_without_question_group_max_limits != $score_result->total_final ) {
+			printf( '%d poäng har dragits av pga. att maximal poäng uppnåtts på vissa frågegrupper.',
+				$score_result->total_without_question_group_max_limits - $score_result->total_final );
+		}
+		?>
+    </p>
 
     <table class="tuja-admin-review">
         <thead>
@@ -54,8 +62,13 @@ AdminUtils::printTopMenu( $competition );
 	        printf( '<tr class="tuja-admin-review-form-row"><td colspan="6"><strong>%s</strong></td></tr>', $form->name );
             $questions = $db_question->get_all_in_form($form->id);
             foreach ($questions as $question) {
-                $calculated_score_without_override = $calculated_scores_without_overrides[$question->id] ?: 0;
-                $calculated_score_final = $calculated_scores_final[$question->id] ?: 0;
+
+	            $calculated_score_without_override = isset( $score_result->questions[ $question->id ] )
+		            ? $score_result->questions[ $question->id ]->auto
+		            : 0;
+	            $calculated_score_final            = isset( $score_result->questions[ $question->id ] )
+		            ? $score_result->questions[ $question->id ]->final
+		            : 0;
 
                 $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
                 $response = $response_per_question[$question->id]; // TODO: One line to late?
@@ -64,23 +77,24 @@ AdminUtils::printTopMenu( $competition );
                     ? $points_overrides_per_question[$question->id]->points
                     : '';
 
+	            // TODO: Rewrite this hack for getting HTML into $response->answers
                 if (is_array($response->answers) && $question->type == 'images') {
-                    $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
                     // For each user-provided answer, render the photo description and a photo thumbnail:
-                    $response->answers = array_map(function ($answer) use ($field) {
-                        return $field->render_admin_preview($answer);
+	                $group_key         = $group->random_id;
+	                $response->answers = array_map( function ( $answer ) use ( $group_key ) {
+		                return AdminUtils::get_image_thumbnails_html( $answer, $group_key );
                     }, $response->answers);
                 }
 
 	            $score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
 
 	            printf( '' .
-	                    '<tr class="tuja-admin-review-response-row"><td></td>' .
+                    '<tr class="tuja-admin-review-response-row"><td></td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s p</span></td>' .
-                    '  <td valign="top"><input type="text" name="%s" value="%s" size="5"></td>' .
+                    '  <td valign="top"><input type="number" name="%s" value="%s" size="5" min="0" max="%d"> p</td>' .
                     '</tr>',
                     $question->text,
 		            join( '<br>', $question->correct_answers ),
@@ -88,7 +102,8 @@ AdminUtils::printTopMenu( $competition );
 		            $score_class,
                     $calculated_score_without_override,
                     'tuja_group_points__' . $question->id,
-		            $points_override );
+		            $points_override,
+		            $question->score_max ?: 1000 );
             }
         }
         ?>
@@ -142,10 +157,9 @@ AdminUtils::printTopMenu( $competition );
         $messages = $db_message->get_by_group($group->id);
         foreach ($messages as $message) {
             if (is_array($message->image_ids)) {
-                $field = new FieldImages([]);
                 // For each user-provided answer, render the photo description and a photo thumbnail:
-                $images = array_map(function ($image_id) use ($field) {
-                    return $field->render_admin_preview("$image_id,,");
+                $images = array_map(function ($image_id) {
+	                return AdminUtils::get_image_thumbnails_html( [ 'images' => [ $image_id ] ], null );
                 }, $message->image_ids);
             }
 

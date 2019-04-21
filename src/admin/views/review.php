@@ -60,11 +60,11 @@ AdminUtils::printTopMenu( $competition );
                             $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
 
                             if (is_array($response->answers) && $question->type == 'images') {
-                                $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
                                 // For each user-provided answer, render the photo description and a photo thumbnail:
-                                $response->answers = array_map(function ($answer) use ($field) {
-                                    return $field->render_admin_preview($answer);
-                                }, $response->answers);
+	                            $group_key = $groups_map[ $response->group_id ]->random_id;
+	                            $response->answers = array_map( function ( $answer ) use ( $group_key ) {
+		                            return AdminUtils::get_image_thumbnails_html( $answer, $group_key );
+	                            }, $response->answers);
                             }
 
 	                        $group_url = add_query_arg( array(
