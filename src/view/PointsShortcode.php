@@ -8,6 +8,8 @@ use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
 use tuja\data\store\QuestionDao;
+use tuja\data\store\QuestionGroupDao;
+use tuja\data\store\FormDao;
 
 class PointsShortcode extends AbstractShortcode
 {
@@ -24,13 +26,18 @@ class PointsShortcode extends AbstractShortcode
     const OPTIMISTIC_LOCK_FIELD_NAME = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'optimistic_lock';
     const ACTION_FIELD_NAME = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'action';
     const FILTER_DROPDOWN_NAME = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'filter';
+    const FILTER_GROUPS = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'filter-groups';
+    const FILTER_QUESTIONS = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'filter-questions';
     const QUESTION_FIELD_PREFIX = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'question';
 
-    public function __construct($wpdb, $competition_id, $group_key)
+    public function __construct($wpdb, $form_id, $group_key)
     {
-        $this->competition_id = $competition_id;
+		$db_form = new FormDao();
+		$this->form = $db_form->get($form_id);
+        $this->competition_id = $this->form->competition_id;
 	    $this->group_key      = $group_key;
-	    $this->question_dao   = new QuestionDao();
+		$this->question_dao   = new QuestionDao();
+		$this->question_group_dao = new QuestionGroupDao();
 	    $this->group_dao      = new GroupDao();
 	    $this->points_dao     = new PointsDao();
 	    $this->category_dao   = new GroupCategoryDao();
@@ -56,9 +63,12 @@ class PointsShortcode extends AbstractShortcode
         }
 
         foreach ($form_values as $field_name => $field_value) {
-            list(, , $question_id, $group_id) = explode(self::FIELD_NAME_PART_SEP, $field_name);
-            try {
-                // TODO: Make sure user cannot input a higher score than allowed by the question
+			try {
+				list(,, $question_id, $group_id) = explode(self::FIELD_NAME_PART_SEP, $field_name);
+				$question = $this->question_dao->get($question_id);
+
+				if($question->score_max < $field_value) throw new Exception('För hög poäng. Max poäng är ' . $question->score_max);
+
                 $this->points_dao->set($group_id, $question_id, is_numeric($field_value) ? intval($field_value) : null);
             } catch (Exception $e) {
                 // TODO: Use the key to display the error message next to the problematic text field.
@@ -71,78 +81,77 @@ class PointsShortcode extends AbstractShortcode
 
     public function render(): String
     {
-        $group_key = $this->group_key;
-        $crew_group = $this->group_dao->get_by_key($group_key);
+		// Validate ID
+        $crew_group = $this->group_dao->get_by_key($this->group_key);
         if ($crew_group === false) {
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Vi vet inte vilken grupp du tillhör.');
         }
 
+		// Validate group category
 	    $group_category = $this->get_group_category( $crew_group );
 	    if ( isset( $group_category ) && ! $group_category->is_crew ) {
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Bara funktionärer får använda detta formulär.');
-        }
+		}
+		
+		wp_enqueue_script('tuja-points-script');
 
         $html_sections = [];
 
-        $message_success = null;
-        $message_error = null;
+		// Save points
 	    if ( isset( $_POST[ self::ACTION_FIELD_NAME ] ) && $_POST[ self::ACTION_FIELD_NAME ] == 'update' ) {
             $errors = $this->update_points();
             if (empty($errors)) {
-                $message_success = 'Poängen har sparats.';
-                $html_sections[] = sprintf('<p class="tuja-message tuja-message-success">%s</p>', $message_success);
+                $html_sections[] = sprintf('<p class="tuja-message tuja-message-success">%s</p>', 'Poängen har sparats.');
             } else {
                 $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', join('. ', $errors));
             }
         }
 
         $html_sections[] = sprintf('<p>%s</p>', $this->get_filter_field());
+		
+		$group = false;
+		if(isset($_GET['g'])) {
+			$group = $this->group_dao->get((int)$_GET['g']);
+		}
+		
+		$question_group = false;
+		if(isset($_GET['q'])) {
+			$question_group = $this->question_group_dao->get((int)$_GET['q']);
+		}
 
-        $groups = array_filter($this->get_participant_groups(), function ($group) {
-	        return isset( $_POST[ self::FILTER_DROPDOWN_NAME ] ) && ( substr( $_POST[ self::FILTER_DROPDOWN_NAME ], 0, strlen( 'group' ) ) !== 'group' || $_POST[ self::FILTER_DROPDOWN_NAME ] == 'group' . $group->id );
-        });
-        $questions = array_filter($this->question_dao->get_all_in_competition($this->competition_id), function ($question) {
-	        return isset( $_POST[ self::FILTER_DROPDOWN_NAME ] ) && ( substr( $_POST[ self::FILTER_DROPDOWN_NAME ], 0, strlen( 'question' ) ) !== 'question' || $_POST[ self::FILTER_DROPDOWN_NAME ] == 'question' . $question->id );
-        });
+		// If a group and question group has been selected, display the questions with current points and a save button
+		if($group && $question_group) {
+			$questions = $this->question_dao->get_all_in_group($question_group->id);
 
-        $current_points = $this->points_dao->get_by_competition($this->competition_id);
-        $current_points = array_combine(
-            array_map(function ($points) {
-                return $points->form_question_id . self::FIELD_NAME_PART_SEP . $points->group_id;
-            }, $current_points),
-            array_values($current_points));
+			$current_points = $this->points_dao->get_by_competition($this->competition_id);
+			$current_points = array_combine(
+				array_map(function ($points) {
+					return $points->form_question_id . self::FIELD_NAME_PART_SEP . $points->group_id;
+				}, $current_points),
+				array_values($current_points)
+			);
 
-        if (!empty($_POST[self::FILTER_DROPDOWN_NAME])) {
-            if (count($groups) == 1) {
-                $group = array_values($groups)[0];
-                foreach ($questions as $question) {
-                    $html_sections[] = sprintf('<p>%s</p>', $this->render_field($question->text, $question->score_max, $question->id, $group->id, $current_points));
-                }
-            } elseif (count($questions) == 1) {
-                $question = array_values($questions)[0];
-                foreach ($groups as $group) {
-                    $html_sections[] = sprintf('<p>%s</p>', $this->render_field($group->name, $question->score_max, $question->id, $group->id, $current_points));
-                }
-            }
-
-            $optimistic_lock_value = $this->get_optimistic_lock_value($this->get_keys($groups, $questions));
-
-            $html_sections[] = sprintf('<input type="hidden" name="%s" value="%s">', self::OPTIMISTIC_LOCK_FIELD_NAME, $optimistic_lock_value);
-
-            $html_sections[] = sprintf('<div class="tuja-buttons"><button type="submit" name="%s" value="update">Spara</button></div>', self::ACTION_FIELD_NAME);
-        }
+			foreach($questions as $question) {
+				$text = ($question->text ? $question->text : $question_group->text) . ' - ' . $group->name;
+				$html_sections[] = sprintf('<p>%s</p>', $this->render_field($text, $question->score_max, $question->id, $group->id, $current_points));
+			}
+	
+			$optimistic_lock_value = $this->get_optimistic_lock_value($this->get_keys($group->id, $questions));
+	
+			$html_sections[] = sprintf('<input type="hidden" name="%s" value="%s">', self::OPTIMISTIC_LOCK_FIELD_NAME, $optimistic_lock_value);
+	
+			$html_sections[] = sprintf('<div class="tuja-buttons"><button type="submit" name="%s" value="update">Spara</button></div>', self::ACTION_FIELD_NAME);
+		}
 
         return sprintf('<form method="post">%s</form>', join($html_sections));
     }
 
-    private function get_keys($groups, $questions): array
+    private function get_keys($group_id, $questions): array
     {
         $keys = [];
-        foreach ($groups as $group) {
-            foreach ($questions as $question) {
-                $keys[] = new PointsKey($group->id, $question->id);
-            }
-        }
+		foreach ($questions as $question) {
+			$keys[] = new PointsKey($group_id, $question->id);
+		}
         return $keys;
     }
 
@@ -159,51 +168,49 @@ class PointsShortcode extends AbstractShortcode
         );
     }
 
-    // TODO: Extend FieldChoices so that it supports <optgroup>?
-
     public function render_filter_dropdown()
     {
-        $questions = $this->question_dao->get_all_in_competition($this->competition_id);
+        $questions = $this->question_group_dao->get_all_in_form($this->form->id);
         $groups = $this->get_participant_groups();
 
         $question_option_values = array_map(function ($q) {
-            return 'question' . $q->id;
+            return $q->id;
         }, $questions);
         $question_option_labels = array_map(function ($q) {
             return $q->text;
         }, $questions);
         $question_options = join(array_map(function ($value, $label) {
-            return sprintf('<option value="%s" %s>%s</option>',
-                htmlspecialchars($value),
-                $this->is_selected($value) ? ' selected="selected"' : '',
+            return sprintf('<option value="%s"%s>%s</option>',
+                $value,
+                isset($_GET['q']) && $value == $_GET['q'] ? ' selected="selected"' : '',
                 htmlspecialchars($label));
         }, $question_option_values, $question_option_labels));
 
         $group_option_values = array_map(function ($group) {
-            return 'group' . $group->id;
+            return $group->id;
         }, $groups);
         $group_option_labels = array_map(function ($group) {
             return $group->name;
         }, $groups);
         $group_options = join(array_map(function ($value, $label) {
             return sprintf('<option value="%s" %s>%s</option>',
-                htmlspecialchars($value),
-                $this->is_selected($value) ? ' selected="selected"' : '',
+                $value,
+                isset($_GET['g']) && $value == $_GET['g'] ? ' selected="selected"' : '',
                 htmlspecialchars($label));
         }, $group_option_values, $group_option_labels));
 
-        return sprintf('' .
-            '<select id="%s" name="%s" class="tuja-fieldchoices tuja-fieldchoices-longlist" onchange="this.form.submit()" size="1">' .
-            '  <option value="">Välj fråga eller lag</option>' .
-            '  <optgroup label="%s">%s</optgroup>' .
-            '  <optgroup label="%s">%s</optgroup>' .
-            '</select>',
-            self::FILTER_DROPDOWN_NAME,
-            self::FILTER_DROPDOWN_NAME,
-            'Frågor',
-            $question_options,
-            'Lag',
-            $group_options);
+		ob_start();
+		?>
+        <select id="<?= self::FILTER_QUESTIONS; ?>" name="<?= self::FILTER_QUESTIONS; ?>" class="tuja-fieldchoices tuja-fieldchoices-longlist">
+		<option value="">Välj kontroll</option>
+			<?= $question_options; ?>
+		</select>
+        <select id="<?= self::FILTER_GROUPS; ?>" name="<?= self::FILTER_GROUPS; ?>" class="tuja-fieldchoices tuja-fieldchoices-longlist">
+		<option value="">Välj grupp</option>
+			<?= $group_options; ?>
+		</select>
+		<?php
+		return ob_get_clean();
     }
 
     private function get_participant_groups(): array
@@ -226,11 +233,6 @@ class PointsShortcode extends AbstractShortcode
             });
         }
         return $this->participant_groups;
-    }
-
-    private function is_selected($value)
-    {
-	    return isset( $_POST[ self::FILTER_DROPDOWN_NAME ] ) && $value == $_POST[ self::FILTER_DROPDOWN_NAME ];
     }
 
     private function render_field($text, $max_score, $question_id, $group_id, $current_points): string
