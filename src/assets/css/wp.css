@@ -106,6 +106,10 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
     margin-top: 5px;
 }
 
+.tuja-fieldchoices {
+	width: unset !important;
+}
+
 .tuja-fieldimages-radiobutton,
 .tuja-fieldchoices-radiobutton {
 	margin-bottom: 5px;
