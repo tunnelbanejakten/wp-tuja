@@ -71,9 +71,10 @@ class FieldImages extends Field
 						ImageManager::DEFAULT_THUMBNAIL_PIXEL_COUNT,
 						$group_key );
 
-					$images[] = sprintf( '<input type="hidden" name="%s[images][]" value="%s">',
+					$images[] = sprintf( '<input type="hidden" name="%s[images][]" value="%s" data-thumbnail-url="%s">',
 						$field_name,
-						$resized_image_url ? basename( $resized_image_url ) : $filename );
+						$filename,
+						$resized_image_url ? basename( $resized_image_url ) : '' );
 				}
 			}
 		}

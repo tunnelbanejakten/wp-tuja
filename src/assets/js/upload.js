@@ -59,7 +59,8 @@
 				var mockFile = { name: "Bild", size: 12345 };
 
 				$('input[name="' + answerName + '[images][]"]').each(function(i, o) {
-					var imageUrl = WPAjax.base_image_url + 'group-' + groupId + '/' + $(o).val();
+					let inputEl = $(o);
+					var imageUrl = WPAjax.base_image_url + 'group-' + groupId + '/' + (inputEl.data('thumbnail-url') || inputEl.val());
 
 					dz.emit('addedfile', mockFile);
 					dz.emit('thumbnail', mockFile, imageUrl);
