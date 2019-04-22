@@ -52,21 +52,6 @@ class AbstractDao {
 		return $gc;
 	}
 
-	protected static function to_message( $result ): Message {
-		$m                    = new Message();
-		$m->id                = $result->id;
-		$m->form_question_id  = $result->form_question_id;
-		$m->group_id          = $result->team_id;
-		$m->text              = $result->text;
-		$m->image_ids         = explode( ',', $result->image );
-		$m->source            = $result->source;
-		$m->source_message_id = $result->source_message_id;
-		$m->date_received     = new DateTime( $result->date_received );
-		$m->date_imported     = new DateTime( $result->date_imported );
-
-		return $m;
-	}
-
 	protected static function to_db_date( DateTime $dateTime = null ) {
 		if ( $dateTime != null ) {
 			return $dateTime->getTimestamp(); // Unix timestamps are always UTC

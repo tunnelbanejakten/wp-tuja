@@ -175,25 +175,8 @@ AdminUtils::printTopMenu( $competition );
         <tbody>
 
         <?php
-        // TODO: Show messages nicer (also in messages.php)
         $messages = $db_message->get_by_group($group->id);
-        foreach ($messages as $message) {
-            if (is_array($message->image_ids)) {
-                // For each user-provided answer, render the photo description and a photo thumbnail:
-                $images = array_map(function ($image_id) {
-	                return AdminUtils::get_image_thumbnails_html( [ 'images' => [ $image_id ] ], null );
-                }, $message->image_ids);
-            }
-
-            printf('<tr>' .
-                '<td valign="top">%s</td>' .
-                '<td valign="top">%s</td>' .
-                '<td valign="top">%s</td>' .
-                '</tr>',
-                $message->date_received->format(DateTime::ISO8601),
-                join('', $images),
-                $message->text);
-        }
+        print $messages_manager->get_html( $messages )
         ?>
         </tbody>
     </table>

@@ -90,8 +90,21 @@ class PersonDao extends AbstractDao
             $key);
     }
 
+	public function get_by_contact_data( $competition_id, $from ) {
+		$phone = Phone::fix_phone_number( $from );
+		$matches = array_filter(
+			$this->get_all_in_competition( $competition_id ),
+			function ( Person $person ) use ( $phone ) {
+				return Phone::fix_phone_number( $person->phone ) == $phone;
+			} );
+		if ( count( $matches ) == 1 ) {
+			return reset( $matches );
+		}
 
-    function get_all_in_group($group_id)
+		return null;
+	}
+
+	function get_all_in_group( $group_id )
     {
         return $this->get_objects(
 	        function ( $row ) {
@@ -101,7 +114,7 @@ class PersonDao extends AbstractDao
             $group_id);
     }
 
-    function get_all_in_competition($competition_id)
+	function get_all_in_competition( $competition_id )
     {
         return $this->get_objects(
 	        function ( $row ) {
@@ -113,7 +126,7 @@ class PersonDao extends AbstractDao
             $competition_id);
     }
 
-    public function delete_by_key($key)
+	public function delete_by_key( $key )
     {
         $affected_rows = $this->wpdb->delete($this->table, array(
             'random_id' => $key

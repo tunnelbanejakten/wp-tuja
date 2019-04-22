@@ -171,3 +171,24 @@ span.tuja-admin-review-autoscore.tuja-admin-review-autoscore-decent {
     background-color: #ffef9c;
     border-color: #b5a556;
 }
+
+.tuja-admin-messages {
+    display: flex;
+    flex-direction: column;
+}
+.tuja-admin-message {
+    display: flex;
+    flex: 1;
+    border: 1px solid #ccc;
+    margin-bottom: 0.5em;
+    padding: 0.5em;
+}
+.tuja-admin-message-preview {
+    flex-basis: 250px;
+}
+.tuja-admin-message-preview img {
+    display: block;
+}
+.tuja-admin-message-metadata {
+    flex: 1;
+}
