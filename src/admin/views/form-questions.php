@@ -31,7 +31,7 @@ AdminUtils::printTopMenu( $competition );
 			printf('<textarea name="%s" rows="%d">%s</textarea>', $field_name, $rows, $json);
 
 			echo '</div>';
-			printf('<button type="submit" class="button" name="tuja_action" value="%s%d" onclick="return confirm(\'Är du säker?\');">Ta bort</button>', self::ACTION_NAME_DELETE_PREFIX, $question->question_group_id);
+			printf('<button type="submit" class="button" name="tuja_action" value="%s%d" onclick="return confirm(\'Är du säker?\');">Ta bort</button>', self::ACTION_NAME_DELETE_PREFIX, $question->id);
 			echo '</div>';
 		}
 		
