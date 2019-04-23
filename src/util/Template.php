@@ -58,25 +58,31 @@ class Template
 	    $registration_evaluator = new RegistrationEvaluator();
 	    $evaluation_result      = $registration_evaluator->evaluate( $group );
         return [
-	        'group_name' => $group->name,
-	        'group_key'  => $group->random_id,
-	        'group_registration_evaluation_warnings' => self::group_parameter_registration_issues( 'Sådant som ni borde fixa:', $evaluation_result, RuleResult::WARNING ),
-	        'group_registration_evaluation_errors'   => self::group_parameter_registration_issues( 'Sådant som ni måste fixa för att få starta:', $evaluation_result, RuleResult::BLOCKER )
+	        'group_name'                             => $group->name,
+	        'group_key'                              => $group->random_id,
+	        'group_registration_evaluation_warnings' => self::group_parameter_registration_issues( 'Sådant som ni **borde** fixa:', $evaluation_result, RuleResult::WARNING ),
+	        'group_registration_evaluation_errors'   => self::group_parameter_registration_issues( 'Sådant som ni **måste** fixa för att få starta:', $evaluation_result, RuleResult::BLOCKER )
         ];
     }
 
 	private static function group_parameter_registration_issues( $header, array $evaluation_result, $status ) {
+		$issues = array_filter(
+			$evaluation_result,
+			function ( $issue ) use ( $status ) {
+				return $issue->status === $status;
+			} );
+
+		if ( empty( $issues ) ) {
+			return '';
+		}
+
 		return $header . "\n" . join(
 				"\n",
 				array_map(
 					function ( $issue ) {
 						return sprintf( '- %s. %s', $issue->rule_name, $issue->details );
 					},
-					array_filter(
-						$evaluation_result,
-						function ( $issue ) use ( $status ) {
-							return $issue->status === $status;
-						} ) ) );
+					$issues ) );
 	}
 
 	public static function site_parameters()
