@@ -47,8 +47,6 @@ class MessagesManager {
 	}
 
 	private function get_group_list_html( Message $message ) {
-
-
 		$group_option_values = array_map( function ( $group ) {
 			return $group->id;
 		}, $this->groups );
@@ -101,18 +99,18 @@ class MessagesManager {
 	private function get_message_html( Message $message ) {
 		if ( is_array( $message->image_ids ) && count( $message->image_ids ) > 0 ) {
 			$field  = new FieldImages( [] );
-			$images = array_map( function ( $image_id ) use ( $field, $message ) {
+			$images_html = array_map( function ( $image_id ) use ( $field, $message ) {
 				return AdminUtils::get_image_thumbnails_html(
 					json_encode( [ 'images' => [ $image_id ] ] ),
 					isset( $this->groups_map[ $message->group_id ] ) ? $this->groups_map[ $message->group_id ]->random_id : null );
 			}, $message->image_ids );
 		} else {
-			$images = [];
+			$images_html = [];
 		}
 		?>
         <div class="tuja-admin-message">
             <div class="tuja-admin-message-preview">
-				<?= join( '', $images ) ?>
+				<?= join( '', $images_html ) ?>
             </div>
             <div class="tuja-admin-message-metadata">
                 <p>
@@ -186,6 +184,7 @@ class MessagesManager {
 				AdminUtils::printException( $e );
 			}
 
+			// TODO: One function for moving image, one for creating response.
 			$response                   = new Response();
 			$response->group_id         = $group_id;
 			$response->form_question_id = $question_id;

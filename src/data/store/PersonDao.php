@@ -93,6 +93,7 @@ class PersonDao extends AbstractDao
 	public function get_by_contact_data( $competition_id, $from ) {
 		$phone = Phone::fix_phone_number( $from );
 		$matches = array_filter(
+			// TODO: The result of get_all_in_competition can maybe be cached to improve efficiency.
 			$this->get_all_in_competition( $competition_id ),
 			function ( Person $person ) use ( $phone ) {
 				return Phone::fix_phone_number( $person->phone ) == $phone;

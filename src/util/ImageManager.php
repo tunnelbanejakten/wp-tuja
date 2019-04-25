@@ -81,6 +81,7 @@ class ImageManager
             }
         } else {
 	        if ( $group_key != null ) {
+        	    // The group_key is set but we didn't find the image in the group's sub-directory. Check if it for some reason is still in the root directory.
 		        return $this->get_resized_image_url( $filename, $pixels, null );
 	        }
         }
@@ -98,6 +99,7 @@ class ImageManager
 		$old_dir           = $this->directory . $old_sub_directory;
 
 		if ( ! is_dir( $old_dir ) ) {
+			// This is not that necessary
 			mkdir( $old_dir, 0755, true );
 		}
 
@@ -110,6 +112,7 @@ class ImageManager
 
 		list ( $file_id, $ext ) = explode( '.', $source_filename );
 
+		// Get all files, including thumbnails, matching the given $source_filename
 		$filenames = array_filter( scandir( $old_dir ), function ( $filename ) use ( $file_id ) {
 			return strpos( $filename, $file_id ) !== false;
 		} );
