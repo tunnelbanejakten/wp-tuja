@@ -30,6 +30,15 @@ class MessagesSend {
 		}
 	}
 
+	private static function get_specific_recipient_option( array $specific_recipients ): array {
+		return array(
+			'label'    => sprintf( 'Specifika personer (%d st)', count( $specific_recipients ) ),
+			'selector' => function ( Person $person ) use ( $specific_recipients ) {
+				return in_array( $person->id, $specific_recipients );
+			}
+		);
+	}
+
 
 	public function handle_post( $group_selectors, $people_selectors, $delivery_methods, $groups ) {
 		if ( ! isset( $_POST['tuja_messages_action'] ) ) {
@@ -64,41 +73,56 @@ class MessagesSend {
 
 				$variables = array_merge( $body_template->get_variables(), $subject_template->get_variables() );
 
+				$recipients_data = array_map( function ( $person ) use ( $delivery_method, $variables, $groups, $subject_template, $body_template, $is_send ) {
+					$group               = reset( array_filter( $groups, function ( $grp ) use ( $person ) {
+						return $grp->id == $person->group_id;
+					} ) );
+					$template_parameters = $this->get_parameters( $person, $group );
+					$message_generator   = $delivery_method['message_generator'];
+					$outgoing_message    = $message_generator( $person, $subject_template, $body_template, $template_parameters );
+					$message             = 'OK';
+					$message_css_class   = 'tuja-admin-review-autoscore-good';
+					$success             = false;
+					try {
+						if ( $is_send ) {
+							$outgoing_message->send();
+							$message = 'Meddelande har skickats';
+						} else {
+							$outgoing_message->validate();
+						}
+						$success = true;
+					} catch ( Exception $e ) {
+						$message           = $e->getMessage();
+						$message_css_class = 'tuja-admin-review-autoscore-poor';
+					}
+
+					return [
+						'template_parameters' => $template_parameters,
+						'success'             => $success,
+						'message'             => $message,
+						'message_css_class'   => $message_css_class,
+						'person_id'           => $person->id,
+						'person_name'         => $person->name,
+						'group_name'          => $group->name,
+						'is_plain_text_body'  => $delivery_method['is_plain_text_body']
+					];
+				}, $people );
+
+				$retry_people_ids = [];
+				foreach ( $recipients_data as $data ) {
+					if ( ! $data['success'] ) {
+						$retry_people_ids[] = $data['person_id'];
+						$warnings[]         = sprintf( 'Problem för %s i %s. Välj mottagare "Specifika personer" för att skicka om.', $data['person_name'], $data['group_name'] );
+					}
+				}
+
 				return [
 					'body_template'    => $body_template,
 					'subject_template' => $subject_template,
 					'variables'        => $variables,
 					'warnings'         => $warnings,
-					'recipients'       => array_map( function ( $person ) use ( $delivery_method, $variables, $groups, $subject_template, $body_template, $is_send ) {
-						$group               = reset( array_filter( $groups, function ( $grp ) use ( $person ) {
-							return $grp->id == $person->group_id;
-						} ) );
-						$template_parameters = $this->get_parameters( $person, $group );
-						$message_generator   = $delivery_method['message_generator'];
-						$outgoing_message    = $message_generator( $person, $subject_template, $body_template, $template_parameters );
-						$message             = 'OK';
-						$message_css_class   = 'tuja-admin-review-autoscore-good';
-						try {
-							if ( $is_send ) {
-								$outgoing_message->send();
-								$message = 'Meddelande har skickats';
-							} else {
-								$outgoing_message->validate();
-							}
-						} catch ( Exception $e ) {
-							$message           = $e->getMessage();
-							$message_css_class = 'tuja-admin-review-autoscore-poor';
-						}
-
-						return [
-							'template_parameters' => $template_parameters,
-							'message'             => $message,
-							'message_css_class'   => $message_css_class,
-							'person_name'         => $person->name,
-							'is_plain_text_body'  => $delivery_method['is_plain_text_body']
-						];
-					}, $people )
-
+					'retry_people_ids' => $retry_people_ids,
+					'recipients'       => $recipients_data
 				];
 			}
 		}
@@ -186,7 +210,7 @@ class MessagesSend {
 				},
 				$groups ) );
 
-		$people_selectors = array(
+		$people_selectors    = array(
 			'all'              => array(
 				'label'    => 'Alla',
 				'selector' => function ( Person $person ) {
@@ -206,6 +230,12 @@ class MessagesSend {
 				}
 			)
 		);
+		$specific_recipients = [];
+		if ( isset( $_POST['tuja_messages_specificrecipients'] ) ) {
+			// Set of recipients already set. Use this data to enable the send-to-specific-people option during execution of handle_post()
+			$specific_recipients          = explode( ',', $_POST['tuja_messages_specificrecipients'] );
+			$people_selectors['specific'] = self::get_specific_recipient_option( $specific_recipients );
+		}
 
 		$delivery_methods = array(
 			'sms'   => array(
@@ -234,6 +264,12 @@ class MessagesSend {
 		$groups = $group_dao->get_all_in_competition( $this->competition->id );
 
 		$action_result = $this->handle_post( $group_selectors, $people_selectors, $delivery_methods, $groups );
+
+		if ( ! empty( $action_result['retry_people_ids'] ) ) {
+			// We failed to sent to some recipients. Enable the send-to-specific-people option when the page is rendered.
+			$specific_recipients          = $action_result['retry_people_ids'];
+			$people_selectors['specific'] = self::get_specific_recipient_option( $specific_recipients );
+		}
 
 		$message_template_dao = new MessageTemplateDao();
 		$templates            = $message_template_dao->get_all_in_competition( $competition->id );
