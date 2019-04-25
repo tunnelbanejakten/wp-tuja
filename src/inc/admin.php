@@ -15,7 +15,7 @@ class Admin extends Plugin {
 	}
 
 	public function add_admin_menu_item() {
-		add_menu_page( 'Tunnelbanejakten', 'Tunnelbanejakten', 'manage_options', static::SLUG, array($this, 'route') );
+		add_menu_page( 'Tunnelbanejakten', 'Tunnelbanejakten', 'edit_pages', static::SLUG, array($this, 'route') );
 	}
 
 	public function assets() {
