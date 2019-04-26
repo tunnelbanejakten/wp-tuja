@@ -68,9 +68,12 @@ class ImageManager
         }
 
 	    $src_path  = $this->directory . $sub_directory . "$file_id.$ext";
+	    list( $width, $height, $image_type ) = getimagesize( $src_path );
+	    if ( $image_type != IMAGETYPE_JPEG ) {
+		    return false;
+	    }
         $src_image = @imagecreatefromjpeg($src_path);
         if ($src_image !== false) {
-            list($width, $height) = getimagesize($src_path);
             $dst_width = sqrt(($pixels * $width) / $height);
             $dst_height = $dst_width * ($height / $width);
             $dst_image = imagecreatetruecolor($dst_width, $dst_height);
