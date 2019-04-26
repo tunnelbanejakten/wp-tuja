@@ -61,7 +61,14 @@ AdminUtils::printTopMenu( $competition );
                                 $is_form_name_printed = true;
                             }
                             if (!$is_question_printed) {
-	                            printf( '<tr class="tuja-admin-review-question-row"><td></td><td colspan="5"><strong>%s</strong, > %s, %s</td></tr>', $question->text, $question->type, $question->score_type );
+	                            $question_group_text = $question_groups[ $question->question_group_id ]->text;
+	                            $question_text       = $question_group_text
+		                            ? $question_group_text . " : " . $question->text
+		                            : $question->text;
+	                            printf( '<tr class="tuja-admin-review-question-row"><td></td><td colspan="5"><strong>%s</strong> %s, %s</td></tr>',
+		                            $question_text,
+		                            $question->type,
+		                            $question->score_type );
 	                            printf( '' .
 	                                    '<tr class="tuja-admin-review-correctanswer-row">' .
 	                                    '  <td colspan="2"></td>' .
