@@ -120,6 +120,9 @@ body.wp-admin th {
 table.tuja-admin-review {
     border-collapse: collapse;
 }
+table.tuja-admin-review th {
+    padding: 0 10px;
+}
 tr.tuja-admin-review-form-row td {
     border-top: 3px solid #aaa;
     line-height: 3em;
