@@ -60,7 +60,9 @@ AdminUtils::printTopMenu( $competition );
         <?php
         foreach ($forms as $form) {
 	        printf( '<tr class="tuja-admin-review-form-row"><td colspan="6"><strong>%s</strong></td></tr>', $form->name );
-            $questions = $db_question->get_all_in_form($form->id);
+			$questions = $db_question->get_all_in_form($form->id);
+			$current_group = '';
+
             foreach ($questions as $question) {
 
 	            $calculated_score_without_override = isset( $score_result->questions[ $question->id ] )
@@ -86,21 +88,31 @@ AdminUtils::printTopMenu( $competition );
                     }, $response->answers);
                 }
 
-	            $score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
+				$score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
+				$q_group = $question_groups[ $question->question_group_id ]->text;
 
-	            $question_group_text = $question_groups[ $question->question_group_id ]->text;
-	            $question_text       = $question_group_text
-		            ? $question_group_text . " : " . $question->text
-		            : $question->text;
+				if($q_group !== $current_group) {
+					printf( '' .
+						'<tr class="tuja-admin-review-response-row question-group">' .
+						'  <td></td>' .
+						'  <td valign="top">%s</td>' .
+						'  <td valign="top" colspan="4"></td>' .
+						'</tr>',
+						$q_group
+					);
+					$current_group = $q_group;
+				}
+					
 	            printf( '' .
-                    '<tr class="tuja-admin-review-response-row"><td></td>' .
+					'<tr class="tuja-admin-review-response-row">' .
+					'  <td></td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s p</span></td>' .
                     '  <td valign="top"><input type="number" name="%s" value="%s" size="5" min="0" max="%d"> p</td>' .
                     '</tr>',
-		            $question_text,
+		            $question->text,
 		            join( '<br>', $question->correct_answers ),
                     is_array($response->answers) ? join('<br>', $response->answers) : '<em>Ogiltigt svar</em>',
 		            $score_class,
