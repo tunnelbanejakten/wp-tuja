@@ -152,6 +152,11 @@ tr.tuja-admin-review-response-row td:first-child {
     width: 4em;
 }
 
+tr.tuja-admin-review-response-row.question-group td {
+	border: none;
+	font-weight: bold;
+}
+
 span.tuja-admin-review-autoscore {
     display: inline-block;
     border-radius: 3px;

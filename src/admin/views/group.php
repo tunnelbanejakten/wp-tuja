@@ -44,8 +44,8 @@ AdminUtils::printTopMenu( $competition );
         <thead>
         <tr>
             <th colspan="2">Fråga</th>
-            <th>Lagets svar</th>
             <th>Rätt svar</th>
+            <th>Lagets svar</th>
             <th colspan="2">Poäng</th>
         </tr>
         </thead>
@@ -60,7 +60,9 @@ AdminUtils::printTopMenu( $competition );
         <?php
         foreach ($forms as $form) {
 	        printf( '<tr class="tuja-admin-review-form-row"><td colspan="6"><strong>%s</strong></td></tr>', $form->name );
-            $questions = $db_question->get_all_in_form($form->id);
+			$questions = $db_question->get_all_in_form($form->id);
+			$current_group = '';
+
             foreach ($questions as $question) {
 
 	            $calculated_score_without_override = isset( $score_result->questions[ $question->id ] )
@@ -86,10 +88,24 @@ AdminUtils::printTopMenu( $competition );
                     }, $response->answers);
                 }
 
-	            $score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
+				$score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
+				$q_group = $db_question_group->get($question->question_group_id);
+
+				if($q_group->text !== $current_group) {
+					printf( '' .
+						'<tr class="tuja-admin-review-response-row question-group">' .
+						'  <td></td>' .
+						'  <td valign="top">%s</td>' .
+						'  <td valign="top" colspan="4"></td>' .
+						'</tr>',
+						$q_group->text
+					);
+					$current_group = $q_group->text;
+				}
 
 	            printf( '' .
-                    '<tr class="tuja-admin-review-response-row"><td></td>' .
+					'<tr class="tuja-admin-review-response-row">' .
+					'  <td></td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top">%s</td>' .
                     '  <td valign="top">%s</td>' .
