@@ -89,24 +89,19 @@ AdminUtils::printTopMenu( $competition );
                 }
 
 				$score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
-				$q_group = $db_question_group->get($question->question_group_id);
+				$q_group = $question_groups[ $question->question_group_id ]->text;
 
-				if($q_group->text !== $current_group) {
+				if($q_group !== $current_group) {
 					printf( '' .
 						'<tr class="tuja-admin-review-response-row question-group">' .
 						'  <td></td>' .
 						'  <td valign="top">%s</td>' .
 						'  <td valign="top" colspan="4"></td>' .
 						'</tr>',
-						$q_group->text
+						$q_group
 					);
-					$current_group = $q_group->text;
+					$current_group = $q_group;
 				}
-
-	            $question_group_text = $question_groups[ $question->question_group_id ]->text;
-	            $question_text       = $question_group_text
-		            ? $question_group_text . " : " . $question->text
-					: $question->text;
 					
 	            printf( '' .
 					'<tr class="tuja-admin-review-response-row">' .
@@ -117,7 +112,7 @@ AdminUtils::printTopMenu( $competition );
                     '  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s p</span></td>' .
                     '  <td valign="top"><input type="number" name="%s" value="%s" size="5" min="0" max="%d"> p</td>' .
                     '</tr>',
-		            $question_text,
+		            $question->text,
 		            join( '<br>', $question->correct_answers ),
                     is_array($response->answers) ? join('<br>', $response->answers) : '<em>Ogiltigt svar</em>',
 		            $score_class,
