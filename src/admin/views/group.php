@@ -106,7 +106,8 @@ AdminUtils::printTopMenu( $competition );
 	            $question_group_text = $question_groups[ $question->question_group_id ]->text;
 	            $question_text       = $question_group_text
 		            ? $question_group_text . " : " . $question->text
-		            : $question->text;
+					: $question->text;
+					
 	            printf( '' .
 					'<tr class="tuja-admin-review-response-row">' .
 					'  <td></td>' .
