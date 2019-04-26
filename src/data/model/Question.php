@@ -115,7 +115,7 @@ class Question
 				    return $percent;
 			    }, $correct_answers );
 
-			    return max( $this_answer_percents_correct );
+			    return !empty($this_answer_percents_correct) ? max( $this_answer_percents_correct ) : null;
 		    }
 	    }, $answers, array_keys( $answers ) );
 
