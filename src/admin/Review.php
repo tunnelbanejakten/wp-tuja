@@ -3,12 +3,14 @@
 namespace tuja\admin;
 
 use tuja\data\model\Question;
+use tuja\data\model\QuestionGroup;
 use tuja\data\model\Response;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
 use tuja\data\store\QuestionDao;
+use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
 
 
@@ -25,6 +27,7 @@ class Review {
 	public function __construct() {
 		$this->question_dao = new QuestionDao();
 		$this->response_dao = new ResponseDao();
+		$this->question_group_dao = new QuestionGroupDao();
 		$db_competition     = new CompetitionDao();
 
 		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
@@ -103,6 +106,11 @@ class Review {
 		$db_response = $this->response_dao;
 		$db_points   = new PointsDao();
 		$db_question = $this->question_dao;
+
+		$question_groups = $this->question_group_dao->get_all_in_competition( $competition->id );
+		$question_groups = array_combine( array_map( function ( QuestionGroup $qg ) {
+			return $qg->id;
+		}, $question_groups ), $question_groups );
 
 		$groups     = $db_groups->get_all_in_competition( $competition->id );
 		$groups_map = array_combine( array_map( function ( $group ) {
