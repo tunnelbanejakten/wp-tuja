@@ -35,7 +35,7 @@ class Field
                 $field = new FieldChoices($question->possible_answers ?: $question->correct_answers, true);
                 break;
             case 'text_multi':
-                $field = new FieldTextMulti($question->possible_answers ?: $question->correct_answers);
+                $field = new FieldTextMulti();
                 break;
             case 'images':
                 $field = new FieldImages($question->possible_answers ?: $question->correct_answers);
