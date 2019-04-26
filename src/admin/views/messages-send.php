@@ -118,6 +118,12 @@ AdminUtils::printTopMenu( $competition );
             </button>
         </div>
 	<?php } ?>
+	<?php
+	if ( ! empty( $specific_recipients ) ) {
+		printf( '<input type="hidden" name="tuja_messages_specificrecipients" value="%s">',
+			join( ',', $specific_recipients ) );
+	}
+	?>
 </form>
 	<?php
 if ( ! empty( $action_result ) ) {
