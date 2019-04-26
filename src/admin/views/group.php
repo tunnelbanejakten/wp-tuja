@@ -44,8 +44,8 @@ AdminUtils::printTopMenu( $competition );
         <thead>
         <tr>
             <th colspan="2">Fråga</th>
-            <th>Lagets svar</th>
             <th>Rätt svar</th>
+            <th>Lagets svar</th>
             <th colspan="2">Poäng</th>
         </tr>
         </thead>
@@ -88,6 +88,10 @@ AdminUtils::printTopMenu( $competition );
 
 	            $score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
 
+	            $question_group_text = $question_groups[ $question->question_group_id ]->text;
+	            $question_text       = $question_group_text
+		            ? $question_group_text . " : " . $question->text
+		            : $question->text;
 	            printf( '' .
                     '<tr class="tuja-admin-review-response-row"><td></td>' .
                     '  <td valign="top">%s</td>' .
@@ -96,7 +100,7 @@ AdminUtils::printTopMenu( $competition );
                     '  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s p</span></td>' .
                     '  <td valign="top"><input type="number" name="%s" value="%s" size="5" min="0" max="%d"> p</td>' .
                     '</tr>',
-                    $question->text,
+		            $question_text,
 		            join( '<br>', $question->correct_answers ),
                     is_array($response->answers) ? join('<br>', $response->answers) : '<em>Ogiltigt svar</em>',
 		            $score_class,

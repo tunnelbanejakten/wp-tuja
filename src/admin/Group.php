@@ -3,6 +3,7 @@
 namespace tuja\admin;
 
 use Exception;
+use tuja\data\model\QuestionGroup;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\MessageDao;
@@ -20,10 +21,12 @@ class Group {
 	private $group;
 	private $competition;
 	private $group_dao;
+	private $question_group_dao;
 
 	public function __construct() {
-		$this->group_dao = new GroupDao();
-		$this->group     = $this->group_dao->get( $_GET['tuja_group'] );
+		$this->group_dao          = new GroupDao();
+		$this->question_group_dao = new QuestionGroupDao();
+		$this->group              = $this->group_dao->get( $_GET['tuja_group'] );
 		if ( ! $this->group ) {
 			print 'Could not find group';
 
@@ -111,6 +114,11 @@ class Group {
 		$db_groups         = new GroupDao();
 		$db_points         = new PointsDao();
 		$db_message        = new MessageDao();
+
+		$question_groups = $this->question_group_dao->get_all_in_competition( $competition->id );
+		$question_groups = array_combine( array_map( function ( QuestionGroup $qg ) {
+			return $qg->id;
+		}, $question_groups ), $question_groups );
 
 		$group                         = $this->group;
 

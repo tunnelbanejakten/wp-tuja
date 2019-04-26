@@ -23,6 +23,7 @@ class Review {
 	const QUESTION_FILTER_ALL = 'all';
 	const QUESTION_FILTER_IMAGES = 'images';
 	private $question_dao;
+	private $question_group_dao;
 
 	public function __construct() {
 		$this->question_dao = new QuestionDao();
