@@ -3,6 +3,7 @@
 namespace tuja\view;
 
 use ReflectionClass;
+use tuja\data\model\Group;
 
 class FieldPno extends Field
 {
@@ -11,7 +12,7 @@ class FieldPno extends Field
         parent::__construct();
     }
 
-    public function render($field_name)
+    public function render($field_name, Group $group = null )
     {
         $render_id = $field_name ?: uniqid();
         $hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';

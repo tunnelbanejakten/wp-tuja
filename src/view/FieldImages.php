@@ -3,14 +3,23 @@
 namespace tuja\view;
 
 
+use tuja\data\model\Group;
+use tuja\util\ImageManager;
+
 class FieldImages extends Field
 {
 	const SHORT_LIST_LIMIT = 5;
+	private $image_manager;
 
-	public function get_posted_answer($form_field) {
+	public function __construct() {
+		parent::__construct();
+		$this->image_manager = new ImageManager();
+	}
+
+	public function get_posted_answer( $form_field ) {
 		$answer = array();
 		if (isset($_POST[$form_field])) {
-			$data   = sanitize_post($_POST[$form_field]);
+			$data   = sanitize_post( $_POST[ $form_field ] );
 			$answer = array(
 				'images'  => $data['images'],
 				'comment' => $data['comment']
@@ -21,7 +30,7 @@ class FieldImages extends Field
 		return array($answer);
 	}
 
-	public function render($field_name) {
+	public function render( $field_name, Group $group = null ) {
 		$hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';
 
 		return sprintf(
@@ -29,15 +38,15 @@ class FieldImages extends Field
 			strtolower((new \ReflectionClass($this))->getShortName()),
 			$this->label,
 			$hint,
-			$this->render_image_upload($field_name)
+			$this->render_image_upload( $field_name, $group->random_id )
 		);
 	}
 
-	private function render_comment_field($field_name, $comment) {
+
+	private function render_comment_field( $field_name, $comment ) {
 		ob_start();
-		echo '<label for="' . $field_name . '-comment' . '">Kommentar</label>';
 		printf(
-			'<textarea rows="3" id="%s" name="%s[comment]" %s>%s</textarea>',
+			'<textarea rows="3" id="%s" name="%s[comment]" placeholder="Skriv kommentar här..." %s>%s</textarea>',
 			$field_name . '-comment',
 			$field_name,
 			$this->read_only ? ' disabled="disabled"' : '',
@@ -47,7 +56,7 @@ class FieldImages extends Field
 		return ob_get_clean();
 	}
 
-	private function render_image_upload($field_name) {
+	private function render_image_upload( $field_name, $group_key ) {
 		wp_enqueue_script('tuja-dropzone');
 		wp_enqueue_script('tuja-upload-script');
 
@@ -56,7 +65,16 @@ class FieldImages extends Field
 			$answer = json_decode($this->value[0], true);
 			if (!empty($answer['images'])) {
 				foreach ($answer['images'] as $filename) {
-					$images[] = sprintf('<input type="hidden" name="%s[images][]" value="%s">', $field_name, $filename);
+
+					$resized_image_url = $this->image_manager->get_resized_image_url(
+						$filename,
+						ImageManager::DEFAULT_THUMBNAIL_PIXEL_COUNT,
+						$group_key );
+
+					$images[] = sprintf( '<input type="hidden" name="%s[images][]" value="%s" data-thumbnail-url="%s">',
+						$field_name,
+						$filename,
+						$resized_image_url ? basename( $resized_image_url ) : '' );
 				}
 			}
 		}

@@ -8,6 +8,8 @@ use tuja\data\store\ResponseDao;
 
 class ImageManager
 {
+	const DEFAULT_THUMBNAIL_PIXEL_COUNT = 200 * 200;
+
     public function __construct()
     {
         $dir = wp_upload_dir('tuja', true, false);
@@ -18,7 +20,7 @@ class ImageManager
         $this->public_url_directory = trailingslashit($dir['url']);
     }
 
-    public function import_jpeg($file_path): string
+	public function import_jpeg( $file_path, $group_key = null ): string
     {
         if (file_exists($file_path)) {
 			if(function_exists('exif_imagetype')) {
@@ -31,16 +33,21 @@ class ImageManager
                 throw new Exception('Not valid JPEG image.');
             }
 
-            $md5 = md5_file($file_path);
-            $new_path = $this->directory . $md5 . '.jpg';
+	        $md5           = md5_file( $file_path );
+	        $file_id       = $md5 . '.jpg';
+	        $sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
+	        if ( ! is_dir( $this->directory . $sub_directory ) ) {
+		        mkdir( $this->directory . $sub_directory, 0755, true );
+	        }
+	        $new_path = $this->directory . $sub_directory . $file_id;
 
             if (file_exists($new_path)) {
                 // This exact file has been uploaded before.
-                return $md5;
+	            return $file_id;
             }
 
             if ($this->move($file_path, $new_path)) {
-                return $md5;
+	            return $file_id;
             } else {
                 throw new Exception(sprintf('Could not save uploaded file to %s', $new_path));
             }
@@ -50,9 +57,9 @@ class ImageManager
         }
     }
 
-	public function get_resized_image_url( $file_id, $pixels, $group_key = null )
+	public function get_resized_image_url( $filename, $pixels, $group_key = null )
     {
-	    list ( $file_id, $ext ) = explode( '.', $file_id );
+	    list ( $file_id, $ext ) = explode( '.', $filename );
 	    $dst_filename  = "$file_id-$pixels.$ext";
 	    $sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
 	    $dst_path      = $this->directory . $sub_directory . $dst_filename;
@@ -72,6 +79,11 @@ class ImageManager
 	                return $this->public_url_directory . $sub_directory . $dst_filename;
                 }
             }
+        } else {
+	        if ( $group_key != null ) {
+        	    // The group_key is set but we didn't find the image in the group's sub-directory. Check if it for some reason is still in the root directory.
+		        return $this->get_resized_image_url( $filename, $pixels, null );
+	        }
         }
         return false;
     }
@@ -80,6 +92,35 @@ class ImageManager
     {
         return $this->public_url_directory . $file_md5_hash . '.jpg';
     }
+
+    // TODO: Look into overlap between move() and move_to_group()
+	public function move_to_group( $source_filename, $old_group_key, $new_group_key ) {
+		$old_sub_directory = isset( $old_group_key ) ? "group-$old_group_key/" : '';
+		$old_dir           = $this->directory . $old_sub_directory;
+
+		if ( ! is_dir( $old_dir ) ) {
+			// This is not that necessary
+			mkdir( $old_dir, 0755, true );
+		}
+
+		$new_sub_directory = isset( $new_group_key ) ? "group-$new_group_key/" : '';
+		$new_dir           = $this->directory . $new_sub_directory;
+
+		if ( ! is_dir( $new_dir ) ) {
+			mkdir( $new_dir, 0755, true );
+		}
+
+		list ( $file_id, $ext ) = explode( '.', $source_filename );
+
+		// Get all files, including thumbnails, matching the given $source_filename
+		$filenames = array_filter( scandir( $old_dir ), function ( $filename ) use ( $file_id ) {
+			return strpos( $filename, $file_id ) !== false;
+		} );
+
+		foreach ( $filenames as $filename ) {
+			$move_result = rename( $old_dir . $filename, $new_dir . $filename );
+		}
+	}
 
     private function move($old, $new)
     {

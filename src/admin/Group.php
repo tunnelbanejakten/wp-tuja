@@ -98,6 +98,9 @@ class Group {
 	public function output() {
 		$this->handle_post();
 
+		$messages_manager = new MessagesManager($this->competition);
+		$messages_manager->handle_post();
+
 		$competition = $this->competition;
 
 		$db_form           = new FormDao();

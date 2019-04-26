@@ -69,7 +69,10 @@ class AdminUtils
 		$image_manager = new ImageManager();
 
 		return join( array_map( function ( $image_id ) use ( $image_manager, $group_key ) {
-			$resized_image_url = $image_manager->get_resized_image_url( $image_id, 200 * 200, $group_key );
+			$resized_image_url = $image_manager->get_resized_image_url(
+				$image_id,
+				ImageManager::DEFAULT_THUMBNAIL_PIXEL_COUNT,
+				$group_key );
 
 			// TODO: Show fullsize image in modal popup when clicking image (see https://codex.wordpress.org/ThickBox)
 			return $resized_image_url ? sprintf( '<img src="%s">', $resized_image_url ) : 'Kan inte visa bild.';

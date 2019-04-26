@@ -138,21 +138,22 @@ class FormShortcode extends AbstractShortcode
 
 			$selected_participant_group = $this->get_selected_group( $participant_groups );
 
-			$group_id = $selected_participant_group->id;
+		    $target_group = $selected_participant_group;
 		} else {
-			$group_id = $group->id;
+			$target_group = $group;
 		}
+		$target_group_id = $group->id;
 
 		$is_read_only = ! $this->is_submit_allowed();
 
-		if ( $group_id ) {
+		if ( $target_group_id ) {
 			$message_success = null;
 			$message_error   = null;
 			$errors          = array();
 			$is_update = isset($_POST[ self::ACTION_FIELD_NAME ]) && $_POST[ self::ACTION_FIELD_NAME ] === 'update';
 
 			if ($is_update) {
-				$errors = $this->update_answers( $group_id );
+				$errors = $this->update_answers( $target_group_id );
 				if ( empty( $errors ) ) {
 					$message_success = 'Era svar har sparats.';
 					$html_sections[] = sprintf( '<p class="tuja-message tuja-message-success">%s</p>', $message_success );
@@ -165,7 +166,7 @@ class FormShortcode extends AbstractShortcode
 				}
 			}
 
-			$responses = $this->response_dao->get_latest_by_group( $group_id );
+			$responses = $this->response_dao->get_latest_by_group( $target_group_id );
 			$question_groups = $this->question_group_dao->get_all_in_form( $this->form_id );
 			
 			foreach($question_groups as $question_group) {
@@ -188,7 +189,7 @@ class FormShortcode extends AbstractShortcode
 					}
 					$field            = Field::create( $question );
 					$field->read_only = $is_read_only;
-					$html_field       = $field->render( $field_name );
+					$html_field       = $field->render( $field_name, $target_group );
 					
 					$current_group .= sprintf( '<div class="tuja-question %s" data-id="%d">%s%s</div>',
 						isset( $errors[ $field_name ] ) ? 'tuja-field-error' : '',
@@ -207,7 +208,7 @@ class FormShortcode extends AbstractShortcode
 				$question_ids = array_map( function ( $question ) {
 					return $question->id;
 				}, $questions );
-				$optimistic_lock_value = $this->get_optimistic_lock_value($group_id, (array)$question_ids);
+				$optimistic_lock_value = $this->get_optimistic_lock_value($target_group_id, (array)$question_ids);
 
 				$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::OPTIMISTIC_LOCK_FIELD_NAME, $optimistic_lock_value );
 				$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', 'group', $group_key );
