@@ -61,9 +61,17 @@ class AdminUtils
 	}
 
 	public static function get_image_thumbnails_html( $answer, $group_key = null ) {
-		$answer = json_decode($answer, true);
-		if (empty($answer['images'])) {
+		if ( empty( $answer ) || is_array( $answer ) ) {
 			return '';
+		}
+		$answer = json_decode($answer, true);
+
+		if ( $answer == null ) {
+			return 'Syntaxfel!';
+		}
+
+		if ( ! is_array( $answer['images'] ) || empty( $answer['images'][0] ) ) {
+			return 'Syntaxfel!';
 		}
 
 		$image_manager = new ImageManager();
@@ -75,7 +83,7 @@ class AdminUtils
 				$group_key );
 
 			// TODO: Show fullsize image in modal popup when clicking image (see https://codex.wordpress.org/ThickBox)
-			return $resized_image_url ? sprintf( '<img src="%s">', $resized_image_url ) : 'Kan inte visa bild.';
+			return $resized_image_url ? sprintf( '<img src="%s">', $resized_image_url ) :  sprintf('Kan inte visa bild group-%s/%s', $group_key, $image_id);
 		}, $answer['images'] ) );
 	}
 }
