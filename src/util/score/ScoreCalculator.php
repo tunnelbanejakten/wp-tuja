@@ -94,7 +94,8 @@ class ScoreCalculator
 
 		foreach ( $this->questions as $question ) {
 			$question_result = new ScoreQuestionResult();
-			if ( isset( $responses[ $question->id ] ) ) {
+			$response_exists = isset( $responses[ $question->id ] );
+			if ( $response_exists ) {
 				$answers = $responses[ $question->id ]->answers;
 				// TODO: How should the is_reviewed flag be used? Only count points for answers where is_reviewed = true?
 				if ( isset( $answers ) ) {
@@ -102,9 +103,9 @@ class ScoreCalculator
 					$question_result->final = $question_result->auto;
 				}
 			}
-			if ( isset( $points_overrides[ $question->id ] )
-			     && isset( $responses[ $question->id ] )
-			     && $points_overrides[ $question->id ]->created > $responses[ $question->id ]->created ) {
+			$override_exists                    = isset( $points_overrides[ $question->id ] );
+			$override_set_after_latest_response = $response_exists && $points_overrides[ $question->id ]->created > $responses[ $question->id ]->created;
+			if ( $override_exists && ( ! $response_exists || $override_set_after_latest_response ) ) {
 				$question_result->override = $points_overrides[ $question->id ]->points;
 				$question_result->final    = $question_result->override;
 			}
