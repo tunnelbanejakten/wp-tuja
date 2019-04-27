@@ -70,8 +70,12 @@ class AdminUtils
 			return 'Syntaxfel!';
 		}
 
-		if ( ! is_array( $answer['images'] ) || empty( $answer['images'][0] ) ) {
-			return 'Syntaxfel!';
+		if ( ! is_array( $answer['images'] ) ) {
+			return 'Ingen lista med filnamn.';
+		}
+
+		if ( empty( $answer['images'][0] ) ) {
+			return 'Inget filnamn.';
 		}
 
 		$image_manager = new ImageManager();
