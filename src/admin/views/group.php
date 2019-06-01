@@ -74,6 +74,7 @@ AdminUtils::printTopMenu( $competition );
 
                 $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
                 $response = $response_per_question[$question->id]; // TODO: One line to late?
+                // TODO: Don't do "override" calculators both here and in ScoreCalculator. Only use the latter for all things related to score.
                 // Only set $points_override if the override points were set AFTER the most recent answer was created/submitted.
                 $points_override = $points_overrides_per_question[$question->id] && $points_overrides_per_question[$question->id]->created > $response->created
                     ? $points_overrides_per_question[$question->id]->points

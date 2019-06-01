@@ -2,8 +2,10 @@
 
 namespace tuja\data\store;
 
+use Exception;
 use tuja\data\model\ValidationException;
 use tuja\data\model\Group;
+use tuja\util\Anonymizer;
 use tuja\util\Database;
 
 class GroupDao extends AbstractDao {
@@ -124,10 +126,10 @@ class GroupDao extends AbstractDao {
 	}
 
 	protected static function to_group( $result ): Group {
-		$g                       = new Group();
-		$g->id                   = $result->id;
-		$g->random_id            = $result->random_id;
-		$g->name                 = $result->name;
+		$g            = new Group();
+		$g->id        = $result->id;
+		$g->random_id = $result->random_id;
+		$g->name      = $result->name;
 		$g->category_id          = $result->category_id;
 		$g->competition_id       = $result->competition_id;
 		$g->age_competing_avg    = $result->age_competing_avg;
@@ -139,5 +141,25 @@ class GroupDao extends AbstractDao {
 		$g->count_team_contact   = $result->count_team_contact;
 
 		return $g;
+	}
+
+	public function anonymize( array $group_ids = [] ) {
+		$anonymizer = new Anonymizer();
+
+		if ( empty( $group_ids ) ) {
+			throw new Exception( 'Must specify groups to anonymize.' );
+		}
+
+		$where = 'id IN (' . join( ', ', $group_ids ) . ')';
+
+		$current_names = array_map( function ( $row ) {
+			return $row[0];
+		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT name FROM ' . $this->table . ' WHERE ' . $where ), ARRAY_N ) );
+		foreach ( $current_names as $current_name ) {
+			$this->wpdb->query( $this->wpdb->prepare(
+				'UPDATE ' . $this->table . ' SET name = %s WHERE name = %s AND ' . $where,
+				$anonymizer->animal() . ' från ' . $anonymizer->neighborhood(),
+				$current_name ) );
+		}
 	}
 }
