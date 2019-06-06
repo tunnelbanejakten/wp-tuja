@@ -83,12 +83,12 @@ AdminUtils::printTopMenu( $competition );
                             // Only set $points if the override points were set AFTER the most recent answer was created/submitted.
                             $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
 
-                            if (is_array($response->answers) && $question->type == 'images') {
+                            if (is_array($response->submitted_answer) && $question->type == 'images') {
                                 // For each user-provided answer, render the photo description and a photo thumbnail:
 	                            $group_key = $groups_map[ $response->group_id ]->random_id;
-	                            $response->answers = array_map( function ( $answer ) use ( $group_key ) {
+	                            $response->submitted_answer = array_map( function ( $answer ) use ( $group_key ) {
 		                            return AdminUtils::get_image_thumbnails_html( $answer, $group_key );
-	                            }, $response->answers);
+	                            }, $response->submitted_answer);
                             }
 
 	                        $group_url = add_query_arg( array(
@@ -96,7 +96,7 @@ AdminUtils::printTopMenu( $competition );
 		                        'tuja_view'  => 'Group'
 	                        ) );
 
-	                        $score = $question->score( $response->answers );
+	                        $score = $question->score( $response->submitted_answer );
 
 	                        $score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $score / $question->score_max ) : '';
 
@@ -110,7 +110,7 @@ AdminUtils::printTopMenu( $competition );
 	                                '</tr>',
 		                        $group_url,
                                 $groups_map[$response->group_id]->name,
-                                is_array($response->answers) ? join('<br>', $response->answers) : '<em>Ogiltigt svar</em>',
+                                is_array($response->submitted_answer) ? join('<br>', $response->submitted_answer) : '<em>Ogiltigt svar</em>',
 		                        $score_class,
 		                        $score,
 		                        sprintf( 'tuja_review_points__%s', $response->id ),

@@ -96,10 +96,10 @@ class ScoreCalculator
 			$question_result = new ScoreQuestionResult();
 			$response_exists = isset( $responses[ $question->id ] );
 			if ( $response_exists ) {
-				$answers = $responses[ $question->id ]->answers;
+				$submitted_answer = $responses[ $question->id ]->submitted_answer;
 				// TODO: How should the is_reviewed flag be used? Only count points for answers where is_reviewed = true?
-				if ( isset( $answers ) ) {
-					$question_result->auto  = $question->score( $answers );
+				if ( isset( $submitted_answer ) ) {
+					$question_result->auto  = $question->score( $submitted_answer );
 					$question_result->final = $question_result->auto;
 				}
 			}

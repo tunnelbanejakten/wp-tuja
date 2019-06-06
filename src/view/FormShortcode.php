@@ -54,7 +54,7 @@ class FormShortcode extends AbstractShortcode
 			if ( isset( $user_answer ) ) {
 				$user_answer_array = is_array( $user_answer ) ? $user_answer : array( $user_answer );
 
-				if ( ! isset( $responses[ $question->id ] ) || $user_answer_array != $responses[ $question->id ]->answers ) {
+				if ( ! isset( $responses[ $question->id ] ) || $user_answer_array != $responses[ $question->id ]->submitted_answer ) {
 					$updates[ $question->id ] = $user_answer_array;
 				}
 			}
@@ -92,7 +92,7 @@ class FormShortcode extends AbstractShortcode
 				$new_response                   = new Response();
 				$new_response->group_id         = $group_id;
 				$new_response->form_question_id = $question_id;
-				$new_response->answers          = $user_answer_array;
+				$new_response->submitted_answer = $user_answer_array;
 
 				$affected_rows = $this->response_dao->create( $new_response );
 

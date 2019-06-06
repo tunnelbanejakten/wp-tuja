@@ -79,13 +79,13 @@ AdminUtils::printTopMenu( $competition );
                     ? $points_overrides_per_question[$question->id]->points
                     : '';
 
-	            // TODO: Rewrite this hack for getting HTML into $response->answers
-                if (is_array($response->answers) && $question->type == 'images') {
+	            // TODO: Rewrite this hack for getting HTML into $response->submitted_answer
+                if (is_array($response->submitted_answer) && $question->type == 'images') {
                     // For each user-provided answer, render the photo description and a photo thumbnail:
 	                $group_key         = $group->random_id;
-	                $response->answers = array_map( function ( $answer ) use ( $group_key ) {
+	                $response->submitted_answer = array_map( function ( $answer ) use ( $group_key ) {
 		                return AdminUtils::get_image_thumbnails_html( $answer, $group_key );
-                    }, $response->answers);
+                    }, $response->submitted_answer);
                 }
 
 				$score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
@@ -114,7 +114,7 @@ AdminUtils::printTopMenu( $competition );
                     '</tr>',
 		            $question->text,
 		            join( '<br>', $question->correct_answers ),
-                    is_array($response->answers) ? join('<br>', $response->answers) : '<em>Ogiltigt svar</em>',
+                    is_array($response->submitted_answer) ? join('<br>', $response->submitted_answer) : '<em>Ogiltigt svar</em>',
 		            $score_class,
                     $calculated_score_without_override,
                     'tuja_group_points__' . $question->id,

@@ -39,7 +39,7 @@ class FormReadonlyShortcode
             }
             return sprintf('<div class="tuja-question"><p><strong>%s</strong><br>%s</p></div>',
                 $question->text,
-                join('<br>', $question->latest_response->answers));
+                join('<br>', $question->latest_response->submitted_answer));
         }, $questions));
     }
 

@@ -29,10 +29,15 @@ class ResponseDao extends AbstractDao
                 %d
             )';
 
-		$answer = json_encode( $response->answers );
-		$lock = self::to_db_date(new DateTime());
+		$answer = json_encode( $response->submitted_answer );
+		$lock   = self::to_db_date(new DateTime());
 
-		$result = $this->wpdb->query( $this->wpdb->prepare( $query_template, $response->form_question_id, $response->group_id, $answer, $lock ) );
+		$result = $this->wpdb->query( $this->wpdb->prepare(
+			$query_template,
+			$response->form_question_id,
+			$response->group_id,
+			$answer,
+			$lock ) );
 
 		if(empty($result)) {
 			return false;
@@ -120,7 +125,7 @@ class ResponseDao extends AbstractDao
 		$r->id               = $result->id;
 		$r->form_question_id = $result->form_question_id;
 		$r->group_id         = $result->team_id;
-		$r->answers          = json_decode( $result->answer );
+		$r->submitted_answer = json_decode( $result->answer );
 		$r->created          = self::from_db_date( $result->created_at );
 		$r->is_reviewed      = $result->is_reviewed;
 

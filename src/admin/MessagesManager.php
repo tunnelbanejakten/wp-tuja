@@ -98,7 +98,7 @@ class MessagesManager {
 
 	private function get_message_html( Message $message ) {
 		if ( is_array( $message->image_ids ) && count( $message->image_ids ) > 0 ) {
-			$field  = new FieldImages( [] );
+			$field  = new FieldImages( [], );
 			$images_html = array_map( function ( $image_id ) use ( $field, $message ) {
 				return AdminUtils::get_image_thumbnails_html(
 					json_encode( [ 'images' => [ $image_id ] ] ),
@@ -189,7 +189,7 @@ class MessagesManager {
 			$response->group_id         = $group_id;
 			$response->form_question_id = $question_id;
 			$response->is_reviewed      = false;
-			$response->answers          = [
+			$response->submitted_answer = [
 				json_encode( [
 					'images'  => $message->image_ids,
 					'comment' => $message->text

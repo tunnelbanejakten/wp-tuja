@@ -68,7 +68,7 @@ class Field
 		$field->key = "question-" . $question->id;
 
 		if(!is_null($question->latest_response)) {
-			$field->value = $question->latest_response->answers;
+			$field->value = $question->latest_response->submitted_answer;
 		}
 		
         return $field;

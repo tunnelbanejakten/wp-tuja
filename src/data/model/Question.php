@@ -13,7 +13,7 @@ class Question
     public $text;
     public $sort_order;
     public $text_hint;
-    public $latest_response;
+//    public $latest_response;
     public $score_type;
     public $score_max;
 
@@ -93,7 +93,7 @@ class Question
 		}
     }
 
-    public function score($answers)
+    public function score($submitted_answer)
     {
 	    $answers         = array_map( 'strtolower', $answers );
 	    $correct_answers = array_map( 'strtolower', $this->correct_answers );
@@ -147,7 +147,7 @@ class Question
 		$question->type            = $type;
 		$question->text            = $text;
 		$question->text_hint       = $hint;
-		$question->latest_response = new Response( isset( $answer ) && ! empty( $answer ) ? [ $answer ] : [] );
+//		$question->latest_response = new Response( isset( $answer ) && ! empty( $answer ) ? [ $answer ] : [] );
 
 		return $question;
 	}
@@ -175,7 +175,7 @@ class Question
         $question->text = $text;
         $question->text_hint = $hint;
         $question->possible_answers = $options;
-        $question->latest_response = new Response(isset($answer) && !empty($answer) ? [$answer] : []);
+//        $question->latest_response = new Response(isset($answer) && !empty($answer) ? [$answer] : []);
         return $question;
     }
 
@@ -186,7 +186,7 @@ class Question
         $question->text = $text;
         $question->text_hint = $hint;
         $question->possible_answers = $options;
-        $question->latest_response = new Response(isset($answer) && !empty($answer) ? $answer : []);
+//        $question->latest_response = new Response(isset($answer) && !empty($answer) ? $answer : []);
         return $question;
     }
 }
