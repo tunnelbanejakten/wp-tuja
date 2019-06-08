@@ -72,12 +72,48 @@ class OptionsQuestion extends AbstractQuestion {
 		$this->score_type       = $score_type;
 	}
 
+	public function validate() {
+		parent::validate();
+		if ( ! empty( $this->score_type ) && ! in_array( $this->score_type, self::SCORING_METHODS ) ) {
+			throw new ValidationException( 'score_type', 'Ogiltig poängberäkningsmetod.' );
+		}
+	}
 
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */
 	function score( $answer_object ) {
-		throw new Exception( 'score() not implemented' );
+		if ( ! is_array( $answer_object ) ) {
+			throw new Exception( 'Input must be an array' );
+		}
+
+		$answers         = array_map( 'strtolower', $answer_object );
+		$correct_answers = array_map( 'strtolower', $this->correct_answers );
+
+		$correctness_percents = $this->calculate_correctness( $answers, $correct_answers, false );
+
+		$count_correct_values = count( array_filter( $correctness_percents,
+			function ( $percent ) {
+				return $percent > 80;
+			} ) );
+
+		if ( $this->is_single_select && count( $answer_object ) > 1 ) {
+			return 0;
+		}
+
+		switch ( $this->score_type ) {
+			case self::GRADING_TYPE_ONE_OF:
+				return $count_correct_values > 0
+					? $this->score_max
+					: 0;
+			case self::GRADING_TYPE_ALL_OF:
+				return count( $answers ) == count( $correct_answers )
+				       && $count_correct_values == count( $correct_answers )
+					? $this->score_max
+					: 0;
+			default:
+				return 0;
+		}
 	}
 
 	/**

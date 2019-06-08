@@ -108,27 +108,9 @@ class TextQuestion extends AbstractQuestion {
 		$correct_answers = array_map( 'strtolower', $this->correct_answers );
 		$is_ordered      = $this->score_type === self::GRADING_TYPE_ORDERED_PERCENT_OF;
 
-		$answers_percent_correct = array_map( function ( $answer, $index ) use ( $correct_answers, $is_ordered ) {
-			if ( $is_ordered ) {
-				// Compare user-supplied answer X to correct answer X:
-				$percent = 0;
-				similar_text( $answer, $correct_answers[ $index ], $percent );
+		$correctness_percents = $this->calculate_correctness( $answers, $correct_answers, $is_ordered );
 
-				return $percent;
-			} else {
-				// Compare user-supplied answer X to all correct answers (and return the best match):
-				$this_answer_percents_correct = array_map( function ( $correct_answer ) use ( $answer ) {
-					$percent = 0;
-					similar_text( $answer, $correct_answer, $percent );
-
-					return $percent;
-				}, $correct_answers );
-
-				return ! empty( $this_answer_percents_correct ) ? max( $this_answer_percents_correct ) : null;
-			}
-		}, $answers, array_keys( $answers ) );
-
-		$count_correct_values = count( array_filter( $answers_percent_correct,
+		$count_correct_values = count( array_filter( $correctness_percents,
 			function ( $percent ) {
 				return $percent > 80;
 			} ) );
