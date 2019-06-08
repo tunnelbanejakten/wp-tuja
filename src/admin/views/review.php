@@ -1,6 +1,7 @@
 <?php
 
 namespace tuja\admin;
+use tuja\data\model\question\ImagesQuestion;
 use tuja\view\FieldImages;
 
 AdminUtils::printTopMenu( $competition );
@@ -65,17 +66,15 @@ AdminUtils::printTopMenu( $competition );
 	                            $question_text       = $question_group_text
 		                            ? $question_group_text . " : " . $question->text
 		                            : $question->text;
-	                            printf( '<tr class="tuja-admin-review-question-row"><td></td><td colspan="5"><strong>%s</strong> %s, %s</td></tr>',
-		                            $question_text,
-		                            $question->type,
-		                            $question->score_type );
+	                            printf( '<tr class="tuja-admin-review-question-row"><td></td><td colspan="5"><strong>%s</strong></td></tr>',
+		                            $question_text);
 	                            printf( '' .
 	                                    '<tr class="tuja-admin-review-correctanswer-row">' .
 	                                    '  <td colspan="2"></td>' .
 	                                    '  <td valign="top">Rätt svar:</td>' .
 	                                    '  <td valign="top" colspan="3">%s</td>' .
 	                                    '</tr>',
-		                            join( '<br>', $question->correct_answers ) );
+		                            $question->get_correct_answer_html() );
                                 $is_question_printed = true;
                             }
                             $response_ids[] = $response->id;
@@ -83,7 +82,8 @@ AdminUtils::printTopMenu( $competition );
                             // Only set $points if the override points were set AFTER the most recent answer was created/submitted.
                             $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
 
-                            if (is_array($response->submitted_answer) && $question->type == 'images') {
+                            if (is_array($response->submitted_answer) && $question instanceof ImagesQuestion) {
+                                // TODO: Could we avoid this "if imagesquestion then do this" hack by creating two "field factories", one for the admin GUI and one for the Form shortcode?
                                 // For each user-provided answer, render the photo description and a photo thumbnail:
 	                            $group_key = $groups_map[ $response->group_id ]->random_id;
 	                            $response->submitted_answer = array_map( function ( $answer ) use ( $group_key ) {

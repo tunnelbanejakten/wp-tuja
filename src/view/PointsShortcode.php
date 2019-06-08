@@ -4,6 +4,7 @@ namespace tuja\view;
 
 use Exception;
 use tuja\data\model\Question;
+use tuja\data\model\question\NumberQuestion;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
@@ -239,9 +240,15 @@ class PointsShortcode extends AbstractShortcode
     {
 	    $key        = $question_id . self::FIELD_NAME_PART_SEP . $group_id;
 	    $points     = isset( $current_points[ $key ] ) ? $current_points[ $key ]->points : null;
-	    $field      = Field::create( Question::text( $text, sprintf( 'Max %d poäng.', $max_score ), $points ) );
+	    $field      = new NumberQuestion(
+		    null,
+		    $text,
+		    null,
+		    sprintf( 'Max %d poäng.', $max_score ),
+            0);
         $field_name = self::QUESTION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $question_id . self::FIELD_NAME_PART_SEP . $group_id;
-        return $field->render($field_name);
+
+	    return $field->get_html( $field_name, false, $points );
     }
 
     private function get_optimistic_lock_value(array $keys)

@@ -3,6 +3,8 @@
 namespace tuja\admin;
 
 use tuja\data\model\Question;
+use tuja\data\model\question\AbstractQuestion;
+use tuja\data\model\question\ImagesQuestion;
 use tuja\data\model\QuestionGroup;
 use tuja\data\model\Response;
 use tuja\data\store\CompetitionDao;
@@ -151,9 +153,9 @@ class Review {
 		// Get which questions to show responses for:
 		$selected_question_ids = array_reduce(
 			$all_questions,
-			function ( $carry, Question $question ) {
+			function ( $carry, AbstractQuestion $question ) {
 				if ( $_GET[ Review::QUESTION_FILTER_URL_PARAM ] == self::QUESTION_FILTER_IMAGES ) {
-					if ( $question->type == Question::QUESTION_TYPE_IMAGES ) {
+					if ( $question instanceof ImagesQuestion) {
 						$carry[] = $question->id;
 					}
 				} else {

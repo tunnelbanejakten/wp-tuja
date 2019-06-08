@@ -2,6 +2,7 @@
 namespace tuja\admin;
 
 use DateTime;
+use tuja\data\model\question\ImagesQuestion;
 use tuja\util\rules\RuleResult;
 use tuja\view\FieldImages;
 
@@ -80,7 +81,7 @@ AdminUtils::printTopMenu( $competition );
                     : '';
 
 	            // TODO: Rewrite this hack for getting HTML into $response->submitted_answer
-                if (is_array($response->submitted_answer) && $question->type == 'images') {
+                if (is_array($response->submitted_answer) && $question instanceof ImagesQuestion) {
                     // For each user-provided answer, render the photo description and a photo thumbnail:
 	                $group_key         = $group->random_id;
 	                $response->submitted_answer = array_map( function ( $answer ) use ( $group_key ) {
@@ -113,7 +114,7 @@ AdminUtils::printTopMenu( $competition );
                     '  <td valign="top"><input type="number" name="%s" value="%s" size="5" min="0" max="%d"> p</td>' .
                     '</tr>',
 		            $question->text,
-		            join( '<br>', $question->correct_answers ),
+		            $question->get_correct_answer_html(),
                     is_array($response->submitted_answer) ? join('<br>', $response->submitted_answer) : '<em>Ogiltigt svar</em>',
 		            $score_class,
                     $calculated_score_without_override,

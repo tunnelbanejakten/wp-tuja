@@ -3,7 +3,7 @@
 namespace tuja\admin;
 
 use Exception;
-use tuja\data\model\Question;
+use tuja\data\model\question\TextQuestion;
 use tuja\data\store\FormDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
@@ -61,6 +61,7 @@ class FormQuestions {
 				foreach($form_question as $field_name => $field_value) {
 					switch ($field_name) {
 						case 'type':
+							// TODO: Don't set $type
 							$updated_questions[$id]->type = $field_value;
 							break;
 						case 'text':
@@ -103,11 +104,10 @@ class FormQuestions {
 			$success = false;
 			
 			try {
-				$props                    = new Question();
-				$props->correct_answers   = array( 'Alice' );
-				$props->possible_answers  = array( 'Alice', 'Bob' );
-				$props->question_group_id = $this->question_group->id;
-				$props->type              = Question::QUESTION_TYPE_TEXT;
+				$props = new TextQuestion( '?', null, TextQuestion::VALIDATION_TEXT, true, $this->question_group->id );
+				$props->set_config( [
+					'correct_answers' => [ 'Alice' ]
+				] );
 
 				$success = $this->db_question->create( $props );
 			} catch ( Exception $e ) {

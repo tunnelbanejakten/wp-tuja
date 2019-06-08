@@ -11,7 +11,7 @@ class FieldTextMulti extends Field {
 	}
 
 	public function get_posted_answer( $form_field ) {
-		$user_answer = parent::get_posted_answer( $form_field );
+		$user_answer = @$_POST[ $form_field ];
 
 		return preg_split( "/[\s,]+/", $user_answer ) ?: [];
 	}

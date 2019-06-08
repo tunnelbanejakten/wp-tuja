@@ -6,7 +6,7 @@ namespace tuja\admin;
 use DateTime;
 use tuja\data\model\Message;
 use tuja\data\model\Competition;
-use tuja\data\model\Question;
+use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\QuestionGroup;
 use tuja\data\model\Response;
 use tuja\data\model\ValidationException;
@@ -70,11 +70,11 @@ class MessagesManager {
 		return join( array_map( function ( QuestionGroup $question_group ) use ( $questions ) {
 			$label_prefix = ! empty( $question_group->text ) ? $question_group->text . ': ' : '';
 
-			$questions_in_group = array_filter( $questions, function ( Question $question ) use ( $question_group ) {
+			$questions_in_group = array_filter( $questions, function ( AbstractQuestion $question ) use ( $question_group ) {
 				return $question->question_group_id == $question_group->id;
 			} );
 
-			return join( array_map( function ( Question $question ) use ( $label_prefix ) {
+			return join( array_map( function ( AbstractQuestion $question ) use ( $label_prefix ) {
 				return sprintf( '<option value="%s">%s</option>',
 					$question->id,
 					$label_prefix . htmlspecialchars( $question->text ) );
@@ -98,8 +98,7 @@ class MessagesManager {
 
 	private function get_message_html( Message $message ) {
 		if ( is_array( $message->image_ids ) && count( $message->image_ids ) > 0 ) {
-			$field  = new FieldImages( [], );
-			$images_html = array_map( function ( $image_id ) use ( $field, $message ) {
+			$images_html = array_map( function ( $image_id ) use ( $message ) {
 				return AdminUtils::get_image_thumbnails_html(
 					json_encode( [ 'images' => [ $image_id ] ] ),
 					isset( $this->groups_map[ $message->group_id ] ) ? $this->groups_map[ $message->group_id ]->random_id : null );

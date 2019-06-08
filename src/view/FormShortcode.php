@@ -2,6 +2,7 @@
 
 namespace tuja\view;
 
+use tuja\data\model\question\OptionsQuestion;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
@@ -49,11 +50,13 @@ class FormShortcode extends AbstractShortcode
 
 		$updates = [];
 		foreach ( $questions as $question ) {
-			$user_answer = Field::create( $question )->get_posted_answer( self::RESPONSE_FIELD_NAME_PREFIX . $question->id );
+			$user_answer = $question->get_answer_object( self::RESPONSE_FIELD_NAME_PREFIX . $question->id );
 
 			if ( isset( $user_answer ) ) {
+				// TODO: Simplify this:
 				$user_answer_array = is_array( $user_answer ) ? $user_answer : array( $user_answer );
 
+				// TODO: Simplify this:
 				if ( ! isset( $responses[ $question->id ] ) || $user_answer_array != $responses[ $question->id ]->submitted_answer ) {
 					$updates[ $question->id ] = $user_answer_array;
 				}
@@ -132,13 +135,13 @@ class FormShortcode extends AbstractShortcode
 		$crew_user_must_select_group = $this->is_crew_override;
 		$user_is_crew                = isset( $group_category ) && $group_category->is_crew;
 		if ( $user_is_crew && $crew_user_must_select_group ) {
-            $participant_groups = $this->get_participant_groups();
+			$participant_groups = $this->get_participant_groups();
 
 			$html_sections[] = sprintf( '<p>%s</p>', $this->get_groups_dropdown( $participant_groups ) );
 
 			$selected_participant_group = $this->get_selected_group( $participant_groups );
 
-		    $target_group = $selected_participant_group;
+			$target_group = $selected_participant_group;
 		} else {
 			$target_group = $group;
 		}
@@ -150,7 +153,7 @@ class FormShortcode extends AbstractShortcode
 			$message_success = null;
 			$message_error   = null;
 			$errors          = array();
-			$is_update = isset($_POST[ self::ACTION_FIELD_NAME ]) && $_POST[ self::ACTION_FIELD_NAME ] === 'update';
+			$is_update       = isset( $_POST[ self::ACTION_FIELD_NAME ] ) && $_POST[ self::ACTION_FIELD_NAME ] === 'update';
 
 			if ($is_update) {
 				$errors = $this->update_answers( $target_group_id );
@@ -166,9 +169,9 @@ class FormShortcode extends AbstractShortcode
 				}
 			}
 
-			$responses = $this->response_dao->get_latest_by_group( $target_group_id );
+			$responses       = $this->response_dao->get_latest_by_group( $target_group_id );
 			$question_groups = $this->question_group_dao->get_all_in_form( $this->form_id );
-			
+
 			foreach($question_groups as $question_group) {
 				$current_group = '<section class="tuja-question-group">';
 				if($question_group->text) {
@@ -177,8 +180,7 @@ class FormShortcode extends AbstractShortcode
 
 				$questions = $this->question_dao->get_all_in_group($question_group->id);
 				foreach($questions as $question) {
-					$question->latest_response = isset($responses[ $question->id ]) ? $responses[ $question->id ] : null;
-					$field_name                = self::RESPONSE_FIELD_NAME_PREFIX . $question->id;
+					$field_name = self::RESPONSE_FIELD_NAME_PREFIX . $question->id;
 
 					// We do not want to present the previously inputted values in case the user changed from one group to another.
 					// The responses inputted for the previously selected group are not relevant anymore (they are, in fact, probably incorrect).
@@ -187,10 +189,12 @@ class FormShortcode extends AbstractShortcode
 						// Clear input field value from previous submission:
 						unset( $_POST[ $field_name ] );
 					}
-					$field            = Field::create( $question );
-					$field->read_only = $is_read_only;
-					$html_field       = $field->render( $field_name, $target_group );
-					
+					$html_field = $question->get_html(
+						$field_name,
+						$is_read_only,
+						isset( $responses[ $question->id ] ) ? $responses[ $question->id ]->submitted_answer : null,
+						$target_group );
+
 					$current_group .= sprintf( '<div class="tuja-question %s" data-id="%d">%s%s</div>',
 						isset( $errors[ $field_name ] ) ? 'tuja-field-error' : '',
 						$question->id,
@@ -199,13 +203,13 @@ class FormShortcode extends AbstractShortcode
 					);
 				}
 
-				$current_group .= '</section>';
+				$current_group   .= '</section>';
 				$html_sections[] = $current_group;
 			}
 
 			if ( ! $is_read_only ) {
-				$questions = $this->question_dao->get_all_in_form($question_group->form_id);
-				$question_ids = array_map( function ( $question ) {
+				$questions             = $this->question_dao->get_all_in_form( $question_group->form_id );
+				$question_ids          = array_map( function ( $question ) {
 					return $question->id;
 				}, $questions );
 				$optimistic_lock_value = $this->get_optimistic_lock_value($target_group_id, (array)$question_ids);
@@ -225,20 +229,21 @@ class FormShortcode extends AbstractShortcode
 	}
 
 	private function get_groups_dropdown( $participant_groups ): string {
-		$choose_group_question            = new Question();
-		$choose_group_question->type      = 'pick_one';
-		$choose_group_question->text      = 'Vilket lag vill du rapportera för?';
-		$choose_group_question->text_hint = 'Byt inte lag om du har osparade ändringar.';
+		$choose_group_question = new OptionsQuestion(
+			'Vilket lag vill du rapportera för?', array_merge(
+			array( '' => 'Välj lag' ),
+			array_map( function ( $option ) {
+				return $option->name;
+			}, $participant_groups ) ),
+			'Byt inte lag om du har osparade ändringar.',
+			true,
+			true,
+			null,
+			null,
+			0
+		);
 
-		$options                                 = array_map( function ( $option ) {
-			return $option->name;
-		}, $participant_groups );
-		$choose_group_question->possible_answers = array_merge( array( '' => 'Välj lag' ), $options );
-		$field                                   = Field::create( $choose_group_question );
-		$field->submit_on_change                 = true;
-		$html_field                              = $field->render( self::TEAMS_DROPDOWN_NAME );
-
-		return $html_field;
+		return $choose_group_question->get_html( self::TEAMS_DROPDOWN_NAME, false, null );
 	}
 
 	private function get_participant_groups(): array {
@@ -253,14 +258,15 @@ class FormShortcode extends AbstractShortcode
 			return $category->id;
 		}, $participant_categories );
 
-        $competition_groups = $this->group_dao->get_all_in_competition($competition_id);
-        $participant_groups = array_filter($competition_groups, function ($group) use ($ids) {
-	        $group_category = $this->get_group_category( $group );
+		$competition_groups = $this->group_dao->get_all_in_competition( $competition_id );
+		$participant_groups = array_filter( $competition_groups, function ( $group ) use ( $ids ) {
+			$group_category = $this->get_group_category( $group );
 
-	        return isset( $group_category ) && in_array( $group_category->id, $ids );
-        });
-        return $participant_groups;
-    }
+			return isset( $group_category ) && in_array( $group_category->id, $ids );
+		} );
+
+		return $participant_groups;
+	}
 
 	private function get_selected_group( $participant_groups ) {
 		$selected_group_name = $_POST[ self::TEAMS_DROPDOWN_NAME ];

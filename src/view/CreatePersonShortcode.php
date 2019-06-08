@@ -85,6 +85,7 @@ class CreatePersonShortcode extends AbstractGroupShortcode
             $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['__']);
         }
 
+        // TODO: Can't we create a Field directly instead of also creating a Question object? Isn't this just abusing what the Question object was meant to represent (a question which can be scored)?
         $person_name_question = Question::text('Vad heter du?');
         $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors[self::FIELD_PERSON_NAME]);
 
