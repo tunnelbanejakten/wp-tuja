@@ -12,8 +12,8 @@ class FieldImages extends Field
 
 	private $image_manager;
 
-	function __construct( $key, $label, $hint = null, $read_only = false ) {
-		parent::__construct( $key, $label, $hint, $read_only );
+	function __construct( $label, $hint = null, $read_only = false ) {
+		parent::__construct( $label, $hint, $read_only );
 		$this->image_manager = new ImageManager();
 	}
 

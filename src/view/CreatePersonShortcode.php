@@ -86,19 +86,19 @@ class CreatePersonShortcode extends AbstractGroupShortcode
         }
 
         // TODO: Can't we create a Field directly instead of also creating a Question object? Isn't this just abusing what the Question object was meant to represent (a question which can be scored)?
-        $person_name_question = Question::text('Vad heter du?');
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors[self::FIELD_PERSON_NAME]);
+        $person_name_question = new FieldText( 'Vad heter du?' );
+        $html_sections[] = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors[ self::FIELD_PERSON_NAME ] );
 
-	    $person_name_question = Question::pno( 'Vad har du för födelsedag/personnummer?', 'Vi rekommenderar att du fyller i fullständigt personnummer.' );
+	    $person_name_question = new FieldPno( 'Vad har du för födelsedag/personnummer?', 'Vi rekommenderar att du fyller i fullständigt personnummer.' );
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors[ self::FIELD_PERSON_PNO ] );
 
-	    $person_name_question = Question::email( 'Vilken e-postadress har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL, $errors[self::FIELD_PERSON_EMAIL]);
+	    $person_name_question = new FieldEmail( 'Vilken e-postadress har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
+        $html_sections[] = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, $errors[ self::FIELD_PERSON_EMAIL ] );
 
-	    $person_name_question = Question::phone( 'Vilket telefonnummer har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
-        $html_sections[]      = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE, $errors[self::FIELD_PERSON_PHONE]);
+	    $person_name_question = new FieldPhone( 'Vilket telefonnummer har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
+        $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE, $errors[ self::FIELD_PERSON_PHONE ] );
 
-	    $person_name_question = Question::text( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.' );
+	    $person_name_question = new FieldText( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.' );
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, $errors[ self::FIELD_PERSON_FOOD ] );
 
 	    $recaptcha_sitekey = get_option( 'tuja_recaptcha_sitekey' );

@@ -52,13 +52,13 @@ class AbstractGroupShortcode extends AbstractShortcode
 	    $this->message_sender       = new MessageSender();
     }
 
-    protected function render_field(AbstractQuestion $question, $field_name, $error_message, $read_only = false, $answer_object = null): string
+    protected function render_field( Field $field, $field_name, $error_message, $answer_object = null ): string
     {
     	// TODO: This is a bit of a hack...
 	    if ( is_scalar($answer_object) ) {
 		    $answer_object = [ $answer_object ];
 	    }
-	    $html = $question->get_html( $field_name, $read_only, $answer_object);
+	    $html = $field->render( $field_name, $answer_object );
 
         return sprintf('<div class="tuja-question %s">%s%s</div>',
             !empty($error_message) ? 'tuja-field-error' : '',

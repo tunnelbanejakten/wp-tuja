@@ -13,8 +13,8 @@ class FieldChoices extends Field
 
 	const SHORT_LIST_LIMIT = 5;
 
-	public function __construct( $key, $label, $options, $is_multichoice, $hint = null, $read_only = false, $submit_on_change = false ) {
-		parent::__construct( $key, $label, $hint, $read_only );
+	public function __construct( $label, $options, $is_multichoice, $hint = null, $read_only = false, $submit_on_change = false ) {
+		parent::__construct( $label, $hint, $read_only );
 		$this->options          = $options;
 		$this->is_multichoice   = $is_multichoice;
 		$this->submit_on_change = $submit_on_change;
@@ -49,7 +49,7 @@ class FieldChoices extends Field
 	public function render_long_list( $render_id, $field_name, $answer_object ) {
 		return sprintf( '<select id="%s" name="%s" class="tuja-%s tuja-%s-longlist" %s %s %s size="%d">%s</select>',
 			$render_id,
-			$field_name ?: $this->key,
+			$field_name,
 			self::FIELD_TYPE,
 			self::FIELD_TYPE,
 			$this->is_multichoice ? ' multiple="multiple"' : '',
@@ -64,7 +64,7 @@ class FieldChoices extends Field
 	public function render_short_list( $render_id, $field_name, $answer_object ) {
 		return join( array_map( function ( $index, $value ) use ( $render_id, $field_name, $answer_object ) {
 			$id   = $render_id . '-' . $index;
-			$name = $field_name ?: $this->key;
+			$name = $field_name;
 			if ( $this->is_multichoice ) {
 				// Use [] to "trick" PHP into storing selected values in an array. Requires that other parts of the code handles both scalars and arrays.
 				$name .= '[]';

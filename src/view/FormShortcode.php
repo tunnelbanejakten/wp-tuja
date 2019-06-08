@@ -229,21 +229,19 @@ class FormShortcode extends AbstractShortcode
 	}
 
 	private function get_groups_dropdown( $participant_groups ): string {
-		$choose_group_question = new OptionsQuestion(
-			'Vilket lag vill du rapportera för?', array_merge(
-			array( '' => 'Välj lag' ),
-			array_map( function ( $option ) {
-				return $option->name;
-			}, $participant_groups ) ),
+		$field = new FieldChoices(
+			'Vilket lag vill du rapportera för?',
+			array_merge(
+				array( '' => 'Välj lag' ),
+				array_map( function ( $option ) {
+					return $option->name;
+				}, $participant_groups ) ),
+			false,
 			'Byt inte lag om du har osparade ändringar.',
 			true,
-			true,
-			null,
-			null,
-			0
-		);
+			true );
 
-		return $choose_group_question->get_html( self::TEAMS_DROPDOWN_NAME, false, null );
+		return $field->render( self::TEAMS_DROPDOWN_NAME, null );
 	}
 
 	private function get_participant_groups(): array {

@@ -4,12 +4,11 @@ namespace tuja\view;
 
 use tuja\data\model\Person;
 
-class FieldPno extends FieldText {
+class FieldPhone extends FieldText {
 	public function __construct( $label, $hint = null, bool $read_only = false ) {
 		parent::__construct( $label, $hint, $read_only, [
-				'type'        => 'tel',
-				'pattern'     => Person::PNO_PATTERN,
-				'placeholder' => 'ååmmddnnnn'
+				'type'    => 'tel',
+				'pattern' => Person::PHONE_PATTERN
 			]
 		);
 	}

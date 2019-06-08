@@ -89,8 +89,8 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
         $html_sections[] = sprintf('<h3>Laget</h3>');
 
-	    $group_name_question = Question::text( 'Vad heter ert lag?', null );
-	    $html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors['name'], $read_only, $group->name );
+	    $group_name_question = new FieldText( 'Vad heter ert lag?', null, $read_only );
+	    $html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors['name'], $group->name );
 
 	    if ( $this->enable_group_category_selection ) {
 		    $categories = $this->get_categories( $group->competition_id );
@@ -112,12 +112,9 @@ class EditGroupShortcode extends AbstractGroupShortcode
 				    $html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
 				    break;
 			    default:
-				    $group_category_question = Question::dropdown(
-					    'Vilken klass tävlar ni i?',
-					    $group_category_options,
-					    'Välj den som de flesta av deltagarna tillhör.'
+				    $group_category_question = new FieldChoices( 'Vilken klass tävlar ni i?', $group_category_options, false, 'Välj den som de flesta av deltagarna tillhör.'
 				    );
-				    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $read_only, $current_group_category_name );
+				    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $current_group_category_name );
 				    break;
 		    }
 	    }
@@ -156,34 +153,31 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
         $random_id = $person->random_id ?: '';
 
-	    $person_name_question = Question::text( 'Namn', null );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME . '__' . $random_id, $errors[ $random_id . '__name' ], $read_only, $person->name );
+	    $person_name_question = new FieldText( 'Namn', null, $read_only );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME . '__' . $random_id, $errors[ $random_id . '__name' ], $person->name );
 
-	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar alla att fylla in fullständigt personnummer.' );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO . '__' . $random_id, $errors[ $random_id . '__pno' ], $read_only, $person->pno );
+	    $person_name_question = new FieldPno( 'Födelsedag och sånt', 'Vi rekommenderar alla att fylla in fullständigt personnummer.', $read_only );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO . '__' . $random_id, $errors[ $random_id . '__pno' ], $person->pno );
 
 	    $answer                = [
 		    ! $person->is_competing ? self::ROLE_ISNOTCOMPETING_LABEL : null,
 		    $person->is_group_contact ? self::ROLE_ISCONTACT_LABEL : null
 	    ];
-	    $person_roles_question = Question::checkboxes(
-		    'Har den här personen någon speciell uppgift?',
-		    [
-			    self::ROLE_ISCONTACT_LABEL,
-			    self::ROLE_ISNOTCOMPETING_LABEL
-		    ],
-		    null
+	    $person_roles_question = new FieldChoices( 'Har den här personen någon speciell uppgift?', [
+		    self::ROLE_ISCONTACT_LABEL,
+		    self::ROLE_ISNOTCOMPETING_LABEL
+	    ], true
 	    );
-	    $html_sections[]       = $this->render_field( $person_roles_question, self::FIELD_PERSON_ROLES . '__' . $random_id, $errors[ $random_id . '__roles' ], $read_only, $answer );
+	    $html_sections[]       = $this->render_field( $person_roles_question, self::FIELD_PERSON_ROLES . '__' . $random_id, $errors[ $random_id . '__roles' ], $answer );
 
-	    $person_name_question = Question::email( 'E-postadress', 'Obligatoriskt för lagledaren, rekommenderat för övriga.' );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, $errors[ $random_id . '__email' ], $read_only, $person->email );
+	    $person_name_question = new FieldEmail( 'E-postadress', 'Obligatoriskt för lagledaren, rekommenderat för övriga.' );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, $errors[ $random_id . '__email' ], $person->email );
 
-	    $person_name_question = Question::phone( 'Telefonnummer', 'Obligatoriskt för lagledaren, rekommenderat för övriga.' );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, $errors[ $random_id . '__phone' ], $read_only, $person->phone );
+	    $person_name_question = new FieldPhone( 'Telefonnummer', 'Obligatoriskt för lagledaren, rekommenderat för övriga.' );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, $errors[ $random_id . '__phone' ], $person->phone );
 
-	    $person_name_question = Question::text( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.' );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD . '__' . $random_id, $errors[ $random_id . '__food' ], $read_only, $person->food );
+	    $person_name_question = new FieldText( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.', $read_only );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD . '__' . $random_id, $errors[ $random_id . '__food' ], $person->food );
 
 	    if ( ! $read_only ) {
             $html_sections[] = sprintf('<div class="tuja-item-buttons"><button type="button" name="%s" value="%s%s" class="tuja-delete-person">%s</button></div>',

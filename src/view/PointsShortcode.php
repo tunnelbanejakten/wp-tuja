@@ -240,15 +240,10 @@ class PointsShortcode extends AbstractShortcode
     {
 	    $key        = $question_id . self::FIELD_NAME_PART_SEP . $group_id;
 	    $points     = isset( $current_points[ $key ] ) ? $current_points[ $key ]->points : null;
-	    $field      = new NumberQuestion(
-		    null,
-		    $text,
-		    null,
-		    sprintf( 'Max %d poäng.', $max_score ),
-            0);
+	    $field      = new FieldNumber( $text, sprintf( 'Max %d poäng.', $max_score ) );
         $field_name = self::QUESTION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $question_id . self::FIELD_NAME_PART_SEP . $group_id;
 
-	    return $field->get_html( $field_name, false, $points );
+	    return $field->render( $field_name, $points );
     }
 
     private function get_optimistic_lock_value(array $keys)

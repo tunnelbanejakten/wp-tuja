@@ -74,8 +74,8 @@ class CreateGroupShortcode extends AbstractGroupShortcode
             $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['__']);
         }
 
-        $group_name_question = Question::text('Vad heter ert lag?');
-        $html_sections[] = $this->render_field($group_name_question, self::FIELD_GROUP_NAME, $errors[self::FIELD_GROUP_NAME]);
+        $group_name_question = new FieldText( 'Vad heter ert lag?' );
+        $html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors[ self::FIELD_GROUP_NAME ] );
 
 	    if ( $this->enable_group_category_selection ) {
 		    $categories = $this->get_categories( $this->competition_id );
@@ -91,23 +91,18 @@ class CreateGroupShortcode extends AbstractGroupShortcode
 				    $html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
 				    break;
 			    default:
-				    $group_category_question = Question::dropdown(
-					    'Vilken klass tävlar ni i?',
-					    $group_category_options,
-					    'Välj den som de flesta av deltagarna tillhör.'
+				    $group_category_question = new FieldChoices( 'Vilken klass tävlar ni i?', $group_category_options, false, 'Välj den som de flesta av deltagarna tillhör.'
 				    );
 				    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors[ self::FIELD_GROUP_AGE ] );
 				    break;
 		    }
 	    }
 
-        $person_name_question = Question::text('Vad heter du?');
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors[self::FIELD_PERSON_NAME]);
+        $person_name_question = new FieldText( 'Vad heter du?' );
+        $html_sections[] = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors[ self::FIELD_PERSON_NAME ] );
 
-        $person_name_question = Question::email(
-            'Vilken e-postadress har du?',
-            'Vi kommer skicka viktig information inför tävlingen till denna adress. Ni kan ändra till en annan adress senare om det skulle behövas.');
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL, $errors[self::FIELD_PERSON_EMAIL]);
+        $person_name_question = new FieldEmail( 'Vilken e-postadress har du?', 'Vi kommer skicka viktig information inför tävlingen till denna adress. Ni kan ändra till en annan adress senare om det skulle behövas.' );
+        $html_sections[] = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, $errors[ self::FIELD_PERSON_EMAIL ] );
 
         $recaptcha_sitekey = get_option('tuja_recaptcha_sitekey');
         if (!empty($recaptcha_sitekey)) {

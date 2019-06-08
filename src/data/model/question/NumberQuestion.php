@@ -5,14 +5,9 @@ namespace tuja\data\model\question;
 
 use Exception;
 use tuja\data\model\Group;
-use tuja\view\FieldText;
+use tuja\view\FieldNumber;
 
 class NumberQuestion extends AbstractQuestion {
-
-	public function __construct( $question_group_id, $text, $id, $text_hint, $sort_order ) {
-		parent::__construct( 'number', $question_group_id, $text, $id, $text_hint, $sort_order );
-	}
-
 
 	/**
 	 * Grades an answer and returns the score for the answer.
@@ -25,11 +20,7 @@ class NumberQuestion extends AbstractQuestion {
 	 * Returns the HTML used to render this question.
 	 */
 	function get_html( $field_name, $is_read_only, $answer_object, Group $group = null ) {
-		// TODO: This is a bit of a hack...
-		if ( is_scalar($answer_object) ) {
-			$answer_object = [ $answer_object ];
-		}
-		return $this->create_field()->render( $field_name, $answer_object, $group );
+		return $this->create_field( $is_read_only )->render( $field_name, $answer_object, $group );
 	}
 
 	/**
@@ -47,27 +38,11 @@ class NumberQuestion extends AbstractQuestion {
 		throw new Exception( 'get_config_schema() not implemented' );
 	}
 
-	/**
-	 * Returns the configuration data to store in the database for this question.
-	 */
-	function get_config_object() {
-		throw new Exception( 'get_config_string() not implemented' );
-	}
-
-	/**
-	 * Initializes the different properties of the question object based on a string, presumable one returned from get_config_string().
-	 */
-	function set_config( $config_object ) {
-		throw new Exception( 'set_config() not implemented' );
-	}
-
-	private function create_field() {
-		return new FieldText(
-			"question-" . $this->id,
+	private function create_field( $is_read_only = false ) {
+		return new FieldNumber(
 			$this->text,
 			$this->text_hint,
-			null,
-			$html_props = [ 'type' => 'number' ]);
+			$is_read_only );
 	}
 
 	function get_correct_answer_html() {

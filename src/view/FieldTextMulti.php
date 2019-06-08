@@ -6,10 +6,6 @@ use tuja\data\model\Group;
 
 class FieldTextMulti extends Field {
 
-	function __construct( $key, $label, $hint = null, $read_only = false ) {
-		parent::__construct( $key, $label, $hint, $read_only );
-	}
-
 	public function get_posted_answer( $form_field ) {
 		$user_answer = @$_POST[ $form_field ];
 
