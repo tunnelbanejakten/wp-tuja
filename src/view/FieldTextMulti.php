@@ -6,8 +6,8 @@ use tuja\data\model\Group;
 
 class FieldTextMulti extends Field {
 
-	public function __construct() {
-		parent::__construct();
+	function __construct( $key, $label, $hint = null, $read_only = false ) {
+		parent::__construct( $key, $label, $hint, $read_only );
 	}
 
 	public function get_posted_answer( $form_field ) {
@@ -16,14 +16,14 @@ class FieldTextMulti extends Field {
 		return preg_split( "/[\s,]+/", $user_answer ) ?: [];
 	}
 
-	public function render( $field_name, Group $group = null ) {
+	public function render( $field_name, $answer_object, Group $group = null ) {
 		$render_id = $field_name ?: uniqid();
 		$hint      = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
 
 		$value = isset( $_POST[ $field_name ] )
 			? $this->get_posted_answer( $field_name )
-			: is_array( $this->value )
-				? $this->value
+			: is_array( $answer_object )
+				? $answer_object
 				: [];
 
 		return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label><textarea name="%s" class="tuja-%s" %s>%s</textarea></div>',
@@ -31,7 +31,7 @@ class FieldTextMulti extends Field {
 			$this->label,
 			$hint,
 			$field_name,
-			strtolower( ( new \ReflectionClass( $this ) )->getShortName() ),
+			'fieldtextmulti',
 			$this->read_only ? ' disabled="disabled"' : '',
 			htmlspecialchars( join( ', ', $value ) )
 		);

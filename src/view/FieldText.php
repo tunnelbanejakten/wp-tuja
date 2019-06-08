@@ -8,21 +8,24 @@ class FieldText extends Field
 {
 	private $html_props;
 
-	function __construct( $html_props = [ 'type' => 'text' ] )
-    {
-        parent::__construct();
+	function __construct( $key, $label, $hint = null, $read_only = false, $html_props = [ 'type' => 'text' ] ) {
+		parent::__construct( $key, $label, $hint, $read_only );
 	    $this->html_props = $html_props;
     }
 
-    public function render($field_name, Group $group = null )
+	public function get_posted_answer( $form_field ) {
+		return @$_POST[ $form_field ];
+	}
+
+    public function render($field_name, $answer_object, Group $group = null )
     {
         $render_id = $field_name ?: uniqid();
         $hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';
 
 	    $value = isset( $_POST[ $field_name ] )
 		    ? $_POST[ $field_name ]
-		    : is_array( $this->value ) && isset( $this->value[0] )
-			    ? $this->value[0]
+		    : is_array( $answer_object ) && isset( $answer_object[0] )
+			    ? $answer_object[0]
 			    : '';
 
 	    return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label><input %s id="%s" name="%s" value="%s" class="tuja-%s" %s/></div>',
@@ -35,7 +38,7 @@ class FieldText extends Field
             $render_id,
             $field_name ?: $this->key,
 		    htmlspecialchars( $value ),
-            strtolower((new \ReflectionClass($this))->getShortName()),
+            'fieldtext',
             $this->read_only ? ' disabled="disabled"' : '');
     }
 }

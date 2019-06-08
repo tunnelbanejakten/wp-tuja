@@ -9,10 +9,11 @@ use tuja\util\ImageManager;
 class FieldImages extends Field
 {
 	const SHORT_LIST_LIMIT = 5;
+
 	private $image_manager;
 
-	public function __construct() {
-		parent::__construct();
+	function __construct( $key, $label, $hint = null, $read_only = false ) {
+		parent::__construct( $key, $label, $hint, $read_only );
 		$this->image_manager = new ImageManager();
 	}
 
@@ -30,15 +31,15 @@ class FieldImages extends Field
 		return array($answer);
 	}
 
-	public function render( $field_name, Group $group = null ) {
+	public function render( $field_name, $answer_object, Group $group = null ) {
 		$hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';
 
 		return sprintf(
 			'<div class="tuja-field tuja-%s"><label>%s%s</label>%s</div>',
-			strtolower((new \ReflectionClass($this))->getShortName()),
+			'fieldimages',
 			$this->label,
 			$hint,
-			$this->render_image_upload( $field_name, $group->random_id )
+			$this->render_image_upload( $field_name, $group->random_id, $answer_object )
 		);
 	}
 
@@ -56,13 +57,13 @@ class FieldImages extends Field
 		return ob_get_clean();
 	}
 
-	private function render_image_upload( $field_name, $group_key ) {
+	private function render_image_upload( $field_name, $group_key, $answer_object ) {
 		wp_enqueue_script('tuja-dropzone');
 		wp_enqueue_script('tuja-upload-script');
 
 		$images = array();
-		if ($this->value) {
-			$answer = json_decode($this->value[0], true);
+		if ( $answer_object && is_array( $answer_object ) && ! is_array( $answer_object[0] ) && ! empty( $answer_object[0] ) ) {
+			$answer = json_decode($answer_object[0], true);
 			if (!empty($answer['images'])) {
 				foreach ($answer['images'] as $filename) {
 
