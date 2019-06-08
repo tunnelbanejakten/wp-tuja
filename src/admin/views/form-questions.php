@@ -18,14 +18,37 @@ AdminUtils::printTopMenu( $competition );
 		ob_start();
 		?>
 		<button type="submit" name="tuja_action" class="button button-primary" value="questions_update">Spara frågor</button>
-		<button type="submit" name="tuja_action" class="button" value="question_create">Ny fråga</button>
+        <button type="submit" name="tuja_action" class="button" value="<?= self::ACTION_NAME_CREATE_TEXT ?>">Ny
+            textfråga
+        </button>
+        <button type="submit" name="tuja_action" class="button" value="<?= self::ACTION_NAME_CREATE_NUMBER ?>">Ny
+            nummerfråga
+        </button>
+        <button type="submit" name="tuja_action" class="button" value="<?= self::ACTION_NAME_CREATE_IMAGES ?>">Ny
+            bildfråga
+        </button>
+        <button type="submit" name="tuja_action" class="button" value="<?= self::ACTION_NAME_CREATE_CHOICES ?>">Ny
+            flervalsfråga
+        </button>
 		<?php
 		
 		foreach ($questions as $question) {
 			echo '<div class="tuja-admin-question">';
+			printf( '<div>%s:</div>', substr( get_class( $question ), strrpos( get_class( $question ), '\\' ) + 1 ) );
 			echo '<div class="tuja-admin-question-properties">';
-	
-			$json = json_encode($question, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+			$editable_properties = $question->get_editable_fields();
+
+			$props = array_combine(
+				array_map( function ( $prop ) {
+					return $prop['name'];
+				}, $editable_properties ),
+				array_map( function ( $prop ) use ( $question ) {
+					return $question->{$prop['name']};
+				}, $editable_properties ) );
+
+			ksort( $props );
+			$json = json_encode( $props, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
 			$rows = substr_count($json, "\n") + 1;
 			$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $question->id;
 			printf('<textarea name="%s" rows="%d">%s</textarea>', $field_name, $rows, $json);
@@ -39,5 +62,15 @@ AdminUtils::printTopMenu( $competition );
 	}
     ?>
     <button type="submit" name="tuja_action" class="button button-primary" value="questions_update">Spara frågor</button>
-    <button type="submit" name="tuja_action" class="button" value="question_create">Ny fråga</button>
+    <button type="submit" name="tuja_action" class="button" value="<?= self::ACTION_NAME_CREATE_TEXT ?>">Ny textfråga
+    </button>
+    <button type="submit" name="tuja_action" class="button" value="<?= self::ACTION_NAME_CREATE_NUMBER ?>">Ny
+        nummerfråga
+    </button>
+    <button type="submit" name="tuja_action" class="button" value="<?= self::ACTION_NAME_CREATE_IMAGES ?>">Ny
+        bildfråga
+    </button>
+    <button type="submit" name="tuja_action" class="button" value="<?= self::ACTION_NAME_CREATE_CHOICES ?>">Ny
+        flervalsfråga
+    </button>
 </form>

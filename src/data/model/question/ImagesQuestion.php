@@ -9,11 +9,6 @@ use tuja\view\FieldImages;
 
 class ImagesQuestion extends AbstractQuestion {
 
-	public function __construct( $question_group_id, $text, $id, $text_hint, $sort_order ) {
-		parent::__construct( 'images', $question_group_id, $text, $id, $text_hint, $sort_order );
-	}
-
-
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */
@@ -44,27 +39,9 @@ class ImagesQuestion extends AbstractQuestion {
 		throw new Exception( 'get_config_schema() not implemented' );
 	}
 
-	/**
-	 * Returns the configuration data to store in the database for this question.
-	 */
-	function get_config_object() {
-		return null;
-//		throw new Exception( 'get_config_string() not implemented' );
-	}
-
-	/**
-	 * Initializes the different properties of the question object based on a string, presumable one returned from get_config_string().
-	 */
-	function set_config( $config_object ) {
-//		throw new Exception( 'set_config() not implemented' );
-	}
-
 	private function create_field($is_read_only = false): FieldImages {
 		$field = new FieldImages(
-			"question-" . $this->id,
-			$this->text,
-			$this->text_hint,
-			$is_read_only);
+			$this->text, $this->text_hint, $is_read_only );
 
 		return $field;
 	}

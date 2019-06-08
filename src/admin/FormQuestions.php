@@ -3,6 +3,9 @@
 namespace tuja\admin;
 
 use Exception;
+use tuja\data\model\question\ImagesQuestion;
+use tuja\data\model\question\NumberQuestion;
+use tuja\data\model\question\OptionsQuestion;
 use tuja\data\model\question\TextQuestion;
 use tuja\data\store\FormDao;
 use tuja\data\store\QuestionDao;
@@ -12,6 +15,12 @@ use tuja\data\store\CompetitionDao;
 class FormQuestions {
 	const FORM_FIELD_NAME_PREFIX = 'tuja-question';
 	const ACTION_NAME_DELETE_PREFIX = 'question_delete__';
+	const ACTION_NAME_CREATE_PREFIX = 'question_create__';
+
+	const ACTION_NAME_CREATE_TEXT = self::ACTION_NAME_CREATE_PREFIX . 'text';
+	const ACTION_NAME_CREATE_NUMBER = self::ACTION_NAME_CREATE_PREFIX . 'number';
+	const ACTION_NAME_CREATE_IMAGES = self::ACTION_NAME_CREATE_PREFIX . 'images';
+	const ACTION_NAME_CREATE_CHOICES = self::ACTION_NAME_CREATE_PREFIX . 'choices';
 
 	private $form;
 	private $db_form;
@@ -46,68 +55,79 @@ class FormQuestions {
 			}, ARRAY_FILTER_USE_KEY);
 
 			$questions = $this->db_question->get_all_in_group($this->question_group->id);
-			$updated_questions = array_combine(array_map(function ($q) {
-				return $q->id;
-			}, $questions), $questions);
 
-			foreach ($form_values as $form_question) {
-				$form_question = json_decode(stripslashes($form_question), true);
-				$id = (int)$form_question['id'];
-				if(!isset($updated_questions[$id])) {
-					trigger_error('Invalid question id.', 'warning');
-					continue;
-				}
-
-				foreach($form_question as $field_name => $field_value) {
-					switch ($field_name) {
-						case 'type':
-							// TODO: Don't set $type
-							$updated_questions[$id]->type = $field_value;
-							break;
-						case 'text':
-							$updated_questions[$id]->text = $field_value;
-							break;
-						case 'text_hint':
-							$updated_questions[$id]->text_hint = $field_value;
-							break;
-						case 'score_type':
-							$updated_questions[$id]->score_type = !empty($field_value) ? $field_value : null;
-							break;
-						case 'score_max':
-							$updated_questions[$id]->score_max = $field_value;
-							break;
-						case 'correct_answers':
-							$updated_questions[$id]->correct_answers = array_map('trim', $field_value);
-							break;
-						case 'possible_answers':
-							$updated_questions[$id]->possible_answers = array_map('trim', $field_value);
-							break;
-						case 'sort_order':
-							$updated_questions[$id]->sort_order = $field_value;
-							break;
-					}
-				}
-			}
-		
 			$success = true;
-			foreach ($updated_questions as $updated_question) {
-				try {
-					$affected_rows   = $this->db_question->update( $updated_question );
-					$success = $success && $affected_rows !== false;
-				} catch (Exception $e) {
-					$success = false;
+			foreach ( $questions as $question ) {
+				$editable_properties = $question->get_editable_fields();
+				if ( isset( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question->id ] ) ) {
+					$values = json_decode( stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question->id ] ), true );
+					foreach ( $editable_properties as $prop_conf ) {
+						$question->{$prop_conf['name']} = $values[ $prop_conf['name'] ];
+					}
+
+					try {
+						$affected_rows = $this->db_question->update( $question );
+						$success       = $success && $affected_rows !== false;
+					} catch ( Exception $e ) {
+						$success = false;
+					}
 				}
 			}
 
 			$success ? AdminUtils::printSuccess('Uppdaterat!') : AdminUtils::printError('Kunde inte uppdatera fråga.');
-		} elseif ($_POST['tuja_action'] == 'question_create') {
+		} elseif ( substr( $_POST['tuja_action'], 0, strlen( self::ACTION_NAME_CREATE_PREFIX ) ) == self::ACTION_NAME_CREATE_PREFIX ) {
 			$success = false;
 			
 			try {
-				$props = new TextQuestion( '?', null, TextQuestion::VALIDATION_TEXT, true, $this->question_group->id );
-				$props->set_config( [
-					'correct_answers' => [ 'Alice' ]
-				] );
+				switch ( $_POST['tuja_action'] ) {
+					case self::ACTION_NAME_CREATE_CHOICES:
+						$props = new OptionsQuestion(
+							'Items to choose from',
+							'A subtle hint or reminder.',
+							[ 'Alice', 'Bob', 'Trudy' ],
+							true,
+							false,
+							0,
+							$this->question_group->id,
+							0,
+							[ 'Alice', 'Bob' ],
+							10,
+							OptionsQuestion::GRADING_TYPE_ONE_OF );
+						break;
+					case self::ACTION_NAME_CREATE_IMAGES:
+						$props = new ImagesQuestion(
+							'Upload an image',
+							'A subtle hint or reminder.',
+							0,
+							$this->question_group->id,
+							0,
+							10 );
+						break;
+					case self::ACTION_NAME_CREATE_TEXT:
+						$props = new TextQuestion(
+							'What? Who? When?',
+							'A subtle hint or reminder.',
+							true,
+							$this->question_group->id,
+							0,
+							0,
+							10,
+							TextQuestion::GRADING_TYPE_ONE_OF,
+							[ 'Alice', 'Alicia' ] );
+						break;
+					case self::ACTION_NAME_CREATE_NUMBER:
+						$props = new NumberQuestion(
+							'How few, many, heavy, light...?',
+							'A subtle hint or reminder.',
+							0,
+							$this->question_group->id,
+							0,
+							10 );
+						break;
+					default:
+						throw new Exception( 'Unsupported action' );
+						break;
+				}
 
 				$success = $this->db_question->create( $props );
 			} catch ( Exception $e ) {

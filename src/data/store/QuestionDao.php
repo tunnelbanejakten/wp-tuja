@@ -25,14 +25,41 @@ class QuestionDao extends AbstractDao
 		$this->table = Database::get_table('form_question');
 	}
 
-	private static function class_to_enum( $type ) {
-		if ( $type instanceof TextQuestion ) {
-			return $type->is_single_answer ? self::QUESTION_TYPE_TEXT : self::QUESTION_TYPE_TEXT_MULTI;
-		} elseif ( $type instanceof OptionsQuestion ) {
-			return $type->is_single_select ? self::QUESTION_TYPE_PICK_ONE : self::QUESTION_TYPE_PICK_MULTI;
-		} elseif ( $type instanceof ImagesQuestion ) {
+	private static function get_answer_config( AbstractQuestion $question ) {
+		if ( $question instanceof TextQuestion ) {
+			return [
+				'score_max'  => $question->score_max,
+				'score_type' => $question->score_type,
+				'values'     => $question->correct_answers
+			];
+		} elseif ( $question instanceof OptionsQuestion ) {
+			return [
+				'score_max' => $question->score_max,
+				'options'   => $question->possible_answers,
+				'values'    => $question->correct_answers
+			];
+		} elseif ( $question instanceof ImagesQuestion ) {
+			return [
+				'score_max' => $question->score_max
+			];
+		} elseif ( $question instanceof NumberQuestion ) {
+			return [
+				'score_max' => $question->score_max
+			];
+		} else {
+			throw new Exception( 'Unsupported type of question: ' . get_class( $question ) );
+		}
+
+	}
+
+	private static function class_to_enum( AbstractQuestion $question ) {
+		if ( $question instanceof TextQuestion ) {
+			return $question->is_single_answer ? self::QUESTION_TYPE_TEXT : self::QUESTION_TYPE_TEXT_MULTI;
+		} elseif ( $question instanceof OptionsQuestion ) {
+			return $question->is_single_select ? self::QUESTION_TYPE_PICK_ONE : self::QUESTION_TYPE_PICK_MULTI;
+		} elseif ( $question instanceof ImagesQuestion ) {
 			return self::QUESTION_TYPE_IMAGES;
-		} elseif ( $type instanceof NumberQuestion ) {
+		} elseif ( $question instanceof NumberQuestion ) {
 			return self::QUESTION_TYPE_IMAGES;
 		} else {
 			throw new Exception( 'Unsupported type of question: ' . get_class( $type ) );
@@ -41,7 +68,8 @@ class QuestionDao extends AbstractDao
 
 	function create( AbstractQuestion $question ) {
 		$question->validate();
-		if ( strlen( self::get_answer_config( $question ) ) > 65000 ) {
+		$answer_config = json_encode( self::get_answer_config( $question ) );
+		if ( strlen( $answer_config ) > 65000 ) {
 			throw new ValidationException( 'answer', 'För mycket konfiguration för frågan.' );
 		}
 
@@ -67,7 +95,7 @@ class QuestionDao extends AbstractDao
 			$this->id->random_string(),
 			$question->question_group_id,
 			self::class_to_enum( $question ),
-			self::get_answer_config( $question ),
+			$answer_config,
 			$question->text,
 			$question->sort_order,
 			$question->text_hint
@@ -84,6 +112,10 @@ class QuestionDao extends AbstractDao
 
 	function update( AbstractQuestion $question ) {
 		$question->validate();
+		$answer_config = json_encode( self::get_answer_config( $question ) );
+		if ( strlen( $answer_config ) > 65000 ) {
+			throw new ValidationException( 'answer', 'För mycket konfiguration för frågan.' );
+		}
 
 		$query_template = '
             UPDATE ' . $this->table . ' SET
@@ -97,7 +129,7 @@ class QuestionDao extends AbstractDao
 
 		return $this->wpdb->query( $this->wpdb->prepare( $query_template,
 			self::class_to_enum( $question ),
-			self::get_answer_config( $question ),
+			$answer_config,
 			$question->text,
 			$question->sort_order,
 			$question->text_hint,
@@ -163,64 +195,63 @@ class QuestionDao extends AbstractDao
 	}
 
 	protected static function to_form_question( $result ): AbstractQuestion {
+
+		$config = json_decode( $result->answer, true );
+
 		switch ( $result->type ) {
 			case self::QUESTION_TYPE_TEXT_MULTI:
 			case self::QUESTION_TYPE_TEXT:
 				$q = new TextQuestion(
 					$result->text,
 					$result->text_hint,
-					TextQuestion::VALIDATION_TEXT,
 					$result->type == self::QUESTION_TYPE_TEXT,
 					$result->question_group_id,
 					$result->sort_order,
-					$result->id );
-				self::set_answer_config( $q, $result->answer );
+					$result->id,
+					$config['score_max'],
+					$config['score_type'],
+					$config['values']
+				);
 
 				return $q;
 			case self::QUESTION_TYPE_PICK_ONE:
 			case self::QUESTION_TYPE_PICK_MULTI:
 				$q = new OptionsQuestion(
 					$result->text,
-					[],
 					$result->text_hint,
+					$config['options'],
 					$result->type == self::QUESTION_TYPE_PICK_ONE,
 					true,
 					$result->id,
 					$result->question_group_id,
-					$result->sort_order );
-				self::set_answer_config( $q, $result->answer );
+					$result->sort_order,
+					$config['values'],
+					$config['score_max'],
+					$config['score_type'] );
 
 				return $q;
 			case self::QUESTION_TYPE_IMAGES:
 				$q = new ImagesQuestion(
-					$result->question_group_id,
 					$result->text,
-					$result->id,
 					$result->text_hint,
-					$result->sort_order );
-				self::set_answer_config( $q, $result->answer );
+					$result->id,
+					$result->question_group_id,
+					$result->sort_order,
+					$config['score_max'] );
 
 				return $q;
 			case self::QUESTION_TYPE_NUMBER:
 				$q = new NumberQuestion(
-					$result->question_group_id,
 					$result->text,
-					$result->id,
 					$result->text_hint,
-					$result->sort_order );
-				self::set_answer_config( $q, $result->answer );
+					$result->id,
+					$result->question_group_id,
+					$result->sort_order,
+					$config['score_max'] );
 
 				return $q;
 			default:
 				throw new Exception( 'Unsupported type of question: ' . $result->type );
 		}
-	}
-
-	private static function set_answer_config( AbstractQuestion $question, $json_string ) {
-		$question->set_config( json_decode( $json_string, true ) );
-	}
-
-	private static function get_answer_config( AbstractQuestion $question ) {
-		return json_encode( $question->get_config_object() );
 	}
 }

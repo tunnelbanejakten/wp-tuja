@@ -5,43 +5,28 @@ namespace tuja\data\model\question;
 
 use Exception;
 use tuja\data\model\Group;
-use tuja\data\model\Person;
-use tuja\data\store\QuestionDao;
+use tuja\data\model\ValidationException;
 use tuja\view\Field;
 use tuja\view\FieldText;
 use tuja\view\FieldTextMulti;
 
 class TextQuestion extends AbstractQuestion {
 
-	const VALIDATION_TEXT = 'text';
-	const VALIDATION_EMAIL = 'email';
-	const VALIDATION_PHONE = 'phone';
-	const VALIDATION_PNO = 'pno';
+	// TODO: Properties should not have to be public
+	/**
+	 * @tuja-gui-editable
+	 */
+	public $score_type = self::GRADING_TYPE_ONE_OF;
 
-	const ADDITIONAL_PROPERTIES = [
-		self::VALIDATION_EMAIL => [
-			'type'         => 'email',
-			'autocomplete' => 'autocomplete'
-		],
-		self::VALIDATION_TEXT  => [
-			'type' => 'text'
-		],
-		self::VALIDATION_PHONE => [
-			'type'    => 'tel',
-			'pattern' => Person::PHONE_PATTERN
-		],
-		self::VALIDATION_PNO   => [
-			'type'        => 'tel',
-			'pattern'     => Person::PNO_PATTERN,
-			'placeholder' => 'ååmmddnnnn'
-		]
-	];
+	/**
+	 * @tuja-gui-editable
+	 */
+	public $correct_answers = [];
 
-	private $score_type;
-	private $correct_answers;
-	// TODO: $is_single_answer should not have to be public
-	public $is_single_answer;
-	private $validation;
+	/**
+	 * @tuja-gui-editable
+	 */
+	public $is_single_answer = true;
 
 	/**
 	 * Full points is awarded if supplied answer matches ONE of the valid answers.
@@ -91,23 +76,23 @@ class TextQuestion extends AbstractQuestion {
 	 *
 	 * @param $text
 	 * @param $text_hint
-	 * @param string $validation
 	 * @param bool $is_single_answer
 	 * @param int $question_group_id
 	 * @param int $sort_order
 	 * @param int $id
 	 */
-	public function __construct( $text, $text_hint = null, $validation = self::VALIDATION_TEXT, $is_single_answer = true, $question_group_id = 0, $sort_order = 0, $id = 0 ) {
-		parent::__construct(
-		// TODO: Determine $is_single_answer using "get_config" rather than question type in database.
-			$is_single_answer ? QuestionDao::QUESTION_TYPE_TEXT : QuestionDao::QUESTION_TYPE_TEXT_MULTI,
-			$question_group_id,
-			$text,
-			$id,
-			$text_hint,
-			$sort_order );
-		$this->validation       = $validation;
+	public function __construct( $text, $text_hint = null, $is_single_answer = true, $question_group_id = 0, $sort_order = 0, $id = 0, $score_max = 0, $score_type = self::GRADING_TYPE_ONE_OF, $correct_answers = [] ) {
+		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max );
 		$this->is_single_answer = $is_single_answer;
+		$this->score_type       = $score_type;
+		$this->correct_answers  = $correct_answers;
+	}
+
+	public function validate() {
+		parent::validate();
+		if ( ! empty( $this->score_type ) && ! in_array( $this->score_type, self::SCORING_METHODS ) ) {
+			throw new ValidationException( 'score_type', 'Ogiltig poängberäkningsmetod.' );
+		}
 	}
 
 
@@ -170,8 +155,6 @@ class TextQuestion extends AbstractQuestion {
 	 * Returns the HTML used to render this question.
 	 */
 	function get_html( $field_name, $is_read_only, $answer_object, Group $group = null ) {
-
-		var_dump( $answer_object );
 		$field = $this->create_field();
 
 		return $field->render( $field_name, $answer_object, $group );
@@ -194,33 +177,11 @@ class TextQuestion extends AbstractQuestion {
 		throw new Exception( 'get_config_schema() not implemented' );
 	}
 
-	/**
-	 * Returns the configuration data to store in the database for this question.
-	 */
-	function get_config_object() {
-		return [
-			'score_type'       => $this->score_type,
-			'score_max'        => $this->score_max,
-			'correct_answers'  => $this->correct_answers,
-			'is_single_answer' => $this->is_single_answer
-		];
-	}
-
-	/**
-	 * Initializes the different properties of the question object based on a string, presumable one returned from get_config_string().
-	 */
-	function set_config( $config_object ) {
-		$this->score_type      = $config_object['score_type'];
-		$this->score_max       = $config_object['score_max'];
-		$this->correct_answers = $config_object['values'];
-//		$this->is_single_answer = $config_object['is_single_answer'];
-	}
-
 	private function create_field(): Field {
 		if ( $this->is_single_answer ) {
-			$field = new FieldText( "question-" . $this->id, $this->text, $this->text_hint, false, self::ADDITIONAL_PROPERTIES[ $this->validation ] );
+			$field = new FieldText( $this->text, $this->text_hint, false );
 		} else {
-			$field = new FieldTextMulti( "question-" . $this->id, $this->text, $this->text_hint, false );
+			$field = new FieldTextMulti( $this->text, $this->text_hint, false );
 		}
 
 		return $field;

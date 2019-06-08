@@ -10,32 +10,46 @@ use tuja\data\model\ValidationException;
 abstract class AbstractQuestion {
 
 	// TODO: Do these properties need to be public?
-	public $id;
-	public $question_group_id;
-	public $text_hint;
-	public $text;
-	public $sort_order;
-	public $score_max;
-//	protected $type;
+	public $id = - 1;
+	public $question_group_id = - 1;
+
+	/**
+	 * @tuja-gui-editable
+	 */
+	public $text_hint = 'A subtle hint';
+
+	/**
+	 * @tuja-gui-editable
+	 */
+	public $text = 'Who? What? When?';
+
+	/**
+	 * @tuja-gui-editable
+	 */
+	public $sort_order = 0;
+
+	/**
+	 * @tuja-gui-editable
+	 */
+	public $score_max = 0;
 
 	/**
 	 * AbstractQuestion constructor.
 	 *
-	 * @param $type
-	 * @param $question_group_id
 	 * @param $text
-	 * @param $id
 	 * @param $text_hint
+	 * @param $id
+	 * @param $question_group_id
 	 * @param $sort_order
+	 * @param $score_max
 	 */
-	// TODO: Remove $type parameter
-	public function __construct( $type, $question_group_id, $text, $id, $text_hint, $sort_order ) {
+	public function __construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max ) {
 		$this->id                = $id;
 		$this->question_group_id = $question_group_id;
 		$this->text_hint         = $text_hint;
 		$this->text              = $text;
 		$this->sort_order        = $sort_order;
-//		$this->type              = $type;
+		$this->score_max         = $score_max;
 	}
 
 
@@ -60,16 +74,6 @@ abstract class AbstractQuestion {
 	 */
 	abstract function get_config_schema();
 
-	/**
-	 * Returns the configuration data to store in the database for this question.
-	 */
-	abstract function get_config_object();
-
-	/**
-	 * Initializes the different properties of the question object based on a string, presumable one returned from get_config_string().
-	 */
-	abstract function set_config( $config_object );
-
 	abstract function get_correct_answer_html();
 
 	public function validate() {
@@ -79,24 +83,48 @@ abstract class AbstractQuestion {
 		if ( strlen( $this->text_hint ) > 65000 ) {
 			throw new ValidationException( 'text_hint', 'Hjälptexten är för lång.' );
 		}
-		if ( ! empty( $this->score_type ) && ! in_array( $this->score_type, self::SCORING_METHODS ) ) {
-			throw new ValidationException( 'score_type', 'Ogiltig poängberäkningsmetod.' );
-		}
-//		if(!in_array($this->type, self::VALID_TYPES)) {
-//			throw new ValidationException('type', 'Ogiltig frågetyp.');
-//		}
 	}
 
-	// TODO: Use this as a starting point for an auto-generated question editor
-//	public function get_fields() {
-//		$cls = new ReflectionClass( $this );
-//
-//		return array_map( function ( ReflectionProperty $prop ) {
-//			$prop->setAccessible( true );
-//			return [
-//				'name' => $prop->getName(),
-//				'datatype' => gettype($prop->getValue( $this )),
-//			];
-//		}, $cls->getProperties() );
-//	}
+	public function get_editable_fields() {
+		$cls = new ReflectionClass( $this );
+
+		$is_editable_filter = function ( ReflectionProperty $prop ) {
+			return strpos( $prop->getDocComment(), '@tuja-gui-editable' ) !== false;
+		};
+
+		$field_mapper = function ( ReflectionProperty $prop ) {
+			$prop->setAccessible( true );
+
+			return [
+				'name'     => $prop->getName(),
+				'datatype' => gettype( $prop->getValue( $this ) ),
+			];
+		};
+
+		return array_map( $field_mapper, array_filter( $cls->getProperties(), $is_editable_filter ) );
+	}
+
+	protected function calculate_correctness( array $user_input, array $correct_input, bool $is_ordered ): array {
+		$answers_percent_correct = array_map( function ( $answer, $index ) use ( $correct_input, $is_ordered ) {
+			if ( $is_ordered ) {
+				// Compare user-supplied answer X to correct answer X:
+				$percent = 0;
+				similar_text( $answer, $correct_input[ $index ], $percent );
+
+				return $percent;
+			} else {
+				// Compare user-supplied answer X to all correct answers (and return the best match):
+				$this_answer_percents_correct = array_map( function ( $correct_answer ) use ( $answer ) {
+					$percent = 0;
+					similar_text( $answer, $correct_answer, $percent );
+
+					return $percent;
+				}, $correct_input );
+
+				return ! empty( $this_answer_percents_correct ) ? max( $this_answer_percents_correct ) : null;
+			}
+		}, $user_input, array_keys( $user_input ) );
+
+		return $answers_percent_correct;
+	}
 }
