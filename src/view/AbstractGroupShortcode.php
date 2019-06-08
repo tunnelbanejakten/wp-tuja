@@ -6,6 +6,7 @@ use DateTime;
 use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
+use tuja\data\model\question\AbstractQuestion;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
@@ -51,11 +52,14 @@ class AbstractGroupShortcode extends AbstractShortcode
 	    $this->message_sender       = new MessageSender();
     }
 
-    protected function render_field($question, $field_name, $error_message, $read_only = false): string
+    protected function render_field(AbstractQuestion $question, $field_name, $error_message, $read_only = false, $answer_object = null): string
     {
-        $field = Field::create($question);
-        $field->read_only = $read_only;
-        $html = $field->render($field_name);
+    	// TODO: This is a bit of a hack...
+	    if ( is_scalar($answer_object) ) {
+		    $answer_object = [ $answer_object ];
+	    }
+	    $html = $question->get_html( $field_name, $read_only, $answer_object);
+
         return sprintf('<div class="tuja-question %s">%s%s</div>',
             !empty($error_message) ? 'tuja-field-error' : '',
             $html,

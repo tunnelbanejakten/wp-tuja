@@ -55,20 +55,20 @@ class EditPersonShortcode extends AbstractGroupShortcode
             $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['__']);
         }
 
-        $person_name_question = Question::text('Namn', null, $person->name);
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_NAME, $errors['name'], $read_only);
+	    $person_name_question = Question::text( 'Namn' );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors['name'], $read_only, $person->name );
 
-	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar att du fyller i fullständigt personnummer.', $person->pno );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors['pno'] );
+	    $person_name_question = Question::pno( 'Födelsedag och sånt', 'Vi rekommenderar att du fyller i fullständigt personnummer.' );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors['pno'], $person->pno );
 
-	    $person_name_question = Question::email( 'E-postadress', null, $person->email );
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_EMAIL, $errors['email'], $read_only);
+	    $person_name_question = Question::email( 'E-postadress' );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, $errors['email'], $read_only, $person->email );
 
-        $person_name_question = Question::phone('Telefonnummer', null, $person->phone);
-        $html_sections[] = $this->render_field($person_name_question, self::FIELD_PERSON_PHONE, $errors['phone'], $read_only);
+	    $person_name_question = Question::phone( 'Telefonnummer' );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE, $errors['phone'], $read_only, $person->phone );
 
-	    $person_name_question = Question::text( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.', $person->food );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, $errors['food'] );
+	    $person_name_question = Question::text( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.' );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, $errors['food'], $person->food );
 
 
 	    if ( ! $read_only ) {
