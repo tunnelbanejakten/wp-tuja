@@ -90,8 +90,12 @@ class CreateGroupShortcode extends AbstractGroupShortcode
 				    $html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
 				    break;
 			    default:
-				    $group_category_question = new FieldChoices( 'Vilken klass tävlar ni i?', $group_category_options, false, 'Välj den som de flesta av deltagarna tillhör.'
-				    );
+				    $group_category_question = new FieldChoices(
+					    'Vilken klass tävlar ni i?',
+					    'Välj den som de flesta av deltagarna tillhör.',
+					    false,
+					    $group_category_options,
+					    false );
 				    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors[ self::FIELD_GROUP_AGE ] );
 				    break;
 		    }

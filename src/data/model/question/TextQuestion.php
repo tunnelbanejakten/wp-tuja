@@ -76,12 +76,15 @@ class TextQuestion extends AbstractQuestion {
 	 *
 	 * @param $text
 	 * @param $text_hint
-	 * @param bool $is_single_answer
+	 * @param int $id
 	 * @param int $question_group_id
 	 * @param int $sort_order
-	 * @param int $id
+	 * @param int $score_max
+	 * @param string $score_type
+	 * @param bool $is_single_answer
+	 * @param array $correct_answers
 	 */
-	public function __construct( $text, $text_hint = null, $is_single_answer = true, $question_group_id = 0, $sort_order = 0, $id = 0, $score_max = 0, $score_type = self::GRADING_TYPE_ONE_OF, $correct_answers = [] ) {
+	public function __construct( $text, $text_hint = null, $id = 0, $question_group_id = 0, $sort_order = 0, $score_max = 0, $score_type = self::GRADING_TYPE_ONE_OF, $is_single_answer = true, $correct_answers = [] ) {
 		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max );
 		$this->is_single_answer = $is_single_answer;
 		$this->score_type       = $score_type;

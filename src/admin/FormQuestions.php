@@ -80,15 +80,15 @@ class FormQuestions {
 						$props = new OptionsQuestion(
 							'Items to choose from',
 							'A subtle hint or reminder.',
-							[ 'Alice', 'Bob', 'Trudy' ],
-							true,
-							false,
 							0,
 							$this->question_group->id,
 							0,
-							[ 'Alice', 'Bob' ],
 							10,
-							OptionsQuestion::GRADING_TYPE_ONE_OF );
+							OptionsQuestion::GRADING_TYPE_ONE_OF,
+							true,
+							[ 'Alice', 'Bob' ],
+							[ 'Alice', 'Bob', 'Trudy' ],
+							false );
 						break;
 					case self::ACTION_NAME_CREATE_IMAGES:
 						$props = new ImagesQuestion(
@@ -103,12 +103,12 @@ class FormQuestions {
 						$props = new TextQuestion(
 							'What? Who? When?',
 							'A subtle hint or reminder.',
-							true,
-							$this->question_group->id,
 							0,
+							$this->question_group->id,
 							0,
 							10,
 							TextQuestion::GRADING_TYPE_ONE_OF,
+							true,
 							[ 'Alice', 'Alicia' ] );
 						break;
 					case self::ACTION_NAME_CREATE_NUMBER:

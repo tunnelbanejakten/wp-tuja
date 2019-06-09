@@ -8,14 +8,13 @@ use tuja\data\model\question\TextQuestion;
 $question = new TextQuestion(
 	null,
 	null,
-	true,
 	0,
 	0,
 	0,
 	10,
 	TextQuestion::GRADING_TYPE_ONE_OF,
-	[ 'alice', 'bob' ]
-);
+	true,
+	[ 'alice', 'bob' ] );
 
 assert( $question->score( [ 'alice' ] ) == 10 );
 assert( $question->score( [ 'bob' ] ) == 10 );
@@ -30,14 +29,13 @@ assert( $question->score( [ 'trudy' ] ) == 0 );
 $question = new TextQuestion(
 	null,
 	null,
-	true,
 	0,
 	0,
 	0,
 	10,
 	TextQuestion::GRADING_TYPE_ORDERED_PERCENT_OF,
-	[ 'stockholm', 'copenhagen', 'oslo', 'helsinki' ]
-); // What is the capital of {possible_answer}?
+	true,
+	[ 'stockholm', 'copenhagen', 'oslo', 'helsinki' ] ); // What is the capital of {possible_answer}?
 
 assert( $question->score( [ 'STOCKHOLM', '', 'Oslo' ] ) == 5 );
 assert( $question->score( [ 'stokholm', '', 'Oslo' ] ) == 5 );
@@ -51,14 +49,13 @@ assert( $question->score( [ '', '', '', '' ] ) == 0 );
 $question = new TextQuestion(
 	null,
 	null,
-	true,
 	0,
 	0,
 	0,
 	10,
 	TextQuestion::GRADING_TYPE_UNORDERED_PERCENT_OF,
-	[ 'stockholm', 'copenhagen', 'oslo', 'helsinki', 'reykjavik' ]
-); // Which are the capitals of the nordic countries?
+	true,
+	[ 'stockholm', 'copenhagen', 'oslo', 'helsinki', 'reykjavik' ] ); // Which are the capitals of the nordic countries?
 
 assert( $question->score( [ 'STOCKHOLM', 'Oslo' ] ) == 4 );
 assert( $question->score( [ 'stokholm', 'Oslo' ] ) == 4 );
@@ -84,14 +81,13 @@ assert( $question->score( [
 $question = new TextQuestion(
 	null,
 	null,
-	true,
 	0,
 	0,
 	0,
 	10,
 	TextQuestion::GRADING_TYPE_ALL_OF,
-	[ 'alice', 'bob' ]
-);
+	true,
+	[ 'alice', 'bob' ] );
 
 assert( $question->score( [ 'alice' ] ) == 0 );
 assert( $question->score( [ 'bob' ] ) == 0 );

@@ -9,7 +9,6 @@ abstract class Field {
 	protected $hint;
 	protected $read_only;
 
-	// TODO: Are the Field* class constructors consistent in terms of the order of common prameters?
 	public function __construct( $label, $hint = null, $read_only = false ) {
 		$this->label     = $label;
 		$this->hint      = $hint;

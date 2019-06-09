@@ -225,14 +225,14 @@ class FormShortcode extends AbstractShortcode
 	private function get_groups_dropdown( $participant_groups ): string {
 		$field = new FieldChoices(
 			'Vilket lag vill du rapportera för?',
+			'Byt inte lag om du har osparade ändringar.',
+			true,
 			array_merge(
 				array( '' => 'Välj lag' ),
 				array_map( function ( $option ) {
 					return $option->name;
 				}, $participant_groups ) ),
 			false,
-			'Byt inte lag om du har osparade ändringar.',
-			true,
 			true );
 
 		return $field->render( self::TEAMS_DROPDOWN_NAME, null );

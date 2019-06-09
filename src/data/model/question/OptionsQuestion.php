@@ -37,7 +37,7 @@ class OptionsQuestion extends AbstractQuestion {
 	/**
 	 * @tuja-gui-editable
 	 */
-	public $is_single_select;
+	public $is_single_select; // TODO: Fix inconsistency OptionsQuestion->is_single_select vs FieldChoices->is_multichoice (single vs multi).
 
 	/**
 	 * @tuja-gui-editable
@@ -56,14 +56,17 @@ class OptionsQuestion extends AbstractQuestion {
 	 *
 	 * @param $text
 	 * @param null $text_hint
-	 * @param array $possible_answers
-	 * @param bool $is_single_select
-	 * @param bool $submit_on_change
 	 * @param int $id
 	 * @param int $question_group_id
 	 * @param int $sort_order
+	 * @param int $score_max
+	 * @param string $score_type
+	 * @param bool $is_single_select
+	 * @param array $correct_answers
+	 * @param array $possible_answers
+	 * @param bool $submit_on_change
 	 */
-	public function __construct( $text, $text_hint = null, $possible_answers = [], $is_single_select = true, $submit_on_change = true, $id = 0, $question_group_id = 0, $sort_order = 0, $correct_answers = [], $score_max = 0, $score_type = self::GRADING_TYPE_ONE_OF ) {
+	public function __construct( $text, $text_hint = null, $id = 0, $question_group_id = 0, $sort_order = 0, $score_max = 0, $score_type = self::GRADING_TYPE_ONE_OF, $is_single_select = true, $correct_answers = [], $possible_answers = [], $submit_on_change = true ) {
 		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max );
 		$this->is_single_select = $is_single_select;
 		$this->possible_answers = $possible_answers;
@@ -134,10 +137,10 @@ class OptionsQuestion extends AbstractQuestion {
 	private function create_field(): FieldChoices {
 		$field = new FieldChoices(
 			$this->text,
-			$this->possible_answers,
-			! $this->is_single_select,
 			$this->text_hint,
 			false,
+			$this->possible_answers,
+			! $this->is_single_select,
 			$this->submit_on_change );
 
 		return $field;

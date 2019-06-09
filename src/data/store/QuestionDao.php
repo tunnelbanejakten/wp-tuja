@@ -53,7 +53,7 @@ class QuestionDao extends AbstractDao
 
 	}
 
-	private static function class_to_enum( AbstractQuestion $question ) {
+	private static function get_db_type( AbstractQuestion $question ) {
 		if ( $question instanceof TextQuestion ) {
 			return $question->is_single_answer ? self::QUESTION_TYPE_TEXT : self::QUESTION_TYPE_TEXT_MULTI;
 		} elseif ( $question instanceof OptionsQuestion ) {
@@ -95,7 +95,7 @@ class QuestionDao extends AbstractDao
 		$query          = $this->wpdb->prepare( $query_template,
 			$this->id->random_string(),
 			$question->question_group_id,
-			self::class_to_enum( $question ),
+			self::get_db_type( $question ),
 			$answer_config,
 			$question->text,
 			$question->sort_order,
@@ -129,7 +129,7 @@ class QuestionDao extends AbstractDao
                 id = %d';
 
 		return $this->wpdb->query( $this->wpdb->prepare( $query_template,
-			self::class_to_enum( $question ),
+			self::get_db_type( $question ),
 			$answer_config,
 			$question->text,
 			$question->sort_order,
@@ -205,14 +205,13 @@ class QuestionDao extends AbstractDao
 				$q = new TextQuestion(
 					$result->text,
 					$result->text_hint,
-					$result->type == self::QUESTION_TYPE_TEXT,
+					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
-					$result->id,
 					$config['score_max'],
 					$config['score_type'],
-					$config['values']
-				);
+					$result->type == self::QUESTION_TYPE_TEXT,
+					$config['values'] );
 
 				return $q;
 			case self::QUESTION_TYPE_PICK_ONE:
@@ -220,15 +219,15 @@ class QuestionDao extends AbstractDao
 				$q = new OptionsQuestion(
 					$result->text,
 					$result->text_hint,
-					$config['options'],
-					$result->type == self::QUESTION_TYPE_PICK_ONE,
-					true,
 					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
-					$config['values'],
 					$config['score_max'],
-					$config['score_type'] );
+					$config['score_type'],
+					$result->type == self::QUESTION_TYPE_PICK_ONE,
+					$config['values'],
+					$config['options'],
+					false );
 
 				return $q;
 			case self::QUESTION_TYPE_IMAGES:

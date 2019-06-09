@@ -112,8 +112,12 @@ class EditGroupShortcode extends AbstractGroupShortcode
 				    $html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
 				    break;
 			    default:
-				    $group_category_question = new FieldChoices( 'Vilken klass tävlar ni i?', $group_category_options, false, 'Välj den som de flesta av deltagarna tillhör.'
-				    );
+				    $group_category_question = new FieldChoices(
+					    'Vilken klass tävlar ni i?',
+					    'Välj den som de flesta av deltagarna tillhör.',
+					    false,
+					    $group_category_options,
+					    false );
 				    $html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors['age'], $current_group_category_name );
 				    break;
 		    }
@@ -163,11 +167,14 @@ class EditGroupShortcode extends AbstractGroupShortcode
 		    ! $person->is_competing ? self::ROLE_ISNOTCOMPETING_LABEL : null,
 		    $person->is_group_contact ? self::ROLE_ISCONTACT_LABEL : null
 	    ];
-	    $person_roles_question = new FieldChoices( 'Har den här personen någon speciell uppgift?', [
-		    self::ROLE_ISCONTACT_LABEL,
-		    self::ROLE_ISNOTCOMPETING_LABEL
-	    ], true
-	    );
+	    $person_roles_question = new FieldChoices( 'Har den här personen någon speciell uppgift?',
+		    null,
+		    false,
+		    [
+			    self::ROLE_ISCONTACT_LABEL,
+			    self::ROLE_ISNOTCOMPETING_LABEL
+		    ],
+		    true );
 	    $html_sections[]       = $this->render_field( $person_roles_question, self::FIELD_PERSON_ROLES . '__' . $random_id, $errors[ $random_id . '__roles' ], $answer );
 
 	    $person_name_question = new FieldEmail( 'E-postadress', 'Obligatoriskt för lagledaren, rekommenderat för övriga.' );

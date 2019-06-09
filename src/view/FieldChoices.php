@@ -13,7 +13,7 @@ class FieldChoices extends Field
 
 	const SHORT_LIST_LIMIT = 5;
 
-	public function __construct( $label, $options, $is_multichoice, $hint = null, $read_only = false, $submit_on_change = false ) {
+	public function __construct( $label, $hint = null, $read_only = false, $options = [], $is_multichoice = false, $submit_on_change = false ) {
 		parent::__construct( $label, $hint, $read_only );
 		$this->options          = $options;
 		$this->is_multichoice   = $is_multichoice;

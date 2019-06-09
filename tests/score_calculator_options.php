@@ -8,16 +8,15 @@ use tuja\data\model\question\OptionsQuestion;
 $question = new OptionsQuestion(
 	null,
 	null,
-	[ 'alice', 'bob', 'carol', 'dave', 'emily' ],
+	0,
+	0,
+	10,
+	10,
+	OptionsQuestion::GRADING_TYPE_ONE_OF,
 	true,
-	0,
-	0,
-	0,
-	10,
 	[ 'alice', 'bob' ],
-	10,
-	OptionsQuestion::GRADING_TYPE_ONE_OF
-);
+	[ 'alice', 'bob', 'carol', 'dave', 'emily' ],
+	0 );
 
 assert( $question->score( [ 'alice' ] ) == 10 );
 assert( $question->score( [ 'ALICE' ] ) == 10 ); // case insensitive
@@ -33,16 +32,15 @@ assert( $question->score( [ 'trudy' ] ) == 0 );
 $question = new OptionsQuestion(
 	null,
 	null,
-	[ 'alice', 'bob', 'carol', 'dave', 'emily' ],
+	0,
+	0,
+	10,
+	10,
+	OptionsQuestion::GRADING_TYPE_ALL_OF,
 	false,
-	0,
-	0,
-	0,
-	10,
 	[ 'alice', 'bob' ],
-	10,
-	OptionsQuestion::GRADING_TYPE_ALL_OF
-);
+	[ 'alice', 'bob', 'carol', 'dave', 'emily' ],
+	0 );
 
 assert( $question->score( [ 'alice' ] ) == 0 );
 assert( $question->score( [ 'bob' ] ) == 0 );
