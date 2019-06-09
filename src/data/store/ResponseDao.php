@@ -120,7 +120,7 @@ class ResponseDao extends AbstractDao
 		return $affected_rows === count( $ids );
 	}
 
-	protected static function to_response( $result ): Response {
+	private static function to_response( $result ): Response {
 		$r                   = new Response();
 		$r->id               = $result->id;
 		$r->form_question_id = $result->form_question_id;

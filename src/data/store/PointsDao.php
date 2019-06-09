@@ -66,7 +66,7 @@ class PointsDao extends AbstractDao
 			$competition_id );
 	}
 
-	protected static function to_points( $result ): Points {
+	private static function to_points( $result ): Points {
 		$p                   = new Points();
 		$p->form_question_id = $result->form_question_id;
 		$p->group_id         = $result->team_id;

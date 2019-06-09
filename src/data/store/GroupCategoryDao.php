@@ -71,7 +71,9 @@ class GroupCategoryDao extends AbstractDao
     function get($id)
     {
         return $this->get_object(
-	        'tuja\data\store\AbstractDao::to_group_category',
+	        function ( $row ) {
+		        return self::to_group_category( $row );
+	        },
             'SELECT * FROM ' . $this->table . ' WHERE id = %d',
             $id);
     }
@@ -79,8 +81,10 @@ class GroupCategoryDao extends AbstractDao
     function get_all_in_competition($competition_id)
     {
         return $this->get_objects(
-	        'tuja\data\store\AbstractDao::to_group_category',
-            'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d ORDER BY is_crew, name',
+	        function ( $row ) {
+		        return self::to_group_category( $row );
+	        },
+	        'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d ORDER BY is_crew, name',
             $competition_id);
     }
 
@@ -90,4 +94,13 @@ class GroupCategoryDao extends AbstractDao
         return $this->wpdb->query($this->wpdb->prepare($query_template, $id));
     }
 
+	private static function to_group_category( $result ): GroupCategory {
+		$gc                 = new GroupCategory();
+		$gc->id             = $result->id;
+		$gc->competition_id = $result->competition_id;
+		$gc->is_crew        = $result->is_crew != 0;
+		$gc->name           = $result->name;
+
+		return $gc;
+	}
 }

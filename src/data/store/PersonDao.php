@@ -135,7 +135,7 @@ class PersonDao extends AbstractDao
         return $affected_rows !== false && $affected_rows === 1;
     }
 
-	protected static function to_person( $result ): Person {
+	private static function to_person( $result ): Person {
 		$p                   = new Person();
 		$p->id               = $result->id;
 		$p->random_id        = $result->random_id;

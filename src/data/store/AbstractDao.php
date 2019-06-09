@@ -41,17 +41,6 @@ class AbstractDao {
 		return $results;
 	}
 
-	// TODO: Move all to_* methods to the corresponding model classes. Already done for FormDao, CompetitionDao and QuestionDao.
-	protected static function to_group_category( $result ): GroupCategory {
-		$gc                 = new GroupCategory();
-		$gc->id             = $result->id;
-		$gc->competition_id = $result->competition_id;
-		$gc->is_crew        = $result->is_crew != 0;
-		$gc->name           = $result->name;
-
-		return $gc;
-	}
-
 	protected static function to_db_date( DateTime $dateTime = null ) {
 		if ( $dateTime != null ) {
 			return $dateTime->getTimestamp(); // Unix timestamps are always UTC

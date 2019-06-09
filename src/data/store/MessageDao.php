@@ -107,7 +107,7 @@ class MessageDao extends AbstractDao
 		return $count > 0;
 	}
 
-	protected static function to_message( $result ): Message {
+	private static function to_message( $result ): Message {
 		$m                    = new Message();
 		$m->id                = $result->id;
 		$m->form_question_id  = $result->form_question_id;

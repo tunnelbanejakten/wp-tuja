@@ -194,7 +194,7 @@ class QuestionDao extends AbstractDao
 			$competition_id );
 	}
 
-	protected static function to_form_question( $result ): AbstractQuestion {
+	private static function to_form_question( $result ): AbstractQuestion {
 
 		$config = json_decode( $result->answer, true );
 

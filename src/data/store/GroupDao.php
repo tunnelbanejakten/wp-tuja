@@ -123,7 +123,7 @@ class GroupDao extends AbstractDao {
 			$competition_id );
 	}
 
-	protected static function to_group( $result ): Group {
+	private static function to_group( $result ): Group {
 		$g                       = new Group();
 		$g->id                   = $result->id;
 		$g->random_id            = $result->random_id;

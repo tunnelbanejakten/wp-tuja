@@ -107,7 +107,7 @@ class QuestionGroupDao extends AbstractDao {
 			$competition_id );
 	}
 
-	protected static function to_question_group( $result ): QuestionGroup {
+	private static function to_question_group( $result ): QuestionGroup {
 		$q             = new QuestionGroup();
 		$q->id         = $result->id;
 		$q->form_id    = $result->form_id;
