@@ -9,4 +9,13 @@ class FieldNumber extends FieldText {
 			]
 		);
 	}
+
+	public function get_posted_answer( $form_field ) {
+		$raw = @$_POST[ $form_field ];
+		if ( is_numeric( $raw ) ) {
+			return floatval( $raw );
+		} else {
+			return $raw;
+		}
+	}
 }

@@ -118,7 +118,8 @@ class FormQuestions {
 							0,
 							$this->question_group->id,
 							0,
-							10 );
+							10,
+							42);
 						break;
 					default:
 						throw new Exception( 'Unsupported action' );

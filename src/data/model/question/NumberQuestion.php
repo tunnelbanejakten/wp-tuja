@@ -10,10 +10,28 @@ use tuja\view\FieldNumber;
 class NumberQuestion extends AbstractQuestion {
 
 	/**
+	 * @tuja-gui-editable
+	 */
+	public $correct_answer = 0;
+
+	public function __construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max, $correct_answer ) {
+		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max );
+		$this->correct_answer = $correct_answer;
+	}
+
+
+	/**
 	 * Grades an answer and returns the score for the answer.
 	 */
 	function score( $answer_object ) {
-		throw new Exception( 'score() not implemented' );
+		if ( is_array( $answer_object ) ) {
+			$answer_object = $answer_object[0];
+		}
+		if ( ! is_numeric( $answer_object ) ) {
+			return 0;
+		}
+
+		return $answer_object == $this->correct_answer ? $this->score_max : 0;
 	}
 
 	/**
@@ -46,6 +64,12 @@ class NumberQuestion extends AbstractQuestion {
 	}
 
 	function get_correct_answer_html() {
-		throw new Exception( 'get_correct_answer_html() not implemented' );
+		return $this->correct_answer;
 	}
+
+	function get_submitted_answer_html( $answer_object, Group $group ) {
+		return sprintf( '<var>%f</var>', $answer_object );
+	}
+
+
 }

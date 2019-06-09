@@ -44,7 +44,8 @@ class QuestionDao extends AbstractDao
 			];
 		} elseif ( $question instanceof NumberQuestion ) {
 			return [
-				'score_max' => $question->score_max
+				'score_max' => $question->score_max,
+				'value' => $question->correct_answer
 			];
 		} else {
 			throw new Exception( 'Unsupported type of question: ' . get_class( $question ) );
@@ -62,7 +63,7 @@ class QuestionDao extends AbstractDao
 		} elseif ( $question instanceof NumberQuestion ) {
 			return self::QUESTION_TYPE_NUMBER;
 		} else {
-			throw new Exception( 'Unsupported type of question: ' . get_class( $type ) );
+			throw new Exception( 'Unsupported type of question: ' . get_class( $question ) );
 		}
 	}
 
@@ -247,7 +248,8 @@ class QuestionDao extends AbstractDao
 					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
-					$config['score_max'] );
+					$config['score_max'],
+					$config['value']);
 
 				return $q;
 			default:
