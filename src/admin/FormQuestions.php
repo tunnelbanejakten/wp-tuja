@@ -11,6 +11,7 @@ use tuja\data\store\FormDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\CompetitionDao;
+use tuja\util\ReflectionUtils;
 
 class FormQuestions {
 	const FORM_FIELD_NAME_PREFIX = 'tuja-question';
@@ -50,20 +51,15 @@ class FormQuestions {
 		if($_POST['tuja_action'] == 'questions_update') {
 			$wpdb->show_errors();
 		
-			$form_values = array_filter($_POST, function ($key) {
-				return substr($key, 0, strlen(self::FORM_FIELD_NAME_PREFIX)) === self::FORM_FIELD_NAME_PREFIX;
-			}, ARRAY_FILTER_USE_KEY);
-
 			$questions = $this->db_question->get_all_in_group($this->question_group->id);
 
 			$success = true;
 			foreach ( $questions as $question ) {
-				$editable_properties = $question->get_editable_fields();
 				if ( isset( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question->id ] ) ) {
-					$values = json_decode( stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question->id ] ), true );
-					foreach ( $editable_properties as $prop_conf ) {
-						$question->{$prop_conf['name']} = $values[ $prop_conf['name'] ];
-					}
+
+					ReflectionUtils::set_properties_from_json_string(
+						$question,
+						stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question->id ] ) );
 
 					try {
 						$affected_rows = $this->db_question->update( $question );

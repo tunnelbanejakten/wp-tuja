@@ -9,6 +9,7 @@ use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\util\DateUtils;
 use tuja\data\store\CompetitionDao;
+use tuja\util\ReflectionUtils;
 
 class Form {
 	const FORM_FIELD_NAME_PREFIX = 'tuja-question';
@@ -40,45 +41,22 @@ class Form {
 		if($_POST['tuja_action'] == 'question_groups_update') {
 			$wpdb->show_errors();
 		
-			$form_values = array_filter($_POST, function ($key) {
-				return substr($key, 0, strlen(self::FORM_FIELD_NAME_PREFIX)) === self::FORM_FIELD_NAME_PREFIX;
-			}, ARRAY_FILTER_USE_KEY);
-
 			$question_groups = $this->db_question_group->get_all_in_form( $this->form->id );
-			$updated_groups = array_combine(array_map(function ($q) {
-				return $q->id;
-			}, $question_groups), $question_groups);
 
-			foreach ($form_values as $form_group) {
-				$form_group = json_decode(stripslashes($form_group), true);
-				$id = (int)$form_group['id'];
-				if(!isset($updated_groups[$id])) {
-					trigger_error('Invalid group id.', 'warning');
-					continue;
-				}
-
-				foreach($form_group as $field_name => $field_value) {
-					switch ($field_name) {
-						case 'text':
-							$updated_groups[$id]->text = $field_value;
-							break;
-						case 'sort_order':
-							$updated_groups[$id]->sort_order = $field_value;
-							break;
-						case 'score_max':
-							$updated_groups[$id]->score_max = is_numeric($field_value) ? floatval($field_value) : null;
-							break;
-					}
-				}
-			}
-		
 			$success = true;
-			foreach ($updated_groups as $updated_group) {
-				try {
-					$affected_rows = $this->db_question_group->update( $updated_group );
-					$success = $success && $affected_rows !== false;
-				} catch (Exception $e) {
-					$success = false;
+			foreach ( $question_groups as $question_group ) {
+				if ( isset( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question_group->id ] ) ) {
+
+					ReflectionUtils::set_properties_from_json_string(
+						$question_group,
+						stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question_group->id ] ) );
+
+					try {
+						$affected_rows = $this->db_question_group->update( $question_group );
+						$success       = $success && $affected_rows !== false;
+					} catch ( Exception $e ) {
+						$success = false;
+					}
 				}
 			}
 

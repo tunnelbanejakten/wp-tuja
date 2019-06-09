@@ -1,7 +1,10 @@
 <?php
 namespace tuja\admin;
 
+use tuja\util\ReflectionUtils;
+
 AdminUtils::printTopMenu( $competition );
+
 ?>
 
  <h3>Formulär <?= $this->form->name ?> - Grupp "<?= $this->question_group->text ?: $this->question_group->id; ?>"</h3>
@@ -37,19 +40,8 @@ AdminUtils::printTopMenu( $competition );
 			printf( '<div>%s:</div>', substr( get_class( $question ), strrpos( get_class( $question ), '\\' ) + 1 ) );
 			echo '<div class="tuja-admin-question-properties">';
 
-			$editable_properties = $question->get_editable_fields();
-
-			$props = array_combine(
-				array_map( function ( $prop ) {
-					return $prop['name'];
-				}, $editable_properties ),
-				array_map( function ( $prop ) use ( $question ) {
-					return $question->{$prop['name']};
-				}, $editable_properties ) );
-
-			ksort( $props );
-			$json = json_encode( $props, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
-			$rows = substr_count($json, "\n") + 1;
+			$json       = ReflectionUtils::get_editable_properties_json( $question );
+			$rows       = substr_count( $json, "\n" ) + 1;
 			$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $question->id;
 			printf('<textarea name="%s" rows="%d">%s</textarea>', $field_name, $rows, $json);
 

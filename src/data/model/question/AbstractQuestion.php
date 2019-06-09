@@ -3,10 +3,9 @@
 namespace tuja\data\model\question;
 
 
-use ReflectionClass;
-use ReflectionProperty;
 use tuja\data\model\Group;
 use tuja\data\model\ValidationException;
+use tuja\util\ReflectionUtils;
 
 abstract class AbstractQuestion {
 
@@ -91,22 +90,7 @@ abstract class AbstractQuestion {
 	}
 
 	public function get_editable_fields() {
-		$cls = new ReflectionClass( $this );
-
-		$is_editable_filter = function ( ReflectionProperty $prop ) {
-			return strpos( $prop->getDocComment(), '@tuja-gui-editable' ) !== false;
-		};
-
-		$field_mapper = function ( ReflectionProperty $prop ) {
-			$prop->setAccessible( true );
-
-			return [
-				'name'     => $prop->getName(),
-				'datatype' => gettype( $prop->getValue( $this ) ),
-			];
-		};
-
-		return array_map( $field_mapper, array_filter( $cls->getProperties(), $is_editable_filter ) );
+		return ReflectionUtils::get_editable_properties( $this );
 	}
 
 	protected function calculate_correctness( array $user_input, array $correct_input, bool $is_ordered ): array {

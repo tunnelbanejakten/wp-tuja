@@ -2,6 +2,7 @@
 namespace tuja\admin;
 
 use tuja\util\DateUtils;
+use tuja\util\ReflectionUtils;
 
 AdminUtils::printTopMenu( $competition );
 ?>
@@ -42,8 +43,8 @@ AdminUtils::printTopMenu( $competition );
 			<div class="tuja-admin-question">
 				<div class="tuja-admin-question-properties">
 					<?php
-					$json = json_encode($question_group, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-					$rows = substr_count($json, "\n") + 1;
+					$json       = ReflectionUtils::get_editable_properties_json( $question_group );
+					$rows       = substr_count($json, "\n") + 1;
 					$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $question_group->id;
 					printf('<textarea name="%s" rows="%d">%s</textarea>', $field_name, $rows, $json);
 					?>
