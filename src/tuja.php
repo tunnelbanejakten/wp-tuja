@@ -256,6 +256,7 @@ abstract class Plugin
 		$paths = array(
 			self::PATH . '/data/store/' . $classname . '.php',
 			self::PATH . '/data/model/' . $classname . '.php',
+			self::PATH . '/util/anonymizer/' . $classname . '.php',
 			self::PATH . '/data/model/question/' . $classname . '.php',
 			self::PATH . '/util/markdown/' . $classname . '.php',
 			self::PATH . '/util/messaging/' . $classname . '.php',

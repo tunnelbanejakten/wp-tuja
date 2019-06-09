@@ -7,6 +7,7 @@ use tuja\data\model\Form;
 use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
 use tuja\data\store\GroupCategoryDao;
+use tuja\data\store\PersonDao;
 use tuja\util\GroupCategoryCalculator;
 use tuja\util\rules\RegistrationEvaluator;
 use tuja\util\rules\RuleResult;
@@ -63,6 +64,53 @@ class Groups {
 				} catch ( Exception $e ) {
 					AdminUtils::printException( $e );
 				}
+			}
+		} elseif ( $_POST['tuja_action'] == 'anonymize' ) {
+
+			if ( $_POST['tuja_anonymizer_confirm'] !== 'true' ) {
+				AdminUtils::printError( 'Du måste kryssa för att du verkligen vill anonymisera personuppgifterna först.' );
+
+				return;
+			}
+
+			$person_dao       = new PersonDao();
+			$group_dao        = new GroupDao();
+			$exclude_contacts = false;
+
+			$all_groups = $group_dao->get_all_in_competition( $this->competition->id );
+
+			$category_calculator = new GroupCategoryCalculator( $this->competition->id );
+			$competing_groups    = array_filter( $all_groups, function ( Group $grp ) use ( $category_calculator ) {
+				$category = $category_calculator->get_category( $grp );
+
+				return $category ? ! $category->is_crew : true;
+			} );
+
+			switch ( $_POST['tuja_anonymizer_filter'] ) {
+				case 'participants':
+					$groups           = $competing_groups;
+					$exclude_contacts = false;
+					break;
+				case 'non_contacts':
+					$groups           = $competing_groups;
+					$exclude_contacts = true;
+					break;
+				default:
+					$groups           = $all_groups;
+					$exclude_contacts = false;
+					break;
+			}
+			try {
+				$group_ids = array_map( function ( Group $grp ) {
+					return $grp->id;
+				}, $groups );
+
+				$person_dao->anonymize( $group_ids, $exclude_contacts );
+				$group_dao->anonymize( $group_ids );
+
+				AdminUtils::printSuccess( 'Klart. Personuppgifterna har anonymiserats.' );
+			} catch ( Exception $e ) {
+				AdminUtils::printException( $e );
 			}
 		} elseif ( $_POST['tuja_action'] == 'group_create' ) {
 			$props                 = new Group();
