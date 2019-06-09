@@ -7,6 +7,7 @@ use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\ResponseDao;
 
+// TODO: Does FormReadonlyShortcode actually work after the latest refactorings?
 class FormReadonlyShortcode
 {
 	private $question_dao;

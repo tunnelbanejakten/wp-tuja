@@ -3,7 +3,6 @@
 namespace tuja\data\model\question;
 
 
-use Exception;
 use tuja\admin\AdminUtils;
 use tuja\data\model\Group;
 use tuja\view\FieldImages;
@@ -15,7 +14,6 @@ class ImagesQuestion extends AbstractQuestion {
 	 */
 	function score( $answer_object ) {
 		return 0;
-//		throw new Exception( 'score() not implemented' );
 	}
 
 	/**
@@ -31,13 +29,6 @@ class ImagesQuestion extends AbstractQuestion {
 	 */
 	function get_answer_object( $field_name ) {
 		return $this->create_field()->get_posted_answer( $field_name );
-	}
-
-	/**
-	 * Returns a JSON schema used to validate the question configuration. Also used to generate a form for editing the question.
-	 */
-	function get_config_schema() {
-		throw new Exception( 'get_config_schema() not implemented' );
 	}
 
 	private function create_field($is_read_only = false): FieldImages {

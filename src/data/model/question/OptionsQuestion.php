@@ -131,18 +131,6 @@ class OptionsQuestion extends AbstractQuestion {
 		return $this->create_field()->get_posted_answer( $field_name );
 	}
 
-	/**
-	 * Returns a JSON schema used to validate the question configuration. Also used to generate a form for editing the question.
-	 */
-	function get_config_schema() {
-		throw new Exception( 'get_config_schema() not implemented' );
-	}
-
-	/**
-	 * @param $answer_object
-	 *
-	 * @return FieldChoices
-	 */
 	private function create_field(): FieldChoices {
 		$field = new FieldChoices(
 			$this->text,

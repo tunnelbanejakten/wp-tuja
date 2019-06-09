@@ -3,7 +3,6 @@
 namespace tuja\data\model\question;
 
 
-use Exception;
 use tuja\data\model\Group;
 use tuja\view\FieldNumber;
 
@@ -18,7 +17,6 @@ class NumberQuestion extends AbstractQuestion {
 		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max );
 		$this->correct_answer = $correct_answer;
 	}
-
 
 	/**
 	 * Grades an answer and returns the score for the answer.
@@ -49,13 +47,6 @@ class NumberQuestion extends AbstractQuestion {
 		return $this->create_field()->get_posted_answer( $field_name );
 	}
 
-	/**
-	 * Returns a JSON schema used to validate the question configuration. Also used to generate a form for editing the question.
-	 */
-	function get_config_schema() {
-		throw new Exception( 'get_config_schema() not implemented' );
-	}
-
 	private function create_field( $is_read_only = false ) {
 		return new FieldNumber(
 			$this->text,
@@ -70,6 +61,4 @@ class NumberQuestion extends AbstractQuestion {
 	function get_submitted_answer_html( $answer_object, Group $group ) {
 		return sprintf( '<var>%f</var>', $answer_object );
 	}
-
-
 }

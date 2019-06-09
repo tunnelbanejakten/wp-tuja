@@ -6,7 +6,6 @@ use DateTime;
 use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
-use tuja\data\model\question\AbstractQuestion;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;

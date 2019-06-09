@@ -37,5 +37,4 @@ class QuestionGroup {
 	public function get_editable_fields() {
 		return ReflectionUtils::get_editable_properties( new QuestionGroup() );
 	}
-
 }

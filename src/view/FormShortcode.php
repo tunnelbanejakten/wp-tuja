@@ -2,7 +2,6 @@
 
 namespace tuja\view;
 
-use tuja\data\model\question\OptionsQuestion;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
@@ -11,7 +10,6 @@ use tuja\data\store\ResponseDao;
 use tuja\data\store\QuestionGroupDao;
 use DateTime;
 use Exception;
-use tuja\data\model\Question;
 use tuja\data\model\Response;
 
 class FormShortcode extends AbstractShortcode

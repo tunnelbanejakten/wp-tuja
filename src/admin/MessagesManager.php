@@ -17,7 +17,6 @@ use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
 use tuja\util\ImageManager;
-use tuja\view\FieldImages;
 use \tuja\data\model\Group;
 
 class MessagesManager {

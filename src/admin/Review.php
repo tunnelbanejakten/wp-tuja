@@ -2,7 +2,6 @@
 
 namespace tuja\admin;
 
-use tuja\data\model\Question;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\question\ImagesQuestion;
 use tuja\data\model\QuestionGroup;

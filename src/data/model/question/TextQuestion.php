@@ -95,7 +95,6 @@ class TextQuestion extends AbstractQuestion {
 		}
 	}
 
-
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */
@@ -150,13 +149,6 @@ class TextQuestion extends AbstractQuestion {
 		$field = $this->create_field();
 
 		return $field->get_posted_answer( $field_name );
-	}
-
-	/**
-	 * Returns a JSON schema used to validate the question configuration. Also used to generate a form for editing the question.
-	 */
-	function get_config_schema() {
-		throw new Exception( 'get_config_schema() not implemented' );
 	}
 
 	private function create_field(): Field {

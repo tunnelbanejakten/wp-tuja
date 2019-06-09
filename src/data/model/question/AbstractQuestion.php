@@ -69,11 +69,6 @@ abstract class AbstractQuestion {
 	 */
 	abstract function get_answer_object( $field_name );
 
-	/**
-	 * Returns a JSON schema used to validate the question configuration. Also used to generate a form for editing the question.
-	 */
-	abstract function get_config_schema();
-
 	abstract function get_correct_answer_html();
 
 	function get_submitted_answer_html( $answer_object, Group $group ) {

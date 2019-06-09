@@ -1,8 +1,6 @@
 <?php
 
 namespace tuja\admin;
-use tuja\data\model\question\ImagesQuestion;
-use tuja\view\FieldImages;
 
 AdminUtils::printTopMenu( $competition );
 ?>

@@ -1,10 +1,7 @@
 <?php
 namespace tuja\admin;
 
-use DateTime;
-use tuja\data\model\question\ImagesQuestion;
 use tuja\util\rules\RuleResult;
-use tuja\view\FieldImages;
 
 AdminUtils::printTopMenu( $competition );
 ?>

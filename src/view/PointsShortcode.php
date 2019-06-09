@@ -3,8 +3,6 @@
 namespace tuja\view;
 
 use Exception;
-use tuja\data\model\Question;
-use tuja\data\model\question\NumberQuestion;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
