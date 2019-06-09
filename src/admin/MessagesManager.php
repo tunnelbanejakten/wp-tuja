@@ -100,7 +100,7 @@ class MessagesManager {
 		if ( is_array( $message->image_ids ) && count( $message->image_ids ) > 0 ) {
 			$images_html = array_map( function ( $image_id ) use ( $message ) {
 				return AdminUtils::get_image_thumbnails_html(
-					json_encode( [ 'images' => [ $image_id ] ] ),
+					[ 'images' => [ $image_id ] ],
 					isset( $this->groups_map[ $message->group_id ] ) ? $this->groups_map[ $message->group_id ]->random_id : null );
 			}, $message->image_ids );
 		} else {

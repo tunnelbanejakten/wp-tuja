@@ -14,7 +14,7 @@ class FieldText extends Field
     }
 
 	public function get_posted_answer( $form_field ) {
-		return @$_POST[ $form_field ];
+		return [ @$_POST[ $form_field ] ];
 	}
 
     public function render($field_name, $answer_object, Group $group = null )

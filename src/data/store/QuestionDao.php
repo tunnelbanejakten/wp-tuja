@@ -60,7 +60,7 @@ class QuestionDao extends AbstractDao
 		} elseif ( $question instanceof ImagesQuestion ) {
 			return self::QUESTION_TYPE_IMAGES;
 		} elseif ( $question instanceof NumberQuestion ) {
-			return self::QUESTION_TYPE_IMAGES;
+			return self::QUESTION_TYPE_NUMBER;
 		} else {
 			throw new Exception( 'Unsupported type of question: ' . get_class( $type ) );
 		}

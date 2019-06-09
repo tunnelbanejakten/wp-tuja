@@ -125,7 +125,7 @@ class ResponseDao extends AbstractDao
 		$r->id               = $result->id;
 		$r->form_question_id = $result->form_question_id;
 		$r->group_id         = $result->team_id;
-		$r->submitted_answer = json_decode( $result->answer );
+		$r->submitted_answer = json_decode( $result->answer, true );
 		$r->created          = self::from_db_date( $result->created_at );
 		$r->is_reviewed      = $result->is_reviewed;
 

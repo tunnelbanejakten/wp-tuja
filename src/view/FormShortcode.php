@@ -53,12 +53,8 @@ class FormShortcode extends AbstractShortcode
 			$user_answer = $question->get_answer_object( self::RESPONSE_FIELD_NAME_PREFIX . $question->id );
 
 			if ( isset( $user_answer ) ) {
-				// TODO: Simplify this:
-				$user_answer_array = is_array( $user_answer ) ? $user_answer : array( $user_answer );
-
-				// TODO: Simplify this:
-				if ( ! isset( $responses[ $question->id ] ) || $user_answer_array != $responses[ $question->id ]->submitted_answer ) {
-					$updates[ $question->id ] = $user_answer_array;
+				if ( ! isset( $responses[ $question->id ] ) || $user_answer != $responses[ $question->id ]->submitted_answer ) {
+					$updates[ $question->id ] = $user_answer;
 				}
 			}
 		}

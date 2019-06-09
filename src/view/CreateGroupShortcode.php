@@ -6,7 +6,6 @@ use tuja\data\model\ValidationException;
 use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
-use tuja\data\model\Question;
 use tuja\util\Recaptcha;
 
 

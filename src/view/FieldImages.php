@@ -18,17 +18,16 @@ class FieldImages extends Field
 	}
 
 	public function get_posted_answer( $form_field ) {
-		$answer = array();
 		if (isset($_POST[$form_field])) {
 			$data   = sanitize_post( $_POST[ $form_field ] );
-			$answer = array(
+
+			return [
 				'images'  => $data['images'],
 				'comment' => $data['comment']
-			);
-			$answer = json_encode($answer);
+			];
 		}
 
-		return array($answer);
+		return null;
 	}
 
 	public function render( $field_name, $answer_object, Group $group = null ) {
@@ -61,11 +60,15 @@ class FieldImages extends Field
 		wp_enqueue_script('tuja-dropzone');
 		wp_enqueue_script('tuja-upload-script');
 
+		if ( is_array( $answer_object ) && ! is_array( $answer_object[0] ) && ! empty( $answer_object[0] ) ) {
+		    // Fix legacy format (JSON as string in array)
+			$answer_object = json_decode( $answer_object[0], true );
+		}
+
 		$images = array();
-		if ( $answer_object && is_array( $answer_object ) && ! is_array( $answer_object[0] ) && ! empty( $answer_object[0] ) ) {
-			$answer = json_decode($answer_object[0], true);
-			if (!empty($answer['images'])) {
-				foreach ($answer['images'] as $filename) {
+		if ( isset( $answer_object ) && isset( $answer_object['images'] ) ) {
+			if ( ! empty( $answer_object['images'] ) ) {
+				foreach ( $answer_object['images'] as $filename ) {
 
 					$resized_image_url = $this->image_manager->get_resized_image_url(
 						$filename,
@@ -80,8 +83,8 @@ class FieldImages extends Field
 			}
 		}
 
-		if (empty($images)) {
-			$images[] = sprintf('<input type="hidden" name="%s[images][]" value="">', $field_name);
+		if ( empty( $images ) ) {
+			$images[] = sprintf( '<input type="hidden" name="%s[images][]" value="">', $field_name );
 		}
 
 		ob_start();
@@ -90,7 +93,7 @@ class FieldImages extends Field
             <div class="tuja-image-select dropzone"></div>
 			<?php echo implode('', $images); ?>
             <div class="tuja-image-options">
-				<?php echo $this->render_comment_field($field_name, isset($answer) ? $answer['comment'] : ''); ?>
+	            <?php echo $this->render_comment_field( $field_name, isset( $answer_object ) ? $answer_object['comment'] : '' ); ?>
                 <button type="button" class="clear-image-field">Rensa bilder</button>
             </div>
         </div>

@@ -61,13 +61,16 @@ class AdminUtils
 	}
 
 	public static function get_image_thumbnails_html( $answer, $group_key = null ) {
-		if ( empty( $answer ) || is_array( $answer ) ) {
-			return '';
-		}
-		$answer = json_decode($answer, true);
-
-		if ( $answer == null ) {
-			return 'Syntaxfel!';
+		if ( is_array( $answer ) && ! is_array( $answer[0] ) && ! empty( $answer[0] ) ) {
+			// Fix legacy format (JSON as string in array)
+			$answer = json_decode( $answer[0], true );
+			if ( $answer == null ) {
+				return 'Syntaxfel!';
+			}
+		} else {
+			if ( $answer == null ) {
+				return '';
+			}
 		}
 
 		if ( ! is_array( $answer['images'] ) ) {

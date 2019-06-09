@@ -41,8 +41,7 @@ class ImagesQuestion extends AbstractQuestion {
 	}
 
 	private function create_field($is_read_only = false): FieldImages {
-		$field = new FieldImages(
-			$this->text, $this->text_hint, $is_read_only );
+		$field = new FieldImages( $this->text, $this->text_hint, $is_read_only );
 
 		return $field;
 	}
@@ -52,8 +51,6 @@ class ImagesQuestion extends AbstractQuestion {
 	}
 
 	function get_submitted_answer_html( $answer_object, Group $group ) {
-		return is_array( $answer_object ) ? join( '<br>', array_map( function ( $answer ) use ( $group ) {
-			return AdminUtils::get_image_thumbnails_html( $answer, $group->random_id );
-		}, $answer_object ) ) : '<em>Ogiltigt svar</em>';
+		return AdminUtils::get_image_thumbnails_html( $answer_object, $group->random_id );
 	}
 }
