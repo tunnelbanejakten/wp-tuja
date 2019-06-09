@@ -4,6 +4,7 @@ namespace tuja\data\model\question;
 
 
 use Exception;
+use tuja\admin\AdminUtils;
 use tuja\data\model\Group;
 use tuja\view\FieldImages;
 
@@ -48,5 +49,11 @@ class ImagesQuestion extends AbstractQuestion {
 
 	function get_correct_answer_html() {
 		return null;
+	}
+
+	function get_submitted_answer_html( $answer_object, Group $group ) {
+		return is_array( $answer_object ) ? join( '<br>', array_map( function ( $answer ) use ( $group ) {
+			return AdminUtils::get_image_thumbnails_html( $answer, $group->random_id );
+		}, $answer_object ) ) : '<em>Ogiltigt svar</em>';
 	}
 }

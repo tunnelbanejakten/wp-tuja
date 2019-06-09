@@ -5,6 +5,7 @@ namespace tuja\data\model\question;
 
 use ReflectionClass;
 use ReflectionProperty;
+use tuja\data\model\Group;
 use tuja\data\model\ValidationException;
 
 abstract class AbstractQuestion {
@@ -75,6 +76,10 @@ abstract class AbstractQuestion {
 	abstract function get_config_schema();
 
 	abstract function get_correct_answer_html();
+
+	function get_submitted_answer_html( $answer_object, Group $group ) {
+		return is_array( $answer_object ) ? join( '<br>', $answer_object ) : '<em>Ogiltigt svar</em>';
+	}
 
 	public function validate() {
 		if ( strlen( $this->text ) > 65000 ) {

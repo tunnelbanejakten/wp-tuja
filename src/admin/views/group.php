@@ -69,9 +69,6 @@ AdminUtils::printTopMenu( $competition );
 	            $calculated_score_without_override = isset( $score_result->questions[ $question->id ] )
 		            ? $score_result->questions[ $question->id ]->auto
 		            : 0;
-	            $calculated_score_final            = isset( $score_result->questions[ $question->id ] )
-		            ? $score_result->questions[ $question->id ]->final
-		            : 0;
 
                 $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
                 $response = $response_per_question[$question->id]; // TODO: One line to late?
@@ -79,15 +76,6 @@ AdminUtils::printTopMenu( $competition );
                 $points_override = $points_overrides_per_question[$question->id] && $points_overrides_per_question[$question->id]->created > $response->created
                     ? $points_overrides_per_question[$question->id]->points
                     : '';
-
-	            // TODO: Rewrite this hack for getting HTML into $response->submitted_answer
-                if (is_array($response->submitted_answer) && $question instanceof ImagesQuestion) {
-                    // For each user-provided answer, render the photo description and a photo thumbnail:
-	                $group_key         = $group->random_id;
-	                $response->submitted_answer = array_map( function ( $answer ) use ( $group_key ) {
-		                return AdminUtils::get_image_thumbnails_html( $answer, $group_key );
-                    }, $response->submitted_answer);
-                }
 
 				$score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
 				$q_group = $question_groups[ $question->question_group_id ]->text;
@@ -115,7 +103,7 @@ AdminUtils::printTopMenu( $competition );
                     '</tr>',
 		            $question->text,
 		            $question->get_correct_answer_html(),
-                    is_array($response->submitted_answer) ? join('<br>', $response->submitted_answer) : '<em>Ogiltigt svar</em>',
+                    $question->get_submitted_answer_html($response->submitted_answer, $group),
 		            $score_class,
                     $calculated_score_without_override,
                     'tuja_group_points__' . $question->id,
