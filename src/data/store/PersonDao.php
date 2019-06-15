@@ -2,6 +2,7 @@
 
 namespace tuja\data\store;
 
+use DateTime;
 use Exception;
 use tuja\util\Anonymizer;
 use tuja\data\model\Person;
@@ -12,11 +13,14 @@ use tuja\util\Phone;
 
 class PersonDao extends AbstractDao
 {
-	const QUERY_COLUMNS = 'p.*, (DATEDIFF(CURDATE(), STR_TO_DATE(LEFT(p.pno, 8), \'%%Y%%m%%d\')) / 365.25) age';
+	const QUERY_COLUMNS = 'p.*, pp.*, (DATEDIFF(CURDATE(), STR_TO_DATE(LEFT(pp.pno, 8), \'%%Y%%m%%d\')) / 365.25) age';
+
+	private $props_table;
 
 	function __construct() {
 		parent::__construct();
-		$this->table = Database::get_table('person');
+		$this->table       = Database::get_table( 'person' );
+		$this->props_table = Database::get_table( 'person_properties' );
 	}
 
 	function create( Person $person ) {
@@ -24,7 +28,40 @@ class PersonDao extends AbstractDao
 
 		$affected_rows = $this->wpdb->insert( $this->table,
 			array(
-				'random_id'       => $this->id->random_string(),
+				'random_id' => $this->id->random_string()
+			),
+			array(
+				'%s',
+			) );
+
+		$success = $affected_rows !== false && $affected_rows === 1;
+
+		if ( ! $success ) {
+			return false;
+		}
+
+		$person->id = $this->wpdb->insert_id;
+
+		$success = $this->add_record( $person, Person::STATUS_CREATED );
+
+		return $success ? $person->id : false;
+	}
+
+	function update( Person $person ) {
+		$person->validate();
+
+		$success = $this->add_record( $person, Person::STATUS_CREATED );
+
+		return $success ? $person->id : false;
+	}
+
+	private function add_record( Person $person, $status = Person::STATUS_CREATED ) {
+		$affected_rows = $this->wpdb->insert( $this->props_table,
+			array(
+				'person_id'       => $person->id,
+				'created_at'      => self::to_db_date( new DateTime() ),
+				'status'          => $status,
+
 				'name'            => $person->name,
 				'team_id'         => $person->group_id,
 				'phone'           => $person->phone,
@@ -35,7 +72,10 @@ class PersonDao extends AbstractDao
 				'pno'             => DateUtils::fix_pno( $person->pno )
 			),
 			array(
+				'%d',
+				'%d',
 				'%s',
+
 				'%s',
 				'%d',
 				'%s',
@@ -46,49 +86,58 @@ class PersonDao extends AbstractDao
 				'%s'
 			) );
 
-		$success = $affected_rows !== false && $affected_rows === 1;
-
-		return $success ? $this->wpdb->insert_id : false;
+		return $affected_rows !== false && $affected_rows === 1;
 	}
 
-	function update( Person $person ) {
-		$person->validate();
-
-		return $this->wpdb->update( $this->table,
-			array(
-				'name'            => $person->name,
-				'email'           => $person->email,
-				'phone'           => $person->phone,
-				'food'            => $person->food,
-				'team_id'         => $person->group_id,
-				'is_competing'    => boolval( $person->is_competing ) ? 1 : 0,
-				'is_team_contact' => boolval( $person->is_group_contact ) ? 1 : 0,
-				'pno'             => DateUtils::fix_pno( $person->pno )
-			),
-			array(
-				'id' => $person->id
-			) );
-	}
-
-	function get( $id ) {
+	function get( $id, DateTime $date = null ) {
 		return $this->get_object(
 			function ( $row ) {
 				return self::to_person( $row );
 			},
-			'SELECT ' . self::QUERY_COLUMNS . ' FROM ' . $this->table . ' AS p WHERE id = %d',
-			$id );
+			'
+			SELECT 
+				' . self::QUERY_COLUMNS . ' 
+			FROM 
+				' . $this->table . ' AS p 
+				INNER JOIN 
+				' . $this->props_table . ' AS pp 
+				ON p.id = pp.person_id 
+			WHERE 
+				pp.id IN (
+					SELECT MAX(id) 
+					FROM ' . $this->props_table . ' 
+					WHERE person_id = %d AND created_at <= %d
+				)',
+			$id,
+			self::to_db_date( $date ?: new DateTime() ) );
 	}
 
-	function get_by_key( $key ) {
+	function get_by_key( $key, $date = null ) {
 		return $this->get_object(
 			function ( $row ) {
 				return self::to_person( $row );
 			},
-			'SELECT ' . self::QUERY_COLUMNS . ' FROM ' . $this->table . ' AS p WHERE random_id = %s',
-			$key );
+			'
+			SELECT 
+				' . self::QUERY_COLUMNS . ' 
+			FROM 
+				' . $this->table . ' AS p 
+				INNER JOIN 
+				' . $this->props_table . ' AS pp 
+				ON p.id = pp.person_id 
+			WHERE 
+				p.random_id = %s
+				AND pp.id IN (
+					SELECT MAX(id) 
+					FROM ' . $this->props_table . ' 
+					WHERE created_at <= %d
+					GROUP BY person_id
+				)',
+			$key,
+			self::to_db_date( $date ?: new DateTime() ) );
 	}
 
-	public function get_by_contact_data( $competition_id, $from ) {
+	public function get_by_contact_data( $competition_id, $from, $date = null ) {
 		$phone   = Phone::fix_phone_number( $from );
 		$matches = array_filter(
 		// TODO: The result of get_all_in_competition can maybe be cached to improve efficiency.
@@ -103,24 +152,57 @@ class PersonDao extends AbstractDao
 		return null;
 	}
 
-	function get_all_in_group( $group_id ) {
+	function get_all_in_group( $group_id, $date = null ) {
 		return $this->get_objects(
 			function ( $row ) {
 				return self::to_person( $row );
 			},
-			'SELECT ' . self::QUERY_COLUMNS . ' FROM ' . $this->table . ' AS p WHERE team_id = %d',
-			$group_id );
+			'
+			SELECT 
+				' . self::QUERY_COLUMNS . ' 
+			FROM 
+				' . $this->table . ' AS p 
+				INNER JOIN 
+				' . $this->props_table . ' AS pp 
+				ON p.id = pp.person_id 
+			WHERE 
+				pp.team_id = %d
+				AND pp.id IN (
+					SELECT MAX(id) 
+					FROM ' . $this->props_table . ' 
+					WHERE created_at <= %d
+					GROUP BY person_id
+				)',
+			$group_id,
+			self::to_db_date( $date ?: new DateTime() ) );
 	}
 
-	function get_all_in_competition( $competition_id ) {
+	function get_all_in_competition( $competition_id, $date = null ) {
 		return $this->get_objects(
 			function ( $row ) {
 				return self::to_person( $row );
 			},
-			'SELECT ' . self::QUERY_COLUMNS . ' ' .
-			'FROM ' . $this->table . ' AS p INNER JOIN ' . Database::get_table( 'team' ) . ' AS t ON p.team_id = t.id ' .
-			'WHERE t.competition_id = %d',
-			$competition_id );
+			'
+			SELECT 
+				' . self::QUERY_COLUMNS . ' 
+			FROM 
+				' . $this->table . ' AS p 
+				INNER JOIN 
+				' . $this->props_table . ' AS pp 
+				ON p.id = pp.person_id
+				INNER JOIN 
+				' . Database::get_table( 'team' ) . ' AS t 
+				ON pp.team_id = t.id  
+			WHERE 
+				t.competition_id = %d
+				AND pp.id IN (
+					SELECT MAX(id) 
+					FROM ' . $this->props_table . ' 
+					WHERE created_at <= %d
+					GROUP BY person_id
+				)',
+			$competition_id,
+			self::to_db_date( $date ?: new DateTime() ) );
 	}
 
 	function anonymize( $group_ids = [], $exclude_contacts = false ) {
@@ -138,21 +220,21 @@ class PersonDao extends AbstractDao
 
 		$current_names = array_map( function ( $row ) {
 			return $row[0];
-		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT name FROM ' . $this->table . ' WHERE ' . $where ), ARRAY_N ) );
+		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT name FROM ' . $this->props_table . ' WHERE ' . $where ), ARRAY_N ) );
 		foreach ( $current_names as $current_name ) {
 			$this->wpdb->query( $this->wpdb->prepare(
-				'UPDATE ' . $this->table . ' SET name = %s WHERE name = %s AND ' . $where,
+				'UPDATE ' . $this->props_table . ' SET name = %s WHERE name = %s AND ' . $where,
 				$anonymizer->first_name() . ' ' . $anonymizer->last_name(),
 				$current_name ) );
 		}
 
 		$current_phone_numbers = array_map( function ( $row ) {
 			return $row[0];
-		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT phone FROM ' . $this->table . ' WHERE ' . $where ), ARRAY_N ) );
+		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT phone FROM ' . $this->props_table . ' WHERE ' . $where ), ARRAY_N ) );
 		foreach ( $current_phone_numbers as $current_phone_number ) {
 			if ( ! empty( $current_phone_number ) ) {
 				$this->wpdb->query( $this->wpdb->prepare(
-					'UPDATE ' . $this->table . ' SET phone = %s WHERE phone = %s AND ' . $where,
+					'UPDATE ' . $this->props_table . ' SET phone = %s WHERE phone = %s AND ' . $where,
 					'0760-' . rand( 100000, 999999 ),
 					$current_phone_number ) );
 			};
@@ -160,11 +242,11 @@ class PersonDao extends AbstractDao
 
 		$current_email_addresses = array_map( function ( $row ) {
 			return $row[0];
-		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT email FROM ' . $this->table . ' WHERE ' . $where ), ARRAY_N ) );
+		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT email FROM ' . $this->props_table . ' WHERE ' . $where ), ARRAY_N ) );
 		foreach ( $current_email_addresses as $current_email_address ) {
 			if ( ! empty( $current_email_address ) ) {
 				$this->wpdb->query( $this->wpdb->prepare(
-					'UPDATE ' . $this->table . ' SET email = %s WHERE email = %s AND ' . $where,
+					'UPDATE ' . $this->props_table . ' SET email = %s WHERE email = %s AND ' . $where,
 					$id->random_string( 5 ) . '@example.com',
 					$current_email_address ) );
 			}
@@ -172,30 +254,28 @@ class PersonDao extends AbstractDao
 
 		$current_pnos = array_map( function ( $row ) {
 			return $row[0];
-		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT pno FROM ' . $this->table . ' WHERE ' . $where ), ARRAY_N ) );
+		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT pno FROM ' . $this->props_table . ' WHERE ' . $where ), ARRAY_N ) );
 		foreach ( $current_pnos as $current_pno ) {
 			if ( ! empty( $current_pno ) ) {
 				$this->wpdb->query( $this->wpdb->prepare(
-					'UPDATE ' . $this->table . ' SET pno = %s WHERE pno = %s AND ' . $where,
+					'UPDATE ' . $this->props_table . ' SET pno = %s WHERE pno = %s AND ' . $where,
 					$anonymizer->birthdate( isset( $current_pno ) ? substr( $current_pno, 0, 4 ) : 2005 ) . '-0000',
 					$current_pno ) );
 			}
 		}
 
-		$this->wpdb->query( $this->wpdb->prepare( 'UPDATE ' . $this->table . ' SET food = NULL WHERE ' . $where ) );
+		$this->wpdb->query( $this->wpdb->prepare( 'UPDATE ' . $this->props_table . ' SET food = NULL WHERE ' . $where ) );
 	}
 
 	public function delete_by_key( $key ) {
-		$affected_rows = $this->wpdb->delete( $this->table, array(
-			';random_id' => $key
-		) );
+		$person = $this->get_by_key( $key );
 
-		return $affected_rows !== false && $affected_rows === 1;
+		return $person !== false && $this->add_record( $person, Person::STATUS_DELETED );
 	}
 
 	private static function to_person( $result ): Person {
 		$p                   = new Person();
-		$p->id               = $result->id;
+		$p->id               = $result->person_id;
 		$p->random_id        = $result->random_id;
 		$p->name             = $result->name;
 		$p->group_id         = $result->team_id;

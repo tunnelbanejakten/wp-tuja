@@ -31,7 +31,10 @@ class Person
 	const PNO_PATTERN = '^(19|20)?[0-9]{2}-?(0[1-9]|[1-2][0-9])-?[0-3][0-9](-*[0-9]{4})?$';
 	const PHONE_PATTERN = '^\+?[0-9 -]{6,}$';
 
-    public $id;
+	const STATUS_CREATED = 'created';
+	const STATUS_DELETED = 'deleted';
+
+	public $id;
     public $random_id;
     public $name;
     public $group_id;

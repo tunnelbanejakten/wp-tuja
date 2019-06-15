@@ -9,6 +9,9 @@ class Group
 {
 	private static $group_calculators = [];
 
+	const STATUS_CREATED = 'created';
+	const STATUS_DELETED = 'deleted';
+
 	public $id;
 	public $random_id;
 	public $competition_id;
