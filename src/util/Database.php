@@ -2,7 +2,10 @@
 
 namespace tuja\util;
 
+use DateTime;
 use Exception;
+use tuja\data\model\Group;
+use tuja\data\model\Person;
 use tuja\Plugin;
 
 class Database {
@@ -108,6 +111,120 @@ class Database {
 
 			if ( $affected_rows === false || $affected_rows !== 1 ) {
 				throw new Exception( 'Could not update question ' . $result->id );
+			}
+		}
+	}
+
+	public static function fix_teams_history() {
+		global $wpdb;
+		$teams_edits_count = intval( $wpdb->get_var( 'SELECT COUNT(*) FROM ' . self::get_table( 'team_properties' ) ) );
+		$teams_count       = intval( $wpdb->get_var( 'SELECT COUNT(*) FROM ' . self::get_table( 'team' ) ) );
+		if ( $teams_edits_count == 0 && $teams_count > 0 ) {
+			$copy_fields = [
+				'name',
+				'category_id'
+			];
+
+			// copy data from source table to "history table"
+			$query = '
+				INSERT INTO ' . self::get_table( 'team_properties' ) . ' (
+					team_id,
+					created_at,
+                    status,
+					' . join( ',', $copy_fields ) . '
+				) SELECT 
+					id,
+					' . ( new DateTime() )->getTimestamp() . ',
+					"' . Group::STATUS_CREATED . '",
+					' . join( ',', $copy_fields ) . '
+				  FROM ' . self::get_table( 'team' );
+
+			if ( $wpdb->query( $query ) === false ) {
+				throw new Exception( 'Could not copy data from team source table to history table.' );
+			};
+
+			foreach (
+				[
+					'alter table ' . self::get_table( 'team' ) . ' drop foreign key team_competition_id_competition_id',
+					'alter table ' . self::get_table( 'team' ) . ' drop key idx_team_name',
+					'alter table ' . self::get_table( 'team' ) . ' add constraint team_competition_id_competition_id FOREIGN KEY (competition_id) REFERENCES wp_tuja_competition (id) ON DELETE CASCADE',
+
+					'alter table ' . self::get_table( 'team' ) . ' drop foreign key team_category_id_team_category_id',
+					'alter table ' . self::get_table( 'team' ) . ' drop key team_category_id_team_category_id'
+				] as $query
+			) {
+				if ( $wpdb->query( $query ) === false ) {
+					throw new Exception( 'Could not drop key from team source table.' );
+				};
+			}
+			// drop old columns from source table
+			foreach ( $copy_fields as $column ) {
+				$query = 'ALTER TABLE ' . self::get_table( 'team' ) . ' DROP COLUMN ' . $column;
+				if ( $wpdb->query( $query ) === false ) {
+					throw new Exception( 'Could not drop old columns from team source table.' );
+				};
+			}
+		}
+	}
+
+	public static function fix_people_history() {
+		global $wpdb;
+		$people_edits_count = intval( $wpdb->get_var( 'SELECT COUNT(*) FROM ' . self::get_table( 'person_properties' ) ) );
+		$people_count       = intval( $wpdb->get_var( 'SELECT COUNT(*) FROM ' . self::get_table( 'person' ) ) );
+		if ( $people_edits_count == 0 && $people_count > 0 ) {
+			$copy_fields = [
+				'name',
+				'team_id',
+				'phone',
+				'phone_verified',
+				'email',
+				'email_verified',
+				'pno',
+				'food',
+				'is_competing',
+				'is_team_contact'
+			];
+
+			// copy data from source table to "history table"
+			$query = '
+				INSERT INTO ' . self::get_table( 'person_properties' ) . ' (
+					person_id,
+					created_at,
+                    status,
+					' . join( ',', $copy_fields ) . '
+				) SELECT
+					id,
+					' . ( new DateTime() )->getTimestamp() . ',
+					"' . Person::STATUS_CREATED . '",
+					' . join( ',', $copy_fields ) . '
+				 FROM ' . self::get_table( 'person' );
+
+			if ( $wpdb->query( $query ) === false ) {
+				throw new Exception( 'Could not copy data from people source table to history table.' );
+			};
+
+			$query = 'ALTER TABLE ' . self::get_table( 'person' ) . ' DROP FOREIGN KEY person_team_id_team_id';
+			if ( $wpdb->query( $query ) === false ) {
+				throw new Exception( 'Could not drop person_team_id_team_id from person source table.' );
+			};
+
+//			foreach (
+//				[
+//					'alter table ' . self::get_table( 'person' ) . ' drop foreign key person_team_id_team_id',
+//					'alter table ' . self::get_table( 'person' ) . ' drop key person_team_id_team_id'
+//				] as $query
+//			) {
+//				if ( $wpdb->query( $query ) === false ) {
+//					throw new Exception( 'Could not drop idx_team_name from team source table.' );
+//				};
+//			}
+			// drop old columns from source table
+			foreach ( $copy_fields as $column ) {
+				$query = 'ALTER TABLE ' . self::get_table( 'person' ) . ' DROP COLUMN ' . $column;
+				if ( $wpdb->query( $query ) === false ) {
+					throw new Exception( 'Could not drop old columns from people source table.' );
+				};
+
 			}
 		}
 	}

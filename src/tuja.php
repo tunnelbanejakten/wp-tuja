@@ -9,6 +9,7 @@
 
 namespace tuja;
 
+use Exception;
 use tuja\util\Database;
 use tuja\util\Id;
 
@@ -21,13 +22,11 @@ abstract class Plugin
 	const PATH = __DIR__;
 	const EMAIL_ADDRESS = '';
 
-	static public function get_url()
-	{
+	static public function get_url() {
 		return plugin_dir_url(self::FILE);
 	}
 
-	public function __construct()
-	{
+	public function __construct() {
 		// Create/update database tables on activation
 		register_activation_hook(self::FILE, array($this, 'install'));
 
@@ -36,42 +35,38 @@ abstract class Plugin
 
 		add_filter('query_vars', array($this, 'query_vars'));
 		add_filter('rewrite_rules_array', array($this, 'rewrite_rules'));
-		
+
 		add_action('wp_ajax_tuja_upload_images', array('tuja\util\ImageManager', 'handle_image_upload'));
 		add_action('wp_ajax_nopriv_tuja_upload_images', array('tuja\util\ImageManager', 'handle_image_upload'));
 
 		$this->init();
 	}
 
-	public function init()
-	{
+	public function init() {
 		// Overridden by child classes
 	}
 
-	public function query_vars($vars)
-	{
+	public function query_vars($vars) {
 		$vars[] = 'group_id';
 
 		return $vars;
 	}
 
-	public function rewrite_rules($rules)
-	{
-		$rules = array('([^/]+)/([' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '})/?$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]') + $rules;
+	public function rewrite_rules($rules) {
+		$rules = array( '([^/]+)/([' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '})/?$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]') + $rules;
 
 		return $rules;
 	}
 
-	public function install()
-	{
-		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-		$tables = array();
+	public function install() {
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php');
+		$tables  = array();
 		$charset = 'DEFAULT CHARACTER SET utf8 COLLATE utf8_swedish_ci';
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table('competition') . ' (
 				id                   INTEGER AUTO_INCREMENT PRIMARY KEY,
-				random_id            VARCHAR(20)    NOT NULL UNIQUE,
+				random_id            VARCHAR(20)    NOT NULL,
 				name                 VARCHAR(100)   NOT NULL,
 				payment_instructions TEXT,
 				create_group_start   INTEGER,
@@ -81,25 +76,43 @@ abstract class Plugin
 				message_template_new_team_admin INTEGER,
 				message_template_new_team_reporter INTEGER,
 				message_template_new_crew_member INTEGER,
-				message_template_new_noncrew_member INTEGER
+				message_template_new_noncrew_member INTEGER,
+				UNIQUE KEY idx_competition_token (random_id)
 			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table('team') . ' (
 				id             INTEGER AUTO_INCREMENT PRIMARY KEY,
-				random_id      VARCHAR(20)  NOT NULL UNIQUE,
+				random_id      VARCHAR(20)  NOT NULL,
 				competition_id INTEGER      NOT NULL,
+				UNIQUE KEY idx_team_token (random_id)
+			) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'team_properties' ) . ' (
+				id             INTEGER AUTO_INCREMENT PRIMARY KEY,
+				team_id        INTEGER      NOT NULL,
+				created_at     INTEGER      NOT NULL,
+
+				status         VARCHAR(20)  NOT NULL,
 				name           VARCHAR(100) NOT NULL,
-				type           VARCHAR(20)  NOT NULL,
-				category_id    INTEGER,
-				UNIQUE KEY idx_team_token (random_id),
-				UNIQUE KEY idx_team_name (competition_id, name)
+				category_id    INTEGER
 			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table('person') . ' (
 				id               INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id        VARCHAR(20)  NOT NULL,
+				UNIQUE KEY idx_person_token (random_id)
+			) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'person_properties' ) . ' (
+				id               INTEGER AUTO_INCREMENT PRIMARY KEY,
+				person_id        INTEGER      NOT NULL,
+				created_at       INTEGER      NOT NULL,
+
+				status           VARCHAR(20)  NOT NULL,
 				name             VARCHAR(100) NOT NULL,
 				team_id          INTEGER      NOT NULL,
 				phone            VARCHAR(100),
@@ -109,8 +122,7 @@ abstract class Plugin
 				pno              VARCHAR(16),
 				food             TEXT,
 				is_competing     BOOLEAN      NOT NULL DEFAULT TRUE,
-				is_team_contact  BOOLEAN      NOT NULL DEFAULT FALSE,
-				UNIQUE KEY idx_person_token (random_id)
+				is_team_contact  BOOLEAN      NOT NULL DEFAULT FALSE
 			) ' . $charset;
 
 		$tables[] = '
@@ -196,34 +208,36 @@ abstract class Plugin
 			) ' . $charset;
 
 		$keys = array(
-			['competition', 'message_template_new_team_admin', 'message_template', 'RESTRICT'],
-			['competition', 'message_template_new_team_reporter', 'message_template', 'RESTRICT'],
-			['competition', 'message_template_new_crew_member', 'message_template', 'RESTRICT'],
-			['competition', 'message_template_new_noncrew_member', 'message_template', 'RESTRICT'],
+			[ 'competition', 'message_template_new_team_admin', 'message_template', 'RESTRICT' ],
+			[ 'competition', 'message_template_new_team_reporter', 'message_template', 'RESTRICT' ],
+			[ 'competition', 'message_template_new_crew_member', 'message_template', 'RESTRICT' ],
+			[ 'competition', 'message_template_new_noncrew_member', 'message_template', 'RESTRICT' ],
 
-			['team', 'competition_id', 'competition', 'CASCADE'],
-			['team', 'category_id', 'team_category', 'RESTRICT'],
+			[ 'team', 'competition_id', 'competition', 'CASCADE' ],
+			[ 'team_properties', 'team_id', 'team', 'CASCADE' ],
+			[ 'team_properties', 'category_id', 'team_category', 'RESTRICT' ],
 
-			['person', 'team_id', 'team', 'CASCADE'],
+			[ 'person_properties', 'person_id', 'person', 'CASCADE' ],
+			[ 'person_properties', 'team_id', 'team', 'CASCADE' ],
 
-			['form', 'competition_id', 'competition', 'CASCADE'],
+			[ 'form', 'competition_id', 'competition', 'CASCADE' ],
 
-			['form_question_group', 'form_id', 'form', 'CASCADE'],
+			[ 'form_question_group', 'form_id', 'form', 'CASCADE' ],
 
-			['form_question', 'question_group_id', 'form_question_group', 'CASCADE'],
+			[ 'form_question', 'question_group_id', 'form_question_group', 'CASCADE' ],
 
-			['form_question_response', 'form_question_id', 'form_question', 'RESTRICT'],
-			['form_question_response', 'team_id', 'team', 'CASCADE'],
+			[ 'form_question_response', 'form_question_id', 'form_question', 'RESTRICT' ],
+			[ 'form_question_response', 'team_id', 'team', 'CASCADE' ],
 
-			['form_question_points', 'form_question_id', 'form_question', 'RESTRICT'],
-			['form_question_points', 'team_id', 'team', 'CASCADE'],
+			[ 'form_question_points', 'form_question_id', 'form_question', 'RESTRICT' ],
+			[ 'form_question_points', 'team_id', 'team', 'CASCADE' ],
 
-			['message', 'form_question_id', 'form_question', 'RESTRICT'],
-			['message', 'team_id', 'team', 'CASCADE'],
+			[ 'message', 'form_question_id', 'form_question', 'RESTRICT' ],
+			[ 'message', 'team_id', 'team', 'CASCADE' ],
 
-			['team_category', 'competition_id', 'competition', 'CASCADE'],
+			[ 'team_category', 'competition_id', 'competition', 'CASCADE' ],
 
-			['message_template', 'competition_id', 'competition', 'CASCADE']
+			[ 'message_template', 'competition_id', 'competition', 'CASCADE' ]
 		);
 
 		foreach ($tables as $table) {
@@ -238,17 +252,19 @@ abstract class Plugin
 
 			Database::fix_questions_not_in_group();
 
+			Database::fix_teams_history();
+			Database::fix_people_history();
+
 			Database::commit();
-		} catch (\Exception $e) {
+		} catch ( Exception $e ) {
 			Database::rollback();
 			error_log($e->getMessage());
 		}
 	}
 
-	public function autoloader($name)
-	{
+	public function autoloader($name) {
 		// Does $name start with our namespace?
-		if (strncmp($name, __NAMESPACE__, strlen(__NAMESPACE__)) !== 0) return;
+		if ( strncmp($name, __NAMESPACE__, strlen(__NAMESPACE__)) !== 0) return;
 
 		$classname = explode('\\', $name);
 		$classname = array_pop($classname);
