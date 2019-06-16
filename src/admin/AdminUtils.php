@@ -61,7 +61,7 @@ class AdminUtils
 	}
 
 	public static function get_image_thumbnails_html( $answer, $group_key = null ) {
-		if ( is_array( $answer ) && ! is_array( $answer[0] ) && ! empty( $answer[0] ) ) {
+		if ( is_array( $answer ) && isset($answer[0]) && ! is_array( $answer[0] ) && ! empty( $answer[0] ) ) {
 			// Fix legacy format (JSON as string in array)
 			$answer = json_decode( $answer[0], true );
 			if ( $answer == null ) {

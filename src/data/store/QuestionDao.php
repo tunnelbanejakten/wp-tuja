@@ -208,10 +208,10 @@ class QuestionDao extends AbstractDao
 					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
-					$config['score_max'],
-					$config['score_type'],
+					@$config['score_max'],
+					@$config['score_type'],
 					$result->type == self::QUESTION_TYPE_TEXT,
-					$config['values'] );
+					@$config['values'] );
 
 				return $q;
 			case self::QUESTION_TYPE_PICK_ONE:
@@ -222,11 +222,11 @@ class QuestionDao extends AbstractDao
 					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
-					$config['score_max'],
-					$config['score_type'],
+					@$config['score_max'],
+					@$config['score_type'],
 					$result->type == self::QUESTION_TYPE_PICK_ONE,
-					$config['values'],
-					$config['options'],
+					@$config['values'],
+					@$config['options'],
 					false );
 
 				return $q;
@@ -237,8 +237,7 @@ class QuestionDao extends AbstractDao
 					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
-					$config['score_max'] );
-
+					@$config['score_max'] );
 				return $q;
 			case self::QUESTION_TYPE_NUMBER:
 				$q = new NumberQuestion(
@@ -247,8 +246,8 @@ class QuestionDao extends AbstractDao
 					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
-					$config['score_max'],
-					$config['value']);
+					@$config['score_max'],
+					@$config['value'] );
 
 				return $q;
 			default:

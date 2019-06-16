@@ -30,7 +30,7 @@ class EditPersonShortcode extends AbstractGroupShortcode
             $group = $this->group_dao->get($person->group_id);
             $is_read_only = !$this->is_edit_allowed($group->competition_id);
 
-            if ($_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
+            if (@$_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
                 if (!$is_read_only) {
                     $errors = $this->update_person($person);
 	                if ( empty( $errors ) ) {
@@ -53,23 +53,23 @@ class EditPersonShortcode extends AbstractGroupShortcode
         $html_sections = [];
 
         if (isset($errors['__'])) {
-            $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['__']);
+            $html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', @$errors['__']);
         }
 
 	    $person_name_question = new FieldText( 'Namn', null, $read_only );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors['name'], $person->name );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, @$errors['name'], $person->name );
 
 	    $person_name_question = new FieldPno( 'Födelsedag och sånt', 'Vi rekommenderar att du fyller i fullständigt personnummer.', $read_only );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors['pno'], $person->pno );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, @$errors['pno'], $person->pno );
 
 	    $person_name_question = new FieldEmail( 'E-postadress' );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, $errors['email'], $person->email );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, @$errors['email'], $person->email );
 
 	    $person_name_question = new FieldPhone( 'Telefonnummer' );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE, $errors['phone'], $person->phone );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE, @$errors['phone'], $person->phone );
 
 	    $person_name_question = new FieldText( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.', $read_only );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, $errors['food'], $person->food );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, @$errors['food'], $person->food );
 
 
 	    if ( ! $read_only ) {

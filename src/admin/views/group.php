@@ -67,11 +67,10 @@ AdminUtils::printTopMenu( $competition );
 		            ? $score_result->questions[ $question->id ]->auto
 		            : 0;
 
-                $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
-                $response = $response_per_question[$question->id]; // TODO: One line to late?
+	            $response = isset( $response_per_question[ $question->id ] ) ? $response_per_question[ $question->id ] : null;
                 // TODO: Don't do "override" calculators both here and in ScoreCalculator. Only use the latter for all things related to score.
                 // Only set $points_override if the override points were set AFTER the most recent answer was created/submitted.
-                $points_override = $points_overrides_per_question[$question->id] && $points_overrides_per_question[$question->id]->created > $response->created
+	            $points_override = isset( $points_overrides_per_question[ $question->id ] ) && $points_overrides_per_question[ $question->id ] && ( ! $response || $points_overrides_per_question[ $question->id ]->created > $response->created )
                     ? $points_overrides_per_question[$question->id]->points
                     : '';
 
@@ -101,7 +100,7 @@ AdminUtils::printTopMenu( $competition );
                     '</tr>',
 		            $question->text,
 		            $question->get_correct_answer_html(),
-                    $question->get_submitted_answer_html($response->submitted_answer, $group),
+		            $response ? $question->get_submitted_answer_html($response->submitted_answer, $group) : '',
 		            $score_class,
                     $calculated_score_without_override,
                     'tuja_group_points__' . $question->id,
