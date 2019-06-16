@@ -250,9 +250,12 @@ abstract class Plugin
 				Database::add_foreign_key($key[0], $key[1], $key[2], $key[3]);
 			}
 
+			// TODO: Delete fix_questions_not_in_group -- data has been migrated
 			Database::fix_questions_not_in_group();
 
+			// TODO: Delete fix_teams_history -- data has been migrated
 			Database::fix_teams_history();
+			// TODO: Delete fix_people_history -- data has been migrated
 			Database::fix_people_history();
 
 			Database::commit();
