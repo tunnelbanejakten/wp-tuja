@@ -145,15 +145,30 @@ class Database {
 
 			foreach (
 				[
-					'alter table ' . self::get_table( 'team' ) . ' drop foreign key if exists team_competition_id_competition_id',
-					'alter table ' . self::get_table( 'team' ) . ' drop key if exists idx_team_name',
-					'alter table ' . self::get_table( 'team' ) . ' add constraint team_competition_id_competition_id FOREIGN KEY (competition_id) REFERENCES wp_tuja_competition (id) ON DELETE CASCADE',
-
-					'alter table ' . self::get_table( 'team' ) . ' drop foreign key if exists team_category_id_team_category_id',
-					'alter table ' . self::get_table( 'team' ) . ' drop key team_category_id_team_category_id'
-				] as $query
+					[
+						"ignore_error" => true,
+						"query"        => 'alter table ' . self::get_table( 'team' ) . ' drop foreign key team_competition_id_competition_id'
+					],
+					[
+						"ignore_error" => true,
+						"query"        => 'alter table ' . self::get_table( 'team' ) . ' drop key idx_team_name'
+					],
+					[
+						"ignore_error" => false,
+						"query"        => 'alter table ' . self::get_table( 'team' ) . ' add constraint team_competition_id_competition_id FOREIGN KEY (competition_id) REFERENCES wp_tuja_competition (id) ON DELETE CASCADE'
+					],
+					[
+						"ignore_error" => true,
+						"query"        => 'alter table ' . self::get_table( 'team' ) . ' drop foreign key team_category_id_team_category_id'
+					],
+					[
+						"ignore_error" => false,
+						"query"        => 'alter table ' . self::get_table( 'team' ) . ' drop key team_category_id_team_category_id'
+					]
+				] as $args
 			) {
-				if ( $wpdb->query( $query ) === false ) {
+				$res = $wpdb->query( $args['query'] );
+				if ( $res === false && ! $args['ignore_error'] ) {
 					throw new Exception( 'Could not drop key from team source table.' );
 				};
 			}
@@ -203,9 +218,9 @@ class Database {
 				throw new Exception( 'Could not copy data from people source table to history table.' );
 			};
 
-			$query = 'ALTER TABLE ' . self::get_table( 'person' ) . ' DROP FOREIGN KEY if exists person_team_id_team_id';
+			$query = 'ALTER TABLE ' . self::get_table( 'person' ) . ' DROP FOREIGN KEY person_team_id_team_id';
 			if ( $wpdb->query( $query ) === false ) {
-				throw new Exception( 'Could not drop person_team_id_team_id from person source table.' );
+//				throw new Exception( 'Could not drop person_team_id_team_id from person source table.' );
 			};
 
 //			foreach (
