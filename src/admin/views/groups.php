@@ -47,7 +47,7 @@ AdminUtils::printTopMenu( $competition );
 			foreach ( $group_category_map as $id => $label ) {
 				$category_options[] = sprintf( '<option value="%d" %s>%s</option>',
 					$id,
-					$id === $_POST[ 'tuja_group_type__' . $id ] || $id == $group->category_id ? 'selected="selected"' : '',
+					$id === @$_POST[ 'tuja_group_type__' . $id ] || $id == $group->category_id ? 'selected="selected"' : '',
 					$label );
 			}
 			printf( '<td><select name="tuja_group__%d__category"><option value="0">Systemet väljer</option>%s</select></td>' .
