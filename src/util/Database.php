@@ -162,7 +162,7 @@ class Database {
 						"query"        => 'alter table ' . self::get_table( 'team' ) . ' drop foreign key team_category_id_team_category_id'
 					],
 					[
-						"ignore_error" => false,
+						"ignore_error" => true,
 						"query"        => 'alter table ' . self::get_table( 'team' ) . ' drop key team_category_id_team_category_id'
 					]
 				] as $args
