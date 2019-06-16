@@ -4,7 +4,6 @@ namespace tuja\view;
 
 use tuja\data\model\ValidationException;
 use Exception;
-use tuja\data\model\Question;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
@@ -33,8 +32,10 @@ class EditPersonShortcode extends AbstractGroupShortcode
 
             if ($_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
                 if (!$is_read_only) {
-                    // TODO: Give feedback to user if update was successful.
                     $errors = $this->update_person($person);
+	                if ( empty( $errors ) ) {
+		                printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
+	                }
                 } else {
                     $errors = array('__' => 'Tyvärr så kan anmälningar inte ändras nu.');
                 }
@@ -59,7 +60,7 @@ class EditPersonShortcode extends AbstractGroupShortcode
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors['name'], $person->name );
 
 	    $person_name_question = new FieldPno( 'Födelsedag och sånt', 'Vi rekommenderar att du fyller i fullständigt personnummer.', $read_only );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors['pno'] );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors['pno'], $person->pno );
 
 	    $person_name_question = new FieldEmail( 'E-postadress' );
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, $errors['email'], $person->email );
@@ -68,7 +69,7 @@ class EditPersonShortcode extends AbstractGroupShortcode
 	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE, $errors['phone'], $person->phone );
 
 	    $person_name_question = new FieldText( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.', $read_only );
-	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, $errors['food'] );
+	    $html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, $errors['food'], $person->food );
 
 
 	    if ( ! $read_only ) {
@@ -88,31 +89,40 @@ class EditPersonShortcode extends AbstractGroupShortcode
 
     private function update_person($person)
     {
+	    $posted_values = [
+		    'name'  => $_POST[ self::FIELD_PERSON_NAME ],
+		    'email' => $_POST[ self::FIELD_PERSON_EMAIL ],
+		    'phone' => $_POST[ self::FIELD_PERSON_PHONE ],
+		    'pno'   => $_POST[ self::FIELD_PERSON_PNO ],
+		    'food'  => $_POST[ self::FIELD_PERSON_FOOD ]
+	    ];
+
+	    $is_updated = false;
+	    foreach ( $posted_values as $prop => $new_value ) {
+		    if ( $person->{$prop} != $new_value ) {
+			    $person->{$prop} = $new_value;
+
+			    $is_updated = true;
+		    }
+	    }
+
         $validation_errors = array();
-        $overall_success = true;
+	    if ( $is_updated ) {
+		    $success = false;
+		    try {
+			    $affected_rows = $this->person_dao->update( $person );
+			    if ( $affected_rows !== false ) {
+				    $success = true;
+			    }
+		    } catch ( ValidationException $e ) {
+			    $validation_errors[ $e->getField() ] = $e->getMessage();
+		    } catch ( Exception $e ) {
+		    }
 
-        $person->name = $_POST[self::FIELD_PERSON_NAME];
-        $person->email = $_POST[self::FIELD_PERSON_EMAIL];
-        $person->phone = $_POST[self::FIELD_PERSON_PHONE];
-        $person->pno = $_POST[self::FIELD_PERSON_PNO];
-        $person->food = $_POST[self::FIELD_PERSON_FOOD];
-
-        try {
-            $affected_rows = $this->person_dao->update($person);
-            if ($affected_rows === false) {
-                $overall_success = false;
-            }
-        } catch (ValidationException $e) {
-            $validation_errors[$e->getField()] = $e->getMessage();
-            $overall_success = false;
-        } catch (Exception $e) {
-            $overall_success = false;
-        }
-
-        if (!$overall_success) {
-            $validation_errors['__'] = 'Alla ändringar kunde inte sparas.';
-        }
-
+		    if ( ! $success ) {
+			    $validation_errors['__'] = 'Alla ändringar kunde inte sparas.';
+		    }
+	    }
         return $validation_errors;
     }
 

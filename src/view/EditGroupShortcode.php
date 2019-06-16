@@ -5,7 +5,6 @@ namespace tuja\view;
 use tuja\data\model\ValidationException;
 use Exception;
 use tuja\data\model\Person;
-use tuja\data\model\Question;
 
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix. Throwing exceptions might be preferable.
@@ -48,6 +47,9 @@ class EditGroupShortcode extends AbstractGroupShortcode
             if ($_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
                 if (!$is_read_only) {
                     $errors = $this->update_group($group);
+	                if ( empty( $errors ) ) {
+		                printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
+	                }
                 } else {
                     $errors = array('__' => 'Tyvärr så kan anmälningar inte ändras nu.');
                 }
@@ -204,7 +206,8 @@ class EditGroupShortcode extends AbstractGroupShortcode
 
         $group_id = $group->id;
 
-        $group->name = $_POST[self::FIELD_GROUP_NAME];
+	    $posted_values         = [];
+	    $posted_values['name'] = $_POST[ self::FIELD_GROUP_NAME ];
 	    if ( $this->enable_group_category_selection ) {
 		    $selected_category = $_POST[self::FIELD_GROUP_AGE];
 		    $categories        = $this->get_categories($group->competition_id);
@@ -212,21 +215,32 @@ class EditGroupShortcode extends AbstractGroupShortcode
 			    return $category->name == $selected_category;
 		    });
 		    if ( count($found_category) == 1) {
-			    $group->category_id = reset($found_category)->id;
+			    $posted_values['category_id'] = reset( $found_category )->id;
 		    }
 	    }
 
-        try {
-            $affected_rows = $this->group_dao->update($group);
-            if ($affected_rows === false) {
-                $overall_success = false;
-            }
-        } catch (ValidationException $e) {
-            $validation_errors[$e->getField()] = $e->getMessage();
-            $overall_success = false;
-        } catch (Exception $e) {
-            $overall_success = false;
-        }
+	    $is_updated = false;
+	    foreach ( $posted_values as $prop => $new_value ) {
+		    if ( $group->{$prop} != $new_value ) {
+			    $group->{$prop} = $new_value;
+
+			    $is_updated = true;
+		    }
+	    }
+
+	    if ( $is_updated ) {
+		    try {
+			    $affected_rows = $this->group_dao->update( $group );
+			    if ( $affected_rows === false ) {
+				    $overall_success = false;
+			    }
+		    } catch ( ValidationException $e ) {
+			    $validation_errors[ $e->getField() ] = $e->getMessage();
+			    $overall_success                     = false;
+		    } catch ( Exception $e ) {
+			    $overall_success = false;
+		    }
+	    }
 
         $people = $this->person_dao->get_all_in_group($group_id);
 
@@ -281,17 +295,30 @@ class EditGroupShortcode extends AbstractGroupShortcode
 	                $is_group_contact = is_array( $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] )
 	                                    && in_array( self::ROLE_ISCONTACT_LABEL, $_POST[ self::FIELD_PREFIX_PERSON . 'roles__' . $id ] );
 
-	                $people_map[ $id ]->name             = $_POST[ self::FIELD_PREFIX_PERSON . 'name__' . $id ];
-	                $people_map[ $id ]->email            = $_POST[ self::FIELD_PREFIX_PERSON . 'email__' . $id ];
-	                $people_map[ $id ]->phone            = $_POST[ self::FIELD_PREFIX_PERSON . 'phone__' . $id ];
-	                $people_map[ $id ]->pno              = $_POST[ self::FIELD_PREFIX_PERSON . 'pno__' . $id ];
-	                $people_map[ $id ]->food             = $_POST[ self::FIELD_PREFIX_PERSON . 'food__' . $id ];
-	                $people_map[ $id ]->is_competing     = $is_competing;
-	                $people_map[ $id ]->is_group_contact = $is_group_contact;
+	                $posted_values = [
+		                'name'             => $_POST[ self::FIELD_PREFIX_PERSON . 'name__' . $id ],
+		                'email'            => $_POST[ self::FIELD_PREFIX_PERSON . 'email__' . $id ],
+		                'phone'            => $_POST[ self::FIELD_PREFIX_PERSON . 'phone__' . $id ],
+		                'pno'              => $_POST[ self::FIELD_PREFIX_PERSON . 'pno__' . $id ],
+		                'food'             => $_POST[ self::FIELD_PREFIX_PERSON . 'food__' . $id ],
+		                'is_competing'     => $is_competing,
+		                'is_group_contact' => $is_group_contact
+	                ];
 
-                    $affected_rows = $this->person_dao->update($people_map[$id]);
-                    $this_success = $affected_rows !== false;
-                    $overall_success = ($overall_success and $this_success);
+	                $is_updated = false;
+	                foreach ( $posted_values as $prop => $new_value ) {
+		                if ( $people_map[ $id ]->{$prop} != $new_value ) {
+			                $people_map[ $id ]->{$prop} = $new_value;
+
+			                $is_updated = true;
+		                }
+	                }
+
+	                if ( $is_updated ) {
+		                $affected_rows   = $this->person_dao->update( $people_map[ $id ] );
+		                $this_success    = $affected_rows !== false;
+		                $overall_success = ( $overall_success and $this_success );
+	                }
                 } catch (ValidationException $e) {
                     $validation_errors[$id . '__' . $e->getField()] = $e->getMessage();
                     $overall_success = false;
