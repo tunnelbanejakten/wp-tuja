@@ -290,7 +290,7 @@ abstract class Plugin
 		foreach ($paths as $path) {
 			if (!file_exists($path)) continue;
 
-			include($path);
+			include_once($path);
 		}
 	}
 }

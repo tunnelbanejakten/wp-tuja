@@ -11,6 +11,9 @@ use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\MessageTemplateDao;
 use tuja\util\DateUtils;
+use tuja\util\rules\CrewMembersRuleSet;
+use tuja\util\rules\OlderParticipantsRuleSet;
+use tuja\util\rules\YoungParticipantsRuleSet;
 
 class CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
@@ -93,13 +96,30 @@ class CompetitionSettings {
 	}
 
 	public function print_group_category_form( GroupCategory $category ) {
-		$id1     = uniqid();
-		$id2     = uniqid();
+		$id1                   = uniqid();
+		$id2                   = uniqid();
+		$rule_sets             = [
+			''                              => 'Inga regler',
+			YoungParticipantsRuleSet::class => 'Deltagare under 15 år',
+			OlderParticipantsRuleSet::class => 'Deltagare över 15 år',
+			CrewMembersRuleSet::class       => 'Funktionärer'
+		];
+		$rule_set_options_html = join( '', array_map(
+			function ( $key, $value ) use ( $category ) {
+				return sprintf( '<option value="%s" %s>%s</option>',
+					htmlspecialchars( $key ),
+					$category->rule_set_class_name == $key ? 'selected="selected"' : '',
+					$value );
+			},
+			array_keys( $rule_sets ),
+			array_values( $rule_sets ) ) );
+
 		$pattern = '
 			<div class="tuja-groupcategory-form">
 				<input type="text" placeholder="Mallens namn" size="50" name="%s" value="%s">
 				<input type="radio" name="%s" id="%s" value="true" %s><label for="%s">Funktionär</label>
 				<input type="radio" name="%s" id="%s" value="false" %s><label for="%s">Tävlande</label>
+				<select name="%s">%s</select>
 				<button class="button tuja-delete-groupcategory" type="button">
 					Ta bort
 				</button>
@@ -116,7 +136,9 @@ class CompetitionSettings {
 			$this->list_item_field_name( 'groupcategory', $category->id, 'iscrew' ),
 			$id2,
 			$category->is_crew != true ? 'checked="checked"' : '',
-			$id2 );
+			$id2,
+			$this->list_item_field_name( 'groupcategory', $category->id, 'ruleset' ),
+			$rule_set_options_html );
 	}
 
 
@@ -202,10 +224,12 @@ class CompetitionSettings {
 
 		foreach ( $created_ids as $id ) {
 			try {
-				$new_template                 = new GroupCategory();
-				$new_template->competition_id = $competition->id;
-				$new_template->name           = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
-				$new_template->is_crew        = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'iscrew' ) ] === 'true';
+				$new_template                      = new GroupCategory();
+				$new_template->competition_id      = $competition->id;
+				$new_template->name                = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
+				$new_template->is_crew             = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'iscrew' ) ] === 'true';
+				$rule_set_class_name               = stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'ruleset' ) ] );
+				$new_template->rule_set_class_name = ! empty( $rule_set_class_name ) && class_exists( $rule_set_class_name ) ? $rule_set_class_name : null;
 
 				$new_template_id = $category_dao->create( $new_template );
 			} catch ( ValidationException $e ) {
@@ -218,8 +242,10 @@ class CompetitionSettings {
 		foreach ( $updated_ids as $id ) {
 			if ( isset( $category_map[ $id ] ) ) {
 				try {
-					$category_map[ $id ]->name    = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
-					$category_map[ $id ]->is_crew = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'iscrew' ) ] === 'true';
+					$category_map[ $id ]->name                = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
+					$category_map[ $id ]->is_crew             = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'iscrew' ) ] === 'true';
+					$rule_set_class_name                      = stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'ruleset' ) ] );
+					$category_map[ $id ]->rule_set_class_name = ! empty( $rule_set_class_name ) && class_exists( $rule_set_class_name ) ? $rule_set_class_name : null;
 
 					$affected_rows = $category_dao->update( $category_map[ $id ] );
 				} catch ( ValidationException $e ) {
