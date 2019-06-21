@@ -13,25 +13,27 @@ use tuja\view\EditGroupShortcode;
 
 class RegistrationEvaluator {
 	private $person_dao;
+	private $rule_set;
 
-	public function __construct() {
+	public function __construct( RuleSet $rule_set ) {
 		$this->person_dao = new PersonDao();
+		$this->rule_set   = $rule_set;
 	}
 
 	public function evaluate( Group $group ) {
 		$people = $this->person_dao->get_all_in_group( $group->id );
 
 		return array_merge(
-			self::rule_contacts_defined( $group, $people ),
-			self::rule_contacts_have_phone_and_email( $people ),
-			self::rule_person_names( $people ),
-			self::rule_person_pno( $people ),
-			self::rule_adult_supervision( $group, $people ),
-			self::rule_group_size( $people )
+			$this->rule_contacts_defined( $group, $people ),
+			$this->rule_contacts_have_phone_and_email( $people ),
+			$this->rule_person_names( $people ),
+			$this->rule_person_pno( $people ),
+			$this->rule_adult_supervision( $group, $people ),
+			$this->rule_group_size( $people )
 		);
 	}
 
-	private static function rule_person_pno( array $people ) {
+	private function rule_person_pno( array $people ) {
 		return array_reduce( $people, function ( $carry, Person $person ) {
 			if ( $person->is_competing ) {
 				$rule_name = 'Deltagare ' . htmlspecialchars( $person->name );
@@ -58,10 +60,7 @@ class RegistrationEvaluator {
 		}, [] );
 	}
 
-	private static function rule_adult_supervision( Group $group, array $people ) {
-		$children           = array_filter( $people, function ( Person $person ) {
-			return isset( $person->age ) && $person->is_competing && $person->age < 15;
-		} );
+	private function rule_adult_supervision( Group $group, array $people ) {
 		$adults             = array_filter( $people, function ( Person $person ) {
 			return isset( $person->age ) && $person->age >= 18;
 		} );
@@ -69,31 +68,26 @@ class RegistrationEvaluator {
 			return $person->is_competing && isset( $person->age ) && $person->age >= 18;
 		} );
 
-		$count_children           = count( $children );
 		$count_adults             = count( $adults );
 		$count_adult_participants = count( $adult_participants );
-		if ( $count_children > 3 && $count_adult_participants > 0 ) {
-			return [
-				new RuleResult(
-					'Vuxen i laget',
-					RuleResult::WARNING,
-					'Laget har ' . $count_children . ' tävlande barn och ' . $count_adult_participants .
-					' tävlande vuxna. Kryssa i "' . EditGroupShortcode::ROLE_ISNOTCOMPETING_LABEL . '" för vuxna som inte tävlar, och som därför inte behöver betala anmälningsavgift.'
-				)
-			];
-		} elseif ( $count_children > 0 && $count_adults == 0 ) {
-			if ( $group->age_competing_avg < 15 ) {
-				return [ new RuleResult( 'Vuxen i laget', RuleResult::BLOCKER, 'Laget måste ha med sig en vuxen under dagen eftersom de flesta är under 15.' ) ];
-			} else {
-				// Not all are under 15 but at least one is.
-				return [ new RuleResult( 'Vuxen i laget', RuleResult::WARNING, 'Vi rekommenderar att alla lag med deltagare under 15 också har med sig en vuxen under dagen.' ) ];
+		if ( $this->rule_set->is_adult_supervisor_required() ) {
+			if ( $count_adults == 0 ) {
+				return [ new RuleResult( 'Vuxen i laget', RuleResult::BLOCKER, 'Laget måste ha med sig en vuxen under dagen.' ) ];
+			} elseif ( $count_adult_participants > 0 ) {
+				return [
+					new RuleResult(
+						'Vuxen i laget',
+						RuleResult::WARNING,
+						'Laget har tävlande vuxna. Kryssa i "' . EditGroupShortcode::ROLE_ISNOTCOMPETING_LABEL . '" för ledare som bara följer med och som därför inte behöver betala anmälningsavgift.'
+					)
+				];
 			}
 		}
 
-		return [ new RuleResult( 'Vuxen i laget', RuleResult::OK, 'Laget uppfyller våra krav för när det måste finnas vuxna i laget.' ) ];
+		return [];
 	}
 
-	private static function rule_contacts_defined( Group $group, array $people ) {
+	private function rule_contacts_defined( Group $group, array $people ) {
 		$contacts = array_filter( $people, function ( Person $person ) {
 			return $person->is_group_contact;
 		} );
@@ -112,14 +106,14 @@ class RegistrationEvaluator {
 				if ( array_pop( $contacts )->is_competing ) {
 					return [ new RuleResult( 'Kontaktperson', RuleResult::OK, 'En kontaktperson/lagledare har angivits.' ) ];
 				} else {
-					if ( $group->age_competing_avg < 15 ) {
+					if ( $this->rule_set->is_adult_supervisor_required() ) {
 						return [ new RuleResult( 'Kontaktperson', RuleResult::WARNING, 'Vi rekommenderar att även en av de tävlande är kontaktperson och lagledare.' ) ];
 					} else {
 						return [ new RuleResult( 'Kontaktperson', RuleResult::WARNING, 'Vi rekommenderar att en av de tävlande är kontaktperson och lagledare.' ) ];
 					}
 				}
 			case 2:
-				if ( $group->age_competing_avg < 15 ) {
+				if ( $this->rule_set->is_adult_supervisor_required() ) {
 					return [ new RuleResult( 'Kontaktperson', RuleResult::OK, 'Två kontaktpersoner har angivits.' ) ];
 				} else {
 					return [ new RuleResult( 'Kontaktperson', RuleResult::WARNING, 'Ni har angett att två personer är kontaktpersoner och lagledare. Vanligtvis räcker det med en.' ) ];
@@ -129,7 +123,7 @@ class RegistrationEvaluator {
 		}
 	}
 
-	private static function rule_contacts_have_phone_and_email( array $people ) {
+	private function rule_contacts_have_phone_and_email( array $people ) {
 		$contacts = array_filter( $people, function ( Person $person ) {
 			return $person->is_group_contact;
 		} );
@@ -175,20 +169,21 @@ class RegistrationEvaluator {
 		return $results;
 	}
 
-	private static function rule_group_size( array $people ) {
+	private function rule_group_size( array $people ) {
 		$participants = array_filter( $people, function ( Person $person ) {
 			return $person->is_competing;
 		} );
-		if ( count( $participants ) < 4 ) {
-			return [ new RuleResult( 'Antal deltagare', RuleResult::BLOCKER, 'Ett lag måste ha minst fyra tävlande. Kontakta ' . get_bloginfo( 'admin_email' ) . ' om detta skapar problem för er.' ) ];
-		} elseif ( count( $participants ) > 8 ) {
-			return [ new RuleResult( 'Antal deltagare', RuleResult::BLOCKER, 'Ett lag får bara ha åtta tävlande. Kontakta ' . get_bloginfo( 'admin_email' ) . ' om detta skapar problem för er.' ) ];
+		list ( $min, $max ) = $this->rule_set->get_group_size_range();
+		if ( count( $participants ) < $min ) {
+			return [ new RuleResult( 'Antal deltagare', RuleResult::BLOCKER, 'Ett lag måste ha minst ' . $min . ' tävlande. Kontakta ' . get_bloginfo( 'admin_email' ) . ' om detta skapar problem för er.' ) ];
+		} elseif ( count( $participants ) > $max ) {
+			return [ new RuleResult( 'Antal deltagare', RuleResult::BLOCKER, 'Ett lag får bara ha ' . $max . ' tävlande. Kontakta ' . get_bloginfo( 'admin_email' ) . ' om detta skapar problem för er.' ) ];
 		} else {
-			return [ new RuleResult( 'Antal deltagare', RuleResult::OK, 'Ni verkar ha lagom många tävlande.' ) ];
+			return [];
 		}
 	}
 
-	private static function rule_person_names( array $people ) {
+	private function rule_person_names( array $people ) {
 		$names = array_map( function ( Person $person ) {
 			return trim( $person->name );
 		}, $people );

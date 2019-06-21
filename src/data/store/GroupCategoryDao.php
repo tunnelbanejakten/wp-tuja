@@ -24,14 +24,16 @@ class GroupCategoryDao extends AbstractDao
 
         $affected_rows = $this->wpdb->insert($this->table,
             array(
-                'competition_id' => $category->competition_id,
-                'name' => $category->name,
-                'is_crew' => $category->is_crew
+	            'competition_id' => $category->competition_id,
+	            'name'           => $category->name,
+	            'is_crew'        => $category->is_crew,
+	            'rule_set'       => $category->rule_set_class_name
             ),
             array(
                 '%d',
                 '%s',
-                '%d'
+	            '%d',
+	            '%s'
             ));
         $success = $affected_rows !== false && $affected_rows === 1;
 
@@ -48,8 +50,9 @@ class GroupCategoryDao extends AbstractDao
 
         return $this->wpdb->update($this->table,
             array(
-                'name' => $category->name,
-                'is_crew' => $category->is_crew
+	            'name'     => $category->name,
+	            'is_crew'  => $category->is_crew,
+	            'rule_set' => $category->rule_set_class_name
             ),
             array(
                 'id' => $category->id
@@ -95,11 +98,12 @@ class GroupCategoryDao extends AbstractDao
     }
 
 	private static function to_group_category( $result ): GroupCategory {
-		$gc                 = new GroupCategory();
-		$gc->id             = $result->id;
-		$gc->competition_id = $result->competition_id;
-		$gc->is_crew        = $result->is_crew != 0;
-		$gc->name           = $result->name;
+		$gc                      = new GroupCategory();
+		$gc->id                  = $result->id;
+		$gc->competition_id      = $result->competition_id;
+		$gc->is_crew             = $result->is_crew != 0;
+		$gc->name                = $result->name;
+		$gc->rule_set_class_name = $result->rule_set;
 
 		return $gc;
 	}

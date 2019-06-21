@@ -195,7 +195,8 @@ abstract class Plugin
 				id             INTEGER          AUTO_INCREMENT PRIMARY KEY,
 				competition_id INTEGER NOT NULL,
 				is_crew        BOOLEAN NOT NULL DEFAULT FALSE,
-				name           VARCHAR(100)
+				name           VARCHAR(100),
+				rule_set       VARCHAR(100)
 			) ' . $charset;
 
 		$tables[] = '
