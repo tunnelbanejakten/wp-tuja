@@ -133,23 +133,29 @@ class GroupDao extends AbstractDao {
 		$g->category_id    = $result->category_id;
 		$g->competition_id = $result->competition_id;
 
-		$people = ( new PersonDao() )->get_all_in_group( $g->id, $date );
+		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, $date );
+		$people_competing          = array_filter( $people, function ( Person $person ) {
+			return $person->is_competing;
+		} );
+		$people_competing_with_age = array_filter( $people, function ( Person $person ) {
+			return $person->is_competing && $person->age > 0;
+		} );
 //		$g->age_competing_stddev = $result->age_competing_stddev;
 		$g->age_competing_avg = array_sum(
 			                        array_map(
 				                        function ( Person $person ) {
 					                        return $person->age;
 				                        },
-				                        $people ) )
-		                        / count( $people );
+				                        $people_competing_with_age ) )
+		                        / count( $people_competing_with_age );
 		$g->age_competing_min = array_reduce(
 			array_map(
 				function ( Person $person ) {
 					return $person->age;
 				},
-				$people ),
+				$people_competing_with_age ),
 			function ( $min, $age ) {
-				return $min === null || $min > $age ? $age : $min;
+				return $min === null || $age < $min ? $age : $min;
 			},
 			null );
 		$g->age_competing_max = array_reduce(
@@ -157,16 +163,13 @@ class GroupDao extends AbstractDao {
 				function ( Person $person ) {
 					return $person->age;
 				},
-				$people ),
+				$people_competing_with_age ),
 			function ( $max, $age ) {
 				return $max === null || $max < $age ? $age : $max;
 			},
 			null );
 
-		$g->count_competing    = count(
-			array_filter( $people, function ( Person $person ) {
-				return $person->is_competing;
-			} ) );
+		$g->count_competing    = count( $people_competing );
 		$g->count_follower     = count(
 			array_filter( $people, function ( Person $person ) {
 				return ! $person->is_competing;
