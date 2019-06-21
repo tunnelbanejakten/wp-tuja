@@ -2,6 +2,7 @@
 
 namespace tuja\view;
 
+use tuja\data\model\Group;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
@@ -125,7 +126,7 @@ class FormShortcode extends AbstractShortcode
 			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du tillhör.' );
 		}
 
-		$group_category              = $this->get_group_category( $group );
+		$group_category              = $group->get_derived_group_category();
 		$crew_user_must_select_group = $this->is_crew_override;
 		$user_is_crew                = isset( $group_category ) && $group_category->is_crew;
 		if ( $user_is_crew && $crew_user_must_select_group ) {
@@ -251,8 +252,8 @@ class FormShortcode extends AbstractShortcode
 		}, $participant_categories );
 
 		$competition_groups = $this->group_dao->get_all_in_competition( $competition_id );
-		$participant_groups = array_filter( $competition_groups, function ( $group ) use ( $ids ) {
-			$group_category = $this->get_group_category( $group );
+		$participant_groups = array_filter( $competition_groups, function ( Group $group ) use ( $ids ) {
+			$group_category = $group->get_derived_group_category();
 
 			return isset( $group_category ) && in_array( $group_category->id, $ids );
 		} );

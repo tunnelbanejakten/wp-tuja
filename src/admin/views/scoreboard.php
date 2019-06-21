@@ -33,7 +33,7 @@ AdminUtils::printTopMenu( $competition );
 			} );
 			$group = reset( $group_found );
 //			var_dump( $group );
-			$obj['category'] = $category_calculator->get_category( $group );
+			$obj['category'] = $group->get_derived_group_category();
 
 			return $obj;
 		}, $score_board );

@@ -3,16 +3,12 @@
 namespace tuja\admin;
 
 use Exception;
-use tuja\data\model\Form;
 use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\PersonDao;
 use tuja\util\GroupCategoryCalculator;
-use tuja\util\rules\RegistrationEvaluator;
 use tuja\util\rules\RuleResult;
-use tuja\util\score\ScoreCalculator;
-use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\CompetitionDao;
 use tuja\data\model\ValidationException;
@@ -81,7 +77,7 @@ class Groups {
 
 			$category_calculator = new GroupCategoryCalculator( $this->competition->id );
 			$competing_groups    = array_filter( $all_groups, function ( Group $grp ) use ( $category_calculator ) {
-				$category = $category_calculator->get_category( $grp );
+				$category = $grp->get_derived_group_category();
 
 				return $category ? ! $category->is_crew : true;
 			} );
@@ -143,9 +139,6 @@ class Groups {
 		$category_unknown->name    = 'okänd';
 		$category_unknown->is_crew = false;
 
-		$category_calculator    = new GroupCategoryCalculator( $competition->id );
-		$registration_evaluator = new RegistrationEvaluator();
-
 		$groups_data = [];
 		$groups      = $db_groups->get_all_in_competition( $competition->id );
 
@@ -153,7 +146,7 @@ class Groups {
 			$group_data          = [];
 			$group_data['model'] = $group;
 
-			$registration_evaluation = $registration_evaluator->evaluate( $group );
+			$registration_evaluation = $group->evaluate_registration();
 
 			$group_data['registration_warning_count'] = count( array_filter( $registration_evaluation, function ( RuleResult $res ) {
 				return $res->status === RuleResult::WARNING;
@@ -167,7 +160,7 @@ class Groups {
 				'tuja_group' => $group->id,
 				'tuja_view'  => 'Group'
 			) );
-			$group_data['category']     = $category_calculator->get_category( $group ) ?: $category_unknown;
+			$group_data['category']     = $group->get_derived_group_category() ?: $category_unknown;
 
 			if ( ! $group_data['category']->is_crew ) {
 				$groups_competing                                     += 1;

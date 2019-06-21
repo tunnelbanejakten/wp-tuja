@@ -5,7 +5,6 @@ namespace tuja\util;
 use tuja\util\markdown\Parsedown;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
-use tuja\util\rules\RegistrationEvaluator;
 use tuja\util\rules\RuleResult;
 
 class Template
@@ -55,8 +54,7 @@ class Template
 
 	public static function group_parameters( Group $group )
     {
-	    $registration_evaluator = new RegistrationEvaluator();
-	    $evaluation_result      = $registration_evaluator->evaluate( $group );
+	    $evaluation_result      = $group->evaluate_registration();
         return [
 	        'group_name'                             => $group->name,
 	        'group_key'                              => $group->random_id,

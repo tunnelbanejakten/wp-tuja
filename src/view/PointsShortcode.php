@@ -3,6 +3,7 @@
 namespace tuja\view;
 
 use Exception;
+use tuja\data\model\Group;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
@@ -87,7 +88,7 @@ class PointsShortcode extends AbstractShortcode
         }
 
 		// Validate group category
-	    $group_category = $this->get_group_category( $crew_group );
+	    $group_category = $crew_group->get_derived_group_category();
 	    if ( isset( $group_category ) && ! $group_category->is_crew ) {
             return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Bara funktionärer får använda detta formulär.');
 		}
@@ -225,8 +226,8 @@ class PointsShortcode extends AbstractShortcode
             }, $participant_categories);
 
             $competition_groups = $this->group_dao->get_all_in_competition($this->competition_id);
-            $this->participant_groups = array_filter($competition_groups, function ($group) use ($ids) {
-	            $group_category = $this->get_group_category( $group );
+            $this->participant_groups = array_filter($competition_groups, function (Group $group) use ($ids) {
+	            $group_category = $group->get_derived_group_category();
 
 	            return isset( $group_category ) && in_array( $group_category->id, $ids );
             });

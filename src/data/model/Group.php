@@ -4,6 +4,7 @@ namespace tuja\data\model;
 
 
 use tuja\util\GroupCategoryCalculator;
+use tuja\util\rules\RegistrationEvaluator;
 
 class Group
 {
@@ -32,6 +33,20 @@ class Group
 		if ( strlen($this->name) > 100) {
 			throw new ValidationException('name', 'Namnet får inte vara längre än 100 bokstäver.');
 		}
+	}
+
+	public function evaluate_registration() {
+		$category = $this->get_derived_group_category();
+		if ( isset( $category ) ) {
+			$rule_set = $category->get_rule_set();
+			if ( isset( $rule_set ) ) {
+				$evaluator = new RegistrationEvaluator( $rule_set );
+
+				return $evaluator->evaluate( $this );
+			}
+		}
+
+		return [];
 	}
 
 	public function get_derived_group_category() {

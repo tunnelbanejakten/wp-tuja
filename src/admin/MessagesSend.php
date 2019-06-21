@@ -10,7 +10,6 @@ use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\MessageTemplateDao;
 use tuja\data\store\PersonDao;
-use tuja\util\rules\RegistrationEvaluator;
 use tuja\util\rules\RuleResult;
 use tuja\util\Template;
 use tuja\util\messaging\MessageSender;
@@ -132,7 +131,6 @@ class MessagesSend {
 		$competition = $this->competition;
 
 		$group_category_dao     = new GroupCategoryDao();
-		$registration_evaluator = new RegistrationEvaluator();
 		$group_categories       = $group_category_dao->get_all_in_competition( $competition->id );
 		$crew_category_ids      = array_map( function ( $category ) {
 			return $category->id;
@@ -160,13 +158,13 @@ class MessagesSend {
 				),
 				array(
 					'label'    => 'Alla tävlande grupper med ofullständiga anmälningar',
-					'selector' => function ( Group $group ) use ( $crew_category_ids, $registration_evaluator ) {
+					'selector' => function ( Group $group ) use ( $crew_category_ids ) {
 						$category = $group->get_derived_group_category();
 
 						$is_competing_group = isset( $category ) && ! in_array( $category->id, $crew_category_ids );
 
 						if ( $is_competing_group ) {
-							$result = $registration_evaluator->evaluate( $group );
+							$result = $group->evaluate_registration();
 
 							$count_registration_issues = count( array_filter( $result, function ( $eval_res ) {
 								return $eval_res->status !== RuleResult::OK;
