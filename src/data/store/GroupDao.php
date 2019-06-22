@@ -140,14 +140,13 @@ class GroupDao extends AbstractDao {
 		$people_competing_with_age = array_filter( $people, function ( Person $person ) {
 			return $person->is_competing && $person->age > 0;
 		} );
-//		$g->age_competing_stddev = $result->age_competing_stddev;
-		$g->age_competing_avg = array_sum(
+		$g->age_competing_avg = count( $people_competing_with_age ) > 0 ? array_sum(
 			                        array_map(
 				                        function ( Person $person ) {
 					                        return $person->age;
 				                        },
 				                        $people_competing_with_age ) )
-		                        / count( $people_competing_with_age );
+		                        / count( $people_competing_with_age ) : null;
 		$g->age_competing_min = array_reduce(
 			array_map(
 				function ( Person $person ) {

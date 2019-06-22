@@ -19,7 +19,6 @@ class Group
 	public $name;
 	public $category_id;
 	public $age_competing_avg;
-	public $age_competing_stddev;
 	public $age_competing_min;
 	public $age_competing_max;
 	public $count_competing;

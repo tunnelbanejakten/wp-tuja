@@ -61,8 +61,9 @@ AdminUtils::printTopMenu( $competition );
     </div>
     <div class="tuja-tab" id="tuja-tab-sendouts">
         <div>
-            <label for="tuja_competition_settings_message_template_id_new_group_admin">Ny grupp anmäld (e-post till
-                tävlingsledningen):</label><br>
+            <label for="tuja_competition_settings_message_template_id_new_group_admin">
+                Ny grupp anmäld (e-post till tävlingsledningen):
+            </label><br>
             <select name="tuja_competition_settings_message_template_id_new_group_admin"
                     id="tuja_competition_settings_message_template_id_new_group_admin">
                 <option value="">Ej valt - utskick inaktiverat</option>
@@ -76,9 +77,9 @@ AdminUtils::printTopMenu( $competition );
             </select>
         </div>
         <div>
-            <label for="tuja_competition_settings_message_template_id_new_group_reporter">Ny grupp anmäld (e-post till
-                den
-                som anmäler):</label><br>
+            <label for="tuja_competition_settings_message_template_id_new_group_reporter">
+                Ny grupp anmäld (e-post till den som anmäler):
+            </label><br>
             <select name="tuja_competition_settings_message_template_id_new_group_reporter"
                     id="tuja_competition_settings_message_template_id_new_group_reporter">
                 <option value="">Ej valt - utskick inaktiverat</option>
@@ -92,8 +93,9 @@ AdminUtils::printTopMenu( $competition );
             </select>
         </div>
         <div>
-            <label for="tuja_competition_settings_message_template_id_new_crew_member">Ny person anmäler sig själv till
-                funktionärslag (e-post):</label><br>
+            <label for="tuja_competition_settings_message_template_id_new_crew_member">
+                Ny person anmäler sig själv till funktionärslag (e-post):
+            </label><br>
             <select name="tuja_competition_settings_message_template_id_new_crew_member"
                     id="tuja_competition_settings_message_template_id_new_crew_member">
                 <option value="">Ej valt - utskick inaktiverat</option>
@@ -107,9 +109,9 @@ AdminUtils::printTopMenu( $competition );
             </select>
         </div>
         <div>
-            <label for="tuja_competition_settings_message_template_id_new_noncrew_member">Ny person anmäler sig själv
-                till
-                deltagarlag (e-post):</label><br>
+            <label for="tuja_competition_settings_message_template_id_new_noncrew_member">
+                Ny person anmäler sig själv till deltagarlag (e-post):
+            </label><br>
             <select name="tuja_competition_settings_message_template_id_new_noncrew_member"
                     id="tuja_competition_settings_message_template_id_new_noncrew_member">
                 <option value="">Ej valt - utskick inaktiverat</option>
@@ -128,7 +130,7 @@ AdminUtils::printTopMenu( $competition );
             Grupptyper gör det möjligt att hantera flera tävlingsklasser och att skilja på tävlande och funktionärer.
         </p>
         <div class="tuja-groupcategory-existing">
-	        <?= join( array_map( function ( $category ) {
+	        <?= join( array_map( function ( GroupCategory $category ) {
 		        return $this->print_group_category_form( $category );
 	        }, $category_dao->get_all_in_competition( $competition->id ) ) ) ?>
         </div>

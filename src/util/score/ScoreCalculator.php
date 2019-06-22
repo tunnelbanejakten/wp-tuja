@@ -104,7 +104,10 @@ class ScoreCalculator
 				}
 			}
 			$override_exists                    = isset( $points_overrides[ $question->id ] );
-			$override_set_after_latest_response = $response_exists && $points_overrides[ $question->id ]->created > $responses[ $question->id ]->created;
+			$override_set_after_latest_response = $response_exists &&
+			                                      isset( $points_overrides[ $question->id ] ) &&
+			                                      isset( $responses[ $question->id ]->created ) &&
+			                                      $points_overrides[ $question->id ]->created > $responses[ $question->id ]->created;
 			if ( $override_exists && ( ! $response_exists || $override_set_after_latest_response ) ) {
 				$question_result->override = $points_overrides[ $question->id ]->points;
 				$question_result->final    = $question_result->override;
