@@ -80,6 +80,7 @@ class CountdownShortcode
     public static function signup_closes($atts)
     {
         return self::competition_shortcode(function ($competition) {
+        	// TODO: Different for different group categories:
             return $competition->create_group_end;
         }, $atts);
     }

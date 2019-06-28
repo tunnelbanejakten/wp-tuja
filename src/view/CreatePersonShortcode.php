@@ -39,7 +39,7 @@ class CreatePersonShortcode extends AbstractGroupShortcode
                 return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du vill anmäla dig till.');
             }
 
-            if (!$this->is_edit_allowed($group->competition_id)) {
+	        if ( ! $this->is_edit_allowed( $group ) ) {
                 return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.');
             }
 

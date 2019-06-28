@@ -4,7 +4,9 @@ namespace tuja\view;
 
 use DateTime;
 use Exception;
+use tuja\data\model\Competition;
 use tuja\data\model\Group;
+use tuja\data\model\GroupCategory;
 use tuja\data\model\Person;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
@@ -74,30 +76,44 @@ class AbstractGroupShortcode extends AbstractShortcode
         return $categories;
     }
 
-    protected function is_create_allowed($competition_id): bool
+	protected function get_posted_category( $competition_id ) {
+		$selected_category = $_POST[ self::FIELD_GROUP_AGE ];
+		$categories        = $this->get_categories( $competition_id );
+		$found_category    = array_filter( $categories, function ( GroupCategory $category ) use ( $selected_category ) {
+			return $category->name == $selected_category;
+		} );
+		if ( count( $found_category ) == 1 ) {
+			return reset( $found_category );
+		}
+
+		return null;
+	}
+
+	protected function is_create_allowed( Competition $competition, GroupCategory $category ): bool
     {
-        $form = $this->competition_dao->get($competition_id);
         $now = new DateTime();
-        if ($form->create_group_start != null && $form->create_group_start > $now) {
+	    if ( $competition->create_group_start != null && $competition->create_group_start > $now ) {
             return false;
         }
-        if ($form->create_group_end != null && $form->create_group_end < $now) {
+	    if ( $competition->create_group_end != null && $competition->create_group_end < $now ) {
             return false;
         }
-        return true;
+
+	    return ! isset( $category ) || $category->get_rule_set()->is_create_registration_allowed( $competition );
     }
 
-    protected function is_edit_allowed($competition_id): bool
+    protected function is_edit_allowed(Group $group): bool
     {
-        $form = $this->competition_dao->get($competition_id);
+	    $competition = $this->competition_dao->get( $group->competition_id );
         $now = new DateTime();
-        if ($form->edit_group_start != null && $form->edit_group_start > $now) {
+        if ($competition->edit_group_start != null && $competition->edit_group_start > $now) {
             return false;
         }
-        if ($form->edit_group_end != null && $form->edit_group_end < $now) {
+        if ($competition->edit_group_end != null && $competition->edit_group_end < $now) {
             return false;
         }
-        return true;
+	    $category = $group->get_derived_group_category();
+	    return ! isset( $category ) || $category->get_rule_set()->is_update_registration_allowed( $competition );
     }
 
     protected function send_template_mail($to, $template_id, Group $group, Person $person)

@@ -27,8 +27,8 @@ class EditPersonShortcode extends AbstractGroupShortcode
                 return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Ingen person angiven.');
             }
 
-            $group = $this->group_dao->get($person->group_id);
-            $is_read_only = !$this->is_edit_allowed($group->competition_id);
+            $group        = $this->group_dao->get($person->group_id);
+	        $is_read_only = ! $this->is_edit_allowed( $group );
 
             if (@$_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
                 if (!$is_read_only) {
