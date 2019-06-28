@@ -37,12 +37,10 @@ class Group
 	public function evaluate_registration() {
 		$category = $this->get_derived_group_category();
 		if ( isset( $category ) ) {
-			$rule_set = $category->get_rule_set();
-			if ( isset( $rule_set ) ) {
-				$evaluator = new RegistrationEvaluator( $rule_set );
+			$rule_set  = $category->get_rule_set();
+			$evaluator = new RegistrationEvaluator( $rule_set );
 
-				return $evaluator->evaluate( $this );
-			}
+			return $evaluator->evaluate( $this );
 		}
 
 		return [];

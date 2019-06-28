@@ -5,6 +5,8 @@ namespace tuja\data\model;
 
 use ReflectionClass;
 use ReflectionException;
+use tuja\util\rules\PassthroughRuleSet;
+use tuja\util\rules\RuleSet;
 
 class GroupCategory
 {
@@ -14,7 +16,7 @@ class GroupCategory
 	public $name;
 	public $rule_set_class_name;
 
-	public function get_rule_set() {
+	public function get_rule_set() : RuleSet {
 		try {
 			if ( isset( $this->rule_set_class_name ) && class_exists( $this->rule_set_class_name ) ) {
 				return ( new ReflectionClass( $this->rule_set_class_name ) )->newInstance();
@@ -22,7 +24,7 @@ class GroupCategory
 		} catch ( ReflectionException $e ) {
 		}
 
-		return null;
+		return new PassthroughRuleSet();
 	}
 
 	public function validate() {
