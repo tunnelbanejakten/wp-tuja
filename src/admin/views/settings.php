@@ -1,6 +1,6 @@
 <?php namespace tuja\admin; ?>
 
-<form method="post" action="<?= add_query_arg() ?>">
+<form method="post" action="<?= add_query_arg() ?>" class="tuja">
     <h1>Generella inställningar</h1>
 
     <h2 class="title">ReCAPTCHA</h2>

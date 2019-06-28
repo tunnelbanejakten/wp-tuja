@@ -9,7 +9,7 @@ AdminUtils::printTopMenu( $competition );
 
 <h3>Skicka e-post och SMS</h3>
 
-<form method="post" action="<?= add_query_arg() ?>">
+<form method="post" action="<?= add_query_arg() ?>" class="tuja">
     <p><strong>Mottagare och distribution</strong></p>
     <div style="float: left;">
         <label for="">Välj grupp(er) att skicka till:</label><br>

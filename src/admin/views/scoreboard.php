@@ -11,7 +11,7 @@ use tuja\util\score\ScoreCalculator;
 AdminUtils::printTopMenu( $competition );
 ?>
 
-<form method="post" action="<?= add_query_arg() ?>">
+<form method="post" action="<?= add_query_arg() ?>" class="tuja">
     <table>
         <tbody>
 		<?php

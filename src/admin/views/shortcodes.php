@@ -3,7 +3,7 @@ namespace tuja\admin;
 AdminUtils::printTopMenu( $competition );
 ?>
 
-<form method="post" action="<?= add_query_arg() ?>">
+<form method="post" action="<?= add_query_arg() ?>" class="tuja">
     <p>Anmäl lag</p>
     <code>[tuja_create_group
         competition="<?= $competition->id ?>"

@@ -7,7 +7,7 @@ use tuja\data\store\GroupCategoryDao;
 AdminUtils::printTopMenu( $competition );
 ?>
 
-<form method="post" action="<?= add_query_arg() ?>">
+<form method="post" action="<?= add_query_arg() ?>" class="tuja">
     <table>
         <thead>
         <tr>

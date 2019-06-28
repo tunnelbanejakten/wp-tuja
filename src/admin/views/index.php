@@ -1,7 +1,7 @@
 <?php namespace tuja\admin; ?>
 
 <div class="tuja tuja-view-index">
-	<form method="post" action="<?= add_query_arg() ?>">
+	<form method="post" action="<?= add_query_arg() ?>" class="tuja">
 
 		<h1>Tävlingar</h1>
 		<?php

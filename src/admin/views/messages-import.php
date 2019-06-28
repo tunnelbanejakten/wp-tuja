@@ -7,7 +7,7 @@ AdminUtils::printTopMenu( $competition );
 
 <h3>Importera SMS och MMS</h3>
 
-<form method="post" action="<?= add_query_arg() ?>" enctype="multipart/form-data">
+<form method="post" action="<?= add_query_arg() ?>" enctype="multipart/form-data" class="tuja">
 
 	<h3>Krav för att kunna importera SMS och MMS:</h3>
 	<ul>
