@@ -275,6 +275,8 @@ class CompetitionSettings {
 			$competition->create_group_end   = DateUtils::from_date_local_value( $_POST['tuja_create_group_end'] );
 			$competition->edit_group_start   = DateUtils::from_date_local_value( $_POST['tuja_edit_group_start'] );
 			$competition->edit_group_end     = DateUtils::from_date_local_value( $_POST['tuja_edit_group_end'] );
+			$competition->event_start        = DateUtils::from_date_local_value( $_POST['tuja_event_start'] );
+			$competition->event_end          = DateUtils::from_date_local_value( $_POST['tuja_event_end'] );
 
 			$competition->message_template_id_new_group_admin    = ! empty( $_POST['tuja_competition_settings_message_template_id_new_group_admin'] ) ? intval( $_POST['tuja_competition_settings_message_template_id_new_group_admin'] ) : null;
 			$competition->message_template_id_new_group_reporter = ! empty( $_POST['tuja_competition_settings_message_template_id_new_group_reporter'] ) ? intval( $_POST['tuja_competition_settings_message_template_id_new_group_reporter'] ) : null;

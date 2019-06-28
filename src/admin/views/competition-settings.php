@@ -20,6 +20,20 @@ AdminUtils::printTopMenu( $competition );
         <div class="tuja-admin-question">
             <div class="tuja-admin-question-properties">
                 <div class="tuja-admin-question-property tuja-admin-question-short">
+                    <label for="">Tävlingen startar</label>
+                    <input type="datetime-local" name="tuja_event_start" placeholder="yyyy-mm-dd hh:mm"
+                           value="<?= DateUtils::to_date_local_value( $competition->event_start ) ?>"/>
+                </div>
+                <div class="tuja-admin-question-property tuja-admin-question-short">
+                    <label for="">Tävlingen slutar</label>
+                    <input type="datetime-local" name="tuja_event_end" placeholder="yyyy-mm-dd hh:mm"
+                           value="<?= DateUtils::to_date_local_value( $competition->event_end ) ?>"/>
+                </div>
+            </div>
+        </div>
+        <div class="tuja-admin-question">
+            <div class="tuja-admin-question-properties">
+                <div class="tuja-admin-question-property tuja-admin-question-short">
                     <label for="">Nya anmälningar kan göras fr.o.m.</label>
                     <input type="datetime-local" name="tuja_create_group_start" placeholder="yyyy-mm-dd hh:mm"
                            value="<?= DateUtils::to_date_local_value( $competition->create_group_start ) ?>"/>
