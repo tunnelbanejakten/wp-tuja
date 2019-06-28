@@ -12,6 +12,8 @@ class Competition
     public $create_group_end;
     public $edit_group_start;
     public $edit_group_end;
+    public $event_start;
+    public $event_end;
     public $message_template_id_new_group_admin;
     public $message_template_id_new_group_reporter;
     public $message_template_id_new_crew_member;
@@ -30,6 +32,9 @@ class Competition
         }
         if ($this->edit_group_start !== null && $this->edit_group_end !== null && $this->edit_group_start->diff($this->edit_group_end)->invert == 1) {
             throw new ValidationException('edit_group_end', 'Perioden för att ändra anmälan måste sluta efter att den börjar.');
+        }
+        if ($this->event_start !== null && $this->event_end !== null && $this->event_start->diff($this->event_end)->invert == 1) {
+            throw new ValidationException('edit_group_end', 'Tävlingen måste sluta efter att den börjar.');
         }
     }
 

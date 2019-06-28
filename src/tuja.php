@@ -73,6 +73,8 @@ abstract class Plugin
 				create_group_end     INTEGER,
 				edit_group_start     INTEGER,
 				edit_group_end       INTEGER,
+				event_start          INTEGER,
+				event_end            INTEGER,
 				message_template_new_team_admin INTEGER,
 				message_template_new_team_reporter INTEGER,
 				message_template_new_crew_member INTEGER,
