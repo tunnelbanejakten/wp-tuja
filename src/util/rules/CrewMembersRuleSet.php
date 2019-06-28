@@ -3,6 +3,7 @@
 namespace tuja\util\rules;
 
 
+use DatePeriod;
 use tuja\data\model\Competition;
 
 class CrewMembersRuleSet extends RuleSet {
@@ -23,19 +24,19 @@ class CrewMembersRuleSet extends RuleSet {
 		return false;
 	}
 
-	function is_create_registration_allowed( Competition $competition ): bool {
-		return $this->get_days_until( $competition ) >= 0;
+	public function get_create_registration_period( Competition $competition ): DatePeriod {
+		return $this->up_until_days_before( $competition, 0 );
 	}
 
-	function is_update_registration_allowed( Competition $competition ): bool {
-		return $this->get_days_until( $competition ) >= 0;
+	public function get_update_registration_period( Competition $competition ): DatePeriod {
+		return $this->up_until_days_before( $competition, 0 );
 	}
 
-	function is_delete_registration_allowed( Competition $competition ): bool {
-		return $this->is_delete_group_member_allowed( $competition );
+	public function get_delete_registration_period( Competition $competition ): DatePeriod {
+		return $this->get_delete_group_member_period( $competition );
 	}
 
-	function is_delete_group_member_allowed( Competition $competition ): bool {
-		return $this->get_days_until( $competition ) >= 14;
+	public function get_delete_group_member_period( Competition $competition ): DatePeriod {
+		return $this->up_until_days_before( $competition, 14 );
 	}
 }

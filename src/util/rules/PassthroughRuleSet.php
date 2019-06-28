@@ -3,6 +3,7 @@
 namespace tuja\util\rules;
 
 
+use DatePeriod;
 use tuja\data\model\Competition;
 
 class PassthroughRuleSet extends RuleSet {
@@ -23,19 +24,19 @@ class PassthroughRuleSet extends RuleSet {
 		return false;
 	}
 
-	function is_create_registration_allowed( Competition $competition ): bool {
-		return true;
+	public function get_create_registration_period( Competition $competition ): DatePeriod {
+		return $this->year_before_and_after_now();
 	}
 
-	function is_update_registration_allowed( Competition $competition ): bool {
-		return true;
+	public function get_update_registration_period( Competition $competition ): DatePeriod {
+		return $this->year_before_and_after_now();
 	}
 
-	function is_delete_registration_allowed( Competition $competition ): bool {
-		return true;
+	public function get_delete_registration_period( Competition $competition ): DatePeriod {
+		return $this->year_before_and_after_now();
 	}
 
-	function is_delete_group_member_allowed( Competition $competition ): bool {
-		return true;
+	public function get_delete_group_member_period( Competition $competition ): DatePeriod {
+		return $this->year_before_and_after_now();
 	}
 }

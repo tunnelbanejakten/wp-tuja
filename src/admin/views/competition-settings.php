@@ -8,7 +8,7 @@ use tuja\util\DateUtils;
 AdminUtils::printTopMenu( $competition );
 ?>
 
-<form method="post">
+<form method="post" class="tuja">
     <div class="nav-tab-wrapper">
         <a class="nav-tab nav-tab-active" data-tab-id="tuja-tab-dates">Datum och tider</a>
         <a class="nav-tab" data-tab-id="tuja-tab-messagetemplates">Meddelandemallar</a>
@@ -18,45 +18,54 @@ AdminUtils::printTopMenu( $competition );
 
     <div class="tuja-tab" id="tuja-tab-dates">
         <div class="tuja-admin-question">
+            <div>När är tävlingen?</div>
             <div class="tuja-admin-question-properties">
                 <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Tävlingen startar</label>
+                    <label for="">Start</label>
                     <input type="datetime-local" name="tuja_event_start" placeholder="yyyy-mm-dd hh:mm"
                            value="<?= DateUtils::to_date_local_value( $competition->event_start ) ?>"/>
                 </div>
                 <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Tävlingen slutar</label>
+                    <label for="">Slut</label>
                     <input type="datetime-local" name="tuja_event_end" placeholder="yyyy-mm-dd hh:mm"
                            value="<?= DateUtils::to_date_local_value( $competition->event_end ) ?>"/>
                 </div>
             </div>
         </div>
         <div class="tuja-admin-question">
+            <div>När kan lag anmälas?</div>
             <div class="tuja-admin-question-properties">
                 <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Nya anmälningar kan göras fr.o.m.</label>
+                    <label for="">Tidigast</label>
                     <input type="datetime-local" name="tuja_create_group_start" placeholder="yyyy-mm-dd hh:mm"
                            value="<?= DateUtils::to_date_local_value( $competition->create_group_start ) ?>"/>
                 </div>
                 <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Nya anmälningar kan göras t.o.m.</label>
+                    <label for="">Senast</label>
                     <input type="datetime-local" name="tuja_create_group_end" placeholder="yyyy-mm-dd hh:mm"
                            value="<?= DateUtils::to_date_local_value( $competition->create_group_end ) ?>"/>
                 </div>
             </div>
+            <div>
+                <small>Reglerna för olika grupptyper kan minska detta tidsintervall.</small>
+            </div>
         </div>
         <div class="tuja-admin-question">
+            <div>När kan anmälningar ändras?</div>
             <div class="tuja-admin-question-properties">
                 <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Anmälningar kan ändras fr.o.m.</label>
+                    <label for="">Tidigast</label>
                     <input type="datetime-local" name="tuja_edit_group_start" placeholder="yyyy-mm-dd hh:mm"
                            value="<?= DateUtils::to_date_local_value( $competition->edit_group_start ) ?>"/>
                 </div>
                 <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Anmälningar kan ändras t.o.m.</label>
+                    <label for="">Senast</label>
                     <input type="datetime-local" name="tuja_edit_group_end" placeholder="yyyy-mm-dd hh:mm"
                            value="<?= DateUtils::to_date_local_value( $competition->edit_group_end ) ?>"/>
                 </div>
+            </div>
+            <div>
+                <small>Reglerna för olika grupptyper kan minska detta tidsintervall.</small>
             </div>
         </div>
     </div>
@@ -154,8 +163,14 @@ AdminUtils::printTopMenu( $competition );
         <button class="button tuja-add-groupcategory" type="button">
             Ny
         </button>
+
+        <p><strong>Grupper och grupptyper:</strong></p>
+
         <p>Grypptyper ska inte förväxlas med grupper. En tävling kan ha flera grupper och varje person är med i en
             grupp. Grupptyper är ett sätt att klassificera grupperna utifrån deras roll i tävlingen.</p>
+
+        <p><strong>Regler för Tävlande eller Funktionär:</strong></p>
+
         <p>Detta gäller för grupper som har en grupptyp som är Funktionär:</p>
         <ul>
             <li>Personer i dessa grupper får rapportera in poäng för vilken grupp som helst.</li>
@@ -168,6 +183,38 @@ AdminUtils::printTopMenu( $competition );
             <li>Personer i dessa grupper får enbart besvara formulär för egen räkning.</li>
             <li>Exempel på tävlande grupptyper: Nybörjare, Veteraner, Super-experter.</li>
         </ul>
+
+        <p><strong>Ytterligare regler som kan appliceras:</strong></p>
+
+        <table>
+            <thead>
+            <tr>
+                <th rowspan="2" valign="top">Uppsättning</th>
+                <th rowspan="2" valign="top">Vuxen medföljare</th>
+                <th colspan="3" valign="top">Sista dag för att</th>
+            </tr>
+            <tr>
+                <td>Anmäla</td>
+                <td>Ändra</td>
+                <td>Avanmäla</td>
+            </tr>
+            </thead>
+            <tbody>
+		    <?php
+		    foreach ( self::RULE_SETS as $class_name => $label ) {
+			    if ( ! empty( $class_name ) ) {
+				    $rules = new $class_name;
+				    printf( '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+					    $label,
+					    $rules->is_adult_supervisor_required(  )? 'Ja, krav' : '-',
+					    $rules->get_create_registration_period( $competition )->end->format( 'd M' ),
+					    $rules->get_update_registration_period( $competition )->end->format( 'd M' ),
+					    $rules->get_delete_registration_period( $competition )->end->format( 'd M' ) );
+			    }
+		    }
+		    ?>
+            </tbody>
+        </table>
     </div>
 
     <button class="button button-primary"

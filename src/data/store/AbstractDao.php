@@ -3,13 +3,9 @@
 namespace tuja\data\store;
 
 use DateTime;
+use DateTimeImmutable;
 use DateTimeZone;
-use tuja\data\model\Group;
-use tuja\data\model\GroupCategory;
-use tuja\data\model\Message;
-use tuja\data\model\Person;
 use tuja\util\Id;
-use tuja\util\Phone;
 
 class AbstractDao {
 	protected $id;
@@ -51,7 +47,7 @@ class AbstractDao {
 
 	protected static function from_db_date( $dbDate ) {
 		if ( ! empty( $dbDate ) ) {
-			return new DateTime( '@' . $dbDate, new DateTimeZone( 'UTC' ) );
+			return new DateTimeImmutable( '@' . $dbDate, new DateTimeZone( 'UTC' ) );
 		} else {
 			return null;
 		}

@@ -18,6 +18,12 @@ use tuja\util\rules\YoungParticipantsRuleSet;
 class CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
+	const RULE_SETS = [
+		''                              => 'Inga regler',
+		YoungParticipantsRuleSet::class => 'Deltagare under 15 år',
+		OlderParticipantsRuleSet::class => 'Deltagare över 15 år',
+		CrewMembersRuleSet::class       => 'Funktionärer'
+	];
 
 	public function handle_post() {
 		if(!isset($_POST['tuja_competition_settings_action'])) return;
@@ -98,12 +104,7 @@ class CompetitionSettings {
 	public function print_group_category_form( GroupCategory $category ) {
 		$id1                   = uniqid();
 		$id2                   = uniqid();
-		$rule_sets             = [
-			''                              => 'Inga regler',
-			YoungParticipantsRuleSet::class => 'Deltagare under 15 år',
-			OlderParticipantsRuleSet::class => 'Deltagare över 15 år',
-			CrewMembersRuleSet::class       => 'Funktionärer'
-		];
+		$rule_sets             = self::RULE_SETS;
 		$rule_set_options_html = join( '', array_map(
 			function ( $key, $value ) use ( $category ) {
 				return sprintf( '<option value="%s" %s>%s</option>',
