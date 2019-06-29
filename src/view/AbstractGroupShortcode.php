@@ -104,6 +104,10 @@ class AbstractGroupShortcode extends AbstractShortcode
 
     protected function is_edit_allowed(Group $group): bool
     {
+	    if ( $group->is_always_editable ) {
+		    return true;
+	    }
+
 	    $competition = $this->competition_dao->get( $group->competition_id );
         $now = new DateTime();
         if ($competition->edit_group_start != null && $competition->edit_group_start > $now) {

@@ -15,7 +15,7 @@ AdminUtils::printTopMenu( $competition );
             <th rowspan="2" valign="top">Ålder</th>
             <th colspan="2" valign="top">Tävlingsklass</th>
             <th colspan="3" valign="top">Antal</th>
-            <th rowspan="2" valign="top">Anmälningsstatus</th>
+            <th colspan="2" valign="top">Anmälningsstatus</th>
         </tr>
         <tr>
             <td>Vald</td>
@@ -23,6 +23,8 @@ AdminUtils::printTopMenu( $competition );
             <td>Tävlande</td>
             <td>Övriga</td>
             <td>Kontakter</td>
+            <td>Sena ändr.</td>
+            <td>Meddelanden</td>
         </tr>
         </thead>
         <tbody>
@@ -64,6 +66,14 @@ AdminUtils::printTopMenu( $competition );
 				$group->count_competing,
 				$group->count_follower,
 				$group->count_team_contact
+			);
+
+			$id = uniqid();
+			printf( '<td><input type="checkbox" name="tuja_group__%d__alwayseditable" id="%s" value="yes" %s><label for="%s">Tillåtet</label></td>',
+				$group->id,
+				$id,
+				$group->is_always_editable ? 'checked="checked"' : '',
+				$id
 			);
 
 			// Print summary sign-up status

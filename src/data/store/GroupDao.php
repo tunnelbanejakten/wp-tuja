@@ -24,11 +24,13 @@ class GroupDao extends AbstractDao {
 
 		$affected_rows = $this->wpdb->insert( $this->table,
 			array(
-				'random_id'      => $this->id->random_string(),
-				'competition_id' => $group->competition_id
+				'random_id'          => $this->id->random_string(),
+				'competition_id'     => $group->competition_id,
+				'is_always_editable' => $group->is_always_editable
 			),
 			array(
 				'%s',
+				'%d',
 				'%d',
 			) );
 
@@ -48,7 +50,17 @@ class GroupDao extends AbstractDao {
 	function update( Group $group ) {
 		$group->validate();
 
-		$success = $this->add_record( $group, Group::STATUS_CREATED );
+		$success = $this->wpdb->update( $this->table,
+			array(
+				'is_always_editable' => $group->is_always_editable
+			),
+			array(
+				'id' => $group->id
+			) );
+
+		if ( $success !== false ) {
+			$success = $this->add_record( $group, Group::STATUS_CREATED );
+		}
 
 		return $success;
 	}
@@ -126,12 +138,13 @@ class GroupDao extends AbstractDao {
 	}
 
 	private static function to_group( $result, $date ): Group {
-		$g                 = new Group();
-		$g->id             = $result->team_id;
-		$g->random_id      = $result->random_id;
-		$g->name           = $result->name;
-		$g->category_id    = $result->category_id;
-		$g->competition_id = $result->competition_id;
+		$g                     = new Group();
+		$g->id                 = $result->team_id;
+		$g->random_id          = $result->random_id;
+		$g->name               = $result->name;
+		$g->category_id        = $result->category_id;
+		$g->competition_id     = $result->competition_id;
+		$g->is_always_editable = $result->is_always_editable;
 
 		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, $date );
 		$people_competing          = array_filter( $people, function ( Person $person ) {

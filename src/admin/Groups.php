@@ -51,6 +51,9 @@ class Groups {
 					case 'category':
 						$updated_groups[ $id ]->category_id = intval( $field_value ) ?: null;
 						break;
+					case 'alwayseditable':
+						$updated_groups[ $id ]->is_always_editable = $field_value == 'yes';
+						break;
 				}
 			}
 

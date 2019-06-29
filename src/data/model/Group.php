@@ -24,6 +24,7 @@ class Group
 	public $count_competing;
 	public $count_follower;
 	public $count_team_contact;
+	public $is_always_editable;
 
 	public function validate() {
 		if ( strlen(trim($this->name)) < 1) {
