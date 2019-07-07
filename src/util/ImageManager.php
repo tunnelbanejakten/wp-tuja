@@ -68,7 +68,7 @@ class ImageManager
         }
 
 	    $src_path  = $this->directory . $sub_directory . "$file_id.$ext";
-	    list( $width, $height, $image_type ) = getimagesize( $src_path );
+	    list( $width, $height, $image_type ) = @getimagesize( $src_path );
 	    if ( $image_type != IMAGETYPE_JPEG ) {
 		    return false;
 	    }
