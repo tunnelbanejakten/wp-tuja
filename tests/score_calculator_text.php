@@ -2,8 +2,21 @@
 
 include_once '../src/data/model/question/AbstractQuestion.php';
 include_once '../src/data/model/question/TextQuestion.php';
+include_once '../src/util/score/AutoScoreResult.php';
 
 use tuja\data\model\question\TextQuestion;
+
+function assert_score( $question, $answer, $expected_score, $expected_confidence = null ) {
+	$actual = $question->score( $answer );
+	assert( $actual->score == $expected_score );
+	if ( isset( $expected_confidence ) ) {
+		$confidence_check = $expected_confidence - 0.1 <= $actual->confidence && $actual->confidence <= $expected_confidence + 0.1;
+		if ( ! $confidence_check ) {
+			printf( '💥 Got %f but expected %f (±10%%) for input %s', $actual->confidence, $expected_confidence, join( ', ', $answer ) );
+		}
+		assert( $confidence_check );
+	}
+}
 
 $question = new TextQuestion(
 	null,
@@ -16,15 +29,16 @@ $question = new TextQuestion(
 	true,
 	[ 'alice', 'bob' ] );
 
-assert( $question->score( [ 'alice' ] ) == 10 );
-assert( $question->score( [ 'bob' ] ) == 10 );
-assert( $question->score( [ 'alice', 'bob' ] ) == 10 );
-assert( $question->score( [ 'ALICE', 'BOB' ] ) == 10 );
-assert( $question->score( [ 'alicia', 'bobb' ] ) == 10 ); // alicia okay but bobb is not
-assert( $question->score( [ 'alice', 'bob', 'carol' ] ) == 10 );
-assert( $question->score( [ 'alice', 'carol' ] ) == 10 );
-assert( $question->score( [ 'carol' ] ) == 0 );
-assert( $question->score( [ 'trudy' ] ) == 0 );
+assert_score( $question, [ 'alice' ], 10, 1.0 );
+assert_score( $question, [ 'bob' ], 10, 1.0 );
+assert_score( $question, [ 'alice', 'bob' ], 10, 1.0 );
+assert_score( $question, [ 'ALICE', 'BOB' ], 10, 1.0 );
+assert_score( $question, [ 'alicia', 'bobb' ], 10, 0.6 ); // alicia okay but bobb is not
+assert_score( $question, [ 'alice', 'bob', 'carol' ], 10, 1.0 );
+assert_score( $question, [ 'alice', 'carol' ], 10, 0.9 );
+assert_score( $question, [ 'nathan', 'victor' ], 0, 0.8 );
+assert_score( $question, [ 'carol' ], 0, 0.8 );
+assert_score( $question, [ 'trudy' ], 0, 1.0 );
 
 $question = new TextQuestion(
 	null,
@@ -37,14 +51,14 @@ $question = new TextQuestion(
 	true,
 	[ 'stockholm', 'copenhagen', 'oslo', 'helsinki' ] ); // What is the capital of {possible_answer}?
 
-assert( $question->score( [ 'STOCKHOLM', '', 'Oslo' ] ) == 5 );
-assert( $question->score( [ 'stokholm', '', 'Oslo' ] ) == 5 );
-assert( $question->score( [ 'stokholm', '', 'Oslo', 'HELSINKI' ] ) == 8 ); // 7.5 rounded up.
-assert( $question->score( [ '', 'copenhagen', '', '' ] ) == 3 ); // 2.5 rounded up.
-assert( $question->score( [ 'stockholm', 'copenhagen', 'oslo', 'helsinki' ] ) == 10 );
-assert( $question->score( [ 'Stockholm', 'copenhaven', 'Oslo', 'helsinky' ] ) == 10 ); // Slightly misspelled.
-assert( $question->score( [ 'helsinki', 'stockholm', 'copenhagen', 'oslo' ] ) == 0 ); // Wrong order. All wrong.
-assert( $question->score( [ '', '', '', '' ] ) == 0 );
+assert_score( $question, [ 'STOCKHOLM', '', 'Oslo' ], 5, 1.0 );
+assert_score( $question, [ 'stokholm', '', 'Oslo' ], 5, 0.9 );
+assert_score( $question, [ 'stokholm', '', 'Oslo', 'HELSINKI' ], 8, 0.9 ); // 7.5 rounded up.
+assert_score( $question, [ '', 'copenhagen', '', '' ], 3 ); // 2.5 rounded up.
+assert_score( $question, [ 'stockholm', 'copenhagen', 'oslo', 'helsinki' ], 10, 1.0 );
+assert_score( $question, [ 'Stockholm', 'copenhaven', 'Oslo', 'helsinky' ], 10, 0.9 ); // Slightly misspelled.
+assert_score( $question, [ 'helsinki', 'stockholm', 'copenhagen', 'oslo' ], 0, 0.9 ); // Wrong order. All wrong.
+assert_score( $question, [ '', '', '', '' ], 0, 1.0 );
 
 $question = new TextQuestion(
 	null,
@@ -57,26 +71,14 @@ $question = new TextQuestion(
 	true,
 	[ 'stockholm', 'copenhagen', 'oslo', 'helsinki', 'reykjavik' ] ); // Which are the capitals of the nordic countries?
 
-assert( $question->score( [ 'STOCKHOLM', 'Oslo' ] ) == 4 );
-assert( $question->score( [ 'stokholm', 'Oslo' ] ) == 4 );
-assert( $question->score( [ 'stokholm', 'Oslo', 'HELSINKI' ] ) == 6 );
-assert( $question->score( [ 'copenhagen' ] ) == 2 );
-assert( $question->score( [ 'stockholm', 'copenhagen', 'oslo', 'helsinki', 'reykjavik' ] ) == 10 );
-assert( $question->score( [
-		'Stockholm',
-		'copenhaven',
-		'Oslo',
-		'helsinky',
-		'reikjavik'
-	] ) == 10 ); // Slightly misspelled.
-assert( $question->score( [ 'helsinki', 'reykjavik', 'stockholm', 'copenhagen', 'oslo' ] ) == 10 ); // Different order.
-assert( $question->score( [
-		'Stockholm',
-		'copenhaven',
-		'Oslo',
-		'helsinky',
-		'berlin'
-	] ) == 8 ); // Incorrect answers are ignored.
+assert_score( $question, [ 'STOCKHOLM', 'Oslo' ], 4, 1.0 );
+assert_score( $question, [ 'stokholm', 'Oslo' ], 4, 0.9 );
+assert_score( $question, [ 'stokholm', 'Oslo', 'HELSINKI' ], 6, 0.9 );
+assert_score( $question, [ 'copenhagen' ], 2, 1.0 );
+assert_score( $question, [ 'stockholm', 'copenhagen', 'oslo', 'helsinki', 'reykjavik' ], 10, 1.0 );
+assert_score( $question, [ 'Stockholm', 'copenhaven', 'Oslo', 'helsinky', 'reikjavik' ], 10, 0.9 ); // Slightly misspelled.
+assert_score( $question, [ 'helsinki', 'reykjavik', 'stockholm', 'copenhagen', 'oslo' ], 10, 1.0 ); // Different order.
+assert_score( $question, [ 'Stockholm', 'copenhaven', 'Oslo', 'helsinky', 'berlin' ], 8, 0.9 ); // Incorrect answers are ignored.
 
 $question = new TextQuestion(
 	null,
@@ -89,12 +91,14 @@ $question = new TextQuestion(
 	true,
 	[ 'alice', 'bob' ] );
 
-assert( $question->score( [ 'alice' ] ) == 0 );
-assert( $question->score( [ 'bob' ] ) == 0 );
-assert( $question->score( [ 'alice', 'bob' ] ) == 10 );
-assert( $question->score( [ 'ALICE', 'BOB' ] ) == 10 );
-assert( $question->score( [ 'alicia', 'bobb' ] ) == 0 ); // alicia okay but bobb is not
-assert( $question->score( [ 'alice', 'bob', 'carol' ] ) == 0 );
-assert( $question->score( [ 'alice', 'carol' ] ) == 0 );
-assert( $question->score( [ 'carol' ] ) == 0 );
-assert( $question->score( [ 'trudy' ] ) == 0 );
+assert_score( $question, [ 'alice', 'bob' ], 10, 1.0 ); // full points
+assert_score( $question, [ 'ALICE', 'BOB' ], 10, 1.0 ); // full points
+assert_score( $question, [ 'alicia', 'bobb' ], 0, 0.5 ); // both options are pretty close so confidence for a score of 0 is not high
+assert_score( $question, [ 'alice', 'carol' ], 0, 0.9 ); // one answer is pretty far off so we confidence for a score of 0 is pretty high
+
+// Incorrect number of answers => automatic fail:
+assert_score( $question, [ 'alice' ], 0, 1.0 );
+assert_score( $question, [ 'bob' ], 0, 1.0 );
+assert_score( $question, [ 'alice', 'bob', 'carol' ], 0, 1.0 );
+assert_score( $question, [ 'carol' ], 0, 1.0 );
+assert_score( $question, [ 'trudy' ], 0, 1.0 );

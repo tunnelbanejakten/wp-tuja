@@ -6,6 +6,7 @@ namespace tuja\data\model\question;
 use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\ValidationException;
+use tuja\util\score\AutoScoreResult;
 use tuja\view\Field;
 use tuja\view\FieldText;
 use tuja\view\FieldTextMulti;
@@ -101,9 +102,9 @@ class TextQuestion extends AbstractQuestion {
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */
-	function score( $answer_object ) {
+	function score( $answer_object ): AutoScoreResult {
 		if ( ! is_array( $answer_object ) ) {
-			throw new Exception( 'Input must be an array' );
+			throw new Exception( 'Input must be an array. Was: ' . $answer_object );
 		}
 
 		$answers         = array_map( 'strtolower', $answer_object );
@@ -119,19 +120,38 @@ class TextQuestion extends AbstractQuestion {
 
 		switch ( $this->score_type ) {
 			case self::GRADING_TYPE_ORDERED_PERCENT_OF:
+				$confidence = array_sum( array_map( function ( $percent ) {
+						return $percent > 80 ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
+					}, $correctness_percents ) ) / count( $answers );
+
+				return new AutoScoreResult( round( $this->score_max / count( $this->correct_answers ) * $count_correct_values ), $confidence );
 			case self::GRADING_TYPE_UNORDERED_PERCENT_OF:
-				return round( $this->score_max / count( $this->correct_answers ) * $count_correct_values );
+				$confidence = 0.01 * array_sum( $correctness_percents ) / count( $correctness_percents );
+
+				return new AutoScoreResult( round( $this->score_max / count( $this->correct_answers ) * $count_correct_values ), $confidence );
 			case self::GRADING_TYPE_ONE_OF:
+				$confidence = array_sum( array_map( function ( $percent ) {
+						return $percent > 80 ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
+					}, $correctness_percents ) ) / count( $answers );
+
 				return $count_correct_values > 0
-					? $this->score_max
-					: 0;
+					? new AutoScoreResult( $this->score_max, $confidence )
+					: new AutoScoreResult( 0, $confidence );
 			case self::GRADING_TYPE_ALL_OF:
-				return count( $answers ) == count( $correct_answers )
-				       && $count_correct_values == count( $correct_answers )
-					? $this->score_max
-					: 0;
+				if ( count( $answers ) == count( $correct_answers ) ) {
+					$confidence = array_sum( array_map( function ( $percent ) {
+							return $percent > 80 ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
+						}, $correctness_percents ) ) / count( $answers );
+					$correct = $count_correct_values == count( $correct_answers );
+
+					return new AutoScoreResult(
+						$correct ? $this->score_max : 0,
+						$confidence );
+				} else {
+					return new AutoScoreResult( 0, 1.0 );
+				}
 			default:
-				return 0;
+				return new AutoScoreResult( 0, 1.0 );
 		}
 	}
 

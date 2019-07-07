@@ -6,6 +6,7 @@ namespace tuja\data\model\question;
 use tuja\data\model\Group;
 use tuja\data\model\ValidationException;
 use tuja\util\ReflectionUtils;
+use tuja\util\score\AutoScoreResult;
 
 abstract class AbstractQuestion {
 
@@ -56,7 +57,7 @@ abstract class AbstractQuestion {
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */
-	abstract function score( $answer_object );
+	abstract function score( $answer_object ) : AutoScoreResult;
 
 	/**
 	 * Returns the HTML used to render this question.

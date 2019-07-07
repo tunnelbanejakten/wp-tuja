@@ -4,6 +4,7 @@ namespace tuja\data\model\question;
 
 
 use tuja\data\model\Group;
+use tuja\util\score\AutoScoreResult;
 use tuja\view\FieldNumber;
 
 class NumberQuestion extends AbstractQuestion {
@@ -21,15 +22,33 @@ class NumberQuestion extends AbstractQuestion {
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */
-	function score( $answer_object ) {
+	function score( $answer_object ): AutoScoreResult {
 		if ( is_array( $answer_object ) ) {
 			$answer_object = $answer_object[0];
 		}
 		if ( ! is_numeric( $answer_object ) ) {
-			return 0;
+			return new AutoScoreResult( 0, 1.0 );
 		}
 
-		return $answer_object == $this->correct_answer ? $this->score_max : 0;
+		$diff_max = abs( $this->correct_answer * 0.1 );
+
+		$diff = abs( $answer_object - $this->correct_answer );
+
+		if ( $diff == 0 ) {
+			// Exactly correct
+			return new AutoScoreResult( $this->score_max, 1.0 );
+		} else if ( $diff < $diff_max ) {
+			// Almost correct
+			$confidence = 1.0 - ( ( $diff_max - $diff ) / $diff_max );
+
+			$score = $diff == 0 ? $this->score_max : 0;
+
+			return new AutoScoreResult( $score, $confidence );
+		} else {
+			// Definitely wrong
+			return new AutoScoreResult( 0, 1.0 );
+		}
+
 	}
 
 	/**

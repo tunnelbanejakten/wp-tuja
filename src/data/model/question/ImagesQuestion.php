@@ -5,6 +5,7 @@ namespace tuja\data\model\question;
 
 use tuja\admin\AdminUtils;
 use tuja\data\model\Group;
+use tuja\util\score\AutoScoreResult;
 use tuja\view\FieldImages;
 
 class ImagesQuestion extends AbstractQuestion {
@@ -12,8 +13,8 @@ class ImagesQuestion extends AbstractQuestion {
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */
-	function score( $answer_object ) {
-		return 0;
+	function score( $answer_object ) : AutoScoreResult {
+		return new AutoScoreResult(0, 1.0);
 	}
 
 	/**
