@@ -24,7 +24,7 @@ AdminUtils::printTopMenu( $competition );
     </p>
 
 	<?php
-    if (empty($responses)) {
+	if ( empty( $data ) ) {
         printf('<p>Allt är redan kontrollerat. Bra jobbat!</p>');
     } else {
         ?>
@@ -46,68 +46,58 @@ AdminUtils::printTopMenu( $competition );
                 <td colspan="4"></td>
             </tr>
             <?php
-
             $response_ids = [];
-            foreach ($forms as $form) {
-                $is_form_name_printed = false;
-                $questions = $db_question->get_all_in_form($form->id);
-                foreach ($questions as $question) {
-                    $is_question_printed = false;
-                    foreach ($responses as $response) {
-                        if ($response->form_question_id === $question->id) {
-                            if (!$is_form_name_printed) {
-	                            printf( '<tr class="tuja-admin-review-form-row"><td colspan="6"><strong>%s</strong></td></tr>', $form->name );
-                                $is_form_name_printed = true;
-                            }
-                            if (!$is_question_printed) {
-	                            $question_group_text = $question_groups[ $question->question_group_id ]->text;
-	                            $question_text       = $question_group_text
-		                            ? $question_group_text . " : " . $question->text
-		                            : $question->text;
-	                            printf( '<tr class="tuja-admin-review-question-row"><td></td><td colspan="5"><strong>%s</strong></td></tr>',
-		                            $question_text);
-	                            printf( '' .
-	                                    '<tr class="tuja-admin-review-correctanswer-row">' .
-	                                    '  <td colspan="2"></td>' .
-	                                    '  <td valign="top">Rätt svar:</td>' .
-	                                    '  <td valign="top" colspan="3">%s</td>' .
-	                                    '</tr>',
-		                            $question->get_correct_answer_html() );
-                                $is_question_printed = true;
-                            }
-                            $response_ids[] = $response->id;
-                            $points = $current_points[$response->form_question_id . '__' . $response->group_id];
-                            // Only set $points if the override points were set AFTER the most recent answer was created/submitted.
-                            $field_value = isset($points) && $points->created > $response->created ? $points->points : '';
+            foreach ( $data as $form_id => $form_entry ) {
+	            printf( '<tr class="tuja-admin-review-form-row"><td colspan="6"><strong>%s</strong></td></tr>', $form_entry['form']->name );
+	            foreach ( $form_entry['questions'] as $question_id => $question_entry ) {
 
-	                        $group_url = add_query_arg( array(
-		                        'tuja_group' => $response->group_id,
-		                        'tuja_view'  => 'Group'
-	                        ) );
+		            $question            = $question_entry['question'];
+		            $question_group_text = $question_groups[ $question->question_group_id ]->text;
+		            $question_text       = $question_group_text
+			            ? $question_group_text . " : " . $question->text
+			            : $question->text;
+		            printf( '<tr class="tuja-admin-review-question-row"><td></td><td colspan="5"><strong>%s</strong></td></tr>',
+			            $question_text );
+		            printf( '' .
+		                    '<tr class="tuja-admin-review-correctanswer-row">' .
+		                    '  <td colspan="2"></td>' .
+		                    '  <td valign="top">Rätt svar:</td>' .
+		                    '  <td valign="top" colspan="3">%s</td>' .
+		                    '</tr>',
+			            $question->get_correct_answer_html() );
 
-	                        $score = $question->score( $response->submitted_answer );
+		            foreach ( $question_entry['responses'] as $response_entry ) {
+			            $response       = $response_entry['response'];
+			            $response_ids[] = $response->id;
+			            $score          = $response_entry['score']->score;
 
-	                        $score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $score / $question->score_max ) : '';
+			            $group_url = add_query_arg( array(
+				            'tuja_group' => $response->group_id,
+				            'tuja_view'  => 'Group'
+			            ) );
 
-	                        printf( '' .
-	                                '<tr class="tuja-admin-review-response-row">' .
-	                                '  <td colspan="2"></td>' .
-	                                '  <td valign="top">Svar från <a href="%s">%s</a>:</td>' .
-	                                '  <td valign="top">%s</td>' .
-	                                '  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s p</span></td>' .
-	                                '  <td valign="top"><input type="number" name="%s" value="%s" size="5" min="0" max="%d"> p</td>' .
-	                                '</tr>',
-		                        $group_url,
-                                $groups_map[$response->group_id]->name,
-		                        $question->get_submitted_answer_html( $response->submitted_answer, $groups_map[ $response->group_id ] ),
-		                        $score_class,
-		                        $score,
-		                        sprintf( 'tuja_review_points__%s', $response->id ),
-		                        $field_value,
-		                        $question->score_max ?: 1000 );
-                        }
-                    }
-                }
+			            $field_value = isset( $points ) && $points->created > $response->created ? $points->points : '';
+
+			            $score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $score / $question->score_max ) : '';
+
+			            printf( '' .
+			                    '<tr class="tuja-admin-review-response-row">' .
+			                    '  <td colspan="2"></td>' .
+			                    '  <td valign="top">Svar från <a href="%s">%s</a>:</td>' .
+			                    '  <td valign="top">%s</td>' .
+			                    '  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s p</span></td>' .
+			                    '  <td valign="top"><input type="number" name="%s" value="%s" size="5" min="0" max="%d"> p</td>' .
+			                    '</tr>',
+				            $group_url,
+				            $groups_map[ $response->group_id ]->name,
+				            $question->get_submitted_answer_html( $response->submitted_answer, $groups_map[ $response->group_id ] ),
+				            $score_class,
+				            $score,
+				            sprintf( 'tuja_review_points__%s', $response->id ),
+				            $field_value,
+				            $question->score_max ?: 1000 );
+		            }
+	            }
             }
             ?>
             </tbody>

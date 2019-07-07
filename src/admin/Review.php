@@ -120,28 +120,32 @@ class Review {
 		}, $groups ), array_values( $groups ) );
 		$forms      = $db_form->get_all_in_competition( $competition->id );
 
-		$responses = $this->get_responses_to_review();
+		$selected_filter = @$_GET[ Review::QUESTION_FILTER_URL_PARAM ] ?: null;
 
 		$question_filters = [
 			[
-				'key'      => self::QUESTION_FILTER_ALL,
-				'selected' => ! isset( $_GET[ Review::QUESTION_FILTER_URL_PARAM ] ) || $_GET[ Review::QUESTION_FILTER_URL_PARAM ] == self::QUESTION_FILTER_ALL,
-				'label'    => 'Alla'
+				'key'      => ResponseDao::QUESTION_FILTER_ALL,
+				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_ALL,
+				'label'    => 'Alla frågor (även obesvarade och kontrollerade)'
 			],
 			[
-				'key'      => self::QUESTION_FILTER_IMAGES,
-				'selected' => $_GET[ Review::QUESTION_FILTER_URL_PARAM ] == self::QUESTION_FILTER_IMAGES,
-				'label'    => 'Enbart bilder'
+				'key'      => ResponseDao::QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE,
+				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE,
+				'label'    => 'Alla svar där auto-rättningen är osäker'
+			],
+			[
+				'key'      => ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL,
+				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL,
+				'label'    => 'Alla svar som inte kontrollerats'
+			],
+			[
+				'key'      => ResponseDao::QUESTION_FILTER_UNREVIEWED_IMAGES,
+				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_UNREVIEWED_IMAGES,
+				'label'    => 'Alla bilder som inte kontrollerats'
 			]
 		];
 
-		$current_points = $db_points->get_by_competition( $competition->id );
-		$current_points = array_combine(
-			array_map( function ( $points ) {
-				return $points->form_question_id . '__' . $points->group_id;
-			}, $current_points ),
-			array_values( $current_points )
-		);
+		$data = isset($selected_filter) ? $this->response_dao->get_by_questions( $competition->id, $selected_filter, [] ) : [];
 
 		include( 'views/review.php' );
 	}
@@ -153,7 +157,7 @@ class Review {
 		$selected_question_ids = array_reduce(
 			$all_questions,
 			function ( $carry, AbstractQuestion $question ) {
-				if ( $_GET[ Review::QUESTION_FILTER_URL_PARAM ] == self::QUESTION_FILTER_IMAGES ) {
+				if ( @$_GET[ Review::QUESTION_FILTER_URL_PARAM ] == self::QUESTION_FILTER_IMAGES ) {
 					if ( $question instanceof ImagesQuestion) {
 						$carry[] = $question->id;
 					}

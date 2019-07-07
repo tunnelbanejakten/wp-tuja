@@ -72,17 +72,4 @@ class FormDao extends AbstractDao
             'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d',
             $competition_id);
     }
-
-    private static function to_form($result): Form
-    {
-        $f = new Form();
-        $f->id = $result->id;
-        $f->competition_id = $result->competition_id;
-        $f->name = $result->name;
-        $f->allow_multiple_responses_per_group = $result->allow_multiple_responses_per_team;
-        $f->submit_response_start = self::from_db_date($result->submit_response_start);
-        $f->submit_response_end = self::from_db_date($result->submit_response_end);
-        return $f;
-    }
-
 }

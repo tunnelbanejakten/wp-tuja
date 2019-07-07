@@ -13,13 +13,6 @@ use tuja\util\Database;
 
 class QuestionDao extends AbstractDao
 {
-	const QUESTION_TYPE_TEXT = 'text';
-	const QUESTION_TYPE_NUMBER = 'number';
-	const QUESTION_TYPE_PICK_ONE = 'pick_one';
-	const QUESTION_TYPE_PICK_MULTI = 'pick_multi';
-	const QUESTION_TYPE_IMAGES = 'images';
-	const QUESTION_TYPE_TEXT_MULTI = 'text_multi';
-
 	function __construct() {
 		parent::__construct();
 		$this->table = Database::get_table('form_question');
@@ -193,65 +186,5 @@ class QuestionDao extends AbstractDao
                 WHERE f.competition_id = %d
                 ORDER BY grp.sort_order, q.sort_order, q.id',
 			$competition_id );
-	}
-
-	private static function to_form_question( $result ): AbstractQuestion {
-
-		$config = json_decode( $result->answer, true );
-
-		switch ( $result->type ) {
-			case self::QUESTION_TYPE_TEXT_MULTI:
-			case self::QUESTION_TYPE_TEXT:
-				$q = new TextQuestion(
-					$result->text,
-					$result->text_hint,
-					$result->id,
-					$result->question_group_id,
-					$result->sort_order,
-					@$config['score_max'],
-					@$config['score_type'],
-					$result->type == self::QUESTION_TYPE_TEXT,
-					@$config['values'] );
-
-				return $q;
-			case self::QUESTION_TYPE_PICK_ONE:
-			case self::QUESTION_TYPE_PICK_MULTI:
-				$q = new OptionsQuestion(
-					$result->text,
-					$result->text_hint,
-					$result->id,
-					$result->question_group_id,
-					$result->sort_order,
-					@$config['score_max'],
-					@$config['score_type'],
-					$result->type == self::QUESTION_TYPE_PICK_ONE,
-					@$config['values'],
-					@$config['options'],
-					false );
-
-				return $q;
-			case self::QUESTION_TYPE_IMAGES:
-				$q = new ImagesQuestion(
-					$result->text,
-					$result->text_hint,
-					$result->id,
-					$result->question_group_id,
-					$result->sort_order,
-					@$config['score_max'] );
-				return $q;
-			case self::QUESTION_TYPE_NUMBER:
-				$q = new NumberQuestion(
-					$result->text,
-					$result->text_hint,
-					$result->id,
-					$result->question_group_id,
-					$result->sort_order,
-					@$config['score_max'],
-					@$config['value'] );
-
-				return $q;
-			default:
-				throw new Exception( 'Unsupported type of question: ' . $result->type );
-		}
 	}
 }
