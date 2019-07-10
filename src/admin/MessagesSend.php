@@ -18,6 +18,7 @@ use tuja\util\messaging\OutgoingSMSMessage;
 
 class MessagesSend {
 	private $competition;
+	private $field_group_selector;
 
 	public function __construct() {
 		$db_competition    = new CompetitionDao();
@@ -27,6 +28,8 @@ class MessagesSend {
 
 			return;
 		}
+
+		$this->field_group_selector = new FieldGroupSelector( $this->competition );
 	}
 
 	private static function get_specific_recipient_option( array $specific_recipients ): array {
@@ -39,7 +42,7 @@ class MessagesSend {
 	}
 
 
-	public function handle_post( $group_selectors, $people_selectors, $delivery_methods, $groups ) {
+	public function handle_post( $people_selectors, $delivery_methods ) {
 		if ( ! isset( $_POST['tuja_messages_action'] ) ) {
 			return [];
 		}
@@ -48,11 +51,10 @@ class MessagesSend {
 		$is_send    = $_POST['tuja_messages_action'] === 'send';
 
 		if ( $is_preview || $is_send ) {
-			$group_selector  = $group_selectors[ intval( $_POST['tuja_messages_group_selector'] ) ];
+			$selected_groups = $this->field_group_selector->get_selected_groups( @$_POST['tuja_messages_group_selector'] );
 			$people_selector = $people_selectors[ $_POST['tuja_messages_people_selector'] ];
 			$delivery_method = $delivery_methods[ $_POST['tuja_messages_delivery_method'] ];
-			if ( isset( $group_selector ) && isset( $people_selector ) && isset( $delivery_method ) ) {
-				$selected_groups = array_filter( $groups, $group_selector['selector'] );
+			if ( ! empty( $selected_groups ) && isset( $people_selector ) && isset( $delivery_method ) ) {
 
 				$warnings   = [];
 				$person_dao = new PersonDao();
@@ -72,8 +74,8 @@ class MessagesSend {
 
 				$variables = array_merge( $body_template->get_variables(), $subject_template->get_variables() );
 
-				$recipients_data = array_map( function ( $person ) use ( $delivery_method, $variables, $groups, $subject_template, $body_template, $is_send ) {
-					$group               = reset( array_filter( $groups, function ( $grp ) use ( $person ) {
+				$recipients_data = array_map( function ( $person ) use ( $delivery_method, $variables, $selected_groups, $subject_template, $body_template, $is_send ) {
+					$group               = reset( array_filter( $selected_groups, function ( $grp ) use ( $person ) {
 						return $grp->id == $person->group_id;
 					} ) );
 					$template_parameters = $this->get_parameters( $person, $group );
@@ -130,84 +132,6 @@ class MessagesSend {
 	public function output() {
 		$competition = $this->competition;
 
-		$group_category_dao     = new GroupCategoryDao();
-		$group_categories       = $group_category_dao->get_all_in_competition( $competition->id );
-		$crew_category_ids      = array_map( function ( $category ) {
-			return $category->id;
-		}, array_filter( $group_categories, function ( $category ) {
-			return $category->is_crew;
-		} ) );
-
-		$group_dao       = new GroupDao();
-		$groups          = $group_dao->get_all_in_competition( $competition->id );
-		$group_selectors = array_merge(
-			array(
-				array(
-					'label'    => 'Alla grupper, inkl. funk',
-					'selector' => function ( Group $group ) {
-						return true;
-					}
-				),
-				array(
-					'label'    => 'Alla tävlande grupper',
-					'selector' => function ( Group $group ) use ( $crew_category_ids ) {
-						$category = $group->get_derived_group_category();
-
-						return isset( $category ) && ! in_array( $category->id, $crew_category_ids );
-					}
-				),
-				array(
-					'label'    => 'Alla tävlande grupper med ofullständiga anmälningar',
-					'selector' => function ( Group $group ) use ( $crew_category_ids ) {
-						$category = $group->get_derived_group_category();
-
-						$is_competing_group = isset( $category ) && ! in_array( $category->id, $crew_category_ids );
-
-						if ( $is_competing_group ) {
-							$result = $group->evaluate_registration();
-
-							$count_registration_issues = count( array_filter( $result, function ( $eval_res ) {
-								return $eval_res->status !== RuleResult::OK;
-							} ) );
-
-							return $count_registration_issues > 0;
-						} else {
-							return false;
-						}
-					}
-				),
-				array(
-					'label'    => 'Alla funktionärsgrupper',
-					'selector' => function ( Group $group ) use ( $crew_category_ids ) {
-						$category = $group->get_derived_group_category();
-
-						return isset( $category ) && in_array( $category->id, $crew_category_ids );
-					}
-				),
-			),
-			array_map(
-				function ( $category ) {
-					return array(
-						'label'    => 'Alla grupper i kategorin ' . $category->name,
-						'selector' => function ( Group $group ) use ( $category ) {
-							$group_category = $group->get_derived_group_category();
-
-							return isset( $group_category ) && $group_category->id === $category->id;
-						}
-					);
-				},
-				$group_categories ),
-			array_map(
-				function ( $selected_group ) {
-					return array(
-						'label'    => 'Gruppen ' . $selected_group->name,
-						'selector' => function ( Group $group ) use ( $selected_group ) {
-							return $group->id === $selected_group->id;
-						}
-					);
-				},
-				$groups ) );
-
 		$people_selectors    = array(
 			'all'              => array(
 				'label'    => 'Alla',
@@ -259,9 +183,7 @@ class MessagesSend {
 			)
 		);
 
-		$groups = $group_dao->get_all_in_competition( $this->competition->id );
-
-		$action_result = $this->handle_post( $group_selectors, $people_selectors, $delivery_methods, $groups );
+		$action_result = $this->handle_post( $people_selectors, $delivery_methods );
 
 		if ( ! empty( $action_result['retry_people_ids'] ) ) {
 			// We failed to sent to some recipients. Enable the send-to-specific-people option when the page is rendered.
@@ -279,6 +201,8 @@ class MessagesSend {
 
 		$is_preview = $_POST['tuja_messages_action'] === 'preview';
 		$is_send    = $_POST['tuja_messages_action'] === 'send';
+
+		$field_group_selector = $this->field_group_selector;
 
 		include( 'views/messages-send.php' );
 	}

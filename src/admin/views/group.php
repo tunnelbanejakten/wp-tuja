@@ -1,6 +1,7 @@
 <?php
 namespace tuja\admin;
 
+use tuja\data\store\ResponseDao;
 use tuja\util\rules\RuleResult;
 
 AdminUtils::printTopMenu( $competition );
@@ -37,6 +38,17 @@ AdminUtils::printTopMenu( $competition );
 		}
 		?>
     </p>
+
+	<?php
+	$review_url = add_query_arg( array(
+		'tuja_view'                       => 'Review',
+		'tuja_competition'                => $this->competition->id,
+		Review::GROUP_FILTER_URL_PARAM      => FieldGroupSelector::to_key( $group ),
+		Review::QUESTION_FILTER_URL_PARAM => ResponseDao::QUESTION_FILTER_ALL
+	) );
+	printf( '<p><a href="%s">Visa frågor och svar</a></p>', $review_url );
+	?>
+
 
     <table class="tuja-admin-review">
         <thead>

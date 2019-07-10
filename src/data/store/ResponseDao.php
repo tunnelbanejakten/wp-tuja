@@ -197,9 +197,10 @@ class ResponseDao extends AbstractDao
 				INNER JOIN ' . Database::get_table( 'form' ) . ' f ON fqg.form_id = f.id 
 			WHERE 
 				%s
+				%s
 				AND f.competition_id = %d
 			ORDER BY
-				f.id, q.id
+				f.id, q.id, r.team_id
 			',
 			join( ',', array_map( function ( $column_name ) {
 				return sprintf( 'q.%s AS q_%s', $column_name, $column_name );
@@ -212,6 +213,7 @@ class ResponseDao extends AbstractDao
 			}, self::TABLE_COLUMNS_FORMS ) ),
 			self::QUESTION_FILTERS[ $question_filter ]['sql_from'],
 			join( ' AND ', self::QUESTION_FILTERS[ $question_filter ]['sql_where'] ),
+			count( $group_ids ) > 0 ? sprintf( ' AND r.team_id IN (%s)', join( ', ', $group_ids ) ) : '',
 			(int) $competition_id
 		);
 

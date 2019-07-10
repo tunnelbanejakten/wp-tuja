@@ -13,14 +13,11 @@ AdminUtils::printTopMenu( $competition );
     <p><strong>Mottagare och distribution</strong></p>
     <div style="float: left;">
         <label for="">Välj grupp(er) att skicka till:</label><br>
-        <select name="tuja_messages_group_selector">
-			<?= join( array_map( function ( $index, $group_selector ) {
-				return sprintf( '<option value="%d" %s>%s</option>',
-					$index,
-					$_POST['tuja_messages_group_selector'] == $index ? ' selected="selected"' : '',
-					$group_selector['label'] );
-			}, array_keys( $group_selectors ), array_values( $group_selectors ) ) ) ?>
-        </select>
+	    <?php
+	    $field_group_selector->render(
+		    'tuja_messages_group_selector',
+		    $_POST['tuja_messages_group_selector'] );
+	    ?>
     </div>
     <div style="float: left;">
         Välj mottagare i valda grupper:<br>

@@ -130,10 +130,11 @@ tr.tuja-admin-review-form-row td {
 
 tr.tuja-admin-review-question-row td {
     border-top: 2px solid #aaa;
+    padding: 0.5em 0;
 }
 
 table.tuja-admin-review td div.spacer {
-    width: 2em;
+    width: 1em;
 }
 
 tr.tuja-admin-review-correctanswer-row td div.spacer,
@@ -141,14 +142,26 @@ tr.tuja-admin-review-response-row td div.spacer {
     width: 4em;
 }
 
-tr.tuja-admin-review-correctanswer-row td,
+tr.tuja-admin-review-correctanswer-row td {
+    padding: 0.5em 0;
+}
 tr.tuja-admin-review-response-row td {
     border-top: 1px solid #aaa;
+    padding: 0.3em 0;
 }
 tr.tuja-admin-review-question-row td:first-child,
 tr.tuja-admin-review-correctanswer-row td:first-child,
 tr.tuja-admin-review-response-row td:first-child {
     border-top: none;
+}
+
+tr.tuja-admin-review-response-row a.tuja-admin-review-group-link {
+    white-space: nowrap;
+    padding-right: 1em;
+    max-width: 15em;
+    text-overflow: ellipsis;
+    display: inline-block;
+    overflow: hidden;
 }
 
 .tuja-admin-review-response-row input[type=number] {
@@ -166,6 +179,7 @@ span.tuja-admin-review-autoscore {
     border-width: 1px;
     border-style: solid;
     padding: 3px 5px;
+    white-space: nowrap;
 }
 span.tuja-admin-review-autoscore.tuja-admin-review-autoscore-good {
     background-color: #d0e8af;

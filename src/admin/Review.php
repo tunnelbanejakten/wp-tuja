@@ -5,6 +5,7 @@ namespace tuja\admin;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\question\ImagesQuestion;
 use tuja\data\model\QuestionGroup;
+use tuja\data\model\Group;
 use tuja\data\model\Response;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
@@ -17,14 +18,17 @@ use tuja\data\store\ResponseDao;
 
 class Review {
 
+	const DEFAULT_QUESTION_FILTER = ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL;
 	private $competition;
 	private $response_dao;
 
+	const GROUP_FILTER_URL_PARAM = 'tuja_review_group_selector';
 	const QUESTION_FILTER_URL_PARAM = 'tuja_question_filter';
 	const QUESTION_FILTER_ALL = 'all';
 	const QUESTION_FILTER_IMAGES = 'images';
 	private $question_dao;
 	private $question_group_dao;
+	private $field_group_selector;
 
 	public function __construct() {
 		$this->question_dao = new QuestionDao();
@@ -32,12 +36,15 @@ class Review {
 		$this->question_group_dao = new QuestionGroupDao();
 		$db_competition     = new CompetitionDao();
 
+
 		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
 		if ( ! $this->competition ) {
 			print 'Could not find competition';
 
 			return;
 		}
+
+		$this->field_group_selector = new FieldGroupSelector( $this->competition );
 	}
 
 
@@ -120,32 +127,38 @@ class Review {
 		}, $groups ), array_values( $groups ) );
 		$forms      = $db_form->get_all_in_competition( $competition->id );
 
-		$selected_filter = @$_GET[ Review::QUESTION_FILTER_URL_PARAM ] ?: null;
+		$selected_filter = @$_GET[ Review::QUESTION_FILTER_URL_PARAM ] ?: self::DEFAULT_QUESTION_FILTER;
 
 		$question_filters = [
 			[
 				'key'      => ResponseDao::QUESTION_FILTER_ALL,
 				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_ALL,
-				'label'    => 'Alla frågor (även obesvarade och kontrollerade)'
+				'label'    => 'alla frågor (även obesvarade och kontrollerade)'
 			],
 			[
 				'key'      => ResponseDao::QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE,
 				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE,
-				'label'    => 'Alla svar där auto-rättningen är osäker'
+				'label'    => 'alla svar där auto-rättningen är osäker'
 			],
 			[
 				'key'      => ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL,
 				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL,
-				'label'    => 'Alla svar som inte kontrollerats'
+				'label'    => 'alla svar som inte kontrollerats'
 			],
 			[
 				'key'      => ResponseDao::QUESTION_FILTER_UNREVIEWED_IMAGES,
 				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_UNREVIEWED_IMAGES,
-				'label'    => 'Alla bilder som inte kontrollerats'
+				'label'    => 'alla bilder som inte kontrollerats'
 			]
 		];
 
-		$data = isset($selected_filter) ? $this->response_dao->get_by_questions( $competition->id, $selected_filter, [] ) : [];
+		$field_group_selector = $this->field_group_selector;
+
+		$selected_groups = array_map( function ( Group $group ) {
+			return $group->id;
+		}, $field_group_selector->get_selected_groups( $_GET[ Review::GROUP_FILTER_URL_PARAM ] ) );
+
+		$data = isset( $selected_filter ) ? $this->response_dao->get_by_questions( $competition->id, $selected_filter, $selected_groups ) : [];
 
 		include( 'views/review.php' );
 	}
