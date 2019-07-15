@@ -10,6 +10,8 @@ use tuja\util\score\AutoScoreResult;
 
 abstract class AbstractQuestion {
 
+	const RESPONSE_MISSING_HTML = '<span class="tuja-admin-noresponse">Inget svar</span>';
+
 	// TODO: Do these properties need to be public?
 	public $id = - 1;
 	public $question_group_id = - 1;
@@ -73,7 +75,9 @@ abstract class AbstractQuestion {
 	abstract function get_correct_answer_html();
 
 	function get_submitted_answer_html( $answer_object, Group $group ) {
-		return is_array( $answer_object ) ? join( '<br>', $answer_object ) : '<em>Ogiltigt svar</em>';
+		return is_array( $answer_object )
+			? join( '<br>', $answer_object ) ?: self::RESPONSE_MISSING_HTML
+			: '<em>Ogiltigt svar</em>';
 	}
 
 	public function validate() {

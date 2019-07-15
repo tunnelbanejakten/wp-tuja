@@ -19,6 +19,8 @@ use tuja\data\store\ResponseDao;
 class Review {
 
 	const DEFAULT_QUESTION_FILTER = ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL;
+	const RESPONSE_MISSING_ID = 0;
+
 	private $competition;
 	private $response_dao;
 
@@ -77,16 +79,39 @@ class Review {
 			$skipped      = 0;
 			$reviewed_ids = [];
 			foreach ( $form_values as $field_name => $field_value ) {
-				list( , $response_id ) = explode( '__', $field_name );
-				if ( isset( $reviewable_responses_map[ $response_id ] ) ) {
-					// Yes, this response can still be reviewed.
-					$db_points->set(
-						$reviewable_responses_map[ $response_id ]->group_id,
-						$reviewable_responses_map[ $response_id ]->form_question_id,
-						is_numeric( $field_value ) ? intval( $field_value ) : null );
-					$reviewed_ids[] = $response_id;
+				list( , $response_id, $question_id, $group_id ) = explode( '__', $field_name );
+				if ( $response_id != self::RESPONSE_MISSING_ID ) {
+					// Response exists, but is the response shown still the most recent one?
+
+					if ( isset( $reviewable_responses_map[ $response_id ] ) ) {
+						// Yes, this response can still be reviewed (it is the most recent one).
+
+						$db_points->set(
+							$reviewable_responses_map[ $response_id ]->group_id,
+							$reviewable_responses_map[ $response_id ]->form_question_id,
+							is_numeric( $field_value ) ? intval( $field_value ) : null );
+
+						$reviewed_ids[] = $response_id;
+					} else {
+						$skipped ++;
+					}
 				} else {
-					$skipped ++;
+					// Response did not exist when form was loaded but maybe one exists now?
+
+					$is_response_submitted = count( array_filter( $reviewable_responses, function ( Response $response ) use ( $question_id, $group_id ) {
+							return $response->group_id == $group_id && $response->form_question_id == $question_id;
+						} ) ) > 0;
+
+					if ( ! $is_response_submitted ) {
+						// No, there is still no response from this team.
+
+						$db_points->set(
+							$group_id,
+							$question_id,
+							is_numeric( $field_value ) ? intval( $field_value ) : null );
+					} else {
+						$skipped ++;
+					}
 				}
 			}
 			$db_response->mark_as_reviewed( $reviewed_ids );
@@ -128,29 +153,6 @@ class Review {
 		$forms      = $db_form->get_all_in_competition( $competition->id );
 
 		$selected_filter = @$_GET[ Review::QUESTION_FILTER_URL_PARAM ] ?: self::DEFAULT_QUESTION_FILTER;
-
-		$question_filters = [
-			[
-				'key'      => ResponseDao::QUESTION_FILTER_ALL,
-				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_ALL,
-				'label'    => 'alla frågor (även obesvarade och kontrollerade)'
-			],
-			[
-				'key'      => ResponseDao::QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE,
-				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE,
-				'label'    => 'alla svar där auto-rättningen är osäker'
-			],
-			[
-				'key'      => ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL,
-				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL,
-				'label'    => 'alla svar som inte kontrollerats'
-			],
-			[
-				'key'      => ResponseDao::QUESTION_FILTER_UNREVIEWED_IMAGES,
-				'selected' => $selected_filter == ResponseDao::QUESTION_FILTER_UNREVIEWED_IMAGES,
-				'label'    => 'alla bilder som inte kontrollerats'
-			]
-		];
 
 		$field_group_selector = $this->field_group_selector;
 

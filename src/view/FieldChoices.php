@@ -103,7 +103,7 @@ class FieldChoices extends Field
 			if ( isset( $_POST[ $field_name ] ) && ! is_array( $_POST[ $field_name ] ) ) {
 				$selected_values = array( $_POST[ $field_name ] );
 			} else {
-				$selected_values = array( $answer_object[0] );
+				$selected_values = @$answer_object[0] ? array( $answer_object[0] ) : array();
 			}
 		}
 

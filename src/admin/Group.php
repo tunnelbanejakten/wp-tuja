@@ -130,7 +130,7 @@ class Group {
 			$db_groups,
 			$db_points
 		);
-		$score_result     = $score_calculator->score( $group->id )->score;
+		$score_result     = $score_calculator->score( $group->id );
 
 		$responses                     = $db_response->get_latest_by_group( $group->id );
 		$response_per_question         = array_combine( array_map( function ( $response ) {

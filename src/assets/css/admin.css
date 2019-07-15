@@ -214,3 +214,8 @@ span.tuja-admin-review-autoscore.tuja-admin-review-autoscore-decent {
 .tuja-admin-message-metadata {
     flex: 1;
 }
+
+.tuja-admin-noresponse {
+    font-style: italic;
+    color: #aaa;
+}

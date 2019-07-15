@@ -44,6 +44,7 @@ class ResponseDao extends AbstractDao
 		]
 	];
 
+	// TODO: Move to ResponseDao...
 	const TABLE_COLUMNS_RESPONSES = [
 		'id',
 		'form_question_id',
@@ -179,6 +180,9 @@ class ResponseDao extends AbstractDao
 	}
 
 	function mark_as_reviewed( array $response_ids ) {
+		if ( count( $response_ids ) == 0 ) {
+			return true;
+		}
 		$ids           = join( ', ', array_map( 'intval', array_filter( $response_ids, 'is_numeric' ) ) );
 		$query         = sprintf( 'UPDATE ' . $this->table . ' SET is_reviewed = TRUE WHERE id IN (%s)', $ids );
 		$affected_rows = $this->wpdb->query( $query );
@@ -287,7 +291,9 @@ class ResponseDao extends AbstractDao
 			}
 
 			if ( isset( $data ) ) {
-				$questions[ $entry['question']->id ]['responses'][] = $data;
+				$group_id = $entry['response']->group_id;
+
+				$questions[ $entry['question']->id ]['responses'][ $group_id ] = $data;
 			}
 		}
 
