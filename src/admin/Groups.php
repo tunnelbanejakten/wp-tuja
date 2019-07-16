@@ -7,6 +7,7 @@ use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\PersonDao;
+use tuja\data\store\ResponseDao;
 use tuja\util\GroupCategoryCalculator;
 use tuja\util\rules\RuleResult;
 use tuja\data\store\GroupDao;
@@ -26,7 +27,6 @@ class Groups {
 			return;
 		}
 	}
-
 
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {
@@ -145,6 +145,8 @@ class Groups {
 		$groups_data = [];
 		$groups      = $db_groups->get_all_in_competition( $competition->id );
 
+		$unreviewed_answers = $this->get_unreviewed_answers_count();
+
 		foreach ( $groups as $group ) {
 			$group_data          = [];
 			$group_data['model'] = $group;
@@ -159,11 +161,18 @@ class Groups {
 				return $res->status === RuleResult::BLOCKER;
 			} ) );
 
-			$group_data['details_link'] = add_query_arg( array(
-				'tuja_group' => $group->id,
-				'tuja_view'  => 'Group'
+			$group_data['details_link']     = add_query_arg( array(
+				'tuja_group'                                 => $group->id,
+				'tuja_view'                                  => 'Group',
+				\tuja\admin\Group::QUESTION_FILTER_URL_PARAM => ResponseDao::QUESTION_FILTER_ALL
 			) );
-			$group_data['category']     = $group->get_derived_group_category() ?: $category_unknown;
+			$group_data['unreviewed_link']  = add_query_arg( array(
+				'tuja_group'                                 => $group->id,
+				'tuja_view'                                  => 'Group',
+				\tuja\admin\Group::QUESTION_FILTER_URL_PARAM => ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL
+			) );
+			$group_data['category']         = $group->get_derived_group_category() ?: $category_unknown;
+			$group_data['count_unreviewed'] = @$unreviewed_answers[ $group->id ] ?: 0;
 
 			if ( ! $group_data['category']->is_crew ) {
 				$groups_competing                                     += 1;
@@ -191,5 +200,27 @@ class Groups {
 					$category->is_crew ? 'Funktionär' : 'Tävlande' );
 			}, $group_categories )
 		);
+	}
+
+	private function get_unreviewed_answers_count(): array {
+		$response_dao = new ResponseDao();
+		$data         = $response_dao->get_by_questions(
+			$this->competition->id,
+			ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL,
+			[] );
+
+		$unreviewed_answers = [];
+		foreach ( $data as $form_id => $form_entry ) {
+			foreach ( $form_entry['questions'] as $question_id => $question_entry ) {
+				foreach ( $question_entry['responses'] as $group_id => $response_entry ) {
+					$response = isset( $response_entry ) ? $response_entry['response'] : null;
+					if ( isset( $response ) ) {
+						$unreviewed_answers[ $response->group_id ] = ( @$unreviewed_answers[ $response->group_id ] ?: 0 ) + 1;
+					}
+				}
+			}
+		}
+
+		return $unreviewed_answers;
 	}
 }

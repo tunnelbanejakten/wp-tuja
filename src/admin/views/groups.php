@@ -1,9 +1,5 @@
 <?php namespace tuja\admin;
 
-use tuja\data\model\GroupCategory;
-use tuja\util\rules\RuleResult;
-use tuja\data\store\GroupCategoryDao;
-
 AdminUtils::printTopMenu( $competition );
 ?>
 
@@ -16,6 +12,7 @@ AdminUtils::printTopMenu( $competition );
             <th colspan="2" valign="top">Tävlingsklass</th>
             <th colspan="3" valign="top">Antal</th>
             <th colspan="2" valign="top">Anmälningsstatus</th>
+            <th rowspan="2" valign="top">Rättning</th>
         </tr>
         <tr>
             <td>Vald</td>
@@ -91,6 +88,17 @@ AdminUtils::printTopMenu( $competition );
 				$group_data['registration_blocker_count'] == 0 && $group_data['registration_warning_count'] == 0 ?
 					sprintf( '<span class="tuja-admin-review-autoscore tuja-admin-review-autoscore-good">Komplett och korrekt</span>' ) :
 					''
+			);
+
+			// Print summary sign-up status
+			$count_unreviewed = $group_data['count_unreviewed'];
+			printf( '<td><span class="tuja-admin-review-autoscore %s">%s orättade svar</span></td>',
+				$count_unreviewed > 0
+					? 'tuja-admin-review-autoscore-decent'
+					: 'tuja-admin-review-autoscore-good',
+				$count_unreviewed > 0
+					? sprintf( '<a href="%s">%s</a>', $group_data['unreviewed_link'], $count_unreviewed )
+					: 'Inga'
 			);
 
 			print '</tr>';
