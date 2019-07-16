@@ -45,7 +45,9 @@ AdminUtils::printTopMenu( $competition );
 		false );
 	?>
 
-    <button class="button button-primary" type="submit" name="tuja_points_action" value="save">Spara</button>
+    <button class="button button-primary" type="submit" name="tuja_points_action" value="save">
+        Spara manuella poäng och markera svar som kontrollerade
+    </button>
 
     <h3>Deltagare</h3>
     <table>
