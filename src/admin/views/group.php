@@ -40,8 +40,25 @@ AdminUtils::printTopMenu( $competition );
     </p>
 
 	<?php
+	$question_filters = [
+		ResponseDao::QUESTION_FILTER_ALL                       => 'alla frågor (även obesvarade och okontrollerade)',
+		ResponseDao::QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE => 'alla svar där auto-rättningen är osäker',
+		ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL            => 'alla svar som inte kontrollerats',
+		ResponseDao::QUESTION_FILTER_UNREVIEWED_IMAGES         => 'alla bilder som inte kontrollerats'
+	];
+
+	printf( '<p>Filter: %s</p>', join( ', ', array_map( function ( $key, $label ) {
+		return ( ( @$_GET[ Group::QUESTION_FILTER_URL_PARAM ] ?: Group::DEFAULT_QUESTION_FILTER ) == $key )
+			? sprintf( ' <strong>%s</strong>', $label )
+			: sprintf( ' <a href="%s">%s</a>',
+				add_query_arg( array(
+					Group::QUESTION_FILTER_URL_PARAM => $key,
+				) ),
+				$label );
+	}, array_keys( $question_filters ), array_values( $question_filters ) ) ) );
+
 	$review_component->render(
-		ResponseDao::QUESTION_FILTER_ALL,
+		$_GET[ Group::QUESTION_FILTER_URL_PARAM ] ?: Group::DEFAULT_QUESTION_FILTER,
 		[$group],
 		false );
 	?>

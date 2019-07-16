@@ -162,7 +162,7 @@ class ReviewComponent {
 		$data = $this->get_data( $selected_filter, $selected_groups );
 
 		if ( empty( $data ) ) {
-			printf( '<p>Allt är redan kontrollerat. Bra jobbat!</p>' );
+			printf( '<p>Det finns inget att visa.</p>' );
 
 			return;
 		}

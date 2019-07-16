@@ -18,6 +18,9 @@ use tuja\data\store\GroupDao;
 
 class Group {
 
+	const DEFAULT_QUESTION_FILTER = ResponseDao::QUESTION_FILTER_ALL;
+	const QUESTION_FILTER_URL_PARAM = 'tuja_group_question_filter';
+
 	private $group;
 	private $competition;
 	private $group_dao;
@@ -52,7 +55,9 @@ class Group {
 
 		if ( $_POST['tuja_points_action'] === 'save' ) {
 
-			$result = $this->review_component->handle_post( ResponseDao::QUESTION_FILTER_ALL, [ $this->group ] );
+			$result = $this->review_component->handle_post(
+				$_GET[ self::QUESTION_FILTER_URL_PARAM ] ?: self::DEFAULT_QUESTION_FILTER,
+				[ $this->group ] );
 
 			if ( $result['skipped'] > 0 ) {
 				AdminUtils::printError( sprintf(
