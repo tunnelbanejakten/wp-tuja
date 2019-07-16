@@ -2,7 +2,7 @@
 
 namespace tuja\util\score;
 
-use tuja\data\model\Question;
+use tuja\data\model\question\AbstractQuestion;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
 use tuja\data\store\QuestionDao;
@@ -32,6 +32,32 @@ class ScoreCalculator
 		$this->points_dao      = $points_dao;
 		$this->question_groups = $question_group_dao->get_all_in_competition( $competition_id );
 		$this->questions       = $question_dao->get_all_in_competition( $competition_id );
+	}
+
+	public static function score_combined( $response, AbstractQuestion $question, $override ): ScoreQuestionResult {
+		$question_result = new ScoreQuestionResult();
+		$response_exists = isset( $response );
+		if ( $response_exists ) {
+			$submitted_answer = $response->submitted_answer;
+			// TODO: How should the is_reviewed flag be used? Only count points for answers where is_reviewed = true?
+			if ( isset( $submitted_answer ) ) {
+				$auto_score_result                = $question->score( $submitted_answer );
+				$question_result->auto            = $auto_score_result->score;
+				$question_result->auto_confidence = $auto_score_result->confidence;
+				$question_result->final           = $question_result->auto ?: 0;
+			}
+		}
+		$override_exists                    = isset( $override );
+		$override_set_after_latest_response = $response_exists &&
+		                                      isset( $override ) &&
+		                                      isset( $response->created ) &&
+		                                      $override->created > $response->created;
+		if ( $override_exists && ( ! $response_exists || $override_set_after_latest_response ) ) {
+			$question_result->override = $override->points;
+			$question_result->final    = $question_result->override ?: 0;
+		}
+
+		return $question_result;
 	}
 
 	public function score( $group_id ): ScoreResult {
@@ -93,26 +119,12 @@ class ScoreCalculator
 		$responses = $this->response_dao->get_latest_by_group( $group_id );
 
 		foreach ( $this->questions as $question ) {
-			$question_result = new ScoreQuestionResult();
-			$response_exists = isset( $responses[ $question->id ] );
-			if ( $response_exists ) {
-				$submitted_answer = $responses[ $question->id ]->submitted_answer;
-				// TODO: How should the is_reviewed flag be used? Only count points for answers where is_reviewed = true?
-				if ( isset( $submitted_answer ) ) {
-					$question_result->auto  = $question->score( $submitted_answer )->score;
-					$question_result->final = $question_result->auto;
-				}
-			}
-			$override_exists                    = isset( $points_overrides[ $question->id ] );
-			$override_set_after_latest_response = $response_exists &&
-			                                      isset( $points_overrides[ $question->id ] ) &&
-			                                      isset( $responses[ $question->id ]->created ) &&
-			                                      $points_overrides[ $question->id ]->created > $responses[ $question->id ]->created;
-			if ( $override_exists && ( ! $response_exists || $override_set_after_latest_response ) ) {
-				$question_result->override = $points_overrides[ $question->id ]->points;
-				$question_result->final    = $question_result->override;
-			}
-			$scores[ $question->id ] = $question_result;
+			$response                = @$responses[ $question->id ];
+			$override                = @$points_overrides[ $question->id ];
+			$scores[ $question->id ] = self::score_combined(
+				$response,
+				$question,
+				$override );
 		}
 
 		return $scores;

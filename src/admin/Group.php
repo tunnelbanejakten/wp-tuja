@@ -22,6 +22,7 @@ class Group {
 	private $competition;
 	private $group_dao;
 	private $question_group_dao;
+	private $review_component;
 
 	public function __construct() {
 		$this->group_dao          = new GroupDao();
@@ -40,6 +41,7 @@ class Group {
 
 			return;
 		}
+		$this->review_component = new ReviewComponent( $this->competition );
 	}
 
 
@@ -49,16 +51,20 @@ class Group {
 		}
 
 		if ( $_POST['tuja_points_action'] === 'save' ) {
-			$db_question = new QuestionDao();
-			$db_points   = new PointsDao();
 
-			$questions = $db_question->get_all_in_competition( $this->competition->id );
-			foreach ( $questions as $question ) {
-				$value = $_POST[ 'tuja_group_points__' . $question->id ];
-				if ( isset( $value ) ) {
-					$db_points->set( $this->group->id, $question->id, is_numeric( $value ) ? intval( $value ) : null );
-				}
+			$result = $this->review_component->handle_post( ResponseDao::QUESTION_FILTER_ALL, [ $this->group ] );
+
+			if ( $result['skipped'] > 0 ) {
+				AdminUtils::printError( sprintf(
+					'Kunde inte uppdatera poängen för %d frågor. Någon annan hann före.',
+					$result['skipped'] ) );
 			}
+			if ( count( $result['marked_as_reviewed'] ) > 0 ) {
+				AdminUtils::printSuccess( sprintf(
+					'Svar på %d frågor har markerats som kontrollerade.',
+					count( $result['marked_as_reviewed'] ) ) );
+			}
+
 		} elseif ( $_POST['tuja_points_action'] === 'move_people' ) {
 
 			if ( ! isset( $_POST['tuja_group_people'] ) || ! is_array( $_POST['tuja_group_people'] ) ) {
@@ -104,7 +110,8 @@ class Group {
 		$messages_manager = new MessagesManager($this->competition);
 		$messages_manager->handle_post();
 
-		$competition = $this->competition;
+		$competition      = $this->competition;
+		$review_component = $this->review_component;
 
 		$db_form           = new FormDao();
 		$forms             = $db_form->get_all_in_competition( $competition->id );
@@ -146,7 +153,7 @@ class Group {
 
 		$registration_evaluation = $group->evaluate_registration();
 
-		$groups                              = $db_groups->get_all_in_competition( $competition->id );
+		$groups = $db_groups->get_all_in_competition( $competition->id );
 
 		include( 'views/group.php' );
 	}

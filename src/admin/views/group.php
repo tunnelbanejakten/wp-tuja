@@ -40,89 +40,12 @@ AdminUtils::printTopMenu( $competition );
     </p>
 
 	<?php
-	$review_url = add_query_arg( array(
-		'tuja_view'                       => 'Review',
-		'tuja_competition'                => $this->competition->id,
-		Review::GROUP_FILTER_URL_PARAM      => FieldGroupSelector::to_key( $group ),
-		Review::QUESTION_FILTER_URL_PARAM => ResponseDao::QUESTION_FILTER_ALL
-	) );
-	printf( '<p><a href="%s">Visa frågor och svar</a></p>', $review_url );
+	$review_component->render(
+		ResponseDao::QUESTION_FILTER_ALL,
+		[$group],
+		false );
 	?>
 
-
-    <table class="tuja-admin-review">
-        <thead>
-        <tr>
-            <th colspan="2">Fråga</th>
-            <th>Rätt svar</th>
-            <th>Lagets svar</th>
-            <th colspan="2">Poäng</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>
-                <div class="spacer"></div>
-            </td>
-            <td colspan="5"></td>
-        </tr>
-
-        <?php
-        foreach ($forms as $form) {
-	        printf( '<tr class="tuja-admin-review-form-row"><td colspan="6"><strong>%s</strong></td></tr>', $form->name );
-			$questions = $db_question->get_all_in_form($form->id);
-			$current_group = '';
-
-            foreach ($questions as $question) {
-
-	            $calculated_score_without_override = isset( $score_result->questions[ $question->id ] )
-		            ? $score_result->questions[ $question->id ]->auto
-		            : 0;
-
-	            $response = isset( $response_per_question[ $question->id ] ) ? $response_per_question[ $question->id ] : null;
-                // TODO: Don't do "override" calculators both here and in ScoreCalculator. Only use the latter for all things related to score.
-                // Only set $points_override if the override points were set AFTER the most recent answer was created/submitted.
-	            $points_override = isset( $points_overrides_per_question[ $question->id ] ) && $points_overrides_per_question[ $question->id ] && ( ! $response || $points_overrides_per_question[ $question->id ]->created > $response->created )
-                    ? $points_overrides_per_question[$question->id]->points
-                    : '';
-
-				$score_class = $question->score_max > 0 ? AdminUtils::getScoreCssClass( $calculated_score_without_override / $question->score_max ) : '';
-				$q_group = $question_groups[ $question->question_group_id ]->text;
-
-				if($q_group !== $current_group) {
-					printf( '' .
-						'<tr class="tuja-admin-review-response-row question-group">' .
-						'  <td></td>' .
-						'  <td valign="top">%s</td>' .
-						'  <td valign="top" colspan="4"></td>' .
-						'</tr>',
-						$q_group
-					);
-					$current_group = $q_group;
-				}
-					
-	            printf( '' .
-					'<tr class="tuja-admin-review-response-row">' .
-					'  <td></td>' .
-                    '  <td valign="top">%s</td>' .
-                    '  <td valign="top">%s</td>' .
-                    '  <td valign="top">%s</td>' .
-                    '  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s p</span></td>' .
-                    '  <td valign="top"><input type="number" name="%s" value="%s" size="5" min="0" max="%d"> p</td>' .
-                    '</tr>',
-		            $question->text,
-		            $question->get_correct_answer_html(),
-		            $response ? $question->get_submitted_answer_html($response->submitted_answer, $group) : '',
-		            $score_class,
-                    $calculated_score_without_override,
-                    'tuja_group_points__' . $question->id,
-		            $points_override,
-		            $question->score_max ?: 1000 );
-            }
-        }
-        ?>
-        </tbody>
-    </table>
     <button class="button button-primary" type="submit" name="tuja_points_action" value="save">Spara</button>
 
     <h3>Deltagare</h3>

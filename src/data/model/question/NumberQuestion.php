@@ -78,6 +78,14 @@ class NumberQuestion extends AbstractQuestion {
 	}
 
 	function get_submitted_answer_html( $answer_object, Group $group ) {
-		return sprintf( '<var>%f</var>', $answer_object );
+		if ( ! isset( $answer_object ) || $answer_object == '' ) {
+			return AbstractQuestion::RESPONSE_MISSING_HTML;
+		}
+
+		if ( ! is_numeric( $answer_object ) ) {
+			return '<em>Har inte svarat med ett nummer.</em>';
+		}
+
+		return number_format( $answer_object, 2, ',', ' ' );
 	}
 }

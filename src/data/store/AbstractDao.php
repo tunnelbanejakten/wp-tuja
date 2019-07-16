@@ -51,7 +51,7 @@ class AbstractDao {
 		return $results;
 	}
 
-	protected static function to_db_date( DateTime $dateTime = null ) {
+	public static function to_db_date( DateTime $dateTime = null ) {
 		if ( $dateTime != null ) {
 			return $dateTime->getTimestamp(); // Unix timestamps are always UTC
 		} else {
@@ -59,7 +59,7 @@ class AbstractDao {
 		}
 	}
 
-	protected static function from_db_date( $dbDate ) {
+	public static function from_db_date( $dbDate ) {
 		if ( ! empty( $dbDate ) ) {
 			return new DateTimeImmutable( '@' . $dbDate, new DateTimeZone( 'UTC' ) );
 		} else {
