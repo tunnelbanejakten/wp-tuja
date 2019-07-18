@@ -3,8 +3,6 @@
 namespace tuja\util;
 
 use DateTime;
-use SimpleXMLElement;
-use XMLReader;
 
 class Message
 {
@@ -25,47 +23,55 @@ class SmsBackupRestoreXmlFileProcessor
         $this->date_limit = $date_limit;
     }
 
-    public function process($xml_file)
-    {
-        $res = array();
-        $reader = new XMLReader();
-        $reader->open($xml_file);
-        while ($reader->read()) {
-            if ($reader->name == 'mms') {
-                $mms_element = new SimpleXMLElement($reader->readOuterXml());
+	public function process( $xml_file ) {
+		$res = array();
 
-                $message_date = new DateTime("@" . substr($mms_element['date'], 0, 10));
+		$handle = fopen( $xml_file, "r" );
+		if ( $handle ) {
 
-                if (isset($this->date_limit) && $message_date < $this->date_limit) {
-                    continue;
-                }
-                // TODO: Group individual messages sent, say, less than 30 seconds apart in case groups send the image as one message and the description as another.
+			$message = null;
+			while ( ( $line = fgets( $handle ) ) !== false ) {
+				$lines_matches = [];
+				if ( preg_match( '/<mms date="([^"]*)" .* address="([^"]*)"/', $line, $lines_matches ) == 1 ) {
+					if ( ! empty( $lines_matches ) ) {
+						list ( , $timestamp, $phone_number ) = $lines_matches;
 
-                $image_parts = $mms_element->xpath("parts/part[@ct='image/jpeg']");
-                $is_image_included = !empty($image_parts);
+						// TODO: Group individual messages sent, say, less than 30 seconds apart in case groups send the image as one message and the description as another.
+						$message_date = new DateTime( "@" . substr( $timestamp, 0, 10 ) );
 
-                if ($is_image_included) {
-                    $message = new Message();
-                    $text_parts = $mms_element->xpath("parts/part[@ct='text/plain']");
-                    $message->from = Phone::fix_phone_number($mms_element['address']);
-                    $message->date = $message_date;
-                    foreach ($text_parts as $text_part) {
-                        $message->texts[] = $text_part['text'];
-                    }
-                    foreach ($image_parts as $image_part) {
-//                        $filename = $image_part['name'];
-                        $path = SmsBackupRestoreXmlFileProcessor::create_temp_file();
-                        file_put_contents($path, base64_decode($image_part['data']));
-//                        printf("%s, %d bytes\n", $path, filesize($path));
-                        $message->images[] = $path;
-                    }
-                    $res[] = $message;
-                }
-                unset($mms_element);
-            }
-        }
-        return $res;
-    }
+						if ( ! isset( $this->date_limit ) || $message_date >= $this->date_limit ) {
+							$message       = new Message();
+							$message->from = Phone::fix_phone_number( $phone_number );
+							$message->date = $message_date;
+							$res[]         = $message;
+						} else {
+							$message = null;
+						}
+					}
+				} elseif ( preg_match( '/<part .* ct="image\/[^"]*" .* data="([^"]*)"/', $line, $lines_matches ) == 1 ) {
+					if ( ! empty( $lines_matches ) && isset( $message ) ) {
+						list ( , $data ) = $lines_matches;
+						$path = SmsBackupRestoreXmlFileProcessor::create_temp_file();
+						file_put_contents( $path, base64_decode( $data ) );
+						$message->images[] = $path;
+					}
+				} elseif ( preg_match( '/<part .* ct="text\/plain" .* text="([^"]*)"/', $line, $lines_matches ) == 1 ) {
+					if ( ! empty( $lines_matches ) && isset( $message ) ) {
+						list ( , $text ) = $lines_matches;
+						$message->texts[] = $text;
+					}
+				}
+			}
+
+			fclose( $handle );
+		} else {
+			// error opening the file.
+		}
+
+		return array_filter( $res, function ( Message $message ) {
+			return count( $message->images ) > 0;
+		} );
+	}
 
     /**
      * Create a temporary file which will be delete by PHP itself once the script completes.
@@ -77,5 +83,3 @@ class SmsBackupRestoreXmlFileProcessor
         return stream_get_meta_data(tmpfile())['uri'];
     }
 }
-
-//(new SmsBackupRestoreXmlFileProcessor('.'))->process('../../messages.xml');

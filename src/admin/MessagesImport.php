@@ -73,11 +73,13 @@ class MessagesImport {
 
 					try {
 						$message = $this->import( $text_value, $image_value, $mms->from, $mms->date, $group_id );
-						printf('<p>Importerade bilderna %s med id=%s</p>',
-							join(', ', $message->image_ids),
-							$message->source_message_id);
+						AdminUtils::printSuccess(
+							sprintf( 'Importerade bilderna %s med id=%s för lag %s</p>',
+								join( ', ', $message->image_ids ),
+								$message->source_message_id,
+								$group_id ) );
 					} catch (Exception $e) {
-						printf('<p>Kunde inte importera: %s</p>', $e->getMessage());
+						AdminUtils::printError( sprintf( '<p>Kunde inte importera: %s</p>', $e->getMessage() ) );
 					}
 				}
 			}
