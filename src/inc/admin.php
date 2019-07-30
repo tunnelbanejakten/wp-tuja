@@ -27,6 +27,7 @@ class Admin extends Plugin {
 		if ( $screen->id === 'toplevel_page_tuja' ) {
 			wp_enqueue_script( 'tuja-admin-competition-settings', static::get_url() . '/assets/js/admin-competition-settings.js' );
 			wp_enqueue_script( 'tuja-admin-message-send', static::get_url() . '/assets/js/admin-message-send.js' );
+			wp_enqueue_script( 'tuja-admin-review-component', static::get_url() . '/assets/js/admin-review-component.js' );
 		}
 	}
 

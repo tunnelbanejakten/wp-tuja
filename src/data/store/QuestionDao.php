@@ -3,11 +3,13 @@
 namespace tuja\data\store;
 
 use Exception;
+use ReflectionClass;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\question\ImagesQuestion;
 use tuja\data\model\question\NumberQuestion;
 use tuja\data\model\question\OptionsQuestion;
 use tuja\data\model\question\TextQuestion;
+use tuja\data\model\Response;
 use tuja\data\model\ValidationException;
 use tuja\util\Database;
 
@@ -21,9 +23,10 @@ class QuestionDao extends AbstractDao
 	private static function get_answer_config( AbstractQuestion $question ) {
 		if ( $question instanceof TextQuestion ) {
 			return [
-				'score_max'  => $question->score_max,
-				'score_type' => $question->score_type,
-				'values'     => $question->correct_answers
+				'score_max'      => $question->score_max,
+				'score_type'     => $question->score_type,
+				'values'         => $question->correct_answers,
+				'invalid_values' => $question->incorrect_answers
 			];
 		} elseif ( $question instanceof OptionsQuestion ) {
 			return [

@@ -11,7 +11,15 @@ use tuja\view\Field;
 use tuja\view\FieldText;
 use tuja\view\FieldTextMulti;
 
+
 class TextQuestion extends AbstractQuestion {
+
+	/**
+	 * The lower limit for when an answer is considered correct.
+	 * 100 = only an exact match is accepted.
+	 * 0   = any answer is accepted.
+	 */
+	const THRESHOLD = 80;
 
 	// TODO: Properties should not have to be public
 	/**
@@ -23,6 +31,11 @@ class TextQuestion extends AbstractQuestion {
 	 * @tuja-gui-editable
 	 */
 	public $correct_answers = [];
+
+	/**
+	 * @tuja-gui-editable
+	 */
+	public $incorrect_answers = [];
 
 	/**
 	 * @tuja-gui-editable
@@ -84,12 +97,14 @@ class TextQuestion extends AbstractQuestion {
 	 * @param string $score_type
 	 * @param bool $is_single_answer
 	 * @param array $correct_answers
+	 * @param array $incorrect_answers
 	 */
-	public function __construct( $text, $text_hint = null, $id = 0, $question_group_id = 0, $sort_order = 0, $score_max = 0, $score_type = self::GRADING_TYPE_ONE_OF, $is_single_answer = true, $correct_answers = [] ) {
+	public function __construct( $text, $text_hint = null, $id = 0, $question_group_id = 0, $sort_order = 0, $score_max = 0, $score_type = self::GRADING_TYPE_ONE_OF, $is_single_answer = true, $correct_answers = [], $incorrect_answers = [] ) {
 		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max );
-		$this->is_single_answer = $is_single_answer;
-		$this->score_type       = $score_type;
-		$this->correct_answers  = $correct_answers;
+		$this->is_single_answer  = $is_single_answer;
+		$this->score_type        = $score_type;
+		$this->correct_answers   = $correct_answers;
+		$this->incorrect_answers = $incorrect_answers;
 	}
 
 	public function validate() {
@@ -107,21 +122,37 @@ class TextQuestion extends AbstractQuestion {
 			throw new Exception( 'Input must be an array. Was: ' . $answer_object );
 		}
 
-		$answers         = array_map( 'strtolower', $answer_object );
-		$correct_answers = array_map( 'strtolower', $this->correct_answers );
-		$is_ordered      = $this->score_type === self::GRADING_TYPE_ORDERED_PERCENT_OF;
+		$answers           = array_map( 'strtolower', $answer_object );
+		$correct_answers   = array_map( 'strtolower', $this->correct_answers );
+		$incorrect_answers = array_map( 'strtolower', $this->incorrect_answers );
+		$is_ordered        = $this->score_type === self::GRADING_TYPE_ORDERED_PERCENT_OF;
 
-		$correctness_percents = $this->calculate_correctness( $answers, $correct_answers, $is_ordered );
+		$correctness_percents = array_map(
+			function ( $correctness_percent, $incorrectness_percent ) {
+				if ( $incorrectness_percent > $correctness_percent ) {
+					// The answer is (mostly) INCORRECT since it is more similar to one of the
+					// INCORRECT values than one of the CORRECT ones.
+
+					// We need to "invert" the "correctness value" since the submitted answer is actually incorrect.
+					return 100 - $incorrectness_percent;
+				} else {
+					// The answer is (mostly) CORRECT since it is more similar to one of the
+					// CORRECT values than one of the INCORRECT ones.
+					return $correctness_percent;
+				}
+			},
+			$this->calculate_correctness( $answers, $correct_answers, $is_ordered ),
+			$this->calculate_correctness( $answers, $incorrect_answers, $is_ordered ) );
 
 		$count_correct_values = count( array_filter( $correctness_percents,
 			function ( $percent ) {
-				return $percent > 80;
+				return $percent > self::THRESHOLD;
 			} ) );
 
 		switch ( $this->score_type ) {
 			case self::GRADING_TYPE_ORDERED_PERCENT_OF:
 				$confidence = array_sum( array_map( function ( $percent ) {
-						return $percent > 80 ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
+						return $percent > self::THRESHOLD ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
 					}, $correctness_percents ) ) / count( $answers );
 
 				return new AutoScoreResult( round( $this->score_max / count( $this->correct_answers ) * $count_correct_values ), $confidence );
@@ -130,8 +161,10 @@ class TextQuestion extends AbstractQuestion {
 
 				return new AutoScoreResult( round( $this->score_max / count( $this->correct_answers ) * $count_correct_values ), $confidence );
 			case self::GRADING_TYPE_ONE_OF:
+				// TODO: Should multiple answers be allowed?
+				// TODO: Should we really use the average confidence here?
 				$confidence = array_sum( array_map( function ( $percent ) {
-						return $percent > 80 ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
+						return $percent > self::THRESHOLD ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
 					}, $correctness_percents ) ) / count( $answers );
 
 				return $count_correct_values > 0
@@ -140,7 +173,7 @@ class TextQuestion extends AbstractQuestion {
 			case self::GRADING_TYPE_ALL_OF:
 				if ( count( $answers ) == count( $correct_answers ) ) {
 					$confidence = array_sum( array_map( function ( $percent ) {
-							return $percent > 80 ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
+							return $percent > self::THRESHOLD ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
 						}, $correctness_percents ) ) / count( $answers );
 					$correct = $count_correct_values == count( $correct_answers );
 
@@ -185,6 +218,14 @@ class TextQuestion extends AbstractQuestion {
 	}
 
 	function get_correct_answer_html() {
-		return join( '<br>', $this->correct_answers );
+		return join(
+			'<br>',
+			array_merge(
+				$this->correct_answers,
+				array_map(
+					function ( $value ) {
+						return sprintf( '<del>%s</del>', $value );
+					},
+					$this->incorrect_answers ) ) );
 	}
 }

@@ -82,7 +82,8 @@ class AbstractDao {
 					@$config['score_max'],
 					@$config['score_type'],
 					$result->type == self::QUESTION_TYPE_TEXT,
-					@$config['values'] );
+					@$config['values'] ?: [],
+					@$config['invalid_values'] ?: []);
 
 				return $q;
 			case self::QUESTION_TYPE_PICK_ONE:

@@ -8,18 +8,19 @@ use tuja\data\model\question\TextQuestion;
 
 function assert_score( $question, $answer, $expected_score, $expected_confidence = null ) {
 	$actual = $question->score( $answer );
-	assert( $actual->score == $expected_score );
+	if ( $actual->score !== $expected_score ) {
+		printf( "%s: 💥 Got score %f but expected %f for input %s\n", $question->text, $actual->score, $expected_score, join( ', ', $answer ) );
+	}
 	if ( isset( $expected_confidence ) ) {
 		$confidence_check = $expected_confidence - 0.1 <= $actual->confidence && $actual->confidence <= $expected_confidence + 0.1;
 		if ( ! $confidence_check ) {
-			printf( '💥 Got %f but expected %f (±10%%) for input %s', $actual->confidence, $expected_confidence, join( ', ', $answer ) );
+			printf( "%s: 💥 Got %f but expected %f (±10%%) for input %s\n", $question->text, $actual->confidence, $expected_confidence, join( ', ', $answer ) );
 		}
-		assert( $confidence_check );
 	}
 }
 
 $question = new TextQuestion(
-	null,
+	'Testing one-of grading type',
 	null,
 	0,
 	0,
@@ -41,7 +42,29 @@ assert_score( $question, [ 'carol' ], 0, 0.8 );
 assert_score( $question, [ 'trudy' ], 0, 1.0 );
 
 $question = new TextQuestion(
+	'Boat or ship?',
 	null,
+	0,
+	0,
+	0,
+	10,
+	TextQuestion::GRADING_TYPE_ONE_OF,
+	true,
+	[ 'boat', 'ship' ],
+	[ 'ball', 'sharp' ] );
+
+assert_score( $question, [ 'boat' ], 10, 1.0 );
+assert_score( $question, [ 'booat' ], 10, 0.8 );
+assert_score( $question, [ 'bloat' ], 10, 0.8 );
+assert_score( $question, [ 'ball' ], 0, 1.0 );
+assert_score( $question, [ 'bold' ], 0, 0.6 );
+assert_score( $question, [ 'ship' ], 10, 1.0 );
+assert_score( $question, [ 'shop' ], 0, 0.3 );
+assert_score( $question, [ 'shape' ], 0, 0.8 );
+assert_score( $question, [ 'sharp' ], 0, 1.0 );
+
+$question = new TextQuestion(
+	'Testing ordered-precent-of grading type',
 	null,
 	0,
 	0,
@@ -61,7 +84,7 @@ assert_score( $question, [ 'helsinki', 'stockholm', 'copenhagen', 'oslo' ], 0, 0
 assert_score( $question, [ '', '', '', '' ], 0, 1.0 );
 
 $question = new TextQuestion(
-	null,
+	'Testing unordered-percent-of grading type',
 	null,
 	0,
 	0,
@@ -81,7 +104,7 @@ assert_score( $question, [ 'helsinki', 'reykjavik', 'stockholm', 'copenhagen', '
 assert_score( $question, [ 'Stockholm', 'copenhaven', 'Oslo', 'helsinky', 'berlin' ], 8, 0.9 ); // Incorrect answers are ignored.
 
 $question = new TextQuestion(
-	null,
+	'Testing all-of grading type',
 	null,
 	0,
 	0,

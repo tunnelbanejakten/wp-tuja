@@ -226,31 +226,37 @@ class ResponseDao extends AbstractDao
 
 		$entries = $this->get_objects(
 			function ( $row ) {
-				return [
-					'question' => self::to_form_question(
+				$question = self::to_form_question(
 						(object) array_combine(
 							self::TABLE_COLUMNS_QUESTIONS,
 							array_map( function ( $column_name ) use ( $row ) {
 								return $row->{'q_' . $column_name};
 							}, self::TABLE_COLUMNS_QUESTIONS )
 						)
-					),
-					'response' => $row->r_id != null ? self::to_response(
+				);
+
+				$response = $row->r_id != null ? self::to_response(
 						(object) array_combine(
 							self::TABLE_COLUMNS_RESPONSES,
 							array_map( function ( $column_name ) use ( $row ) {
 								return $row->{'r_' . $column_name};
 							}, self::TABLE_COLUMNS_RESPONSES )
 						)
-					) : null,
-					'form'     => self::to_form(
+				) : null;
+
+				$form = self::to_form(
 						(object) array_combine(
 							self::TABLE_COLUMNS_FORMS,
 							array_map( function ( $column_name ) use ( $row ) {
 								return $row->{'f_' . $column_name};
 							}, self::TABLE_COLUMNS_FORMS )
 						)
-					)
+				);
+
+				return [
+					'question' => $question,
+					'response' => $response,
+					'form'     => $form
 				];
 			},
 			$query );

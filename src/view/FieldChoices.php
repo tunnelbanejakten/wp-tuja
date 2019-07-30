@@ -29,7 +29,7 @@ class FieldChoices extends Field
 			return [];
 		} else {
 			if ( $this->is_multichoice ) {
-				return $user_answer;
+				return $user_answer; // TODO: Why not an array?
 			} else {
 				return [ $user_answer ];
 			}

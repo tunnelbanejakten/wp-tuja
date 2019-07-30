@@ -74,7 +74,7 @@ class NumberQuestion extends AbstractQuestion {
 	}
 
 	function get_correct_answer_html() {
-		return $this->correct_answer;
+		return number_format_i18n( $this->correct_answer );
 	}
 
 	function get_submitted_answer_html( $answer_object, Group $group ) {
@@ -86,6 +86,6 @@ class NumberQuestion extends AbstractQuestion {
 			return '<em>Har inte svarat med ett nummer.</em>';
 		}
 
-		return number_format( $answer_object, 2, ',', ' ' );
+		return number_format_i18n( $answer_object );
 	}
 }

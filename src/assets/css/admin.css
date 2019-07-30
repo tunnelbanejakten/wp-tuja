@@ -219,3 +219,19 @@ span.tuja-admin-review-autoscore.tuja-admin-review-autoscore-decent {
     font-style: italic;
     color: #aaa;
 }
+
+div.tuja-admin-review-change-autoscore-container span.tuja-admin-review-corrected-autoscore {
+    display: none;
+}
+
+div.tuja-admin-review-change-autoscore-container span.tuja-admin-review-original-autoscore {
+    display: inline;
+}
+
+div.tuja-admin-review-change-autoscore-container.tuja-admin-review-autoscore-changed span.tuja-admin-review-corrected-autoscore {
+    display: inline;
+}
+
+div.tuja-admin-review-change-autoscore-container.tuja-admin-review-autoscore-changed span.tuja-admin-review-original-autoscore {
+    display: none;
+}
