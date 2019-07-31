@@ -44,6 +44,7 @@ class AdminUtils
 			'CompetitionSettings' => 'Inställningar',
 			'Review'              => 'Svar att rätta',
 			'Messages'            => 'Meddelanden',
+			'Reports'             => 'Rapporter',
 			'Shortcodes'          => 'Shortcodes'
 		];
 

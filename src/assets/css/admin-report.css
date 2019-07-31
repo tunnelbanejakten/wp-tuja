@@ -1,0 +1,35 @@
+body {
+    background-color: white;
+    color: black;
+}
+
+h1, h2, p, div {
+    margin: 1rem;
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 1rem 0rem;
+    width: 100%;
+}
+
+td, th {
+    text-align: left;
+    padding: 0.3rem 1rem 0.3rem 0rem;
+    vertical-align: middle;
+}
+
+tr.print-form td {
+    height: 2.5rem;
+    vertical-align: bottom;
+}
+
+td.write-line {
+    border-bottom: 0.05rem solid black;
+}
+
+@media print {
+    div.hide-on-print {
+        display: none;
+    }
+}
