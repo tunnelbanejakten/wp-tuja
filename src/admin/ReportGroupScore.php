@@ -25,7 +25,7 @@ class ReportGroupScore extends AbstractReport {
 		} ) );
 	}
 
-	function output_html( array $rows ): array {
+	function output_html( array $rows ) {
 		$groups = $rows;
 		include( 'views/report-groupscore.php' );
 	}

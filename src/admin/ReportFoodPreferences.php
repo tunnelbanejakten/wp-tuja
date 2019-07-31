@@ -28,7 +28,7 @@ class ReportFoodPreferences extends AbstractReport {
 		return $rows;
 	}
 
-	function output_html( array $rows ): array {
+	function output_html( array $rows ) {
 		$summary_config = [
 			'Gluten'         => [ 'gluten' ],
 			'Laktos'         => [ 'laktos' ],

@@ -14,7 +14,7 @@ abstract class AbstractReport {
 
 	abstract function get_rows(): array;
 
-	abstract function output_html( array $rows ): array;
+	abstract function output_html( array $rows );
 
 	public function output() {
 		if ( ! $this->competition ) {

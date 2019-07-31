@@ -9,8 +9,19 @@ AdminUtils::printTopMenu( $competition );
 	<?php foreach ( $reports as $report ) { ?>
         <tr>
             <td><?= $report['name'] ?></td>
-            <td><a href="<?= $report['html_url'] ?>" class="thickbox" target="_blank">HTML</a></td>
-            <td><a href="<?= $report['csv_url'] ?>">CSV</a></td>
+            <td>
+                <a href="<?= $report['html_url'] ?>"
+                   title="<?= htmlspecialchars( $report['name'] ) ?>"
+                   class="thickbox"
+                   target="_blank">
+                    HTML
+                </a>
+            </td>
+            <td>
+                <a href="<?= $report['csv_url'] ?>">
+                    CSV
+                </a>
+            </td>
         </tr>
 	<?php } ?>
     </tbody>
