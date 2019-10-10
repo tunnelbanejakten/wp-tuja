@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "tuja_reports_date": {
+      "title": "Datum",
+      "type": "integer",
+      "format": "date"
+    },
+    "tuja_reports_fee_competing": {
+      "title": "Avgift för tävlande",
+      "type": "integer",
+      "format": "number"
+    }
+  }
+}

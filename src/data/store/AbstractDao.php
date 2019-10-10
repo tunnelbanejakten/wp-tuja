@@ -2,7 +2,7 @@
 
 namespace tuja\data\store;
 
-use DateTime;
+use DateTimeInterface;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
@@ -51,7 +51,7 @@ class AbstractDao {
 		return $results;
 	}
 
-	public static function to_db_date( DateTime $dateTime = null ) {
+	public static function to_db_date( DateTimeInterface $dateTime = null ) {
 		if ( $dateTime != null ) {
 			return $dateTime->getTimestamp(); // Unix timestamps are always UTC
 		} else {

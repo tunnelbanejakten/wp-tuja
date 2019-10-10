@@ -51,7 +51,8 @@ class Reports {
 		$reports = [
 			$this->report_config( ReportCheckInOut::class, 'In- och utcheckning' ),
 			$this->report_config( ReportFoodPreferences::class, 'Matallergier och preferenser' ),
-			$this->report_config( ReportGroupScore::class, 'Poängformulär' )
+			$this->report_config( ReportGroupScore::class, 'Poängformulär' ),
+			$this->report_config( ReportPayments::class, 'Förväntade inbetalningar' )
 		];
 
 		include( 'views/reports.php' );
