@@ -4,25 +4,27 @@ namespace tuja\admin;
 AdminUtils::printTopMenu( $competition );
 ?>
 
-<table>
-    <tbody>
-	<?php foreach ( $reports as $report ) { ?>
-        <tr>
-            <td><?= $report['name'] ?></td>
-            <td>
-                <a href="<?= $report['html_url'] ?>"
-                   title="<?= htmlspecialchars( $report['name'] ) ?>"
-                   class="thickbox"
-                   target="_blank">
-                    HTML
+<?php foreach ( $reports as $report ) { ?>
+    <h3><?= $report['name'] ?></h3>
+    <div>
+        <?php
+        if ( $report['options_schema'] !== false ) {
+            printf( '<div class="tuja-admin-report-config" data-options-schema="%s"></div>', htmlentities( $report['options_schema'] ) );
+        }
+        ?>
+        <div class="tuja-buttons">
+            <a href="<?= $report['html_url'] ?>"
+               data-original-href="<?= $report['html_url'] ?>"
+               title="<?= htmlspecialchars( $report['name'] ) ?>"
+               class="thickbox button button-primary"
+               target="_blank">
+                Visa
                 </a>
-            </td>
-            <td>
-                <a href="<?= $report['csv_url'] ?>">
-                    CSV
+            <a href="<?= $report['csv_url'] ?>"
+               data-original-href="<?= $report['csv_url'] ?>"
+               class="button">
+                Ladda ner som CSV-fil
                 </a>
-            </td>
-        </tr>
-	<?php } ?>
-    </tbody>
-</table>
+        </div>
+    </div>
+<?php } ?>

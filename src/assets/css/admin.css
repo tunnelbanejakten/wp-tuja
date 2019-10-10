@@ -235,3 +235,17 @@ div.tuja-admin-review-change-autoscore-container.tuja-admin-review-autoscore-cha
 div.tuja-admin-review-change-autoscore-container.tuja-admin-review-autoscore-changed span.tuja-admin-review-original-autoscore {
     display: none;
 }
+
+div.tuja-admin-report-config h3 {
+    display: none;
+}
+
+div.tuja-admin-report-config > div > div {
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+div.tuja-admin-report-config label {
+    font-weight: normal !important;
+}

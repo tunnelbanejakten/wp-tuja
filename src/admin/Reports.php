@@ -21,11 +21,11 @@ class Reports {
 		}
 	}
 
-	private function get_report_url( $report_class_name, $format ) {
+	private function get_report_url( $short_name, $format ) {
 		return add_query_arg( array(
 			'action'             => 'tuja_report',
 			'tuja_competition'   => $this->competition->id,
-			'tuja_view'          => substr( $report_class_name, strrpos( $report_class_name, '\\' ) + 1 ),
+			'tuja_view'          => $short_name,
 			'tuja_report_format' => $format,
 			'TB_iframe'          => 'true',
 			'width'              => '900',
@@ -34,10 +34,13 @@ class Reports {
 	}
 
 	private function report_config( $class_name, $name ) {
+		$short_name     = substr( $class_name, strrpos( $class_name, '\\' ) + 1 );
+		$options_schema = file_get_contents( __DIR__ . '/' . $short_name . '.config.json' );
 		return [
-			'name'     => $name,
-			'csv_url'  => $this->get_report_url( $class_name, 'csv' ),
-			'html_url' => $this->get_report_url( $class_name, 'html' )
+			'name'           => $name,
+			'csv_url'        => $this->get_report_url( $short_name, 'csv' ),
+			'html_url'       => $this->get_report_url( $short_name, 'html' ),
+			'options_schema' => $options_schema
 		];
 	}
 
