@@ -42,7 +42,9 @@ class GroupDao extends AbstractDao {
 
 		$group->id = $this->wpdb->insert_id;
 
-		$success = $this->add_record( $group, Group::STATUS_CREATED );
+		$group->set_status( Group::STATUS_CREATED );
+
+		$success = $this->add_record( $group );
 
 		return $success ? $group->id : false;
 	}
@@ -59,27 +61,27 @@ class GroupDao extends AbstractDao {
 			) );
 
 		if ( $success !== false ) {
-			$success = $this->add_record( $group, Group::STATUS_CREATED );
+			$success = $this->add_record( $group );
 		}
 
 		return $success;
 	}
 
-	private function add_record( Group $group, $status = Group::STATUS_CREATED ) {
+	private function add_record( Group $group ) {
 		$affected_rows = $this->wpdb->insert( $this->props_table,
 			array(
 				'team_id'    => $group->id,
 				'created_at' => self::to_db_date( new DateTime() ),
-				'status'     => $status,
 
+				'status'      => $group->get_status(),
 				'name'        => $group->name,
 				'category_id' => $group->category_id
 			),
 			array(
 				'%d',
 				'%d',
-				'%s',
 
+				'%s',
 				'%s',
 				'%d'
 			) );
@@ -145,6 +147,7 @@ class GroupDao extends AbstractDao {
 		$g->category_id        = $result->category_id;
 		$g->competition_id     = $result->competition_id;
 		$g->is_always_editable = $result->is_always_editable;
+		$g->set_status( $result->status );
 
 		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, $date );
 		$people_competing          = array_filter( $people, function ( Person $person ) {
