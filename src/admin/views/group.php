@@ -10,6 +10,19 @@ AdminUtils::printTopMenu( $competition );
 <form method="post" action="<?= add_query_arg() ?>" class="tuja">
     <h3>Grupp <?= htmlspecialchars($group->name) ?> (id: <code><?= htmlspecialchars($group->random_id) ?></code>)</h3>
 
+    <h3>Status</h3>
+
+    <p>Aktuell status: <em><?= $group->get_status() ?></em>.</p>
+    <p>Ändra status:</p>
+    <div class="tuja-buttons">
+	<?= join( array_map( function ( $allowed_next_state ) {
+		return sprintf(
+			'<button class="button" type="submit" name="tuja_points_action" value="transition__%s">%s</button>',
+			$allowed_next_state,
+			$allowed_next_state );
+	}, \tuja\data\model\Group::STATUS_TRANSITIONS[ $group->get_status() ] ) ) ?>
+    </div>
+
     <h3>Svar och poäng</h3>
     <p>
         <strong>Totalt <?= $score_result->total_final ?> poäng.</strong>

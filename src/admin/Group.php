@@ -53,7 +53,9 @@ class Group {
 			return;
 		}
 
-		if ( $_POST['tuja_points_action'] === 'save' ) {
+		list( $action, $parameter ) = explode( '__', $_POST['tuja_points_action'] );
+
+		if ( $action === 'save' ) {
 
 			$result = $this->review_component->handle_post(
 				$_GET[ self::QUESTION_FILTER_URL_PARAM ] ?: self::DEFAULT_QUESTION_FILTER,
@@ -70,7 +72,23 @@ class Group {
 					count( $result['marked_as_reviewed'] ) ) );
 			}
 
-		} elseif ( $_POST['tuja_points_action'] === 'move_people' ) {
+		} elseif ( $action === 'transition' ) {
+
+			$this->group->set_status( $parameter );
+
+			$success = $this->group_dao->update( $this->group );
+
+			if ( $success ) {
+				AdminUtils::printSuccess( sprintf(
+					'Status har ändrats till %s.',
+					$this->group->get_status() ) );
+			} else {
+				AdminUtils::printError( sprintf(
+					'Kunde inte ändra till %s.',
+					$parameter ) );
+			}
+
+		} elseif ( $action === 'move_people' ) {
 
 			if ( ! isset( $_POST['tuja_group_people'] ) || ! is_array( $_POST['tuja_group_people'] ) ) {
 				AdminUtils::printError( 'No people choosen.' );
