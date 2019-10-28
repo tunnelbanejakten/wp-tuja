@@ -70,7 +70,7 @@ class Group
 	public $count_competing;
 	public $count_follower;
 	public $count_team_contact;
-	public $is_always_editable;
+	public $is_always_editable = false;
 
 	public function validate() {
 		if ( strlen(trim($this->name)) < 1) {
@@ -79,8 +79,8 @@ class Group
 		if ( strlen($this->name) > 100) {
 			throw new ValidationException('name', 'Namnet får inte vara längre än 100 bokstäver.');
 		}
-		if ( ! in_array( $this->get_status(), array_keys( self::STATUS_TRANSITIONS ) ) ) {
-			throw new ValidationException( 'name', 'Ogiltig status.' );
+		if ( $this->get_status() !== null && ! in_array( $this->get_status(), array_keys( self::STATUS_TRANSITIONS ) ) ) {
+			throw new ValidationException( 'status', 'Ogiltig status.' );
 		}
 	}
 

@@ -14,11 +14,8 @@ class Competition
     public $edit_group_end;
     public $event_start;
     public $event_end;
-    public $message_template_id_new_group_admin;
-    public $message_template_id_new_group_reporter;
-    public $message_template_id_new_crew_member;
-    public $message_template_id_new_noncrew_member;
 
+	public $initial_group_status;
     public function validate()
     {
         if (strlen(trim($this->name)) < 1) {
@@ -36,6 +33,13 @@ class Competition
         if ($this->event_start !== null && $this->event_end !== null && $this->event_start->diff($this->event_end)->invert == 1) {
             throw new ValidationException('edit_group_end', 'Tävlingen måste sluta efter att den börjar.');
         }
+	    if ( $this->initial_group_status !== null && ! in_array( $this->initial_group_status, self::allowed_initial_statuses() ) ) {
+		    throw new ValidationException( 'initial_group_status', 'Nya grupper kan bara ha en av följande statusar: ' . join( ', ', self::allowed_initial_statuses() ) );
+	    }
     }
+
+	public static function allowed_initial_statuses() {
+		return array_merge( [ Group::STATUS_CREATED ], Group::STATUS_TRANSITIONS[ Group::STATUS_CREATED ] );
+	}
 
 }

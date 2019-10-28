@@ -23,10 +23,7 @@ class CompetitionDao extends AbstractDao
 				'edit_group_end'                      => self::to_db_date($competition->edit_group_end),
 				'event_start'                         => self::to_db_date( $competition->event_start ),
 				'event_end'                           => self::to_db_date( $competition->event_end ),
-				'message_template_new_team_admin'     => $competition->message_template_id_new_group_admin,
-				'message_template_new_team_reporter'  => $competition->message_template_id_new_group_reporter,
-				'message_template_new_crew_member'    => $competition->message_template_id_new_crew_member,
-				'message_template_new_noncrew_member' => $competition->message_template_id_new_noncrew_member
+				'initial_group_status'                => $competition->initial_group_status
 			),
 			array(
 				'%s',
@@ -37,10 +34,7 @@ class CompetitionDao extends AbstractDao
 				'%d',
 				'%d',
 				'%d',
-				'%d',
-				'%d',
-				'%d',
-				'%d'
+				'%s'
 			));
 		$success       = $affected_rows !== false && $affected_rows === 1;
 
@@ -59,10 +53,7 @@ class CompetitionDao extends AbstractDao
 				'edit_group_end'                      => self::to_db_date($competition->edit_group_end),
 				'event_start'                         => self::to_db_date( $competition->event_start ),
 				'event_end'                           => self::to_db_date( $competition->event_end ),
-				'message_template_new_team_admin'     => $competition->message_template_id_new_group_admin,
-				'message_template_new_team_reporter'  => $competition->message_template_id_new_group_reporter,
-				'message_template_new_crew_member'    => $competition->message_template_id_new_crew_member,
-				'message_template_new_noncrew_member' => $competition->message_template_id_new_noncrew_member
+				'initial_group_status'                => $competition->initial_group_status
 			),
 			array(
 				'id' => $competition->id
@@ -97,10 +88,7 @@ class CompetitionDao extends AbstractDao
 		$c->edit_group_end                         = self::from_db_date($result->edit_group_end);
 		$c->event_start                            = self::from_db_date( $result->event_start );
 		$c->event_end                              = self::from_db_date( $result->event_end );
-		$c->message_template_id_new_group_admin    = $result->message_template_new_team_admin;
-		$c->message_template_id_new_group_reporter = $result->message_template_new_team_reporter;
-		$c->message_template_id_new_crew_member    = $result->message_template_new_crew_member;
-		$c->message_template_id_new_noncrew_member = $result->message_template_new_noncrew_member;
+		$c->initial_group_status                   = $result->initial_group_status;
 
 		return $c;
 	}

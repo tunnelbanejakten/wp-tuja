@@ -7,6 +7,7 @@ use tuja\data\model\ValidationException;
 use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
+use tuja\util\messaging\EventMessageSender;
 use tuja\util\Recaptcha;
 use tuja\util\rules\RuleEvaluationException;
 
@@ -170,11 +171,9 @@ class CreateGroupShortcode extends AbstractGroupShortcode
 
 					$group = $this->group_dao->get( $new_group_id );
 
-					$this->send_group_welcome_mail( $group, $new_person );
-
-					$admin_email = get_option( 'admin_email' );
-					if ( ! empty( $admin_email ) ) {
-						$this->send_group_admin_mail( $admin_email, $group, $new_person );
+					if ( $this->competition->initial_group_status !== null ) {
+						$group->set_status( $this->competition->initial_group_status );
+						$this->group_dao->update( $group );
 					}
 
 					return $group;
@@ -186,28 +185,6 @@ class CreateGroupShortcode extends AbstractGroupShortcode
 			}
 		} else {
 			throw new Exception( 'Kunde inte anmäla laget.' );
-		}
-	}
-
-	private function send_group_welcome_mail( Group $group, Person $person ) {
-		$template_id = $this->competition->message_template_id_new_group_reporter;
-		if ( isset( $template_id ) ) {
-			$this->send_template_mail(
-				$person->email,
-				$template_id,
-				$group,
-				$person );
-		}
-	}
-
-	private function send_group_admin_mail( $admin_email, Group $group, Person $person ) {
-		$template_id = $this->competition->message_template_id_new_group_admin;
-		if ( isset( $template_id ) ) {
-			$this->send_template_mail(
-				$admin_email,
-				$template_id,
-				$group,
-				$person );
 		}
 	}
 }

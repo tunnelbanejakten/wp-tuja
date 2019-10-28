@@ -12,8 +12,7 @@ AdminUtils::printTopMenu( $competition );
     <div class="nav-tab-wrapper">
         <a class="nav-tab nav-tab-active" data-tab-id="tuja-tab-dates">Datum och tider</a>
         <a class="nav-tab" data-tab-id="tuja-tab-messagetemplates">Meddelandemallar</a>
-        <a class="nav-tab" data-tab-id="tuja-tab-sendouts">Automatiska utskick</a>
-        <a class="nav-tab" data-tab-id="tuja-tab-groupcategories">Typer av grupper</a>
+        <a class="nav-tab" data-tab-id="tuja-tab-groups">Grupper</a>
     </div>
 
     <div class="tuja-tab" id="tuja-tab-dates">
@@ -84,73 +83,28 @@ AdminUtils::printTopMenu( $competition );
         <br>
         <?= $default_message_templates ?>
     </div>
-    <div class="tuja-tab" id="tuja-tab-sendouts">
+    <div class="tuja-tab" id="tuja-tab-groups">
+
+        <h4>Nya grupper</h4>
+
         <div>
-            <label for="tuja_competition_settings_message_template_id_new_group_admin">
-                Ny grupp anmäld (e-post till tävlingsledningen):
+            <label for="tuja_competition_settings_initial_group_status">
+                Status för nya grupper:
             </label><br>
-            <select name="tuja_competition_settings_message_template_id_new_group_admin"
-                    id="tuja_competition_settings_message_template_id_new_group_admin">
-                <option value="">Ej valt - utskick inaktiverat</option>
-	            <?= join( '', array_map( function ( $template ) use ( $competition ) {
-		            return sprintf( '<option value="%s" %s>%s</option>',
-			            $template->id,
-			            $template->id == $competition->message_template_id_new_group_admin ? 'selected="selected"' : '',
-			            $template->name
-		            );
-	            }, $message_templates ) ) ?>
+            <select name="tuja_competition_settings_initial_group_status"
+                    id="tuja_competition_settings_initial_group_status">
+			    <?= join( '', array_map( function ( $status ) use ( $competition ) {
+				    return sprintf( '<option value="%s" %s>%s</option>',
+					    $status,
+					    $status == $competition->initial_group_status ? 'selected="selected"' : '',
+					    $status
+				    );
+			    }, \tuja\data\model\Competition::allowed_initial_statuses() ) ) ?>
             </select>
         </div>
-        <div>
-            <label for="tuja_competition_settings_message_template_id_new_group_reporter">
-                Ny grupp anmäld (e-post till den som anmäler):
-            </label><br>
-            <select name="tuja_competition_settings_message_template_id_new_group_reporter"
-                    id="tuja_competition_settings_message_template_id_new_group_reporter">
-                <option value="">Ej valt - utskick inaktiverat</option>
-	            <?= join( '', array_map( function ( $template ) use ( $competition ) {
-		            return sprintf( '<option value="%s" %s>%s</option>',
-			            $template->id,
-			            $template->id == $competition->message_template_id_new_group_reporter ? 'selected="selected"' : '',
-			            $template->name
-		            );
-	            }, $message_templates ) ) ?>
-            </select>
-        </div>
-        <div>
-            <label for="tuja_competition_settings_message_template_id_new_crew_member">
-                Ny person anmäler sig själv till funktionärslag (e-post):
-            </label><br>
-            <select name="tuja_competition_settings_message_template_id_new_crew_member"
-                    id="tuja_competition_settings_message_template_id_new_crew_member">
-                <option value="">Ej valt - utskick inaktiverat</option>
-	            <?= join( '', array_map( function ( $template ) use ( $competition ) {
-		            return sprintf( '<option value="%s" %s>%s</option>',
-			            $template->id,
-			            $template->id == $competition->message_template_id_new_crew_member ? 'selected="selected"' : '',
-			            $template->name
-		            );
-	            }, $message_templates ) ) ?>
-            </select>
-        </div>
-        <div>
-            <label for="tuja_competition_settings_message_template_id_new_noncrew_member">
-                Ny person anmäler sig själv till deltagarlag (e-post):
-            </label><br>
-            <select name="tuja_competition_settings_message_template_id_new_noncrew_member"
-                    id="tuja_competition_settings_message_template_id_new_noncrew_member">
-                <option value="">Ej valt - utskick inaktiverat</option>
-	            <?= join( '', array_map( function ( $template ) use ( $competition ) {
-		            return sprintf( '<option value="%s" %s>%s</option>',
-			            $template->id,
-			            $template->id == $competition->message_template_id_new_noncrew_member ? 'selected="selected"' : '',
-			            $template->name
-		            );
-	            }, $message_templates ) ) ?>
-            </select>
-        </div>
-    </div>
-    <div class="tuja-tab" id="tuja-tab-groupcategories">
+
+        <h4>Grupptyper</h4>
+
         <p>
             Grupptyper gör det möjligt att hantera flera tävlingsklasser och att skilja på tävlande och funktionärer.
         </p>
