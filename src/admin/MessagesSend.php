@@ -4,6 +4,7 @@ namespace tuja\admin;
 
 use Exception;
 use tuja\data\model\Group;
+use tuja\data\model\MessageTemplate;
 use tuja\data\model\Person;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
@@ -42,7 +43,7 @@ class MessagesSend {
 	}
 
 
-	public function handle_post( $people_selectors, $delivery_methods ) {
+	public function handle_post( $people_selectors ) {
 		if ( ! isset( $_POST['tuja_messages_action'] ) ) {
 			return [];
 		}
@@ -53,7 +54,6 @@ class MessagesSend {
 		if ( $is_preview || $is_send ) {
 			$selected_groups = $this->field_group_selector->get_selected_groups( @$_POST['tuja_messages_group_selector'] );
 			$people_selector = $people_selectors[ $_POST['tuja_messages_people_selector'] ];
-			$delivery_method = $delivery_methods[ $_POST['tuja_messages_delivery_method'] ];
 			if ( ! empty( $selected_groups ) && isset( $people_selector ) && isset( $delivery_method ) ) {
 
 				$warnings   = [];
@@ -69,18 +69,21 @@ class MessagesSend {
 					$people        = array_merge( $people, $group_members );
 				}
 
-				$body_template    = Template::string( $_POST['tuja_messages_body'] );
-				$subject_template = Template::string( $_POST['tuja_messages_subject'] );
+				$message_template                  = new MessageTemplate();
+				$message_template->body            = $_POST['tuja_messages_body'];
+				$message_template->subject         = $_POST['tuja_messages_subject'];
+				$message_template->delivery_method = $_POST['tuja_messages_delivery_method'];
 
+				$body_template    = Template::string( $message_template->body );
+				$subject_template = Template::string( $message_template->subject );
 				$variables = array_merge( $body_template->get_variables(), $subject_template->get_variables() );
 
-				$recipients_data = array_map( function ( $person ) use ( $delivery_method, $variables, $selected_groups, $subject_template, $body_template, $is_send ) {
+				$recipients_data = array_map( function ( $person ) use ( $delivery_method, $variables, $selected_groups, $subject_template, $body_template, $is_send, $message_template ) {
 					$group               = reset( array_filter( $selected_groups, function ( $grp ) use ( $person ) {
 						return $grp->id == $person->group_id;
 					} ) );
 					$template_parameters = $this->get_parameters( $person, $group );
-					$message_generator   = $delivery_method['message_generator'];
-					$outgoing_message    = $message_generator( $person, $subject_template, $body_template, $template_parameters );
+					$outgoing_message    = $message_template->to_message( $person, $template_parameters );
 					$message             = 'OK';
 					$message_css_class   = 'tuja-admin-review-autoscore-good';
 					$success             = false;
@@ -159,31 +162,7 @@ class MessagesSend {
 			$people_selectors['specific'] = self::get_specific_recipient_option( $specific_recipients );
 		}
 
-		$delivery_methods = array(
-			'sms'   => array(
-				'label'              => 'SMS',
-				'message_generator'  => function ( Person $person, $subject_template, $body_template, $template_parameters ) {
-					return new OutgoingSMSMessage(
-						new MessageSender(),
-						$person,
-						$body_template->render( $template_parameters ) );
-				},
-				'is_plain_text_body' => true
-			),
-			'email' => array(
-				'label'              => 'E-post',
-				'message_generator'  => function ( Person $person, $subject_template, $body_template, $template_parameters ) {
-					return new OutgoingEmailMessage(
-						new MessageSender(),
-						$person,
-						$body_template->render( $template_parameters, true ),
-						$subject_template->render( $template_parameters ) );
-				},
-				'is_plain_text_body' => false
-			)
-		);
-
-		$action_result = $this->handle_post( $people_selectors, $delivery_methods );
+		$action_result = $this->handle_post( $people_selectors );
 
 		if ( ! empty( $action_result['retry_people_ids'] ) ) {
 			// We failed to sent to some recipients. Enable the send-to-specific-people option when the page is rendered.

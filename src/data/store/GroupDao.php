@@ -9,15 +9,13 @@ use tuja\data\model\ValidationException;
 use tuja\data\model\Group;
 use tuja\util\Anonymizer;
 use tuja\util\Database;
-use tuja\util\messaging\GroupStatusChangeMessageSender;
+use tuja\util\messaging\EventMessageSender;
 
 class GroupDao extends AbstractDao {
 	private $props_table;
-	private $change_message_sender;
 
 	function __construct() {
 		parent::__construct();
-		$this->change_message_sender = new GroupStatusChangeMessageSender();
 		$this->table                 = Database::get_table( 'team' );
 		$this->props_table           = Database::get_table( 'team_properties' );
 	}
@@ -92,7 +90,12 @@ class GroupDao extends AbstractDao {
 		$success = $affected_rows !== false && $affected_rows === 1;
 
 		if ( $success ) {
-			$this->change_message_sender->send_status_change_messages( $group );
+			try {
+				$change_message_sender = new EventMessageSender();
+				$change_message_sender->send_group_status_change_messages( $group );
+			} catch ( Exception $e ) {
+				var_dump( $e );
+			}
 		}
 
 		return $success;

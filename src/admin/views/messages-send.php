@@ -32,19 +32,6 @@ AdminUtils::printTopMenu( $competition );
 				$person_selector['label'] );
 		}, array_keys( $people_selectors ), array_values( $people_selectors ) ) ); ?>
     </div>
-    <div style="float: left;">
-        Välj format:<br>
-		<?= join( array_map( function ( $key, $delivery_method ) {
-			$id = uniqid();
-
-			return sprintf( '<div><input type="radio" name="tuja_messages_delivery_method" id="%s" value="%s" %s/><label for="%s">%s</label></div>',
-				$id,
-				$key,
-				$_POST['tuja_messages_delivery_method'] == $key ? ' checked="checked"' : '',
-				$id,
-				$delivery_method['label'] );
-		}, array_keys( $delivery_methods ), array_values( $delivery_methods ) ) ); ?>
-    </div>
     <div style="clear: both"></div>
 
     <p><strong>Meddelande</strong></p>

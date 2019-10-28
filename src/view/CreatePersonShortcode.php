@@ -7,6 +7,7 @@ use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\Question;
+use tuja\util\messaging\EventMessageSender;
 use tuja\util\messaging\MessageSender;
 use tuja\util\Recaptcha;
 
@@ -56,7 +57,7 @@ class CreatePersonShortcode extends AbstractGroupShortcode
 
                     $edit_link = sprintf($this->edit_link_template, $new_person->random_id);
 
-                    $this->send_person_welcome_mail($new_person, $group);
+	                $this->send_person_welcome_mail( $new_person );
 
                     if (!empty($edit_link)) {
                         return sprintf('<p class="tuja-message tuja-message-success">Tack för din anmälan. Gå till <a href="%s">%s</a> om du behöver ändra din anmälan senare. Vi har också skickat länken till din e-postadress.</p>', $edit_link, $edit_link);
@@ -135,22 +136,9 @@ class CreatePersonShortcode extends AbstractGroupShortcode
         }
     }
 
-    private function send_person_welcome_mail(Person $person, Group $group)
+	private function send_person_welcome_mail( Person $person )
     {
-        $competition = $this->competition_dao->get($group->competition_id);
-
-	    $group_category = $group->get_derived_group_category();
-
-	    $template_id = isset( $group_category ) && $group_category->is_crew ?
-            $competition->message_template_id_new_crew_member :
-            $competition->message_template_id_new_noncrew_member;
-
-        if (isset($template_id)) {
-            $this->send_template_mail(
-                $person->email,
-                $template_id,
-                $group,
-                $person);
-        }
+	    $event_message_sender = new EventMessageSender();
+	    $event_message_sender->send_new_person_messages( $person );
     }
 }
