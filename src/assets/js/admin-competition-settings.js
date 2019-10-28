@@ -3,13 +3,21 @@ var tujaListItemsControls = (function () {
     init: function ($, listName) {
 
       function onAddClick (event) {
-        var form = $(event.target).closest('form')
+        var button = $(event.target)
+        var form = button.closest('form')
         var container = form.find('div.tuja-' + listName + '-existing')
         var newForm = form.find('div.tuja-' + listName + '-template > div.tuja-' + listName + '-form').clone()
         var id = new Date().getTime() // Current timestamp is good enough for the purposes of this function: ensuring each click on Add gets an unique id.
         newForm.find('button.tuja-delete-' + listName).click(onDeleteClick)
-        newForm.find('input, textarea').each(function () {
+        newForm.find('input, textarea, select').each(function () {
           var input = $(this)
+          var field = input.attr('name').split(/__/)[1]
+
+          var defaultValue = button.data(field)
+          if (defaultValue) {
+            input.val(defaultValue)
+          }
+
           input.attr('name', input.attr('name') + id)
         })
         newForm.appendTo(container)

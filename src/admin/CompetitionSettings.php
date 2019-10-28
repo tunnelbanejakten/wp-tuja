@@ -11,6 +11,7 @@ use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\MessageTemplateDao;
 use tuja\util\DateUtils;
+use tuja\util\messaging\EventMessageSender;
 use tuja\util\rules\CrewMembersRuleSet;
 use tuja\util\rules\OlderParticipantsRuleSet;
 use tuja\util\rules\YoungParticipantsRuleSet;
@@ -53,6 +54,25 @@ class CompetitionSettings {
 
 		$message_templates = $message_template_dao->get_all_in_competition( $competition->id );
 
+		$event_options = $this->get_event_options();
+
+		$files = array_filter( scandir( __DIR__ . '/default_message_templates' ), function ( $file ) {
+			return is_file( __DIR__ . '/default_message_templates/' . $file );
+		} );
+
+		$default_message_templates = join('<br>',  array_map(
+			function ( $filename ) {
+				$config = parse_ini_file( __DIR__ . '/default_message_templates/' . $filename );
+				if ( $config === false ) {
+					return '';
+				}
+
+				return sprintf( '<button class="button tuja-add-messagetemplate" type="button" %s>Ny mall %s</button>', join( ' ', array_map( function ( $key, $value ) {
+					return 'data-' . $key . '="' . htmlentities( $value ) . '"';
+				}, array_keys( $config ), array_values( $config ) ) ), $config['name'] ?: basename( $filename, '.ini' ) );
+			},
+			$files ) );
+
 		include( 'views/competition-settings.php' );
 	}
 
@@ -84,17 +104,73 @@ class CompetitionSettings {
 		$pattern = '
 			<div class="tuja-messagetemplate-form">
 				<input type="text" placeholder="Mallens namn" size="50" name="%s" value="%s"><br>
-				<input type="text" placeholder="Ämnesrad för e-post" size="50" name="%s" value="%s"><br>
-				<textarea id="" cols="80" rows="10" placeholder="Meddelande för e-post/SMS" name="%s">%s</textarea><br>
+				<div>
+					<label><input type="checkbox" name="%s">Skicka automatiskt till</label> 
+					<select name="%s">%s</select>
+					när
+					<select name="%s">%s</select>
+					.
+				</div>
+				<select name="%s">%s</select><br>
+				<input type="text" placeholder="Ämnesrad" size="50" name="%s" value="%s"><br>
+				<textarea id="" cols="80" rows="10" placeholder="Meddelande" name="%s">%s</textarea><br>
 				<button class="button tuja-delete-messagetemplate" type="button">
 					Ta bort
 				</button>
 			</div>
 		';
 
+		$event_options = $this->get_event_options();
+
+		$auto_send_trigger_options = join( '', array_map(
+			function ( $key, $value ) use ( $message_template ) {
+				return sprintf( '<option value="%s" %s>%s</option>',
+					htmlspecialchars( $key ),
+					$message_template->auto_send_trigger == $key ? 'selected="selected"' : '',
+					$value );
+			},
+			array_keys( $event_options ),
+			array_values( $event_options ) ) );
+
+		$to                          = [
+			EventMessageSender::RECIPIENT_ADMIN         => 'Tuko',
+			EventMessageSender::RECIPIENT_GROUP_CONTACT => 'Gruppledaren',
+			EventMessageSender::RECIPIENT_SELF          => 'Personen det gäller'
+		];
+		$auto_send_recipient_options = join( '', array_map(
+			function ( $key, $value ) use ( $message_template ) {
+				return sprintf( '<option value="%s" %s>%s</option>',
+					htmlspecialchars( $key ),
+					$message_template->auto_send_recipient == $key ? 'selected="selected"' : '',
+					$value );
+			},
+			array_keys( $to ),
+			array_values( $to ) ) );
+
+		$delivery_methods        = [
+			MessageTemplate::EMAIL => 'Skicka som e-post',
+			MessageTemplate::SMS   => 'Skicka som SMS'
+		];
+		$delivery_method_options = join( '', array_map(
+			function ( $key, $value ) use ( $message_template ) {
+				return sprintf( '<option value="%s" %s>%s</option>',
+					htmlspecialchars( $key ),
+					$message_template->delivery_method == $key ? 'selected="selected"' : '',
+					$value );
+			},
+			array_keys( $delivery_methods ),
+			array_values( $delivery_methods ) ) );
+
 		return sprintf( $pattern,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'name' ),
 			$message_template->name,
+			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'enable_auto_send' ),
+			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_recipient' ),
+			$auto_send_recipient_options,
+			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_trigger' ),
+			$auto_send_trigger_options,
+			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'delivery_method' ),
+			$delivery_method_options,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'subject' ),
 			$message_template->subject,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'body' ),
@@ -285,5 +361,27 @@ class CompetitionSettings {
 			// TODO: Reuse this exception handling elsewhere?
 			AdminUtils::printException( $e );
 		}
+	}
+
+	private function get_event_options() {
+		$event_names  = [];
+		$event_labels = [];
+		foreach ( \tuja\data\model\Group::STATUS_TRANSITIONS as $current => $allowed_next ) {
+			$allowed_next = array_filter( $allowed_next, function ( $next ) {
+				return $next !== \tuja\data\model\Group::STATUS_DELETED;
+			} );
+			$event_names  = array_merge( $event_names, array_map( function ( $next ) use ( $current ) {
+				return EventMessageSender::group_status_change_event_name( $current, $next );
+			}, $allowed_next ) );
+			$event_labels = array_merge( $event_labels, array_map( function ( $next ) use ( $current ) {
+				return sprintf( 'grupps status går från %s till %s', strtoupper( $current ), strtoupper( $next ) );
+			}, $allowed_next ) );
+		}
+		$event_options = array_combine( $event_names, $event_labels );
+
+		$event_options[ EventMessageSender::new_group_member_event_name( true ) ]  = 'person anmäler sig till funktionärslag';
+		$event_options[ EventMessageSender::new_group_member_event_name( false ) ] = 'person anmäler sig till deltagarlag';
+
+		return $event_options;
 	}
 }

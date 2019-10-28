@@ -79,8 +79,10 @@ AdminUtils::printTopMenu( $competition );
 	        <?= $this->print_message_template_form( new MessageTemplate() ) ?>
         </div>
         <button class="button tuja-add-messagetemplate" type="button">
-            Ny
+            Ny tom mall
         </button>
+        <br>
+        <?= $default_message_templates ?>
     </div>
     <div class="tuja-tab" id="tuja-tab-sendouts">
         <div>

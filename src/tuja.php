@@ -65,20 +65,21 @@ abstract class Plugin
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table('competition') . ' (
-				id                   INTEGER AUTO_INCREMENT PRIMARY KEY,
-				random_id            VARCHAR(20)    NOT NULL,
-				name                 VARCHAR(100)   NOT NULL,
-				payment_instructions TEXT,
-				create_group_start   INTEGER,
-				create_group_end     INTEGER,
-				edit_group_start     INTEGER,
-				edit_group_end       INTEGER,
-				event_start          INTEGER,
-				event_end            INTEGER,
-				message_template_new_team_admin INTEGER,
-				message_template_new_team_reporter INTEGER,
-				message_template_new_crew_member INTEGER,
-				message_template_new_noncrew_member INTEGER,
+				id                                   INTEGER AUTO_INCREMENT PRIMARY KEY,
+				random_id                            VARCHAR(20)    NOT NULL,
+				name                                 VARCHAR(100)   NOT NULL,
+				payment_instructions                 TEXT,
+				create_group_start                   INTEGER,
+				create_group_end                     INTEGER,
+				edit_group_start                     INTEGER,
+				edit_group_end                       INTEGER,
+				event_start                          INTEGER,
+				event_end                            INTEGER,
+				message_template_new_team_admin      INTEGER,
+				message_template_new_team_reporter   INTEGER,
+				message_template_new_crew_member     INTEGER,
+				message_template_new_noncrew_member  INTEGER,
+				initial_group_status                 VARCHAR(20)
 				UNIQUE KEY idx_competition_token (random_id)
 			) ' . $charset;
 
@@ -204,18 +205,21 @@ abstract class Plugin
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table('message_template') . ' (
-				id             INTEGER AUTO_INCREMENT PRIMARY KEY,
-				competition_id INTEGER NOT NULL,
-				name           VARCHAR(100),
-				subject        TEXT,
-				body           TEXT
+				id                      INTEGER AUTO_INCREMENT PRIMARY KEY,
+				competition_id          INTEGER NOT NULL,
+				name                    VARCHAR(100),
+				subject                 TEXT,
+				body                    TEXT,
+				auto_send_trigger       VARCHAR(100),
+				auto_send_recipient     VARCHAR(100),
+				delivery_method         VARCHAR(10)
 			) ' . $charset;
 
 		$keys = array(
-			[ 'competition', 'message_template_new_team_admin', 'message_template', 'RESTRICT' ],
-			[ 'competition', 'message_template_new_team_reporter', 'message_template', 'RESTRICT' ],
-			[ 'competition', 'message_template_new_crew_member', 'message_template', 'RESTRICT' ],
-			[ 'competition', 'message_template_new_noncrew_member', 'message_template', 'RESTRICT' ],
+			[ 'competition', 'message_template_new_team_admin', 'message_template', 'RESTRICT' ], // No longer used
+			[ 'competition', 'message_template_new_team_reporter', 'message_template', 'RESTRICT' ], // No longer used
+			[ 'competition', 'message_template_new_crew_member', 'message_template', 'RESTRICT' ], // No longer used
+			[ 'competition', 'message_template_new_noncrew_member', 'message_template', 'RESTRICT' ], // No longer used
 
 			[ 'team', 'competition_id', 'competition', 'CASCADE' ],
 			[ 'team_properties', 'team_id', 'team', 'CASCADE' ],
@@ -253,14 +257,6 @@ abstract class Plugin
 			foreach ($keys as $key) {
 				Database::add_foreign_key($key[0], $key[1], $key[2], $key[3]);
 			}
-
-			// TODO: Delete fix_questions_not_in_group -- data has been migrated
-			Database::fix_questions_not_in_group();
-
-			// TODO: Delete fix_teams_history -- data has been migrated
-			Database::fix_teams_history();
-			// TODO: Delete fix_people_history -- data has been migrated
-			Database::fix_people_history();
 
 			Database::commit();
 		} catch ( Exception $e ) {
