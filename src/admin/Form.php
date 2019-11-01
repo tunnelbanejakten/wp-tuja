@@ -47,9 +47,7 @@ class Form {
 			foreach ( $question_groups as $question_group ) {
 				if ( isset( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question_group->id ] ) ) {
 
-					ReflectionUtils::set_properties_from_json_string(
-						$question_group,
-						stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question_group->id ] ) );
+					$question_group->set_properties_from_json_string( stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question_group->id ] ) );
 
 					try {
 						$affected_rows = $this->db_question_group->update( $question_group );

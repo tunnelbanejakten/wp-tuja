@@ -11,20 +11,15 @@ AdminUtils::printTopMenu( $competition );
 ?>
 
 <form method="post" action="<?= add_query_arg() ?>" class="tuja">
-    <h3>Formulär</h3>
-    <table>
-        <tbody>
-        <?php
-        foreach ($forms as $form) {
-            $url = add_query_arg(array(
-                'tuja_view' => 'Form',
-                'tuja_form' => $form->id
-            ));
-	        printf( '<p><a href="%s">%s</a></p>', $url, $form->name );
-        }
-        ?>
-        </tbody>
-    </table>
+    <?php
+    foreach ($forms as $form) {
+        $url = add_query_arg(array(
+            'tuja_view' => 'Form',
+            'tuja_form' => $form->id
+        ));
+        printf( '<p><a href="%s">%s</a></p>', $url, $form->name );
+    }
+    ?>
     <input type="text" name="tuja_form_name"/>
     <button type="submit" class="button" name="tuja_action" value="form_create">Skapa</button>
 </form>

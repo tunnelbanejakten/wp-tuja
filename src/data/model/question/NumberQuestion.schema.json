@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "properties": {
+    "text": {
+      "title": "Fråga",
+      "type": "string",
+      "format": "text"
+    },
+    "text_hint": {
+      "title": "Hjälptext",
+      "type": "string",
+      "format": "text"
+    },
+    "score_max": {
+      "title": "Maxpoäng",
+      "type": "integer",
+      "format": "number"
+    },
+    "sort_order": {
+      "title": "Position",
+      "type": "string",
+      "format": "text"
+    },
+    "correct_answer": {
+      "title": "Rätt svar",
+      "type": "integer",
+      "format": "number"
+    }
+  }
+}

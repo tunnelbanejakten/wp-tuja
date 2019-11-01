@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "score_max": {
+      "title": "Maxpoäng",
+      "type": "integer",
+      "format": "number"
+    },
+    "sort_order": {
+      "title": "Position",
+      "type": "string",
+      "format": "text"
+    },
+    "text": {
+      "title": "Rubrik",
+      "type": "string",
+      "format": "text"
+    }
+  }
+}

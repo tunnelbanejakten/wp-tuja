@@ -1,8 +1,8 @@
-var tujaReports = (function () {
+var tujaForms = (function () {
   return {
     init: function ($) {
-      $('div.tuja-admin-report-config').each(function (index, el) {
-        var schema = JSON.parse(el.dataset.optionsSchema)
+      $('div.tuja-admin-questiongroup-form').each(function (index, el) {
+        var schema = JSON.parse(el.dataset.schema)
         if (schema) {
           var editor = new JSONEditor(el, {
             form_name_root: 'JSONEditor_' + Math.random().toString(36).substr(2, 9),
@@ -16,11 +16,10 @@ var tujaReports = (function () {
             disable_array_delete_all_rows: true,
             disable_array_delete_last_row: true
           })
+          editor.setValue(JSON.parse(el.dataset.values))
           editor.on('change', function () {
             var conf = this.getValue()
-            $(el).parent().find('a').attr('href', function (index, value) {
-              return this.dataset.originalHref.replace('?', '?' + $.param(conf) + '&')
-            })
+            $('#' + el.dataset.fieldId).val(JSON.stringify(conf))
           })
         }
       })
@@ -31,5 +30,5 @@ var tujaReports = (function () {
 jQuery.noConflict()
 
 jQuery(document).ready(function ($) {
-  tujaReports.init($)
+  tujaForms.init($)
 })

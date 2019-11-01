@@ -30,26 +30,14 @@ class OptionsQuestion extends AbstractQuestion {
 
 	// TODO: Properties should not have to be public
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $score_type = self::GRADING_TYPE_ONE_OF;
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $is_single_select; // TODO: Fix inconsistency OptionsQuestion->is_single_select vs FieldChoices->is_multichoice (single vs multi).
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $possible_answers;
 
 	private $submit_on_change;
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $correct_answers;
 
 	/**

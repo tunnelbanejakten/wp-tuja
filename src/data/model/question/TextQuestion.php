@@ -22,24 +22,12 @@ class TextQuestion extends AbstractQuestion {
 	const THRESHOLD = 80;
 
 	// TODO: Properties should not have to be public
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $score_type = self::GRADING_TYPE_ONE_OF;
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $correct_answers = [];
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $incorrect_answers = [];
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $is_single_answer = true;
 
 	/**

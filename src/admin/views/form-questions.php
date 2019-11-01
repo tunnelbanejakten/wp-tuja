@@ -40,10 +40,13 @@ AdminUtils::printTopMenu( $competition );
 			printf( '<div>%s:</div>', substr( get_class( $question ), strrpos( get_class( $question ), '\\' ) + 1 ) );
 			echo '<div class="tuja-admin-question-properties">';
 
-			$json       = ReflectionUtils::get_editable_properties_json( $question );
-			$rows       = substr_count( $json, "\n" ) + 1;
+			$json       = $question->get_editable_properties_json( $question );
 			$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $question->id;
-			printf('<textarea name="%s" rows="%d">%s</textarea>', $field_name, $rows, $json);
+
+			$options_schema = $question->json_schema();
+
+			printf( '<div class="tuja-admin-questiongroup-form" data-schema="%s" data-values="%s" data-field-id="%s"></div>', htmlentities( $options_schema ), htmlentities( $json ), htmlentities( $field_name ) );
+			printf( '<input type="hidden" name="%s" id="%s" value="" />', $field_name, $field_name );
 
 			echo '</div>';
 			printf('<button type="submit" class="button" name="tuja_action" value="%s%d" onclick="return confirm(\'Är du säker?\');">Ta bort</button>', self::ACTION_NAME_DELETE_PREFIX, $question->id);

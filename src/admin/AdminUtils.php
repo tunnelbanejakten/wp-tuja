@@ -38,7 +38,7 @@ class AdminUtils
 		printf( '<h1>%s</h1>', $competition->name );
 
 		$menu_config = [
-			'Competition'         => 'Start',
+			'Competition'         => 'Formulär',
 			'Groups'              => 'Grupper',
 			'Scoreboard'          => 'Poängställning',
 			'CompetitionSettings' => 'Inställningar',

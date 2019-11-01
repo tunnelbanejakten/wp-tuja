@@ -10,19 +10,10 @@ class QuestionGroup {
 	public $random_id;
 	public $form_id;
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $text = '';
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $sort_order = '';
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $score_max = 0;
 
 	public function validate() {
@@ -34,7 +25,24 @@ class QuestionGroup {
 		}
 	}
 
-	public function get_editable_fields() {
-		return ReflectionUtils::get_editable_properties( new QuestionGroup() );
+	function json_schema() {
+		$str = __DIR__ . '/QuestionGroup.schema.json';
+
+		return file_get_contents( $str );
+	}
+
+	function get_editable_properties_json() {
+		$schema = json_decode( $this->json_schema(), true );
+
+		$editable_properties = array_keys( $schema['properties'] );
+
+		return ReflectionUtils::to_json_string( $this, $editable_properties );
+	}
+
+	function set_properties_from_json_string( $json_string ) {
+		ReflectionUtils::set_properties_from_json_string(
+			$this,
+			$json_string,
+			$this->json_schema() );
 	}
 }

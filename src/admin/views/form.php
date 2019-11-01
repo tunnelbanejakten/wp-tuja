@@ -43,10 +43,13 @@ AdminUtils::printTopMenu( $competition );
 			<div class="tuja-admin-question">
 				<div class="tuja-admin-question-properties">
 					<?php
-					$json       = ReflectionUtils::get_editable_properties_json( $question_group );
-					$rows       = substr_count($json, "\n") + 1;
+					$json       = $question_group->get_editable_properties_json();
 					$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $question_group->id;
-					printf('<textarea name="%s" rows="%d">%s</textarea>', $field_name, $rows, $json);
+
+					$options_schema = $question_group->json_schema();
+
+					printf( '<div class="tuja-admin-questiongroup-form" data-schema="%s" data-values="%s" data-field-id="%s"></div>', htmlentities( $options_schema ), htmlentities( $json ), htmlentities( $field_name ) );
+					printf( '<input type="hidden" name="%s" id="%s" value="" />', $field_name, $field_name );
 					?>
 				</div>
 				

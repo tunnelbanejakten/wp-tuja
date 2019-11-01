@@ -16,24 +16,12 @@ abstract class AbstractQuestion {
 	public $id = - 1;
 	public $question_group_id = - 1;
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $text_hint = 'A subtle hint';
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $text = 'Who? What? When?';
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $sort_order = 0;
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $score_max = 0;
 
 	/**
@@ -55,6 +43,27 @@ abstract class AbstractQuestion {
 		$this->score_max         = $score_max;
 	}
 
+
+	function json_schema() {
+		$str = __DIR__ . '/' . substr( get_class( $this ), strlen( __NAMESPACE__ ) + 1 ) . '.schema.json';
+
+		return file_get_contents( $str );
+	}
+
+	function get_editable_properties_json() {
+		$schema = json_decode( $this->json_schema(), true );
+
+		$editable_properties = array_keys( $schema['properties'] );
+
+		return ReflectionUtils::to_json_string( $this, $editable_properties );
+	}
+
+	function set_properties_from_json_string( $json_string ) {
+		ReflectionUtils::set_properties_from_json_string(
+			$this,
+			$json_string,
+			$this->json_schema() );
+	}
 
 	/**
 	 * Grades an answer and returns the score for the answer.
@@ -87,10 +96,6 @@ abstract class AbstractQuestion {
 		if ( strlen( $this->text_hint ) > 65000 ) {
 			throw new ValidationException( 'text_hint', 'Hjälptexten är för lång.' );
 		}
-	}
-
-	public function get_editable_fields() {
-		return ReflectionUtils::get_editable_properties( $this );
 	}
 
 	protected function calculate_correctness( array $user_input, array $correct_input, bool $is_ordered ): array {

@@ -1,0 +1,55 @@
+{
+  "type": "object",
+  "properties": {
+    "text": {
+      "title": "Fråga",
+      "type": "string",
+      "format": "text"
+    },
+    "text_hint": {
+      "title": "Hjälptext",
+      "type": "string",
+      "format": "text"
+    },
+    "score_max": {
+      "title": "Maxpoäng",
+      "type": "integer",
+      "format": "number"
+    },
+    "sort_order": {
+      "title": "Position",
+      "type": "string",
+      "format": "text"
+    },
+    "possible_answers": {
+      "title": "Alternativ",
+      "type": "array",
+      "format": "table",
+      "items": {
+        "type": "string"
+      }
+    },
+    "correct_answers": {
+      "title": "Rätta svar",
+      "type": "array",
+      "format": "table",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_single_select": {
+      "title": "Bara ett svar",
+      "type": "boolean",
+      "format": "checkbox"
+    },
+    "score_type": {
+      "title": "Rättningsmekanism",
+      "type": "string",
+      "format": "radio",
+      "enum": [
+        "one_of",
+        "all_of"
+      ]
+    }
+  }
+}

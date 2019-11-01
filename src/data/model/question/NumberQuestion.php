@@ -9,9 +9,6 @@ use tuja\view\FieldNumber;
 
 class NumberQuestion extends AbstractQuestion {
 
-	/**
-	 * @tuja-gui-editable
-	 */
 	public $correct_answer = 0;
 
 	public function __construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max, $correct_answer ) {
