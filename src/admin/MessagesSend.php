@@ -43,7 +43,7 @@ class MessagesSend {
 	}
 
 
-	public function handle_post( $people_selectors ) {
+	public function handle_post( $people_selectors, $delivery_methods ) {
 		if ( ! isset( $_POST['tuja_messages_action'] ) ) {
 			return [];
 		}
@@ -54,6 +54,7 @@ class MessagesSend {
 		if ( $is_preview || $is_send ) {
 			$selected_groups = $this->field_group_selector->get_selected_groups( @$_POST['tuja_messages_group_selector'] );
 			$people_selector = $people_selectors[ $_POST['tuja_messages_people_selector'] ];
+			$delivery_method = $delivery_methods[ $_POST['tuja_messages_delivery_method'] ];
 			if ( ! empty( $selected_groups ) && isset( $people_selector ) && isset( $delivery_method ) ) {
 
 				$warnings   = [];
@@ -69,6 +70,7 @@ class MessagesSend {
 					$people        = array_merge( $people, $group_members );
 				}
 
+				// TODO: Manually test
 				$message_template                  = new MessageTemplate();
 				$message_template->body            = $_POST['tuja_messages_body'];
 				$message_template->subject         = $_POST['tuja_messages_subject'];
@@ -162,7 +164,18 @@ class MessagesSend {
 			$people_selectors['specific'] = self::get_specific_recipient_option( $specific_recipients );
 		}
 
-		$action_result = $this->handle_post( $people_selectors );
+		$delivery_methods = array(
+			MessageTemplate::SMS   => array(
+				'label'              => 'SMS',
+				'is_plain_text_body' => true
+			),
+			MessageTemplate::EMAIL => array(
+				'label'              => 'E-post',
+				'is_plain_text_body' => false
+			)
+		);
+
+		$action_result = $this->handle_post( $people_selectors, $delivery_methods );
 
 		if ( ! empty( $action_result['retry_people_ids'] ) ) {
 			// We failed to sent to some recipients. Enable the send-to-specific-people option when the page is rendered.

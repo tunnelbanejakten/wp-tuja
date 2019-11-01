@@ -2,6 +2,7 @@
 namespace tuja\admin;
 
 use tuja\data\model\Group;
+use tuja\data\model\MessageTemplate;
 use tuja\data\model\Person;
 
 AdminUtils::printTopMenu( $competition );
@@ -10,7 +11,6 @@ AdminUtils::printTopMenu( $competition );
 <h3>Skicka e-post och SMS</h3>
 
 <form method="post" action="<?= add_query_arg() ?>" class="tuja">
-    <p><strong>Mottagare och distribution</strong></p>
     <div style="float: left;">
         <label for="">Välj grupp(er) att skicka till:</label><br>
 	    <?php
@@ -21,20 +21,29 @@ AdminUtils::printTopMenu( $competition );
     </div>
     <div style="float: left;">
         Välj mottagare i valda grupper:<br>
-		<?= join( array_map( function ( $key, $person_selector ) {
-			$id = uniqid();
+	    <?= sprintf( '<div><select name="tuja_messages_people_selector"/>%s</select></div>',
+		    join( array_map( function ( $key, $person_selector ) {
+			    $id = uniqid();
 
-			return sprintf( '<div><input type="radio" name="tuja_messages_people_selector" id="%s" value="%s" %s/><label for="%s">%s</label></div>',
-				$id,
-				$key,
-				$_POST['tuja_messages_people_selector'] == $key ? ' checked="checked"' : '',
-				$id,
-				$person_selector['label'] );
-		}, array_keys( $people_selectors ), array_values( $people_selectors ) ) ); ?>
+			    return sprintf( '<option value="%s" %s>%s</option>',
+				    $key,
+				    $_POST['tuja_messages_people_selector'] == $key ? ' selected="selected"' : '',
+				    $person_selector['label'] );
+		    }, array_keys( $people_selectors ), array_values( $people_selectors ) ) ) ); ?>
+    </div>
+    <div style="float: left;">
+        Välj format:<br>
+		<?= sprintf( '<div><select name="tuja_messages_delivery_method" id="tuja-message-deliverymethod"/>%s</select></div>',
+			join( array_map( function ( $key, $delivery_method ) {
+				$id = uniqid();
+
+				return sprintf( '<option value="%s" %s>%s</option>',
+					$key,
+					( $_POST['tuja_messages_delivery_method'] ?: MessageTemplate::EMAIL ) == $key ? ' selected="selected"' : '',
+					$delivery_method['label'] );
+			}, array_keys( $delivery_methods ), array_values( $delivery_methods ) ) ) ); ?>
     </div>
     <div style="clear: both"></div>
-
-    <p><strong>Meddelande</strong></p>
 
     <div style="float: left;">
         <div>
@@ -57,10 +66,11 @@ AdminUtils::printTopMenu( $competition );
 
     <div style="float: left; max-width: 30em; margin-left: 1em;">
         Meddelandemallar (ändra mallarna på <a href="<?= $settings_url ?>">inställningssidan</a>):<br>
-		<?= join( '<br>', array_map( function ( $template ) {
-			return sprintf( '<a class="tuja-messages-template-link" href="#" data-value="%s;%s">%s</a>',
+		<?= join( '<br>', array_map( function ( MessageTemplate $template ) {
+			return sprintf( '<a class="tuja-messages-template-link" href="#" data-value="%s;%s;%s">%s</a>',
 				rawurlencode( $template->subject ),
 				rawurlencode( $template->body ),
+				rawurlencode( $template->delivery_method ),
 				$template->name
 			);
 		}, $templates ) ) ?>
