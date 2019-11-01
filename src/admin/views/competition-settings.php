@@ -102,7 +102,7 @@ AdminUtils::printTopMenu( $competition );
 		        return sprintf( '<input type="radio" id="tuja_competition_settings_initial_group_status-%s" name="tuja_competition_settings_initial_group_status" value="%s" %s/><label for="tuja_competition_settings_initial_group_status-%s"><span class="tuja-admin-groupstatus tuja-admin-groupstatus-%s">%s</span> <small>%s</small></label>',
 					    $status,
 			        $status,
-			        $status == ( $competition->initial_group_status ?: \tuja\data\model\Group::STATUS_CREATED ) ? 'checked="checked"' : '',
+			        $status == ( $competition->initial_group_status ?: \tuja\data\model\Group::DEFAULT_STATUS ) ? 'checked="checked"' : '',
 			        $status,
 			        $status,
 			        $status,

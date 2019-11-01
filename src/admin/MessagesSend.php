@@ -70,7 +70,6 @@ class MessagesSend {
 					$people        = array_merge( $people, $group_members );
 				}
 
-				// TODO: Manually test
 				$message_template                  = new MessageTemplate();
 				$message_template->body            = $_POST['tuja_messages_body'];
 				$message_template->subject         = $_POST['tuja_messages_subject'];

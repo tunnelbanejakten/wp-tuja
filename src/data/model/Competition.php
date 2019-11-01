@@ -39,7 +39,7 @@ class Competition
     }
 
 	public static function allowed_initial_statuses() {
-		return array_merge( [ Group::STATUS_CREATED ], Group::STATUS_TRANSITIONS[ Group::STATUS_CREATED ] );
+		return array_merge( [ Group::DEFAULT_STATUS ], Group::STATUS_TRANSITIONS[ Group::DEFAULT_STATUS ] );
 	}
 
 }

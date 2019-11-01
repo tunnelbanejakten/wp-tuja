@@ -172,6 +172,7 @@ class CreateGroupShortcode extends AbstractGroupShortcode
 					$group = $this->group_dao->get( $new_group_id );
 
 					if ( $this->competition->initial_group_status !== null ) {
+						// Change status from CREATED to $initial_group_status. This might trigger messages to be sent.
 						$group->set_status( $this->competition->initial_group_status );
 						$this->group_dao->update( $group );
 					}

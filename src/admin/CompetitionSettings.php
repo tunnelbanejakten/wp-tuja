@@ -101,7 +101,13 @@ class CompetitionSettings {
 	}
 
 	public function print_message_template_form( MessageTemplate $message_template ) {
-		$pattern = '
+		$auto_send_trigger_options = $this->get_auto_send_trigger_options( $message_template );
+
+		$auto_send_recipient_options = $this->get_auto_send_recipient_options( $message_template );
+
+		$delivery_method_options = $this->get_delivery_method_options( $message_template );
+
+		return sprintf( '
 			<div class="tuja-messagetemplate-form">
 				<input type="text" placeholder="Mallens namn" size="50" name="%s" value="%s"><br>
 				<div>
@@ -120,50 +126,7 @@ class CompetitionSettings {
 					Ta bort
 				</button>
 			</div>
-		';
-
-		$event_options = $this->get_event_options();
-
-		$auto_send_trigger_options = join( '', array_map(
-			function ( $key, $value ) use ( $message_template ) {
-				return sprintf( '<option value="%s" %s>%s</option>',
-					htmlspecialchars( $key ),
-					$message_template->auto_send_trigger == $key ? 'selected="selected"' : '',
-					$value );
-			},
-			array_keys( $event_options ),
-			array_values( $event_options ) ) );
-
-		$to                          = [
-			EventMessageSender::RECIPIENT_ADMIN         => 'Tuko',
-			EventMessageSender::RECIPIENT_GROUP_CONTACT => 'Gruppledaren',
-			EventMessageSender::RECIPIENT_SELF          => 'Personen det gäller'
-		];
-		$auto_send_recipient_options = join( '', array_map(
-			function ( $key, $value ) use ( $message_template ) {
-				return sprintf( '<option value="%s" %s>Skicka till %s</option>',
-					htmlspecialchars( $key ),
-					$message_template->auto_send_recipient == $key ? 'selected="selected"' : '',
-					$value );
-			},
-			array_keys( $to ),
-			array_values( $to ) ) );
-
-		$delivery_methods        = [
-			MessageTemplate::EMAIL => 'Skicka som e-post',
-			MessageTemplate::SMS   => 'Skicka som SMS'
-		];
-		$delivery_method_options = join( '', array_map(
-			function ( $key, $value ) use ( $message_template ) {
-				return sprintf( '<option value="%s" %s>%s</option>',
-					htmlspecialchars( $key ),
-					$message_template->delivery_method == $key ? 'selected="selected"' : '',
-					$value );
-			},
-			array_keys( $delivery_methods ),
-			array_values( $delivery_methods ) ) );
-
-		return sprintf( $pattern,
+		',
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'name' ),
 			$message_template->name,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_recipient' ),
@@ -372,6 +335,59 @@ class CompetitionSettings {
 			// TODO: Reuse this exception handling elsewhere?
 			AdminUtils::printException( $e );
 		}
+	}
+
+	private function get_auto_send_recipient_options( MessageTemplate $message_template ): string {
+		$to                          = [
+			EventMessageSender::RECIPIENT_ADMIN         => 'Tuko',
+			EventMessageSender::RECIPIENT_GROUP_CONTACT => 'Gruppledaren',
+			EventMessageSender::RECIPIENT_SELF          => 'Personen det gäller'
+		];
+		$auto_send_recipient_options = join( '', array_map(
+			function ( $key, $value ) use ( $message_template ) {
+				return sprintf( '<option value="%s" %s>Skicka till %s</option>',
+					htmlspecialchars( $key ),
+					$message_template->auto_send_recipient == $key ? 'selected="selected"' : '',
+					$value );
+			},
+			array_keys( $to ),
+			array_values( $to ) ) );
+
+		return $auto_send_recipient_options;
+	}
+
+	private function get_delivery_method_options( MessageTemplate $message_template ): string {
+		$delivery_methods        = [
+			MessageTemplate::EMAIL => 'Skicka som e-post',
+			MessageTemplate::SMS   => 'Skicka som SMS'
+		];
+		$delivery_method_options = join( '', array_map(
+			function ( $key, $value ) use ( $message_template ) {
+				return sprintf( '<option value="%s" %s>%s</option>',
+					htmlspecialchars( $key ),
+					$message_template->delivery_method == $key ? 'selected="selected"' : '',
+					$value );
+			},
+			array_keys( $delivery_methods ),
+			array_values( $delivery_methods ) ) );
+
+		return $delivery_method_options;
+	}
+
+	private function get_auto_send_trigger_options( MessageTemplate $message_template ): string {
+		$event_options = $this->get_event_options();
+
+		$auto_send_trigger_options = join( '', array_map(
+			function ( $key, $value ) use ( $message_template ) {
+				return sprintf( '<option value="%s" %s>%s</option>',
+					htmlspecialchars( $key ),
+					$message_template->auto_send_trigger == $key ? 'selected="selected"' : '',
+					$value );
+			},
+			array_keys( $event_options ),
+			array_values( $event_options ) ) );
+
+		return $auto_send_trigger_options;
 	}
 
 	private function get_event_options() {

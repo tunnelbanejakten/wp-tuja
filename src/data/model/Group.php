@@ -21,6 +21,8 @@ class Group
 	const STATUS_CHECKEDOUT = 'checkedout';
 	const STATUS_DELETED = 'deleted';
 
+	const DEFAULT_STATUS = self::STATUS_CREATED;
+
 	const STATUS_TRANSITIONS = [
 		self::STATUS_CREATED           => [
 			self::STATUS_ACCEPTED,

@@ -43,7 +43,7 @@ class GroupDao extends AbstractDao {
 
 		$group->id = $this->wpdb->insert_id;
 
-		$group->set_status( Group::STATUS_CREATED );
+		$group->set_status( Group::DEFAULT_STATUS );
 
 		$success = $this->add_record( $group );
 
