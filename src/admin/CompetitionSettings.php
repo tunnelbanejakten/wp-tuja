@@ -38,7 +38,7 @@ class CompetitionSettings {
 
 		if ( $_POST['tuja_competition_settings_action'] === 'save' ) {
 			$this->competition_settings_save_other( $competition );
-			$this->competition_settings_save_group_categories( $competition );
+			$this->competition_settings_save_groups( $competition );
 			$this->competition_settings_save_message_templates( $competition );
 		}
 	}
@@ -105,8 +105,10 @@ class CompetitionSettings {
 			<div class="tuja-messagetemplate-form">
 				<input type="text" placeholder="Mallens namn" size="50" name="%s" value="%s"><br>
 				<div>
-					<label><input type="checkbox" name="%s">Skicka automatiskt till</label> 
-					<select name="%s">%s</select>
+					<select name="%s">
+						<option value="">Gör inget</option>
+						%s
+					</select>
 					när
 					<select name="%s">%s</select>
 					.
@@ -139,7 +141,7 @@ class CompetitionSettings {
 		];
 		$auto_send_recipient_options = join( '', array_map(
 			function ( $key, $value ) use ( $message_template ) {
-				return sprintf( '<option value="%s" %s>%s</option>',
+				return sprintf( '<option value="%s" %s>Skicka till %s</option>',
 					htmlspecialchars( $key ),
 					$message_template->auto_send_recipient == $key ? 'selected="selected"' : '',
 					$value );
@@ -164,7 +166,6 @@ class CompetitionSettings {
 		return sprintf( $pattern,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'name' ),
 			$message_template->name,
-			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'enable_auto_send' ),
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_recipient' ),
 			$auto_send_recipient_options,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_trigger' ),
@@ -240,11 +241,16 @@ class CompetitionSettings {
 
 		foreach ( $created_ids as $id ) {
 			try {
-				$new_template                 = new MessageTemplate();
-				$new_template->competition_id = $competition->id;
-				$new_template->name           = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'name' ) ];
-				$new_template->subject        = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'subject' ) ];
-				$new_template->body           = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'body' ) ];
+				$enable_auto_send = ! empty( $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'auto_send_recipient' ) ] );
+
+				$new_template                      = new MessageTemplate();
+				$new_template->competition_id      = $competition->id;
+				$new_template->name                = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'name' ) ];
+				$new_template->subject             = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'subject' ) ];
+				$new_template->body                = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'body' ) ];
+				$new_template->delivery_method     = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'delivery_method' ) ];
+				$new_template->auto_send_recipient = $enable_auto_send ? $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'auto_send_recipient' ) ] : null;
+				$new_template->auto_send_trigger   = $enable_auto_send ? $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'auto_send_trigger' ) ] : null;
 
 				$new_template_id = $message_template_dao->create( $new_template );
 			} catch ( ValidationException $e ) {
@@ -257,9 +263,14 @@ class CompetitionSettings {
 		foreach ( $updated_ids as $id ) {
 			if ( isset( $message_template_map[ $id ] ) ) {
 				try {
-					$message_template_map[ $id ]->name    = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'name' ) ];
-					$message_template_map[ $id ]->subject = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'subject' ) ];
-					$message_template_map[ $id ]->body    = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'body' ) ];
+					$enable_auto_send = ! empty( $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'auto_send_recipient' ) ] );
+
+					$message_template_map[ $id ]->name                = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'name' ) ];
+					$message_template_map[ $id ]->subject             = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'subject' ) ];
+					$message_template_map[ $id ]->body                = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'body' ) ];
+					$message_template_map[ $id ]->delivery_method     = $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'delivery_method' ) ];
+					$message_template_map[ $id ]->auto_send_recipient = $enable_auto_send ? $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'auto_send_recipient' ) ] : null;
+					$message_template_map[ $id ]->auto_send_trigger   = $enable_auto_send ? $_POST[ $this->list_item_field_name( 'messagetemplate', $id, 'auto_send_trigger' ) ] : null;
 
 					$affected_rows = $message_template_dao->update( $message_template_map[ $id ] );
 				} catch ( ValidationException $e ) {
@@ -280,7 +291,7 @@ class CompetitionSettings {
 		}
 	}
 
-	public function competition_settings_save_group_categories( Competition $competition ) {
+	public function competition_settings_save_groups( Competition $competition ) {
 		$category_dao = new GroupCategoryDao();
 
 		$categories = $category_dao->get_all_in_competition( $competition->id );

@@ -33,7 +33,7 @@ class MessageTemplate
 		if ( strlen( $this->body ) > 65000 ) {
 			throw new ValidationException( 'body', 'Meddelandet för långt.' );
 		}
-		if ( $this->delivery_method != null && in_array( $this->delivery_method, [
+		if ( $this->delivery_method != null && ! in_array( $this->delivery_method, [
 				self::EMAIL,
 				self::SMS
 			] ) ) {
