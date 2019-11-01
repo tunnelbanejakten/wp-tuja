@@ -12,15 +12,23 @@ AdminUtils::printTopMenu( $competition );
 
     <h3>Status</h3>
 
-    <p>Aktuell status: <em><?= $group->get_status() ?></em>.</p>
-    <p>Ändra status:</p>
+    <p>
+        Aktuell status:
+		<?php
+		printf( '<td><span class="tuja-admin-groupstatus tuja-admin-groupstatus-%s">%s</span></td>',
+			$group->get_status(),
+			$group->get_status()
+		);
+		?>
+    </p>
     <div class="tuja-buttons">
-	<?= join( array_map( function ( $allowed_next_state ) {
-		return sprintf(
-			'<button class="button" type="submit" name="tuja_points_action" value="transition__%s">%s</button>',
-			$allowed_next_state,
-			$allowed_next_state );
-	}, \tuja\data\model\Group::STATUS_TRANSITIONS[ $group->get_status() ] ) ) ?>
+        Ändra status:
+	    <?= join( array_map( function ( $allowed_next_state ) {
+		    return sprintf(
+			    '<button class="button" type="submit" name="tuja_points_action" value="transition__%s">%s</button>',
+			    $allowed_next_state,
+			    $allowed_next_state );
+	    }, \tuja\data\model\Group::STATUS_TRANSITIONS[ $group->get_status() ] ) ) ?>
     </div>
 
     <h3>Svar och poäng</h3>
