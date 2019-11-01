@@ -173,7 +173,7 @@ tr.tuja-admin-review-response-row.question-group td {
 	font-weight: bold;
 }
 
-span.tuja-admin-review-autoscore {
+span.tuja-admin-review-autoscore, span.tuja-admin-groupstatus {
     display: inline-block;
     border-radius: 3px;
     border-width: 1px;
@@ -194,6 +194,46 @@ span.tuja-admin-review-autoscore.tuja-admin-review-autoscore-decent {
     border-color: #b5a556;
 }
 
+span.tuja-admin-groupstatus.tuja-admin-groupstatus-created {
+    background-color: #ffef9c;
+    border-color: #b5a556;
+}
+
+span.tuja-admin-groupstatus.tuja-admin-groupstatus-awaiting_approval {
+    background-color: #ffafa7;
+    border-color: #b96460;
+}
+
+span.tuja-admin-groupstatus.tuja-admin-groupstatus-accepted {
+    background-color: #d0e8af;
+    border-color: #719158;
+}
+
+span.tuja-admin-groupstatus.tuja-admin-groupstatus-incomplete {
+    background-color: #ffef9c;
+    border-color: #b5a556;
+}
+
+span.tuja-admin-groupstatus.tuja-admin-groupstatus-awaiting_checkin {
+    background-color: #ffef9c;
+    border-color: #b5a556;
+}
+
+span.tuja-admin-groupstatus.tuja-admin-groupstatus-checkedin {
+    background-color: #d0e8af;
+    border-color: #719158;
+}
+
+span.tuja-admin-groupstatus.tuja-admin-groupstatus-checkedout {
+    background-color: #ccc;
+    border-color: #888;
+}
+
+span.tuja-admin-groupstatus.tuja-admin-groupstatus-deleted {
+    background-color: #ccc;
+    border-color: #888;
+    text-decoration: line-through;
+}
 .tuja-admin-messages {
     display: flex;
     flex-direction: column;

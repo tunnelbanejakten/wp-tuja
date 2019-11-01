@@ -11,7 +11,7 @@ AdminUtils::printTopMenu( $competition );
             <th rowspan="2" valign="top">Ålder</th>
             <th colspan="2" valign="top">Tävlingsklass</th>
             <th colspan="3" valign="top">Antal</th>
-            <th colspan="2" valign="top">Anmälningsstatus</th>
+            <th colspan="3" valign="top">Anmälningsstatus</th>
             <th rowspan="2" valign="top">Rättning</th>
         </tr>
         <tr>
@@ -20,6 +20,7 @@ AdminUtils::printTopMenu( $competition );
             <td>Tävlande</td>
             <td>Övriga</td>
             <td>Kontakter</td>
+            <td>Status</td>
             <td>Sena ändr.</td>
             <td>Meddelanden</td>
         </tr>
@@ -63,6 +64,12 @@ AdminUtils::printTopMenu( $competition );
 				$group->count_competing,
 				$group->count_follower,
 				$group->count_team_contact
+			);
+
+			// Print group status
+			printf( '<td><span class="tuja-admin-groupstatus tuja-admin-groupstatus-%s">%s</span></td>',
+				$group->get_status(),
+				$group->get_status()
 			);
 
 			$id = uniqid();
