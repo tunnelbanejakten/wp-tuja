@@ -29,6 +29,7 @@ class Frontend extends Plugin {
 		add_shortcode( 'tuja_form_closes_countdown', array( $this, 'form_closes_countdown_shortcode' ) );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
+		add_action('init', array($this, 'route'));
 	}
 
 	public function assets() {
@@ -145,6 +146,28 @@ class Frontend extends Plugin {
 				'yes',
 				'true'
 			] );
+	}
+
+	public function route() {
+		try {
+			require 'router.php';
+			$router = new Router(include(self::PATH . '/inc/routes.php'));
+			$path = parse_url(get_site_url(), PHP_URL_PATH);
+			$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+			if($uri === '/wp-login.php') return;
+			
+			if(!empty($path)) {
+				$uri = substr($uri, strlen($path));
+			}
+			if($content = $router->route($uri)) {
+				include 'page-template.php';
+				exit;
+			}
+		}
+		catch(Problem $e) {
+			Log::error($e->getMessage());
+		}
 	}
 }
 
