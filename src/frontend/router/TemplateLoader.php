@@ -1,14 +1,20 @@
 <?php
-namespace tuja\util\router;
+
+namespace tuja\frontend\router;
+
+use tuja\frontend\FrontendPage;
+
 /**
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  */
-class TemplateLoader implements TemplateLoaderInterface {
+class TemplateLoader {
 
-	public function init( PageInterface $page ) {
+	private $templates;
+
+	public function init( FrontendPage $page ) {
 		$this->templates = wp_parse_args(
-			array( 'page.php', 'index.php' ), (array) $page->getTemplate()
+			array( 'page.php', 'index.php' ), (array) $page->get_wp_template()
 		);
 	}
 
@@ -21,7 +27,7 @@ class TemplateLoader implements TemplateLoaderInterface {
 		if ( empty( $filtered ) || file_exists( $filtered ) ) {
 			$template = $filtered;
 		}
-		if ( ! empty( $template ) &&file_exists( $template ) ) {
+		if ( ! empty( $template ) && file_exists( $template ) ) {
 			require_once $template;
 		}
 	}

@@ -2,11 +2,8 @@
 
 namespace tuja;
 
-use tuja\util\Id;
-use tuja\util\router\Controller;
-use tuja\util\router\ControllerInterface;
-use tuja\util\router\Page;
-use tuja\util\router\TemplateLoader;
+use tuja\frontend\FrontendPage;
+use tuja\frontend\router\Controller;
 use tuja\view\CountdownShortcode;
 use tuja\view\CreateGroupShortcode;
 use tuja\view\CreatePersonShortcode;
@@ -35,26 +32,7 @@ class Frontend extends Plugin {
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
 
-		add_action( 'gm_virtual_pages', function ( ControllerInterface $controller ) {
-
-			// first page
-			$controller->addPage( new Page( "/test" ) )
-			           ->setTitle( 'My First Custom Page' )
-			           ->setContent( '<p>Hey, this is my first custom virtual page!</p>' )
-			           ->setTemplate( 'page.php' );
-
-			// second page
-			$controller->addPage( new Page( "/my/custom/gallery" ) )
-			           ->setTitle( 'My Custom Gallery Virtual Page' )
-			           ->setContent( '[gallery ids="27,35,48"]' )// is possible to put shortcodes in content
-			           ->setTemplate( 'page.php' );
-		} );
-
-		$controller = new Controller ( new TemplateLoader );
-
-		$controller->init();
-
-//		add_action( 'init', array( $controller, 'init' ) );
+		$controller = new Controller();
 
 		add_filter( 'do_parse_request', array( $controller, 'dispatch' ), PHP_INT_MAX, 2 );
 
@@ -69,12 +47,13 @@ class Frontend extends Plugin {
 			if (
 				$wp_query->is_page
 				&& isset( $wp_query->virtual_page )
-				&& $wp_query->virtual_page instanceof Page
+				&& $wp_query->virtual_page instanceof FrontendPage
 				&& isset( $post->is_virtual )
 				&& $post->is_virtual
 			) {
 				$plink = home_url( $wp_query->virtual_page->getUrl() );
 			}
+
 			return $plink;
 		} );
 	}
