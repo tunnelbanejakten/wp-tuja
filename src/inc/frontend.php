@@ -3,6 +3,10 @@
 namespace tuja;
 
 use tuja\util\Id;
+use tuja\util\router\Controller;
+use tuja\util\router\ControllerInterface;
+use tuja\util\router\Page;
+use tuja\util\router\TemplateLoader;
 use tuja\view\CountdownShortcode;
 use tuja\view\CreateGroupShortcode;
 use tuja\view\CreatePersonShortcode;
@@ -12,6 +16,7 @@ use tuja\view\FormReadonlyShortcode;
 use tuja\view\FormShortcode;
 use tuja\view\GroupNameShortcode;
 use tuja\view\PointsShortcode;
+use WP_Query;
 
 class Frontend extends Plugin {
 
@@ -29,6 +34,49 @@ class Frontend extends Plugin {
 		add_shortcode( 'tuja_form_closes_countdown', array( $this, 'form_closes_countdown_shortcode' ) );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
+
+		add_action( 'gm_virtual_pages', function ( ControllerInterface $controller ) {
+
+			// first page
+			$controller->addPage( new Page( "/test" ) )
+			           ->setTitle( 'My First Custom Page' )
+			           ->setContent( '<p>Hey, this is my first custom virtual page!</p>' )
+			           ->setTemplate( 'page.php' );
+
+			// second page
+			$controller->addPage( new Page( "/my/custom/gallery" ) )
+			           ->setTitle( 'My Custom Gallery Virtual Page' )
+			           ->setContent( '[gallery ids="27,35,48"]' )// is possible to put shortcodes in content
+			           ->setTemplate( 'page.php' );
+		} );
+
+		$controller = new Controller ( new TemplateLoader );
+
+		$controller->init();
+
+//		add_action( 'init', array( $controller, 'init' ) );
+
+		add_filter( 'do_parse_request', array( $controller, 'dispatch' ), PHP_INT_MAX, 2 );
+
+		add_action( 'loop_end', function( WP_Query $query ) {
+			if ( isset( $query->virtual_page ) && ! empty( $query->virtual_page ) ) {
+				$query->virtual_page = NULL;
+			}
+		} );
+
+		add_filter( 'the_permalink', function( $plink ) {
+			global $post, $wp_query;
+			if (
+				$wp_query->is_page
+				&& isset( $wp_query->virtual_page )
+				&& $wp_query->virtual_page instanceof Page
+				&& isset( $post->is_virtual )
+				&& $post->is_virtual
+			) {
+				$plink = home_url( $wp_query->virtual_page->getUrl() );
+			}
+			return $plink;
+		} );
 	}
 
 	public function assets() {
@@ -36,7 +84,9 @@ class Frontend extends Plugin {
 		wp_register_script( 'tuja-dropzone', static::get_url() . '/assets/js/dropzone.min.js' );
 		wp_register_script( 'tuja-upload-script', static::get_url() . '/assets/js/upload.js' );
 		wp_register_script( 'tuja-points-script', static::get_url() . '/assets/js/points.js' );
-		wp_localize_script( 'tuja-upload-script', 'WPAjax', array('ajaxUrl' => admin_url('admin-ajax.php'), 'base_image_url' => wp_get_upload_dir()['baseurl'] . '/tuja/' ));
+		wp_localize_script( 'tuja-upload-script', 'WPAjax', array( 'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+		                                                           'base_image_url' => wp_get_upload_dir()['baseurl'] . '/tuja/'
+		) );
 
 		wp_register_script( 'tuja-countdown-script', static::get_url() . '/assets/js/countdown.js' );
 		wp_register_script( 'tuja-editgroup-script', static::get_url() . '/assets/js/edit-group.js' );
@@ -60,9 +110,9 @@ class Frontend extends Plugin {
 
 	public function points_shortcode( $atts ) {
 		global $wp_query, $wpdb;
-		$form_id = $atts['form'];
-		$group_id       = $wp_query->query_vars['group_id'];
-		$component      = new PointsShortcode( $wpdb, $form_id, $group_id );
+		$form_id   = $atts['form'];
+		$group_id  = $wp_query->query_vars['group_id'];
+		$component = new PointsShortcode( $wpdb, $form_id, $group_id );
 
 		return $component->render();
 	}
