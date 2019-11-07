@@ -6,6 +6,7 @@ namespace tuja\frontend;
 use tuja\data\model\Group;
 use tuja\data\store\GroupDao;
 use tuja\frontend\router\GroupHomeInitiator;
+use tuja\view\EditGroupShortcode;
 
 class GroupEditor extends FrontendView {
 	private $group_key;
@@ -18,8 +19,20 @@ class GroupEditor extends FrontendView {
 	}
 
 	function render() {
+		global $wpdb;
+
 		$group = $this->get_group();
+
+		$component = new EditGroupShortcode(
+			$wpdb,
+			$group->random_id,
+			false,
+			true );
+
+		$form = $component->render();
+
 		$home_link = GroupHomeInitiator::link( $group );
+
 		include( 'views/group-editor.php' );
 	}
 
