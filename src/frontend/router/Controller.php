@@ -3,8 +3,6 @@
 namespace tuja\frontend\router;
 
 use tuja\frontend\FrontendView;
-use tuja\frontend\Test;
-use tuja\util\Id;
 use WP;
 use WP_Post;
 
@@ -19,19 +17,8 @@ class Controller {
 	function __construct() {
 		$this->loader = new TemplateLoader;
 
-		$this->view_initiators[] = new class () implements ViewInitiator {
-			function create_page( $path ): FrontendView {
-				list ( $group_id, $action ) = explode( '/', urldecode( $path ) );
-
-				return new Test( $path, $action );
-			}
-
-			function is_handler( $path ): bool {
-				$parts = explode( '/', $path );
-
-				return preg_match( '/^[' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '}$/', $parts[0] );
-			}
-		};
+		$this->view_initiators[] = new GroupHomeInitiator();
+		$this->view_initiators[] = new GroupEditorInitiator();
 	}
 
 	function dispatch( $bool, WP $wp ) {
