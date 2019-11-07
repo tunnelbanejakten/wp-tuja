@@ -7,7 +7,7 @@ use WP_Post;
 /**
  * Credits: https://gist.github.com/gmazzap/1efe17a8cb573e19c086
  */
-abstract class FrontendPage {
+abstract class FrontendView {
 
 	private $wp_post = null;
 

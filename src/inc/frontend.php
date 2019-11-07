@@ -2,7 +2,7 @@
 
 namespace tuja;
 
-use tuja\frontend\FrontendPage;
+use tuja\frontend\FrontendView;
 use tuja\frontend\router\Controller;
 use tuja\view\CountdownShortcode;
 use tuja\view\CreateGroupShortcode;
@@ -47,7 +47,7 @@ class Frontend extends Plugin {
 			if (
 				$wp_query->is_page
 				&& isset( $wp_query->virtual_page )
-				&& $wp_query->virtual_page instanceof FrontendPage
+				&& $wp_query->virtual_page instanceof FrontendView
 				&& isset( $post->is_virtual )
 				&& $post->is_virtual
 			) {

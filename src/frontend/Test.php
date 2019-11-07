@@ -3,7 +3,7 @@
 namespace tuja\frontend;
 
 
-class Test extends FrontendPage {
+class Test extends FrontendView {
 	private $title;
 
 	public function __construct( $url, $title ) {

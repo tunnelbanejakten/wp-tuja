@@ -2,7 +2,7 @@
 
 namespace tuja\frontend\router;
 
-use tuja\frontend\FrontendPage;
+use tuja\frontend\FrontendView;
 
 /**
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
@@ -12,7 +12,7 @@ class TemplateLoader {
 
 	private $templates;
 
-	public function init( FrontendPage $page ) {
+	public function init( FrontendView $page ) {
 		$this->templates = wp_parse_args(
 			array( 'page.php', 'index.php' ), (array) $page->get_wp_template()
 		);

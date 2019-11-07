@@ -2,8 +2,9 @@
 
 namespace tuja\frontend\router;
 
-use tuja\frontend\FrontendPage;
+use tuja\frontend\FrontendView;
 use tuja\frontend\Test;
+use tuja\util\Id;
 use WP;
 use WP_Post;
 
@@ -12,33 +13,30 @@ use WP_Post;
  */
 class Controller {
 
-	private $pages;
+	private $view_initiators = [];
 	private $loader;
 
 	function __construct() {
-		$this->pages  = new \SplObjectStorage;
 		$this->loader = new TemplateLoader;
 
-		$this->add_page( new class () implements PageInitiator {
-			function create_page( $path ): FrontendPage {
-				return new Test( $path, 'Hello' );
+		$this->view_initiators[] = new class () implements ViewInitiator {
+			function create_page( $path ): FrontendView {
+				list ( $group_id, $action ) = explode( '/', urldecode( $path ) );
+
+				return new Test( $path, $action );
 			}
 
 			function is_handler( $path ): bool {
-				return trim( $path, '/' ) === 'test';
+				$parts = explode( '/', $path );
+
+				return preg_match( '/^[' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '}$/', $parts[0] );
 			}
-		} );
-	}
-
-	function add_page( PageInitiator $page ) {
-		$this->pages->attach( $page );
-
-		return $page;
+		};
 	}
 
 	function dispatch( $bool, WP $wp ) {
 		$matched = $this->check_request();
-		if ( $matched && $matched instanceof FrontendPage ) {
+		if ( $matched ) {
 			$this->loader->init( $matched );
 			$wp->virtual_page = $matched;
 			do_action( 'parse_request', $wp );
@@ -52,15 +50,12 @@ class Controller {
 	}
 
 	private function check_request() {
-		$this->pages->rewind();
 		$path = trim( $this->get_path_info(), '/' );
-		while ( $this->pages->valid() ) {
-			if ( $this->pages->current()->is_handler( $path ) ) {
-				return $this->pages->current()->create_page( $path );
+		foreach ( $this->view_initiators as $page ) {
+			if ( $page->is_handler( $path ) ) {
+				return $page->create_page( $path );
 			}
-			$this->pages->next();
 		}
-
 		return null;
 	}
 
@@ -70,7 +65,7 @@ class Controller {
 		return preg_replace( "#^/?{$home_path}/#", '/', add_query_arg( array() ) );
 	}
 
-	private function init_wp_query( FrontendPage $page ) {
+	private function init_wp_query( FrontendView $page ) {
 		global $wp_query;
 		$wp_query->init();
 		$wp_query->is_page        = true;
