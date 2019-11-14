@@ -119,24 +119,4 @@ class AbstractGroupShortcode extends AbstractShortcode
 	    $category = $group->get_derived_group_category();
 	    return ! isset( $category ) || $category->get_rule_set()->is_update_registration_allowed( $competition );
     }
-
-    protected function send_template_mail($to, $template_id, Group $group, Person $person)
-    {
-        $message_template = $this->message_template_dao->get($template_id);
-
-        $template_parameters = array_merge(
-            Template::site_parameters(),
-            Template::person_parameters($person),
-            Template::group_parameters($group)
-        );
-        $outgoing_message = new OutgoingEmailMessage($this->message_sender,
-            Person::from_email($to),
-            Template::string($message_template->body)->render($template_parameters, true),
-            Template::string($message_template->subject)->render($template_parameters));
-
-        try {
-            $outgoing_message->send();
-        } catch (Exception $e) {
-        }
-    }
 }

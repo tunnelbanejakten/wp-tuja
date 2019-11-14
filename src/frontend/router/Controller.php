@@ -17,8 +17,9 @@ class Controller {
 	function __construct() {
 		$this->loader = new TemplateLoader;
 
-		$this->view_initiators[] = new GroupHomeInitiator();
 		$this->view_initiators[] = new GroupEditorInitiator();
+		$this->view_initiators[] = new CompetitionSignupInitiator();
+		$this->view_initiators[] = new GroupHomeInitiator();
 	}
 
 	function dispatch( $bool, WP $wp ) {

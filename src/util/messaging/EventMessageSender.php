@@ -102,7 +102,7 @@ class EventMessageSender {
 		foreach ( $contacts as $contact ) {
 			$template_parameters = array_merge(
 				Template::site_parameters(),
-				Template::person_parameters( $contact ),
+				Template::person_parameters( $contact, $group ),
 				Template::group_parameters( $group )
 			);
 

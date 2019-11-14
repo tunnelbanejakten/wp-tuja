@@ -10,7 +10,7 @@ use tuja\util\Id;
 
 class GroupHomeInitiator implements ViewInitiator {
 	public static function link( Group $group ) {
-		return sprintf( '/%s', $group->random_id );
+		return join( '/', [ get_site_url(), $group->random_id ] );
 	}
 
 	function create_page( $path ): FrontendView {

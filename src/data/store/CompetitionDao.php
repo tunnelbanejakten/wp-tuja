@@ -93,4 +93,13 @@ class CompetitionDao extends AbstractDao
 		return $c;
 	}
 
+	public function get_by_key( $competition_key ) {
+		return $this->get_object(
+			function ( $row ) {
+				return self::to_competition( $row );
+			},
+			'SELECT * FROM ' . $this->table . ' WHERE random_id = %s',
+			$competition_key );
+	}
+
 }

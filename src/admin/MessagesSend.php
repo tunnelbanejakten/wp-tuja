@@ -202,7 +202,7 @@ class MessagesSend {
 	public function get_parameters( $person, $group ) {
 		return array_merge(
 			Template::group_parameters( $group ),
-			Template::person_parameters( $person ),
+			Template::person_parameters( $person, $group ),
 			Template::site_parameters()
 		);
 	}
