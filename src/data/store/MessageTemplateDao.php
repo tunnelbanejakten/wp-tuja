@@ -99,7 +99,7 @@ class MessageTemplateDao extends AbstractDao
 			function ( $row ) {
 				return self::to_message_template( $row );
 			},
-			'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d AND trigger = %s',
+			'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d AND auto_send_trigger = %s',
 			$competition_id,
 			$trigger );
 	}
