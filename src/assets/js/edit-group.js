@@ -7,7 +7,7 @@ var tujaEditGroup = (function () {
   }
 
   function addPerson ($, event) {
-    var form = $(event.target).closest('form')
+    var form = $(event.target).closest('div.tuja-people')
     var container = form.find('div.tuja-people-existing')
     var newPersonForm = form.find('div.tuja-person-template > div.tuja-signup-person').clone()
     var id = generateId()

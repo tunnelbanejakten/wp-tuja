@@ -34,6 +34,17 @@ class Person
 	const STATUS_CREATED = 'created';
 	const STATUS_DELETED = 'deleted';
 
+	const DEFAULT_STATUS = self::STATUS_CREATED;
+
+	const STATUS_TRANSITIONS = [
+		self::STATUS_CREATED => [
+			self::STATUS_DELETED
+		],
+		self::STATUS_DELETED => [
+			self::STATUS_CREATED
+		]
+	];
+
 	public $id;
     public $random_id;
     public $name;
@@ -47,6 +58,7 @@ class Person
     public $is_group_contact;
     public $pno;
 	public $age;
+	private $status = null;
 
 	public static function is_valid_email_address( $email ) {
 		return preg_match( '/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i', $email ) === 1;
@@ -86,9 +98,36 @@ class Person
 	    if ( ! empty( trim( $this->pno ) ) && preg_match( '/' . self::PNO_PATTERN . '/', $this->pno ) !== 1 ) {
             throw new ValidationException('pno', 'Födelsedag och sånt ser konstigt ut');
         }
+		if ( $this->get_status() !== null && ! in_array( $this->get_status(), array_keys( self::STATUS_TRANSITIONS ) ) ) {
+			throw new ValidationException( 'status', 'Ogiltig status.' );
+		}
     }
 
-    public static function from_email(string $email)
+	public function get_status() {
+		return $this->status;
+	}
+
+	public function set_status( $new_status ) {
+		$old_status = $this->status;
+		if ( $old_status == $new_status ) {
+			return;
+		}
+		if ( ! in_array( $new_status, array_keys( self::STATUS_TRANSITIONS ) ) ) {
+			throw new ValidationException( 'status', 'Status ' . $new_status . ' is not defined.' );
+		}
+		if ( $this->get_status() != null ) {
+			if ( ! isset( self::STATUS_TRANSITIONS[ $old_status ] ) ) {
+				throw new ValidationException( 'status', 'No state transitions defined for ' . $old_status . '. Is this an old status? Is data migration needed?' );
+			}
+			if ( ! in_array( $new_status, self::STATUS_TRANSITIONS[ $this->get_status() ] ) ) {
+				throw new ValidationException( 'status', 'Transition from ' . $this->get_status() . ' to ' . $new_status . ' not permitted. Permitted transitions: ' . join( ', ', self::STATUS_TRANSITIONS[ $this->get_status() ] ) . '.' );
+			}
+		}
+
+		$this->status = $new_status;
+	}
+
+	public static function from_email( string $email )
     {
         $person = new Person();
         $person->name = substr($email, 0, strpos($email, '@'));

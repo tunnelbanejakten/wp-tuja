@@ -52,6 +52,7 @@ abstract class FrontendView {
 	}
 
 	function as_wp_post() {
+		wp_register_script( 'tuja-editgroup-script', Frontend::get_url() . '/assets/js/edit-group.js' );
 		if ( is_null( $this->wp_post ) ) {
 			$post          = array(
 				'ID'             => 0,

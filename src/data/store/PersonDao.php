@@ -288,6 +288,7 @@ class PersonDao extends AbstractDao
 		$p->food             = $result->food;
 		$p->pno              = $result->pno;
 		$p->age              = $result->age;
+		$p->set_status( $result->status );
 
 		return $p;
 	}

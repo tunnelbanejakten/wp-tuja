@@ -9,10 +9,10 @@ use tuja\frontend\FrontendView;
 use tuja\util\Id;
 
 class GroupEditorInitiator implements ViewInitiator {
-	const ACTION = 'edit';
+	const ACTION = 'andra';
 
 	public static function link( Group $group ) {
-		return sprintf( '/%s/%s', $group->random_id, self::ACTION );
+		return join( '/', [ get_site_url(), $group->random_id, self::ACTION ] );
 	}
 
 	function create_page( $path ): FrontendView {
@@ -23,6 +23,8 @@ class GroupEditorInitiator implements ViewInitiator {
 
 	function is_handler( $path ): bool {
 		list ( $group_key, $action ) = explode( '/', urldecode( $path ) );
+
+		wp_enqueue_script( 'tuja-editgroup-script' ); // Needed?
 
 		return isset( $group_key ) && isset( $action )
 		       && $action == self::ACTION
