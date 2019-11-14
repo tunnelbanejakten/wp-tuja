@@ -18,6 +18,7 @@ use tuja\view\FieldPhone;
 use tuja\view\FieldPno;
 use tuja\view\FieldText;
 
+// TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix. Throwing exceptions might be preferable.
 class GroupPeopleEditor extends AbstractGroupView {
 	private $group_key;
 

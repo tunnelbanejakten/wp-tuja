@@ -1,21 +1,21 @@
 <?php
 namespace tuja\admin;
 AdminUtils::printTopMenu( $competition );
+
+use tuja\frontend\router\CompetitionSignupInitiator;
+
 ?>
 
 <form method="post" action="<?= add_query_arg() ?>" class="tuja">
-    <p>Anmäl lag</p>
-    <code>[tuja_create_group
-        competition="<?= $competition->id ?>"
-        edit_link_template="<?= get_site_url() ?>/edit-our-signup/%s"
-        enable_group_category_selection="no"]</code>
+    <p>
+        Anmäl lag:
+		<?php
+		$link = CompetitionSignupInitiator::link( $competition );
+		printf( '<a href="%s" target="_blank">%s</a>', $link, $link )
+		?>
+    </p>
 
-    <p>Redigera anmälning</p>
-    <code>[tuja_edit_group
-        competition="<?= $competition->id ?>
-        enable_group_category_selection="no"]</code>
-
-    <p>Rapportera in poäng som functionär</p>
+    <p>Rapportera in poäng som funktionär</p>
     <code>[tuja_points
         competition="<?= $competition->id ?>"]</code>
 

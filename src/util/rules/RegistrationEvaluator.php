@@ -78,7 +78,7 @@ class RegistrationEvaluator {
 					new RuleResult(
 						'Vuxen i laget',
 						RuleResult::WARNING,
-						'Laget har tävlande vuxna. Kryssa i "' . EditGroupShortcode::ROLE_ISNOTCOMPETING_LABEL . '" för ledare som bara följer med och som därför inte behöver betala anmälningsavgift.'
+						'Laget har tävlande vuxna.'
 					)
 				];
 			}

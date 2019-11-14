@@ -46,37 +46,6 @@ No attributes.
 Known issues:
 * 
 
-## tuja_edit_group
-
-Features:
-* Edit group properties (like name and age group).
-* Edit group members (adding, changing and removing people in group).
-* Uses id string in URL to identify the group. 
-
-Attributes:
-* is_crew_form: Sets which group categories to show in the form. The value "yes" means that only crew categories 
-  are shown, otherwise only non-crew categories are shown. 
-* enable_group_category_selection: Enables (default) the user to pick a group category when editing group registration. 
-
-Known issues:
-* 
-
-## tuja_create_group
-
-Features:
-* Handles registration of new groups (i.e. signing up new teams).
-* Create one group and its initial group member (who is presumably the group leader).
-
-Attributes:
-* competition: The competition to which group should belong.
-* edit_link_template: Template for URL used to edit group once created. Needs to be an absolute URL.
-* is_crew_form: Sets which group categories to show in the form. The value "yes" means that only crew categories 
-  are shown, otherwise only non-crew categories are shown.
-* enable_group_category_selection: Enables (default) the user to pick a group category when signing up. 
-
-Known issues:
-* 
-
 ## tuja_create_person
 
 Features:

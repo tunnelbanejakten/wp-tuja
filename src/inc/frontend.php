@@ -104,34 +104,19 @@ class Frontend extends Plugin {
 		return $component->render();
 	}
 
-	public function edit_group_shortcode( $atts ) {
-		global $wp_query, $wpdb;
+	public function edit_group_shortcode() {
+		global $wp_query;
 		$group_id                        = $wp_query->query_vars['group_id'];
-		$is_crew_form                    = self::bool_attr( $atts, 'is_crew_form' );
-		$enable_group_category_selection = $atts['enable_group_category_selection'] !== 'no'; // Enabled if omitted, disable with 'no'.
 
-		$component = new EditGroupShortcode(
-			$wpdb,
-			$group_id,
-			$is_crew_form,
-			$enable_group_category_selection );
+		$component = new EditGroupShortcode( $group_id );
 
 		return $component->render();
 	}
 
 	public function create_group_shortcode( $atts ) {
-		global $wpdb;
 		$competition_id                  = $atts['competition'];
-		$edit_link_template              = $atts['edit_link_template'];
-		$is_crew_form                    = self::bool_attr( $atts, 'is_crew_form' );
-		$enable_group_category_selection = $atts['enable_group_category_selection'] !== 'no'; // Enabled if omitted, disable with 'no'.
 
-		$component = new CreateGroupShortcode(
-			$wpdb,
-			$competition_id,
-			$edit_link_template,
-			$is_crew_form,
-			$enable_group_category_selection );
+		$component = new CreateGroupShortcode( $competition_id );
 
 		return $component->render();
 	}
