@@ -122,10 +122,9 @@ class Frontend extends Plugin {
 	}
 
 	public function create_person_shortcode( $atts ) {
-		global $wp_query, $wpdb;
+		global $wp_query;
 		$group_id           = $atts['group_id'] ?: $wp_query->query_vars['group_id'];
-		$edit_link_template = $atts['edit_link_template'];
-		$component          = new CreatePersonShortcode( $wpdb, $group_id, $edit_link_template );
+		$component          = new CreatePersonShortcode( $group_id);
 
 		return $component->render();
 	}

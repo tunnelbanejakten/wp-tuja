@@ -17,6 +17,7 @@ class Controller {
 	function __construct() {
 		$this->loader = new TemplateLoader;
 
+		$this->view_initiators[] = new GroupSignupInitiator();
 		$this->view_initiators[] = new GroupPeopleEditorInitiator();
 		$this->view_initiators[] = new GroupEditorInitiator();
 		$this->view_initiators[] = new CompetitionSignupInitiator();
