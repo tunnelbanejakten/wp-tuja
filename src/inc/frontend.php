@@ -130,9 +130,9 @@ class Frontend extends Plugin {
 	}
 
 	public function edit_person_shortcode( $atts ) {
-		global $wp_query, $wpdb;
+		global $wp_query;
 		$person_key = $wp_query->query_vars['group_id'];
-		$component  = new EditPersonShortcode( $wpdb, $person_key );
+		$component  = new EditPersonShortcode( $person_key );
 
 		return $component->render();
 	}
