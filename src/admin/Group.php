@@ -9,6 +9,8 @@ use tuja\data\store\FormDao;
 use tuja\data\store\MessageDao;
 use tuja\data\store\PersonDao;
 use tuja\data\store\QuestionGroupDao;
+use tuja\frontend\router\GroupEditorInitiator;
+use tuja\frontend\router\GroupSignupInitiator;
 use tuja\util\rules\RegistrationEvaluator;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\PointsDao;
@@ -177,6 +179,9 @@ class Group {
 		$registration_evaluation = $group->evaluate_registration();
 
 		$groups = $db_groups->get_all_in_competition( $competition->id );
+
+		$group_signup_link = GroupSignupInitiator::link( $group );
+		$group_editor_link = GroupEditorInitiator::link( $group );
 
 		include( 'views/group.php' );
 	}

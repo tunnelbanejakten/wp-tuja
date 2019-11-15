@@ -2,6 +2,7 @@
 namespace tuja\admin;
 
 use tuja\data\store\ResponseDao;
+use tuja\frontend\router\PersonEditorInitiator;
 use tuja\util\rules\RuleResult;
 
 AdminUtils::printTopMenu( $competition );
@@ -9,6 +10,15 @@ AdminUtils::printTopMenu( $competition );
 
 <form method="post" action="<?= add_query_arg() ?>" class="tuja">
     <h3>Grupp <?= htmlspecialchars($group->name) ?> (id: <code><?= htmlspecialchars($group->random_id) ?></code>)</h3>
+
+    <p>
+        Länk för att redigera hela laget:
+		<?= sprintf( '<a href="%s">%s</a>', $group_editor_link, $group_editor_link ) ?>
+    </p>
+    <p>
+        Länk för att anmäla nya till laget:
+		<?= sprintf( '<a href="%s">%s</a>', $group_signup_link, $group_signup_link ) ?>
+    </p>
 
     <h3>Status</h3>
 
@@ -82,6 +92,7 @@ AdminUtils::printTopMenu( $competition );
             <th>Lagledare</th>
             <th>Telefon</th>
             <th>E-post</th>
+            <th>Länk för att redigera</th>
         </tr>
         </thead>
         <tfoot>
@@ -103,7 +114,9 @@ AdminUtils::printTopMenu( $competition );
         </tfoot>
         <tbody>
 		<?php
-		print join( '', array_map( function ( $person ) {
+		print join( '', array_map( function ( $person ) use ( $group ) {
+			$person_edit_link = PersonEditorInitiator::link( $group, $person );
+
 			return sprintf( '<tr>' .
 			                '<td><input type="checkbox" name="tuja_group_people[]" value="%d" id="tuja_group_people__person_%d"></td>' .
 			                '<td><label for="tuja_group_people__person_%d">%s</label></td>' .
@@ -113,6 +126,7 @@ AdminUtils::printTopMenu( $competition );
 			                '<td>%s</td>' .
 			                '<td>%s</td>' .
 			                '<td><a href="mailto:%s">%s</a></td>' .
+			                '<td><a href="%s">%s</a></td>' .
 			                '</tr>',
 				$person->id,
 				$person->id,
@@ -124,7 +138,9 @@ AdminUtils::printTopMenu( $competition );
 				$person->is_group_contact ? 'Ja' : '',
 				$person->phone,
 				$person->email,
-				$person->email);
+				$person->email,
+				$person_edit_link,
+				$person_edit_link );
 		}, $people ) );
 		?>
         </tbody>
