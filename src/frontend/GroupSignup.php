@@ -29,6 +29,8 @@ class GroupSignup extends AbstractGroupView {
 	}
 
 	function render() {
+		$group      = $this->get_group();
+
 		$form = $this->render_form();
 
 		include( 'views/group-signup.php' );

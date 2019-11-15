@@ -1,2 +1,2 @@
-<h1>Anmäl dig till <?= $group->name ?></h1>
+<h1>Anmäl dig till <?= htmlspecialchars($group->name) ?></h1>
 <?= $form ?>
