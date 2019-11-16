@@ -24,7 +24,7 @@ class GroupSignup extends AbstractGroupView {
 		parent::__construct( $url, $group_key, 'Anmäl dig till %s' );
 	}
 
-	function render() {
+	function output() {
 		try {
 			$group = $this->get_group();
 			$form  = $this->render_form();

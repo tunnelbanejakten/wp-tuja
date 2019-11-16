@@ -31,7 +31,7 @@ class GroupEditor extends AbstractGroupView {
 		$this->group_key = $group_key;
 	}
 
-	function render() {
+	function output() {
 
 		wp_enqueue_script( 'jquery' );
 		wp_enqueue_script( 'tuja-editgroup-script' ); // Needed?

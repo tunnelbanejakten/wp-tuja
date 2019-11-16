@@ -39,14 +39,14 @@ abstract class FrontendView {
 		$this->category_dao = new GroupCategoryDao();
 	}
 
-	abstract function render();
+	abstract function output();
 
 	abstract function get_title();
 
 	function get_content() {
 		ob_start();
 
-		$this->render();
+		$this->output();
 
 		return ob_get_clean();
 	}

@@ -14,7 +14,7 @@ class GroupHome extends AbstractGroupView {
 		parent::__construct( $url, $group_key, '%s' );
 	}
 
-	function render() {
+	function output() {
 		try {
 			$group            = $this->get_group();
 			$edit_group_link  = GroupEditorInitiator::link( $group );

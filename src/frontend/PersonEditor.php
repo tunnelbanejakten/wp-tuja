@@ -26,7 +26,7 @@ class PersonEditor extends AbstractGroupView {
 		$this->person_key = $person_key;
 	}
 
-	function render() {
+	function output() {
 		try {
 			$person = $this->get_person();
 			$group  = $this->get_group();

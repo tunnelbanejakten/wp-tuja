@@ -40,7 +40,7 @@ class CompetitionSignup extends FrontendView {
 		$this->group_dao       = new GroupDao();
 	}
 
-	function render() {
+	function output() {
 		global $wpdb;
 
 		$competition = $this->get_competition();

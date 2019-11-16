@@ -29,7 +29,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		parent::__construct( $url, $group_key, 'Personer i %s' );
 	}
 
-	function render() {
+	function output() {
 
 		wp_enqueue_script( 'jquery' );
 		wp_enqueue_script( 'tuja-editgroup-script' ); // Needed?

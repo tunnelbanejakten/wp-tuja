@@ -32,17 +32,21 @@ class Frontend extends Plugin {
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
 
+		$this->init_page_controller();
+	}
+
+	private function init_page_controller() {
 		$controller = new Controller();
 
 		add_filter( 'do_parse_request', array( $controller, 'dispatch' ), PHP_INT_MAX, 2 );
 
-		add_action( 'loop_end', function( WP_Query $query ) {
+		add_action( 'loop_end', function ( WP_Query $query ) {
 			if ( isset( $query->virtual_page ) && ! empty( $query->virtual_page ) ) {
-				$query->virtual_page = NULL;
+				$query->virtual_page = null;
 			}
 		} );
 
-		add_filter( 'the_permalink', function( $plink ) {
+		add_filter( 'the_permalink', function ( $plink ) {
 			global $post, $wp_query;
 			if (
 				$wp_query->is_page
