@@ -5,12 +5,12 @@ namespace tuja\data\model;
 
 use tuja\util\GroupCategoryCalculator;
 use tuja\util\rules\RegistrationEvaluator;
+use tuja\util\StateMachine;
+use tuja\util\StateMachineException;
 
 class Group
 {
 	private static $group_calculators = [];
-
-	private $status_changes = [];
 
 	const STATUS_CREATED = 'created';
 	const STATUS_AWAITING_APPROVAL = 'awaiting_approval';
@@ -60,7 +60,7 @@ class Group
 		]
 	];
 
-	private $status = null;
+	private $status;
 	public $id;
 	public $random_id;
 	public $competition_id;
@@ -74,6 +74,10 @@ class Group
 	public $count_team_contact;
 	public $is_always_editable = false;
 
+	public function __construct() {
+		$this->status = new StateMachine( null, self::STATUS_TRANSITIONS );
+	}
+
 	public function validate() {
 		if ( strlen(trim($this->name)) < 1) {
 			throw new ValidationException('name', 'Namnet måste fyllas i.');
@@ -81,35 +85,21 @@ class Group
 		if ( strlen($this->name) > 100) {
 			throw new ValidationException('name', 'Namnet får inte vara längre än 100 bokstäver.');
 		}
-		if ( $this->get_status() !== null && ! in_array( $this->get_status(), array_keys( self::STATUS_TRANSITIONS ) ) ) {
-			throw new ValidationException( 'status', 'Ogiltig status.' );
+		if ( $this->get_status() == null ) {
+			throw new ValidationException( 'status', 'Status måste vara satt.' );
 		}
 	}
 
 	public function get_status() {
-		return $this->status;
+		return $this->status->get();
 	}
 
 	public function set_status( $new_status ) {
-		$old_status = $this->status;
-		if ( $old_status == $new_status ) {
-			return;
+		try {
+			$this->status->set( $new_status );
+		} catch ( StateMachineException $e ) {
+			throw new ValidationException( 'status', $e->getMessage() );
 		}
-		if ( ! in_array( $new_status, array_keys( self::STATUS_TRANSITIONS ) ) ) {
-			throw new ValidationException( 'status', 'Status ' . $new_status . ' is not defined.' );
-		}
-		if ( $this->get_status() != null ) {
-			if ( ! isset( self::STATUS_TRANSITIONS[ $old_status ] ) ) {
-				throw new ValidationException( 'status', 'No state transitions defined for ' . $old_status . '. Is this an old status? Is data migration needed?' );
-			}
-			if ( ! in_array( $new_status, self::STATUS_TRANSITIONS[ $this->get_status() ] ) ) {
-				throw new ValidationException( 'status', 'Transition from ' . $this->get_status() . ' to ' . $new_status . ' not permitted. Permitted transitions: ' . join( ', ', self::STATUS_TRANSITIONS[ $this->get_status() ] ) . '.' );
-			}
-		}
-
-		$this->status = $new_status;
-
-		$this->status_changes[] = [ $old_status, $new_status ];
 	}
 
 	public function evaluate_registration() {
@@ -137,7 +127,7 @@ class Group
 	}
 
 	public function get_status_changes() {
-		return $this->status_changes;
+		return $this->status->get_state_changes();
 	}
 
 }
