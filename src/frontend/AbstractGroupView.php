@@ -34,18 +34,37 @@ abstract class AbstractGroupView extends FrontendView {
 	protected $group_dao;
 	protected $message_template_dao;
 	protected $competition_dao;
-	private $is_crew_form;
 	private $message_sender;
+	private $group_key;
+	private $title_pattern;
 
-	public function __construct($url, $is_crew_form)
+	public function __construct(string $url, string $group_key, string $title_pattern)
 	{
 		parent::__construct($url);
 		$this->group_dao            = new GroupDao();
 		$this->person_dao           = new PersonDao();
 		$this->competition_dao      = new CompetitionDao();
 		$this->message_template_dao = new MessageTemplateDao();
-		$this->is_crew_form         = $is_crew_form;
 		$this->message_sender       = new MessageSender();
+		$this->group_key = $group_key;
+		$this->title_pattern = $title_pattern;
+	}
+
+	protected function get_group(): Group {
+		$group = $this->group_dao->get_by_key( $this->group_key );
+		if ( $group == false ) {
+			throw new Exception( 'Oj, vi hittade inte laget' );
+		}
+
+		return $group;
+	}
+
+	function get_title() {
+		try {
+			return sprintf( $this->title_pattern, $this->get_group()->name );
+		} catch ( Exception $e ) {
+			return $e->getMessage();
+		}
 	}
 
 	protected function is_edit_allowed(Group $group): bool

@@ -20,75 +20,55 @@ use tuja\view\FieldPno;
 use tuja\view\FieldText;
 
 class GroupSignup extends AbstractGroupView {
-	private $group_key;
-
 	public function __construct( $url, $group_key ) {
-		parent::__construct( $url, false );
-		$this->group_key = $group_key;
-		$this->group_dao = new GroupDao();
+		parent::__construct( $url, $group_key, 'Anmäl dig till %s' );
 	}
 
 	function render() {
-		$group      = $this->get_group();
-
-		$form = $this->render_form();
-
-		include( 'views/group-signup.php' );
-	}
-
-	function get_title() {
-		return $this->get_group()->name;
-	}
-
-	function get_group(): Group {
-		return $this->group_dao->get_by_key( $this->group_key );
-	}
-
-	public function render_form(): String
-	{
-		$group_key = $this->group_key;
-
-		if (isset($group_key)) {
+		try {
 			$group = $this->get_group();
-			if ($group === false) {
-				return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du vill anmäla dig till.');
-			}
+			$form  = $this->render_form();
+			include( 'views/group-signup.php' );
+		} catch ( Exception $e ) {
+			printf( '<p class="tuja-message tuja-message-error">%s</p>', $e->getMessage() );
+		}
+	}
 
-			if ( ! $this->is_edit_allowed( $group ) ) {
-				return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.');
-			}
+	public function render_form(): String {
+		$group = $this->get_group();
 
-			if ($_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
-				try {
-					$recaptcha_secret = get_option('tuja_recaptcha_sitesecret');
-					if (!empty($recaptcha_secret)) {
-						$recaptcha = new Recaptcha($recaptcha_secret);
-						$recaptcha->verify($_POST['g-recaptcha-response']);
-					}
+		if ( ! $this->is_edit_allowed( $group ) ) {
+			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.' );
+		}
 
-					// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
-					$new_person = $this->create_person($group);
-
-					$edit_link = PersonEditorInitiator::link( $group, $new_person );
-
-					$this->send_person_welcome_mail( $new_person );
-
-					if (!empty($edit_link)) {
-						return sprintf('<p class="tuja-message tuja-message-success">Tack för din anmälan. Gå till <a href="%s">%s</a> om du behöver ändra din anmälan senare. Vi har också skickat länken till din e-postadress.</p>', $edit_link, $edit_link);
-					} else {
-						return sprintf('<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>');
-					}
-				} catch (ValidationException $e) {
-					return $this->render_create_form($group, array($e->getField() => $e->getMessage()));
-				} catch (Exception $e) {
-					// TODO: Create helper method for generating field names based on "group or person" and attribute name.
-					return $this->render_create_form($group, array('__' => $e->getMessage()));
+		if ( $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
+			try {
+				$recaptcha_secret = get_option( 'tuja_recaptcha_sitesecret' );
+				if ( ! empty( $recaptcha_secret ) ) {
+					$recaptcha = new Recaptcha( $recaptcha_secret );
+					$recaptcha->verify( $_POST['g-recaptcha-response'] );
 				}
-			} else {
-				return $this->render_create_form($group);
+
+				// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
+				$new_person = $this->create_person( $group );
+
+				$edit_link = PersonEditorInitiator::link( $group, $new_person );
+
+				$this->send_person_welcome_mail( $new_person );
+
+				if ( ! empty( $edit_link ) ) {
+					return sprintf( '<p class="tuja-message tuja-message-success">Tack för din anmälan. Gå till <a href="%s">%s</a> om du behöver ändra din anmälan senare. Vi har också skickat länken till din e-postadress.</p>', $edit_link, $edit_link );
+				} else {
+					return sprintf( '<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>' );
+				}
+			} catch ( ValidationException $e ) {
+				return $this->render_create_form( $group, array( $e->getField() => $e->getMessage() ) );
+			} catch ( Exception $e ) {
+				// TODO: Create helper method for generating field names based on "group or person" and attribute name.
+				return $this->render_create_form( $group, array( '__' => $e->getMessage() ) );
 			}
 		} else {
-			return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du vill anmäla dig till.');
+			return $this->render_create_form( $group );
 		}
 	}
 

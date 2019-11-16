@@ -20,73 +20,63 @@ use tuja\view\FieldText;
 
 class PersonEditor extends AbstractGroupView {
 	private $person_key;
-	private $group_key;
 
 	public function __construct( $url, $group_key, $person_key ) {
-		parent::__construct( $url, false );
+		parent::__construct( $url, $group_key, 'Din anmälan' );
 		$this->person_key = $person_key;
-		$this->group_key  = $group_key;
 	}
 
 	function render() {
-		$person = $this->get_person();
+		try {
+			$person = $this->get_person();
+			$group  = $this->get_group();
+			if ( $person->group_id != $group->id ) {
+				print 'Invalid group';
 
-		$group = $this->get_group();
-
-		if ( $person->group_id != $group->id ) {
-			print 'Invalid group';
-
-			return;
+				return;
+			}
+			$form = $this->render_form();
+			include( 'views/person-editor.php' );
+		} catch ( Exception $e ) {
+			printf( '<p class="tuja-message tuja-message-error">%s</p>', $e->getMessage() );
 		}
-
-		$form = $this->render_form();
-
-		include( 'views/person-editor.php' );
-	}
-
-	function get_title() {
-		return $this->get_person()->name;
 	}
 
 	function get_person(): Person {
-		return $this->person_dao->get_by_key( $this->person_key );
+		$person = $this->person_dao->get_by_key( $this->person_key );
+		if ( $person == false ) {
+			throw new Exception( 'Oj, vi hittade inte personen' );
+		}
+
+		return $person;
 	}
 
-	function get_group(): Group {
-		return $this->group_dao->get_by_key( $this->group_key );
-	}
+	public function render_form(): String {
+		$person = $this->get_person();
+		if ( $person === false ) {
+			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Ingen person angiven.' );
+		}
 
-	public function render_form(): String
-	{
-		$person_key = $this->person_key;
+		$group        = $this->group_dao->get( $person->group_id );
+		$is_read_only = ! $this->is_edit_allowed( $group );
 
-		if (isset($person_key)) {
-			$person = $this->person_dao->get_by_key($person_key);
-			if ($person === false) {
-				return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Ingen person angiven.');
-			}
-
-			$group        = $this->group_dao->get($person->group_id);
-			$is_read_only = ! $this->is_edit_allowed( $group );
-
-			if (@$_POST[self::ACTION_BUTTON_NAME] == self::ACTION_NAME_SAVE) {
-				if (!$is_read_only) {
-					$errors = $this->update_person($person);
-					if ( empty( $errors ) ) {
-						printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
-					}
-				} else {
-					$errors = array('__' => 'Tyvärr så kan anmälningar inte ändras nu.');
+		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
+			if ( ! $is_read_only ) {
+				$errors = $this->update_person( $person );
+				if ( empty( $errors ) ) {
+					printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
 				}
-				return $this->render_update_form($person, $errors, $is_read_only);
 			} else {
-				return $this->render_update_form($person, array(), $is_read_only);
+				$errors = array( '__' => 'Tyvärr så kan anmälningar inte ändras nu.' );
 			}
+
+			return $this->render_update_form( $person, $errors, $is_read_only );
 		} else {
-			return sprintf('<p class="tuja-message tuja-message-error">%s</p>', 'Ingen person angiven.');
+			return $this->render_update_form( $person, array(), $is_read_only );
 		}
 	}
 
+	// Move to AbstractGroupView?
 	private function render_update_form($person, $errors = array(), $read_only = false): string
 	{
 		$html_sections = [];

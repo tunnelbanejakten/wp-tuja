@@ -27,7 +27,7 @@ class GroupEditor extends AbstractGroupView {
 	private $read_only;
 
 	public function __construct( $url, $group_key ) {
-		parent::__construct( $url, false );
+		parent::__construct( $url, $group_key, 'Ändra %s' );
 		$this->group_key = $group_key;
 	}
 
@@ -62,19 +62,7 @@ class GroupEditor extends AbstractGroupView {
 		}
 	}
 
-	function get_title() {
-		return $this->get_group()->name;
-	}
-
-	function get_group(): Group {
-		$group = $this->group_dao->get_by_key( $this->group_key );
-		if ( $group == false ) {
-			throw new Exception( 'Oj, vi vet inte vilket lag du är med i.' );
-		}
-
-		return $group;
-	}
-
+	// Move to AbstractGroupView
 	function is_read_only(): bool {
 		if ( ! isset( $this->read_only ) ) {
 			$this->read_only = ! $this->is_edit_allowed( $this->get_group() );

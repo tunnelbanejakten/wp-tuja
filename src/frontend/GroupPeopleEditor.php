@@ -20,16 +20,13 @@ use tuja\view\FieldText;
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix. Throwing exceptions might be preferable.
 class GroupPeopleEditor extends AbstractGroupView {
-	private $group_key;
-
 	const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
 
 	private $enable_group_category_selection = true;
 	private $read_only;
 
 	public function __construct( $url, $group_key ) {
-		parent::__construct( $url, false );
-		$this->group_key = $group_key;
+		parent::__construct( $url, $group_key, 'Personer i %s' );
 	}
 
 	function render() {
@@ -67,19 +64,6 @@ class GroupPeopleEditor extends AbstractGroupView {
 		} catch ( Exception $e ) {
 			printf( '<p class="tuja-message tuja-message-error">%s</p>', $e->getMessage() );
 		}
-	}
-
-	function get_title() {
-		return $this->get_group()->name;
-	}
-
-	function get_group(): Group {
-		$group = $this->group_dao->get_by_key( $this->group_key );
-		if ( $group == false ) {
-			throw new Exception( 'Oj, vi vet inte vilket lag du är med i.' );
-		}
-
-		return $group;
 	}
 
 	function is_read_only(): bool {
@@ -156,35 +140,6 @@ class GroupPeopleEditor extends AbstractGroupView {
 		return join( $html_sections );
 	}
 
-	public function _____get_form(): String {
-		$group_key = $this->group_key;
-
-		if ( isset( $group_key ) ) {
-			$group = $this->group_dao->get_by_key( $group_key );
-			if ( $group === false ) {
-				return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du är med i.' );
-			}
-
-			$is_read_only = ! $this->is_edit_allowed( $group );
-			$errors       = array();
-
-			if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
-				try {
-					$errors = $this->update_group( $group );
-					if ( empty( $errors ) ) {
-						printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
-					}
-				} catch ( RuleEvaluationException $e ) {
-					$errors = array( '__' => $e->getMessage() );
-				}
-			}
-
-			return $this->render_update_form( $group, $errors, $is_read_only );
-		} else {
-			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du är med i.' );
-		}
-	}
-
 	private function get_people() {
 		// Get people already saved in database:
 		$preexisting_people = $this->get_current_group_members();
@@ -208,6 +163,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		return $people;
 	}
 
+	// Move to AbstractGroupView?
 	private function render_person_form( Person $person, bool $show_name = true, bool $show_email = true, bool $show_phone = true, bool $show_pno = true, bool $show_food = true, bool $show_delete = true, bool $is_competing = true, $is_contact = true, $errors = array() ): string {
 
 		$read_only = $this->is_read_only();
