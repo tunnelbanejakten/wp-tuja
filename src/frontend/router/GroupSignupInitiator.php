@@ -9,24 +9,18 @@ use tuja\frontend\FrontendView;
 use tuja\frontend\GroupSignup;
 use tuja\util\Id;
 
-class GroupSignupInitiator implements ViewInitiator {
+class GroupSignupInitiator extends SimpleViewInitiator {
 	const ACTION = 'anmal-mig';
 
+	public function __construct() {
+		parent::__construct( self::ACTION );
+	}
+
 	public static function link( Group $group ) {
-		return join( '/', [ get_site_url(), $group->random_id, self::ACTION ] );
+		return SimpleViewInitiator::link( $group->random_id, self::ACTION );
 	}
 
-	function create_page( $path ): FrontendView {
-		list ( $group_key ) = explode( '/', urldecode( $path ) );
-
-		return new GroupSignup( $path, $group_key );
-	}
-
-	function is_handler( $path ): bool {
-		list ( $group_key, $action ) = explode( '/', urldecode( $path ) );
-
-		return isset( $group_key ) && isset( $action )
-		       && $action == self::ACTION
-		       && preg_match( '/^[' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '}$/', $group_key );
+	function create_page_view( string $path, string $id ): FrontendView {
+		return new GroupSignup( $path, $id );
 	}
 }

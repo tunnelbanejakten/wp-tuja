@@ -17,12 +17,14 @@ class Controller {
 	function __construct() {
 		$this->loader = new TemplateLoader;
 
-		$this->view_initiators[] = new GroupSignupInitiator();
-		$this->view_initiators[] = new GroupPeopleEditorInitiator();
-		$this->view_initiators[] = new GroupEditorInitiator();
-		$this->view_initiators[] = new CompetitionSignupInitiator();
-		$this->view_initiators[] = new PersonEditorInitiator();
-		$this->view_initiators[] = new GroupHomeInitiator();
+		$this->view_initiators = [
+			new GroupSignupInitiator(),
+			new GroupPeopleEditorInitiator(),
+			new GroupEditorInitiator(),
+			new CompetitionSignupInitiator(),
+			new PersonEditorInitiator(),
+			new GroupHomeInitiator()
+		];
 	}
 
 	function dispatch( $bool, WP $wp ) {
