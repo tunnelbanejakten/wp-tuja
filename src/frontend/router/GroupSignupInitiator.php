@@ -17,7 +17,7 @@ class GroupSignupInitiator extends SimpleViewInitiator {
 	}
 
 	public static function link( Group $group ) {
-		return SimpleViewInitiator::link( $group->random_id, self::ACTION );
+		return SimpleViewInitiator::raw_link( $group->random_id, self::ACTION );
 	}
 
 	function create_page_view( string $path, string $id ): FrontendView {

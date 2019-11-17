@@ -4,6 +4,7 @@ namespace tuja\data\store;
 
 use DateTime;
 use Exception;
+use tuja\data\model\PersonRole;
 use tuja\util\Anonymizer;
 use tuja\data\model\Person;
 use tuja\util\DateUtils;
@@ -24,6 +25,8 @@ class PersonDao extends AbstractDao
 	}
 
 	function create( Person $person ) {
+		$person->set_status( Person::DEFAULT_STATUS );
+
 		$person->validate();
 
 		$affected_rows = $this->wpdb->insert( $this->table,
@@ -62,14 +65,15 @@ class PersonDao extends AbstractDao
 				'created_at'      => self::to_db_date( new DateTime() ),
 				'status'          => $status,
 
-				'name'            => $person->name,
-				'team_id'         => $person->group_id,
-				'phone'           => $person->phone,
-				'email'           => $person->email,
-				'food'            => $person->food,
-				'is_competing'    => boolval( $person->is_competing ) ? 1 : 0,
-				'is_team_contact' => boolval( $person->is_group_contact ) ? 1 : 0,
-				'pno'             => DateUtils::fix_pno( $person->pno )
+				'name'                          => $person->name,
+				'team_id'                       => $person->group_id,
+				'phone'                         => $person->phone,
+				'email'                         => $person->email,
+				'food'                          => $person->food,
+				'is_competing'                  => $person->is_competing() ? 1 : 0,
+				'is_team_contact'               => $person->is_contact() ? 1 : 0,
+				'is_attending'                  => $person->is_attending() ? 1 : 0,
+				'pno'                           => DateUtils::fix_pno( $person->pno )
 			),
 			array(
 				'%d',
@@ -81,6 +85,7 @@ class PersonDao extends AbstractDao
 				'%s',
 				'%s',
 				'%s',
+				'%d',
 				'%d',
 				'%d',
 				'%s'
@@ -283,12 +288,14 @@ class PersonDao extends AbstractDao
 		$p->phone_verified   = $result->phone_verified;
 		$p->email            = $result->email;
 		$p->email_verified   = $result->email_verified;
-		$p->is_competing     = $result->is_competing != 0;
-		$p->is_group_contact = $result->is_team_contact != 0;
 		$p->food             = $result->food;
 		$p->pno              = $result->pno;
 		$p->age              = $result->age;
 		$p->set_status( $result->status );
+		$p->set_role_flags(
+			$result->is_competing != 0,
+			$result->is_attending == null || $result->is_attending == 1,
+			$result->is_team_contact != 0 );
 
 		return $p;
 	}

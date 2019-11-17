@@ -25,6 +25,12 @@ class GroupPeopleEditor extends AbstractGroupView {
 	private $enable_group_category_selection = true;
 	private $read_only;
 
+	const FIELD_PERSON_ROLE = self::FIELD_PREFIX_PERSON . 'role';
+	const ROLE_ADULT_SUPERVISOR = "adult_supervisor";
+	const ROLE_REGULAR_GROUP_MEMBER = "regular_group_member";
+	const ROLE_EXTRA_CONTACT = "extra_contact";
+	const ROLE_GROUP_LEADER = "group_leader";
+
 	public function __construct( $url, $group_key ) {
 		parent::__construct( $url, $group_key, 'Personer i %s' );
 	}
@@ -76,49 +82,62 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 	private function get_form_adult_supervisor_html( array $errors ) {
 		$people = array_filter( $this->get_people(), function ( Person $person ) {
-			return ! $person->is_competing;
+			return $person->is_adult_supervisor();
 		} );
 
-		return $this->get_form_people_html( $people, $errors, false, true, true, false, false, true );
+		return $this->get_form_people_html( $people, $errors, false, true, true, false, false, true, self::ROLE_ADULT_SUPERVISOR, 'Lägg till vuxen' );
 	}
 
 	private function get_form_group_contact_html( array $errors ) {
 		$people = array_filter( $this->get_people(), function ( Person $person ) {
-			return $person->is_competing && $person->is_group_contact;
+			return $person->is_group_leader();
 		} );
 
-		return $this->get_form_people_html( $people, $errors, true, true, true, true, true, true );
+		return $this->get_form_people_html( $people, $errors, true, true, true, true, true, true, self::ROLE_GROUP_LEADER );
 	}
 
 	private function get_form_group_members_html( array $errors ) {
 		$people = array_filter( $this->get_people(), function ( Person $person ) {
-			return $person->is_competing && ! $person->is_group_contact;
+			return $person->is_regular_group_member();
 		} );
 
-		return $this->get_form_people_html( $people, $errors, false, false, false, true, true, false );
+		return $this->get_form_people_html( $people, $errors, false, false, false, true, true, true, self::ROLE_REGULAR_GROUP_MEMBER, 'Lägg till deltagare' );
 	}
 
-	private function get_form_people_html( array $people, array $errors, bool $is_fixed_list = false, bool $show_email = true, bool $show_phone = true, bool $show_pno = true, bool $is_competing = true, $is_contact = true ) {
+	private function get_form_extra_contact_html( $errors ) {
+		$people = array_filter( $this->get_people(), function ( Person $person ) {
+			return $person->is_contact() && ! $person->is_attending();
+		} );
+
+		return $this->get_form_people_html( $people, $errors, false, true, false, false, false, false, self::ROLE_EXTRA_CONTACT, 'Lägg till extra kontaktperson' );
+	}
+
+	private function get_form_people_html(
+		array $people,
+		array $errors,
+		bool $is_fixed_list,
+		bool $show_email,
+		bool $show_phone,
+		bool $show_pno,
+		bool $show_name,
+		bool $show_food,
+		string $role,
+		string $add_button_label = 'Ny person'
+	) {
 		$html_sections = [];
 
 		if ( is_array( $people ) ) {
-			$html_sections[] = sprintf( '<div class="tuja-people-existing">%s</div>', join( array_map( function ( $person, $show_email ) use ( $errors, $is_fixed_list, $show_email, $show_phone, $show_pno, $is_competing, $is_contact ) {
-				return $this->render_person_form( $person, true, $show_email, $show_phone, $show_pno, true, ! $is_fixed_list, $is_competing, $is_contact, $errors );
+			$html_sections[] = sprintf( '<div class="tuja-people-existing">%s</div>', join( array_map( function ( $person ) use ( $errors, $is_fixed_list, $show_email, $show_phone, $show_pno, $show_name, $show_food, $role ) {
+				return $this->render_person_form( $person, $show_name, $show_email, $show_phone, $show_pno, $show_food, ! $is_fixed_list, $role, $errors );
 			}, $people ) ) );
 		}
 
 		if ( ! $is_fixed_list ) {
-			$html_sections[] = sprintf( '<div class="tuja-item-buttons"><button type="button" name="%s" value="%s" class="tuja-add-person">%s</button></div>', self::ACTION_BUTTON_NAME, 'new_person', 'Ny person' );
-			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( new Person(), true, $show_email, $show_phone, $show_pno, true, ! $is_fixed_list, $is_competing, $is_contact, $errors ) );
+			$html_sections[] = sprintf( '<div class="tuja-item-buttons"><button type="button" name="%s" value="%s" class="tuja-add-person">%s</button></div>', self::ACTION_BUTTON_NAME, 'new_person', $add_button_label );
+			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( new Person(), $show_name, $show_email, $show_phone, $show_pno, $show_food, ! $is_fixed_list, $role, $errors ) );
 		}
 
 		return sprintf( '<div class="tuja-people">%s</div>', join( $html_sections ) );
-	}
-
-	private function get_form_extra_contact_html() {
-		$html_sections = [];
-
-		return join( $html_sections );
 	}
 
 	private function get_form_save_button_html() {
@@ -164,7 +183,17 @@ class GroupPeopleEditor extends AbstractGroupView {
 	}
 
 	// Move to AbstractGroupView?
-	private function render_person_form( Person $person, bool $show_name = true, bool $show_email = true, bool $show_phone = true, bool $show_pno = true, bool $show_food = true, bool $show_delete = true, bool $is_competing = true, $is_contact = true, $errors = array() ): string {
+	private function render_person_form(
+		Person $person,
+		bool $show_name = true,
+		bool $show_email = true,
+		bool $show_phone = true,
+		bool $show_pno = true,
+		bool $show_food = true,
+		bool $show_delete = true,
+		string $role = self::ROLE_REGULAR_GROUP_MEMBER,
+		$errors = array()
+	): string {
 
 		$read_only = $this->is_read_only();
 
@@ -197,14 +226,12 @@ class GroupPeopleEditor extends AbstractGroupView {
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD . '__' . $random_id, @$errors[ $random_id . '__food' ], $person->food );
 		}
 
-		$html_sections[] = sprintf( '<div style="display: none;"><input type="hidden" name="%s" value="%s"><input type="hidden" name="%s" value="%s"></div>',
-			self::FIELD_PERSON_ISCONTACT . '__' . $random_id,
-			$is_contact ? 'true' : 'false',
-			self::FIELD_PERSON_ISCOMPETING . '__' . $random_id,
-			$is_competing ? 'true' : 'false' );
+		$html_sections[] = sprintf( '<div style="display: none;"><input type="hidden" name="%s" value="%s"></div>',
+			self::FIELD_PERSON_ROLE . '__' . $random_id,
+			$role );
 
 		if ( $show_delete && ! $read_only ) {
-			$html_sections[] = sprintf( '<div class="tuja-item-buttons"><button type="button" class="tuja-delete-person">%s</button></div>',
+			$html_sections[] = sprintf( '<div class="tuja-item-buttons tuja-item-buttons-right"><button type="button" class="tuja-delete-person">%s</button></div>',
 				'Ta bort' );
 		}
 
@@ -281,13 +308,11 @@ class GroupPeopleEditor extends AbstractGroupView {
 			if ( isset( $people_map[ $id ] ) ) {
 				try {
 					$posted_values = [
-						'name'             => $_POST[ self::FIELD_PERSON_NAME . '__' . $id ],
-						'email'            => $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ],
-						'phone'            => $_POST[ self::FIELD_PERSON_PHONE . '__' . $id ],
-						'pno'              => $_POST[ self::FIELD_PERSON_PNO . '__' . $id ],
-						'food'             => $_POST[ self::FIELD_PERSON_FOOD . '__' . $id ],
-						'is_competing'     => $_POST[ self::FIELD_PERSON_ISCOMPETING . '__' . $id ] == 'true',
-						'is_group_contact' => $_POST[ self::FIELD_PERSON_ISCONTACT . '__' . $id ] == 'true'
+						'name'  => $_POST[ self::FIELD_PERSON_NAME . '__' . $id ] ?: $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ],
+						'email' => $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ],
+						'phone' => $_POST[ self::FIELD_PERSON_PHONE . '__' . $id ],
+						'pno'   => $_POST[ self::FIELD_PERSON_PNO . '__' . $id ],
+						'food'  => $_POST[ self::FIELD_PERSON_FOOD . '__' . $id ]
 					];
 
 					$is_group_property_updated = false;
@@ -330,15 +355,27 @@ class GroupPeopleEditor extends AbstractGroupView {
 	}
 
 	private function init_posted_person( $id ) {
-		$person                   = new Person();
-		$person->name             = $_POST[ self::FIELD_PERSON_NAME . '__' . $id ];
-		$person->email            = $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ];
-		$person->phone            = $_POST[ self::FIELD_PERSON_PHONE . '__' . $id ];
-		$person->pno              = $_POST[ self::FIELD_PERSON_PNO . '__' . $id ];
-		$person->food             = $_POST[ self::FIELD_PERSON_FOOD . '__' . $id ];
-		$person->is_competing     = $_POST[ self::FIELD_PERSON_ISCOMPETING . '__' . $id ] == 'true';
-		$person->is_group_contact = $_POST[ self::FIELD_PERSON_ISCONTACT . '__' . $id ] == 'true';
+		$person        = new Person();
+		$person->name  = $_POST[ self::FIELD_PERSON_NAME . '__' . $id ] ?: $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ];
+		$person->email = $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ];
+		$person->phone = $_POST[ self::FIELD_PERSON_PHONE . '__' . $id ];
+		$person->pno   = $_POST[ self::FIELD_PERSON_PNO . '__' . $id ];
+		$person->food  = $_POST[ self::FIELD_PERSON_FOOD . '__' . $id ];
 
+		switch ( $_POST[ self::FIELD_PERSON_ROLE . '__' . $id ] ) {
+			case self::ROLE_ADULT_SUPERVISOR:
+				$person->set_as_adult_supervisor();
+				break;
+			case self::ROLE_EXTRA_CONTACT:
+				$person->set_as_extra_contact();
+				break;
+			case self::ROLE_GROUP_LEADER:
+				$person->set_as_group_leader();
+				break;
+			default:
+				$person->set_as_regular_group_member();
+				break;
+		}
 		return $person;
 	}
 

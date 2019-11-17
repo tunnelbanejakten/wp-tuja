@@ -1,6 +1,7 @@
 <?php
 namespace tuja\admin;
 
+use tuja\data\model\Person;
 use tuja\data\store\ResponseDao;
 use tuja\frontend\router\PersonEditorInitiator;
 use tuja\util\rules\RuleResult;
@@ -114,7 +115,7 @@ AdminUtils::printTopMenu( $competition );
         </tfoot>
         <tbody>
 		<?php
-		print join( '', array_map( function ( $person ) use ( $group ) {
+		print join( '', array_map( function ( Person $person ) use ( $group ) {
 			$person_edit_link = PersonEditorInitiator::link( $group, $person );
 
 			return sprintf( '<tr>' .
@@ -134,8 +135,8 @@ AdminUtils::printTopMenu( $competition );
 				$person->name,
 				$person->pno,
 				$person->age,
-				! $person->is_competing ? 'Ja' : '' ,
-				$person->is_group_contact ? 'Ja' : '',
+				$person->is_adult_supervisor() ? 'Ja' : '' ,
+				$person->is_group_leader() ? 'Ja' : '',
 				$person->phone,
 				$person->email,
 				$person->email,

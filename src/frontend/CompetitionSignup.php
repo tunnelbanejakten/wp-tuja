@@ -70,9 +70,7 @@ class CompetitionSignup extends FrontendView {
 				// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
 				$new_group = $this->create_group();
 
-				$edit_link = ! empty( $this->edit_link_template )
-					? sprintf( $this->edit_link_template, $new_group->random_id )
-					: GroupEditorInitiator::link( $new_group );
+				$edit_link = GroupEditorInitiator::link( $new_group );
 				if ( ! empty( $edit_link ) ) {
 					return sprintf( '<p class="tuja-message tuja-message-success">Tack! Nästa steg är att gå till <a href="%s">%s</a> och fylla i vad de andra deltagarna i ert lag heter. Vi har också skickat länken till din e-postadress så att du kan ändra er anmälan framöver.</p>', $edit_link, $edit_link );
 				} else {
@@ -97,6 +95,8 @@ class CompetitionSignup extends FrontendView {
 		if ( isset( $errors['__'] ) ) {
 			$html_sections[] = sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] );
 		}
+
+		var_dump( $errors );
 
 		$group_name_question = new FieldText( 'Vad heter ert lag?', null, false, [], true );
 		$html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors[ self::FIELD_GROUP_NAME ] );
@@ -150,6 +150,7 @@ class CompetitionSignup extends FrontendView {
 		}
 		// DETERMINE REQUESTED CHANGES
 		$new_group                 = new Group();
+		$new_group->set_status( Group::DEFAULT_STATUS );
 		$new_group->name           = $_POST[ self::FIELD_GROUP_NAME ];
 		$new_group->competition_id = $this->get_competition()->id;
 		if ( isset( $category ) ) {
@@ -163,22 +164,16 @@ class CompetitionSignup extends FrontendView {
 		}
 
 		$new_person                   = new Person();
+		$new_person->set_status( Person::DEFAULT_STATUS );
 		$new_person->name             = $_POST[ self::FIELD_PERSON_NAME ];
 		$new_person->email            = $_POST[ self::FIELD_PERSON_EMAIL ];
-		$new_person->is_group_contact = true;
-		$new_person->is_competing     = true;
+		$new_person->set_as_group_leader();
 
 		try {
 			// Person is validated before Group is created in order to catch simple input problems, like a missing name or email address.
 			$new_person->validate();
 		} catch ( ValidationException $e ) {
 			throw new ValidationException( self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage() );
-		}
-
-		if ( isset( $category ) ) {
-			if ( ! $category->get_rule_set()->is_create_registration_allowed( $this->get_competition() ) ) {
-
-			};
 		}
 
 		if ( ! $this->is_create_allowed( $this->get_competition(), $category ) ) {

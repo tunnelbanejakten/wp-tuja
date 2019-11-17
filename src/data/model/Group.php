@@ -74,8 +74,9 @@ class Group
 	public $count_team_contact;
 	public $is_always_editable = false;
 
-	public function __construct() {
+	public function __construct( $random_id = null ) {
 		$this->status = new StateMachine( null, self::STATUS_TRANSITIONS );
+		$this->random_id = $random_id;
 	}
 
 	public function validate() {

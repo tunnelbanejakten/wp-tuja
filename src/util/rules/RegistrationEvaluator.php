@@ -35,7 +35,7 @@ class RegistrationEvaluator {
 
 	private function rule_person_pno( array $people ) {
 		return array_reduce( $people, function ( $carry, Person $person ) {
-			if ( $person->is_competing ) {
+			if ( $person->is_competing() ) {
 				$rule_name = 'Deltagare ' . htmlspecialchars( $person->name );
 				if ( ! empty( $person->pno ) ) {
 					try {
@@ -65,7 +65,7 @@ class RegistrationEvaluator {
 			return isset( $person->age ) && $person->age >= 18;
 		} );
 		$adult_participants = array_filter( $people, function ( Person $person ) {
-			return $person->is_competing && isset( $person->age ) && $person->age >= 18;
+			return $person->is_competing() && isset( $person->age ) && $person->age >= 18;
 		} );
 
 		$count_adults             = count( $adults );
@@ -89,7 +89,7 @@ class RegistrationEvaluator {
 
 	private function rule_contacts_defined( Group $group, array $people ) {
 		$contacts = array_filter( $people, function ( Person $person ) {
-			return $person->is_group_contact;
+			return $person->is_contact();
 		} );
 		switch ( count( $contacts ) ) {
 			case 0:
@@ -103,7 +103,7 @@ class RegistrationEvaluator {
 					return [ new RuleResult( 'Kontaktperson', RuleResult::BLOCKER, 'Kontaktperson/lagledare saknas.' ) ];
 				}
 			case 1:
-				if ( array_pop( $contacts )->is_competing ) {
+				if ( array_pop( $contacts )->is_competing() ) {
 					return [ new RuleResult( 'Kontaktperson', RuleResult::OK, 'En kontaktperson/lagledare har angivits.' ) ];
 				} else {
 					if ( $this->rule_set->is_adult_supervisor_required() ) {
@@ -125,7 +125,7 @@ class RegistrationEvaluator {
 
 	private function rule_contacts_have_phone_and_email( array $people ) {
 		$contacts = array_filter( $people, function ( Person $person ) {
-			return $person->is_group_contact;
+			return $person->is_contact();
 		} );
 
 		if ( count( $contacts ) == 0 ) {
@@ -171,7 +171,7 @@ class RegistrationEvaluator {
 
 	private function rule_group_size( array $people ) {
 		$participants = array_filter( $people, function ( Person $person ) {
-			return $person->is_competing;
+			return $person->is_competing();
 		} );
 		list ( $min, $max ) = $this->rule_set->get_group_size_range();
 		if ( count( $participants ) < $min ) {

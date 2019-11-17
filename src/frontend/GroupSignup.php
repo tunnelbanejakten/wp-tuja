@@ -115,8 +115,7 @@ class GroupSignup extends AbstractGroupView {
 		$new_person->phone = $_POST[self::FIELD_PERSON_PHONE];
 		$new_person->pno = $_POST[self::FIELD_PERSON_PNO];
 		$new_person->food = $_POST[self::FIELD_PERSON_FOOD];
-		$new_person->is_group_contact = false;
-		$new_person->is_competing = true;
+		$new_person->set_as_regular_group_member();
 		try {
 			$new_person_id = $this->person_dao->create($new_person);
 			if ($new_person_id !== false) {

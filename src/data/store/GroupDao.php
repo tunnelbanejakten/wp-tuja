@@ -21,6 +21,8 @@ class GroupDao extends AbstractDao {
 	}
 
 	function create( Group $group ) {
+		$group->set_status( Group::DEFAULT_STATUS );
+
 		$group->validate();
 
 		$affected_rows = $this->wpdb->insert( $this->table,
@@ -42,8 +44,6 @@ class GroupDao extends AbstractDao {
 		}
 
 		$group->id = $this->wpdb->insert_id;
-
-		$group->set_status( Group::DEFAULT_STATUS );
 
 		$success = $this->add_record( $group );
 
@@ -163,10 +163,10 @@ class GroupDao extends AbstractDao {
 
 		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, $date );
 		$people_competing          = array_filter( $people, function ( Person $person ) {
-			return $person->is_competing;
+			return $person->is_competing();
 		} );
 		$people_competing_with_age = array_filter( $people, function ( Person $person ) {
-			return $person->is_competing && $person->age > 0;
+			return $person->is_competing() && $person->age > 0;
 		} );
 		$g->age_competing_avg = count( $people_competing_with_age ) > 0 ? array_sum(
 			                        array_map(
@@ -199,11 +199,11 @@ class GroupDao extends AbstractDao {
 		$g->count_competing    = count( $people_competing );
 		$g->count_follower     = count(
 			array_filter( $people, function ( Person $person ) {
-				return ! $person->is_competing;
+				return $person->is_adult_supervisor();
 			} ) );
 		$g->count_team_contact = count(
 			array_filter( $people, function ( Person $person ) {
-				return $person->is_group_contact;
+				return $person->is_contact();
 			} ) );
 
 		return $g;

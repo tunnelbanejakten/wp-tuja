@@ -48,8 +48,9 @@ class Person
 	public $email;
 	public $email_verified;
 	public $food;
-	public $is_competing;
-	public $is_group_contact;
+	private $is_competing;
+	private $is_group_contact;
+	private $is_attending;
 	public $pno;
 	public $age;
 	private $status;
@@ -123,8 +124,62 @@ class Person
 		$person        = new Person();
 		$person->name  = substr( $email, 0, strpos( $email, '@' ) );
 		$person->email = $email;
+		$person->set_as_extra_contact();
 
 		return $person;
 	}
 
+	public function set_role_flags($is_competing, $is_attending, $is_group_contact) {
+		$this->is_competing                  = $is_competing;
+		$this->is_attending = $is_attending;
+		$this->is_group_contact              = $is_group_contact;
+	}
+
+	public function set_as_adult_supervisor() {
+		$this->is_competing                  = false;
+		$this->is_attending = true;
+		$this->is_group_contact              = true;
+	}
+
+	public function set_as_regular_group_member() {
+		$this->is_competing                  = true;
+		$this->is_attending = true;
+		$this->is_group_contact              = false;
+	}
+
+	public function set_as_group_leader() {
+		$this->is_competing                  = true;
+		$this->is_attending = true;
+		$this->is_group_contact              = true;
+	}
+
+	public function set_as_extra_contact() {
+		$this->is_competing                  = false;
+		$this->is_attending = false;
+		$this->is_group_contact              = true;
+	}
+
+	public function is_attending(): bool {
+		return $this->is_attending;
+	}
+
+	public function is_adult_supervisor(): bool {
+		return ! $this->is_competing && $this->is_attending;
+	}
+
+	public function is_competing(): bool {
+		return $this->is_competing;
+	}
+
+	public function is_regular_group_member(): bool {
+		return $this->is_competing && $this->is_attending && ! $this->is_group_contact;
+	}
+
+	public function is_contact(): bool {
+		return $this->is_group_contact;
+	}
+
+	public function is_group_leader(): bool {
+		return $this->is_competing && $this->is_attending && $this->is_group_contact;
+	}
 }

@@ -59,10 +59,10 @@ class EventMessageSender {
 					$contacts = [ $person ];
 					break;
 				case self::RECIPIENT_GROUP_CONTACT:
-					$contacts = array_filter(
+					$contacts      = array_filter(
 						$this->person_dao->get_all_in_group( $group->id ),
 						function ( Person $person ) {
-							return $person->is_group_contact && ! empty( trim( $person->email ) );
+							return $person->is_contact() && ! empty( trim( $person->email ) );
 						} );
 					break;
 			}
@@ -89,7 +89,7 @@ class EventMessageSender {
 						$contacts = array_filter(
 							$this->person_dao->get_all_in_group( $group->id ),
 							function ( Person $person ) {
-								return $person->is_group_contact && ! empty( trim( $person->email ) );
+								return $person->is_contact() && ! empty( trim( $person->email ) );
 							} );
 						break;
 				}

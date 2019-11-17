@@ -146,13 +146,13 @@ class MessagesSend {
 			'contacts' => array(
 				'label'    => 'Kontaktpersoner',
 				'selector' => function ( Person $person ) {
-					return $person->is_group_contact;
+					return $person->is_contact() && ! $person->is_adult_supervisor();
 				}
 			),
 			'contacts_and_non_competitors' => array(
 				'label'    => 'Kontaktpersoner och medföljare',
 				'selector' => function ( Person $person ) {
-					return $person->is_group_contact || ! $person->is_competing;
+					return $person->is_contact();
 				}
 			)
 		);

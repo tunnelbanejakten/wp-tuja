@@ -18,9 +18,9 @@
     <?= $form_group_members ?>
 
     <?php if ( ! empty( $form_adult_supervisor ) ) { ?>
-        <h2>Vuxen ledare</h2>
+        <h2>Vuxen som följer med</h2>
         <p>
-            <small>I denna tävlingsklass kräver vi att en vuxen ledare går med under dagen. Denna ledare är inte med och tävlar och betalar därför ingen deltagaravgift, men får förstås gratis fika efter tävlingen ändå.</small>
+            <small>I denna tävlingsklass, dvs. <?= $category->name ?>, kräver vi att minst en vuxen går med under dagen. Denna ledare är inte med och tävlar och betalar därför ingen deltagaravgift, men får förstås gratis fika efter tävlingen ändå.</small>
         </p>
 
         <?= $form_adult_supervisor ?>
@@ -28,8 +28,9 @@
     <?php } ?>
 
     <h2>Extra kontaktperson</h2>
+
     <p>
-        <small>Här kan du ange om vi ska skicka ut information inför tävlingen till någon mer än bara lagledaren. Detta kan vara användbart om lagets anmälan administreras av någon som inte kommer vara med i tävlingen.</small>
+        <small>Här kan du ange om vi ska skicka information till någon mer än lagledaren<?= ! empty( $form_adult_supervisor ) ? ' och den vuxna ledaren' :'' ?>. Detta kan vara användbart om lagets anmälan administreras av någon som inte kommer vara med under tävlingsdagen.</small>
     </p>
 
 	<?= $form_extra_contact ?>

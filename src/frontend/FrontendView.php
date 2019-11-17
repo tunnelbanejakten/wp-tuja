@@ -22,6 +22,7 @@ abstract class FrontendView {
 	const FIELD_PREFIX_GROUP = 'tuja-group__';
 	const FIELD_GROUP_NAME = self::FIELD_PREFIX_GROUP . 'name';
 	const FIELD_GROUP_AGE = self::FIELD_PREFIX_GROUP . 'age';
+	const FIELD_GROUP_EXTRA_CONTACT = self::FIELD_PREFIX_GROUP . 'extracontact';
 
 	private $wp_post = null;
 

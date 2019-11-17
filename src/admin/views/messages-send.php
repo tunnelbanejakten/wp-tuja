@@ -21,7 +21,7 @@ AdminUtils::printTopMenu( $competition );
     </div>
     <div style="float: left;">
         Välj mottagare i valda grupper:<br>
-	    <?= sprintf( '<div><select name="tuja_messages_people_selector"/>%s</select></div>',
+	    <?= sprintf( '<div><select name="tuja_messages_people_selector">%s</select></div>',
 		    join( array_map( function ( $key, $person_selector ) {
 			    $id = uniqid();
 
@@ -33,7 +33,7 @@ AdminUtils::printTopMenu( $competition );
     </div>
     <div style="float: left;">
         Välj format:<br>
-		<?= sprintf( '<div><select name="tuja_messages_delivery_method" id="tuja-message-deliverymethod"/>%s</select></div>',
+		<?= sprintf( '<div><select name="tuja_messages_delivery_method" id="tuja-message-deliverymethod">%s</select></div>',
 			join( array_map( function ( $key, $delivery_method ) {
 				$id = uniqid();
 
@@ -76,7 +76,7 @@ AdminUtils::printTopMenu( $competition );
 		}, $templates ) ) ?>
         <br>I texten kan du använda följande variabler: <br><?= join( '<br>', array_map( function ( $var ) {
 			return sprintf( '<tt>{{%s}}</tt>', $var );
-		}, array_keys( $this->get_parameters( new Person(), new Group() ) ) ) ) ?>
+		}, array_keys( $this->get_parameters( new Person(), new Group('sample_id') ) ) ) ) ?>
         <br>Utöver variabler kan du även använda <a
                 href="https://daringfireball.net/projects/markdown/basics">Markdown</a>
         för att göra fet text, lägga in länkar mm.

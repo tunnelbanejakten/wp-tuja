@@ -10,11 +10,6 @@
     border-top: 1px solid #ccc
 }
 
-.tuja-item-buttons {
-    margin: 0.5em 0 0 0;
-    line-height: 1.2;
-}
-
 .tuja-message,
 .tuja-field textarea,
 .tuja-field select,
@@ -70,10 +65,16 @@
 }
 
 .tuja-item-buttons {
+    margin: 0.5em 0 0 0;
+    line-height: 1.2;
+}
+
+.tuja-item-buttons.tuja-item-buttons-right {
     text-align: right;
 }
 
 .tuja-item-buttons button {
+    padding: 1em 1.2em;
     font-size: 80%;
 }
 

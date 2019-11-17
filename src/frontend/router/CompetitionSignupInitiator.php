@@ -16,7 +16,7 @@ class CompetitionSignupInitiator extends SimpleViewInitiator {
 	}
 
 	public static function link( Competition $competition ) {
-		return SimpleViewInitiator::link( $competition->random_id, self::ACTION );
+		return SimpleViewInitiator::raw_link( $competition->random_id, self::ACTION );
 	}
 
 	function create_page_view( string $path, string $id ): FrontendView {

@@ -112,21 +112,22 @@ abstract class Plugin
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'person_properties' ) . ' (
-				id               INTEGER AUTO_INCREMENT PRIMARY KEY,
-				person_id        INTEGER      NOT NULL,
-				created_at       INTEGER      NOT NULL,
+				id                INTEGER AUTO_INCREMENT PRIMARY KEY,
+				person_id         INTEGER      NOT NULL,
+				created_at        INTEGER      NOT NULL,
+				status            VARCHAR(20)  NOT NULL,
 
-				status           VARCHAR(20)  NOT NULL,
-				name             VARCHAR(100) NOT NULL,
-				team_id          INTEGER      NOT NULL,
-				phone            VARCHAR(100),
-				phone_verified   BOOLEAN      NOT NULL DEFAULT FALSE,
-				email            VARCHAR(100),
-				email_verified   BOOLEAN      NOT NULL DEFAULT FALSE,
-				pno              VARCHAR(16),
-				food             TEXT,
-				is_competing     BOOLEAN      NOT NULL DEFAULT TRUE,
-				is_team_contact  BOOLEAN      NOT NULL DEFAULT FALSE
+				name              VARCHAR(100) NOT NULL,
+				team_id           INTEGER      NOT NULL,
+				phone             VARCHAR(100),
+				phone_verified    BOOLEAN      NOT NULL DEFAULT FALSE,
+				email             VARCHAR(100),
+				email_verified    BOOLEAN      NOT NULL DEFAULT FALSE,
+				pno               VARCHAR(16),
+				food              TEXT,
+				is_competing      BOOLEAN      NOT NULL DEFAULT TRUE,
+				is_team_contact   BOOLEAN      NOT NULL DEFAULT FALSE,
+				is_attending      BOOLEAN      NOT NULL DEFAULT TRUE
 			) ' . $charset;
 
 		$tables[] = '

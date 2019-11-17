@@ -15,7 +15,7 @@ abstract class SimpleViewInitiator implements ViewInitiator {
 		$this->view_name = $view_name;
 	}
 
-	public static function link( string $id, string $view_name ) {
+	public static function raw_link( string $id, string $view_name ) {
 		return join( '/', [ get_site_url(), $id, $view_name ] );
 	}
 
