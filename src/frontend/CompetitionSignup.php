@@ -51,7 +51,7 @@ class CompetitionSignup extends FrontendView {
 	}
 
 	function get_title() {
-		return $this->get_competition()->name;
+		return sprintf( 'Anmäl er till %s', $this->get_competition()->name );
 	}
 
 	function get_competition(): Competition {
@@ -95,8 +95,6 @@ class CompetitionSignup extends FrontendView {
 		if ( isset( $errors['__'] ) ) {
 			$html_sections[] = sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] );
 		}
-
-		var_dump( $errors );
 
 		$group_name_question = new FieldText( 'Vad heter ert lag?', null, false, [], true );
 		$html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors[ self::FIELD_GROUP_NAME ] );

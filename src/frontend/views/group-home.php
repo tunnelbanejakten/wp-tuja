@@ -1,4 +1,3 @@
-<h1>Hej <?= $group->name ?></h1>
 <p>
 	<?php printf( '<a href="%s">Ändra lagets namn och tävlingsklass</a>', $edit_group_link ) ?>
 </p>

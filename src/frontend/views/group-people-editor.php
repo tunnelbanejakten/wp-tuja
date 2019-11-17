@@ -1,6 +1,4 @@
 <form method="post">
-    <h1>Laguppställningen</h1>
-
     <?= $errors_overall ?>
 
     <h2>Lagledare</h2>

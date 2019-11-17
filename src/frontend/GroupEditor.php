@@ -133,35 +133,6 @@ class GroupEditor extends AbstractGroupView {
 		return join( $html_sections );
 	}
 
-	public function _____get_form(): String {
-		$group_key = $this->group_key;
-
-		if ( isset( $group_key ) ) {
-			$group = $this->group_dao->get_by_key( $group_key );
-			if ( $group === false ) {
-				return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du är med i.' );
-			}
-
-			$is_read_only = ! $this->is_edit_allowed( $group );
-			$errors       = array();
-
-			if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
-				try {
-					$errors = $this->update_group( $group );
-					if ( empty( $errors ) ) {
-						printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
-					}
-				} catch ( RuleEvaluationException $e ) {
-					$errors = array( '__' => $e->getMessage() );
-				}
-			}
-
-			return $this->render_update_form( $group, $errors, $is_read_only );
-		} else {
-			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Oj, vi vet inte vilket lag du är med i.' );
-		}
-	}
-
 	private function update_group( Group $group ) {
 		// INIT
 		$validation_errors = array();
