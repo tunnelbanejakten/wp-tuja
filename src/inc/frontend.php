@@ -32,6 +32,8 @@ class Frontend extends Plugin {
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
 
+		remove_filter( 'the_content', 'wpautop' ); // Don't let Wordpress add <p> tags to our HTML.
+
 		$this->init_page_controller();
 	}
 

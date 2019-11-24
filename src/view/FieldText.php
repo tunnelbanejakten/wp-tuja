@@ -22,7 +22,7 @@ class FieldText extends Field
 		return [ @$_POST[ $form_field ] ];
 	}
 
-    public function render($field_name, $answer_object, Group $group = null )
+	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' )
     {
 	    // TODO: This is a bit of a hack...
 	    if ( is_scalar($answer_object) ) {
@@ -43,7 +43,7 @@ class FieldText extends Field
 	    }, array_keys( $this->html_props ), array_values( $this->html_props ) ) );
 
 	    if ( $this->compact ) {
-		    return sprintf( '<div class="tuja-field"><input placeholder="%s" %s id="%s" name="%s" value="%s" class="tuja-%s" %s/>%s</div>',
+		    return sprintf( '<div class="tuja-field"><input placeholder="%s" %s id="%s" name="%s" value="%s" class="tuja-%s" %s/>%s%s</div>',
 			    $this->label,
 			    $additional_html_props,
 			    $render_id,
@@ -51,6 +51,7 @@ class FieldText extends Field
 			    htmlspecialchars( $value ),
 			    'fieldtext',
 			    $this->read_only ? ' disabled="disabled"' : '',
+			    ! empty( $error_message ) ? sprintf( '<div class="tuja-message tuja-message-error">%s</div>', $error_message ) : '',
 			    $hint
 		    );
 	    } else {

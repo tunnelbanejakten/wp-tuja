@@ -30,15 +30,16 @@ class FieldImages extends Field
 		return null;
 	}
 
-	public function render( $field_name, $answer_object, Group $group = null ) {
+	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' ) {
 		$hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';
 
 		return sprintf(
-			'<div class="tuja-field tuja-%s"><label>%s%s</label>%s</div>',
+			'<div class="tuja-field tuja-%s"><label>%s%s</label>%s%s</div>',
 			'fieldimages',
 			$this->label,
 			$hint,
-			$this->render_image_upload( $field_name, $group->random_id, $answer_object )
+			$this->render_image_upload( $field_name, $group->random_id, $answer_object ),
+			! empty( $error_message ) ? sprintf( '<div class="tuja-message tuja-message-error">%s</div>', $error_message ) : ''
 		);
 	}
 

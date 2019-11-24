@@ -93,12 +93,11 @@ abstract class FrontendView {
 		if ( is_scalar( $answer_object ) ) {
 			$answer_object = [ $answer_object ];
 		}
-		$html = $field->render( $field_name, $answer_object );
+		$html = $field->render( $field_name, $answer_object, null, $error_message );
 
-		return sprintf( '<div class="tuja-question %s">%s%s</div>',
+		return sprintf( '<div class="tuja-question %s">%s</div>',
 			! empty( $error_message ) ? 'tuja-field-error' : '',
-			$html,
-			! empty( $error_message ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $error_message ) : '' );
+			$html);
 	}
 
 	protected function get_posted_category( $competition_id ) {

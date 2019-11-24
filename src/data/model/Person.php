@@ -2,6 +2,8 @@
 
 namespace tuja\data\model;
 
+use tuja\util\rules\PassthroughRuleSet;
+use tuja\util\rules\RuleSet;
 use tuja\util\StateMachine;
 use tuja\util\StateMachineException;
 
@@ -74,32 +76,40 @@ class Person
 		return preg_match( '/' . self::PHONE_PATTERN . '/', $phone ) === 1;
 	}
 
-	public function validate() {
+	public function validate( RuleSet $rule_set = null ) {
+		if ( $rule_set == null ) {
+			$rule_set = new PassthroughRuleSet();
+		}
+		if ( strlen( $this->email ) > 100 ) {
+			throw new ValidationException( 'email', 'E-postadress får bara vara 100 tecken lång.' );
+		}
+		$is_email_required = ! empty( trim( $this->email ) )
+		                     || ( $this->is_regular_group_member() && $rule_set->is_contact_information_required_for_regular_group_member() )
+		                     || $this->is_contact()
+		                     || $this->is_adult_supervisor();
+		if ( $is_email_required && ! self::is_valid_email_address( $this->email ) ) {
+			throw new ValidationException( 'email', 'E-postadressen ser konstig ut.' );
+		}
+		if ( strlen( $this->phone ) > 100 ) {
+			throw new ValidationException( 'phone', 'Telefonnumret får bara vara 100 tecken långt.' );
+		}
+
+		$is_phone_required = ! empty( trim( $this->phone ) )
+		                     || ( $this->is_regular_group_member() && $rule_set->is_contact_information_required_for_regular_group_member() )
+		                     || ( $this->is_contact() && $this->is_attending() )
+		                     || $this->is_adult_supervisor();
+		if ( $is_phone_required && ! self::is_valid_phone_number( $this->phone ) ) {
+			throw new ValidationException( 'phone', 'Telefonnummer ser konstigt ut.' );
+		}
 		if ( empty( trim( $this->name ) ) ) {
 			throw new ValidationException( 'name', 'Namnet måste fyllas i.' );
 		}
 		if ( strlen( $this->name ) > 100 ) {
 			throw new ValidationException( 'name', 'Namnet får inte vara längre än 100 bokstäver.' );
 		}
-		if ( strlen( $this->email ) > 100 ) {
-			throw new ValidationException( 'email', 'E-postadress får bara vara 100 tecken lång.' );
-		}
-		if ( ! empty( trim( $this->email ) ) && ! self::is_valid_email_address( $this->email ) ) {
-			throw new ValidationException( 'email', 'E-postadressen ser konstig ut.' );
-		}
-		if ( strlen( $this->phone ) > 100 ) {
-			throw new ValidationException( 'phone', 'Telefonnumret får bara vara 100 tecken långt.' );
-		}
-		if ( ! empty( trim( $this->phone ) ) && ! self::is_valid_phone_number( $this->phone ) ) {
-			throw new ValidationException( 'phone', 'Telefonnummer ser konstigt ut.' );
-		}
 		if ( strlen( $this->food ) > 65000 ) {
 			throw new ValidationException( 'food', 'För lång text om mat och allergier.' );
 		}
-		// TODO: Require birthday when adding new group members?
-//        if (empty(trim($this->pno))) {
-//            throw new ValidationException('pno', 'Födelsedag och sånt måste fyllas i');
-//        }
 		if ( ! empty( trim( $this->pno ) ) && preg_match( '/' . self::PNO_PATTERN . '/', $this->pno ) !== 1 ) {
 			throw new ValidationException( 'pno', 'Födelsedag och sånt ser konstigt ut' );
 		}
@@ -130,33 +140,33 @@ class Person
 	}
 
 	public function set_role_flags($is_competing, $is_attending, $is_group_contact) {
-		$this->is_competing                  = $is_competing;
-		$this->is_attending = $is_attending;
-		$this->is_group_contact              = $is_group_contact;
+		$this->is_competing     = $is_competing;
+		$this->is_attending     = $is_attending;
+		$this->is_group_contact = $is_group_contact;
 	}
 
 	public function set_as_adult_supervisor() {
-		$this->is_competing                  = false;
-		$this->is_attending = true;
-		$this->is_group_contact              = true;
+		$this->is_competing     = false;
+		$this->is_attending     = true;
+		$this->is_group_contact = true;
 	}
 
 	public function set_as_regular_group_member() {
-		$this->is_competing                  = true;
-		$this->is_attending = true;
-		$this->is_group_contact              = false;
+		$this->is_competing     = true;
+		$this->is_attending     = true;
+		$this->is_group_contact = false;
 	}
 
 	public function set_as_group_leader() {
-		$this->is_competing                  = true;
-		$this->is_attending = true;
-		$this->is_group_contact              = true;
+		$this->is_competing     = true;
+		$this->is_attending     = true;
+		$this->is_group_contact = true;
 	}
 
 	public function set_as_extra_contact() {
-		$this->is_competing                  = false;
-		$this->is_attending = false;
-		$this->is_group_contact              = true;
+		$this->is_competing     = false;
+		$this->is_attending     = false;
+		$this->is_group_contact = true;
 	}
 
 	public function is_attending(): bool {

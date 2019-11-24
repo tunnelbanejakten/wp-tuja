@@ -36,17 +36,18 @@ class FieldChoices extends Field
 		}
 	}
 
-	public function render( $field_name, $answer_object, Group $group = null ) {
+	public function render( $field_name, $answer_object, Group $group = null, $error_message = ''  ) {
 		$render_id    = $field_name ?: uniqid();
 		$hint         = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
 		$label        = isset( $this->label ) ? $this->label : '';
 		$labelAndHint = ! empty( $label ) || ! empty( $hint ) ? sprintf( '<label for="%s">%s%s</label>', $render_id, $label, $hint ) : '';
 
-		return sprintf( '<div class="tuja-field">%s%s</div>',
+		return sprintf( '<div class="tuja-field">%s%s%s</div>',
 			$labelAndHint,
 			count( $this->options ) < self::SHORT_LIST_LIMIT ?
 				$this->render_short_list( $render_id, $field_name, $answer_object ) :
-				$this->render_long_list( $render_id, $field_name, $answer_object )
+				$this->render_long_list( $render_id, $field_name, $answer_object ),
+			! empty( $error_message ) ? sprintf( '<div class="tuja-message tuja-message-error">%s</div>', $error_message ) : ''
 		);
 	}
 

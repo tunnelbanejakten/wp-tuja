@@ -16,8 +16,8 @@ class YoungParticipantsRuleSet extends RuleSet {
 		return true;
 	}
 
-	function is_phone_only_required_for_group_leader(): bool {
-		return true;
+	function is_contact_information_required_for_regular_group_member(): bool {
+		return false;
 	}
 
 	function is_adult_supervisor_required(): bool {

@@ -43,7 +43,7 @@ abstract class RuleSet {
 
 	abstract function is_group_leader_required(): bool;
 
-	abstract function is_phone_only_required_for_group_leader(): bool;
+	abstract function is_contact_information_required_for_regular_group_member(): bool;
 
 	abstract function is_adult_supervisor_required(): bool;
 

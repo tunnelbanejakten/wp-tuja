@@ -85,7 +85,16 @@ class GroupPeopleEditor extends AbstractGroupView {
 			return $person->is_adult_supervisor();
 		} );
 
-		return $this->get_form_people_html( $people, $errors, false, true, true, false, false, true, self::ROLE_ADULT_SUPERVISOR, 'Lägg till vuxen' );
+		return $this->get_form_people_html( $people,
+			$errors,
+			false,
+			true,
+			true,
+			false,
+			false,
+			true,
+			self::ROLE_ADULT_SUPERVISOR,
+			'Lägg till vuxen' );
 	}
 
 	private function get_form_group_contact_html( array $errors ) {
@@ -93,7 +102,15 @@ class GroupPeopleEditor extends AbstractGroupView {
 			return $person->is_group_leader();
 		} );
 
-		return $this->get_form_people_html( $people, $errors, true, true, true, true, true, true, self::ROLE_GROUP_LEADER );
+		return $this->get_form_people_html( $people,
+			$errors,
+			true,
+			true,
+			true,
+			true,
+			true,
+			true,
+			self::ROLE_GROUP_LEADER );
 	}
 
 	private function get_form_group_members_html( array $errors ) {
@@ -101,7 +118,17 @@ class GroupPeopleEditor extends AbstractGroupView {
 			return $person->is_regular_group_member();
 		} );
 
-		return $this->get_form_people_html( $people, $errors, false, false, false, true, true, true, self::ROLE_REGULAR_GROUP_MEMBER, 'Lägg till deltagare' );
+		return $this->get_form_people_html(
+			$people,
+			$errors,
+			false,
+			false,
+			false,
+			true,
+			true,
+			true,
+			self::ROLE_REGULAR_GROUP_MEMBER,
+			'Lägg till deltagare');
 	}
 
 	private function get_form_extra_contact_html( $errors ) {
@@ -109,7 +136,16 @@ class GroupPeopleEditor extends AbstractGroupView {
 			return $person->is_contact() && ! $person->is_attending();
 		} );
 
-		return $this->get_form_people_html( $people, $errors, false, true, false, false, false, false, self::ROLE_EXTRA_CONTACT, 'Lägg till extra kontaktperson' );
+		return $this->get_form_people_html( $people,
+			$errors,
+			false,
+			true,
+			false,
+			false,
+			false,
+			false,
+			self::ROLE_EXTRA_CONTACT,
+			'Lägg till extra kontaktperson' );
 	}
 
 	private function get_form_people_html(
@@ -127,9 +163,10 @@ class GroupPeopleEditor extends AbstractGroupView {
 		$html_sections = [];
 
 		if ( is_array( $people ) ) {
-			$html_sections[] = sprintf( '<div class="tuja-people-existing">%s</div>', join( array_map( function ( $person ) use ( $errors, $is_fixed_list, $show_email, $show_phone, $show_pno, $show_name, $show_food, $role ) {
-				return $this->render_person_form( $person, $show_name, $show_email, $show_phone, $show_pno, $show_food, ! $is_fixed_list, $role, $errors );
-			}, $people ) ) );
+			$html_sections[] = sprintf( '<div class="tuja-people-existing">%s</div>',
+				join( array_map( function ( $person ) use ( $errors, $is_fixed_list, $show_email, $show_phone, $show_pno, $show_name, $show_food, $role ) {
+					return $this->render_person_form( $person, $show_name, $show_email, $show_phone, $show_pno, $show_food, ! $is_fixed_list, $role, $errors );
+				}, $people ) ) );
 		}
 
 		if ( ! $is_fixed_list ) {
@@ -137,7 +174,10 @@ class GroupPeopleEditor extends AbstractGroupView {
 			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( new Person(), $show_name, $show_email, $show_phone, $show_pno, $show_food, ! $is_fixed_list, $role, $errors ) );
 		}
 
-		return sprintf( '<div class="tuja-people">%s</div>', join( $html_sections ) );
+		return sprintf( '<div class="tuja-people" data-count-min="%d" data-count-max="%d">%s</div>',
+			$people_count_min,
+			$people_count_max,
+			join( $html_sections ) );
 	}
 
 	private function get_form_save_button_html() {
@@ -222,7 +262,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		}
 
 		if ( $show_food ) {
-			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', 'Efter målgång bjuder vi på mackor och fika. Har du några önskemål eller allergier vi behöver känner till?', $read_only, [], true );
+			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', 'Vi bjuder på mackor och fika efter tävlingen.', $read_only, [], true );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD . '__' . $random_id, @$errors[ $random_id . '__food' ], $person->food );
 		}
 
@@ -244,7 +284,8 @@ class GroupPeopleEditor extends AbstractGroupView {
 		$overall_success   = true;
 		$group_id          = $group->id;
 		$competition       = $this->competition_dao->get( $group->competition_id );
-		$category          = $this->enable_group_category_selection ? $this->get_posted_category( $competition->id ) : null;
+
+		$category = $group->get_derived_group_category();
 
 		// DETERMINE REQUESTED CHANGES
 		$people = $this->get_current_group_members();
@@ -276,6 +317,8 @@ class GroupPeopleEditor extends AbstractGroupView {
 			try {
 				$new_person           = $this->init_posted_person( $id );
 				$new_person->group_id = $group_id;
+
+				$new_person->validate( $category->get_rule_set() );
 
 				$new_person_id = $this->person_dao->create( $new_person );
 				$this_success  = $new_person_id !== false;
@@ -315,16 +358,17 @@ class GroupPeopleEditor extends AbstractGroupView {
 						'food'  => $_POST[ self::FIELD_PERSON_FOOD . '__' . $id ]
 					];
 
-					$is_group_property_updated = false;
+					$is_person_property_updated = false;
 					foreach ( $posted_values as $prop => $new_value ) {
 						if ( $people_map[ $id ]->{$prop} != $new_value ) {
 							$people_map[ $id ]->{$prop} = $new_value;
 
-							$is_group_property_updated = true;
+							$is_person_property_updated = true;
 						}
 					}
 
-					if ( $is_group_property_updated ) {
+					if ( $is_person_property_updated ) {
+						$people_map[ $id ]->validate( $category->get_rule_set() );
 						$affected_rows   = $this->person_dao->update( $people_map[ $id ] );
 						$this_success    = $affected_rows !== false;
 						$overall_success = ( $overall_success and $this_success );
@@ -361,6 +405,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		$person->phone = $_POST[ self::FIELD_PERSON_PHONE . '__' . $id ];
 		$person->pno   = $_POST[ self::FIELD_PERSON_PNO . '__' . $id ];
 		$person->food  = $_POST[ self::FIELD_PERSON_FOOD . '__' . $id ];
+		$person->set_status( Person::STATUS_CREATED );
 
 		switch ( $_POST[ self::FIELD_PERSON_ROLE . '__' . $id ] ) {
 			case self::ROLE_ADULT_SUPERVISOR:

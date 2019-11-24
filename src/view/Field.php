@@ -15,7 +15,7 @@ abstract class Field {
 		$this->read_only = $read_only;
 	}
 
-	abstract function render( $field_name, $answer_object, Group $group = null );
+	abstract function render( $field_name, $answer_object, Group $group = null, $error_message = '' );
 
 	abstract function get_posted_answer( $form_field );
 }

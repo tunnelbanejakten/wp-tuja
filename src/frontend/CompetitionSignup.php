@@ -169,7 +169,7 @@ class CompetitionSignup extends FrontendView {
 
 		try {
 			// Person is validated before Group is created in order to catch simple input problems, like a missing name or email address.
-			$new_person->validate();
+			$new_person->validate($category->get_rule_set());
 		} catch ( ValidationException $e ) {
 			throw new ValidationException( self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage() );
 		}
