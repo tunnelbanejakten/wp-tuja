@@ -22,14 +22,7 @@ use tuja\view\FieldText;
 class GroupPeopleEditor extends AbstractGroupView {
 	const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
 
-	private $enable_group_category_selection = true;
 	private $read_only;
-
-	const FIELD_PERSON_ROLE = self::FIELD_PREFIX_PERSON . 'role';
-	const ROLE_ADULT_SUPERVISOR = "adult_supervisor";
-	const ROLE_REGULAR_GROUP_MEMBER = "regular_group_member";
-	const ROLE_EXTRA_CONTACT = "extra_contact";
-	const ROLE_GROUP_LEADER = "group_leader";
 
 	public function __construct( $url, $group_key ) {
 		parent::__construct( $url, $group_key, 'Personer i %s' );
@@ -398,7 +391,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		return $validation_errors;
 	}
 
-	private function init_posted_person( $id ) {
+	private function init_posted_person( $id ): Person {
 		$person        = new Person();
 		$person->name  = $_POST[ self::FIELD_PERSON_NAME . '__' . $id ] ?: $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ];
 		$person->email = $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ];

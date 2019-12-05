@@ -26,6 +26,12 @@ abstract class AbstractGroupView extends FrontendView {
 	const FIELD_PERSON_PHONE = self::FIELD_PREFIX_PERSON . 'phone';
 	const FIELD_PERSON_PNO = self::FIELD_PREFIX_PERSON . 'pno';
 	const FIELD_PERSON_FOOD = self::FIELD_PREFIX_PERSON . 'food';
+	const FIELD_PERSON_ROLE = self::FIELD_PREFIX_PERSON . 'role';
+
+	const ROLE_ADULT_SUPERVISOR = "adult_supervisor";
+	const ROLE_REGULAR_GROUP_MEMBER = "regular_group_member";
+	const ROLE_EXTRA_CONTACT = "extra_contact";
+	const ROLE_GROUP_LEADER = "group_leader";
 
 	protected $person_dao;
 	protected $group_dao;

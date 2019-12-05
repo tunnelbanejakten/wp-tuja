@@ -55,7 +55,7 @@ class FieldText extends Field
 			    $hint
 		    );
 	    } else {
-		    return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label><input %s id="%s" name="%s" value="%s" class="tuja-%s" %s/></div>',
+		    return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label><input %s id="%s" name="%s" value="%s" class="tuja-%s" %s/>%s</div>',
 			    $render_id,
 			    $this->label,
 			    $hint,
@@ -64,7 +64,8 @@ class FieldText extends Field
 			    $field_name,
 			    htmlspecialchars( $value ),
 			    'fieldtext',
-			    $this->read_only ? ' disabled="disabled"' : '' );
+			    $this->read_only ? ' disabled="disabled"' : '',
+			    ! empty( $error_message ) ? sprintf( '<div class="tuja-message tuja-message-error">%s</div>', $error_message ) : '');
 	    }
     }
 }

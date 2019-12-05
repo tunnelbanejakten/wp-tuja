@@ -41,6 +41,10 @@ class GroupSignup extends AbstractGroupView {
 			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.' );
 		}
 
+		$real_category = $group->get_derived_group_category();
+
+		$collect_contact_information    = $real_category->get_rule_set()->is_contact_information_required_for_regular_group_member();
+
 		if ( $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
 			try {
 				$recaptcha_secret = get_option( 'tuja_recaptcha_sitesecret' );
@@ -62,38 +66,77 @@ class GroupSignup extends AbstractGroupView {
 					return sprintf( '<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>' );
 				}
 			} catch ( ValidationException $e ) {
-				return $this->render_create_form( $group, array( $e->getField() => $e->getMessage() ) );
+				return $this->render_create_form(
+					true,
+					$collect_contact_information,
+					$collect_contact_information,
+					true,
+					true,
+					self::ROLE_REGULAR_GROUP_MEMBER,
+					[ $e->getField() => $e->getMessage() ]
+				);
 			} catch ( Exception $e ) {
 				// TODO: Create helper method for generating field names based on "group or person" and attribute name.
-				return $this->render_create_form( $group, array( '__' => $e->getMessage() ) );
+				return $this->render_create_form(
+					true,
+					$collect_contact_information,
+					$collect_contact_information,
+					true,
+					true,
+					self::ROLE_REGULAR_GROUP_MEMBER,
+					[ '__' => $e->getMessage() ] );
 			}
 		} else {
-			return $this->render_create_form( $group );
+			return $this->render_create_form(
+				true,
+				$collect_contact_information,
+				$collect_contact_information,
+				true,
+				true,
+				self::ROLE_REGULAR_GROUP_MEMBER );
 		}
 	}
 
-	private function render_create_form(Group $group, $errors = array()): string
+	private function render_create_form(
+		bool $show_name = true,
+		bool $show_email = true,
+		bool $show_phone = true,
+		bool $show_pno = true,
+		bool $show_food = true,
+		string $role = self::ROLE_REGULAR_GROUP_MEMBER,
+		$errors = array()
+	): string
 	{
 		$html_sections = [];
 
-		if (isset($errors['__'])) {
-			$html_sections[] = sprintf('<p class="tuja-message tuja-message-error">%s</p>', $errors['__']);
+		if ( isset( $errors['__'] ) ) {
+			$html_sections[] = sprintf( '<p class="tuja-message tuja-message-error">%s</p>', @$errors['__'] );
 		}
 
-		$person_name_question = new FieldText( 'Vad heter du?' );
-		$html_sections[] = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors[ self::FIELD_PERSON_NAME ] );
+		if ( $show_name ) {
+			$person_name_question = new FieldText( 'Vad heter du?' );
+			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, @$errors[ self::FIELD_PERSON_NAME ] );
+		}
 
-		$person_name_question = new FieldPno( 'Vad har du för födelsedag/personnummer?', 'Vi rekommenderar att du fyller i fullständigt personnummer.' );
-		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors[ self::FIELD_PERSON_PNO ] );
+		if ( $show_pno ) {
+			$person_name_question = new FieldPno( 'Vad har du för födelsedag?', 'Vi rekommenderar dig att fylla i fullständigt personnummer.' );
+			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, @$errors[ self::FIELD_PERSON_PNO ] );
+		}
 
-		$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
-		$html_sections[] = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, $errors[ self::FIELD_PERSON_EMAIL ] );
+		if ( $show_email ) {
+			$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', 'Vi skickar ut viktig information inför tävlingen via e-post.' );
+			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, @$errors[ self::FIELD_PERSON_EMAIL ] );
+		}
 
-		$person_name_question = new FieldPhone( 'Vilket telefonnummer har du?', 'Obligatoriskt för lagledare och funktionärer, rekommenderat för övriga.' );
-		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE, $errors[ self::FIELD_PERSON_PHONE ] );
+		if ( $show_phone ) {
+			$person_name_question = new FieldPhone( 'Vilket telefonnummer har du?', 'Vi skickar viktig information under tävlingen via SMS.' );
+			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE, @$errors[ self::FIELD_PERSON_PHONE ] );
+		}
 
-		$person_name_question = new FieldText( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.' );
-		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, $errors[ self::FIELD_PERSON_FOOD ] );
+		if ( $show_food ) {
+			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', 'Vi bjuder på mackor och fika efter tävlingen.' );
+			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, @$errors[ self::FIELD_PERSON_FOOD ] );
+		}
 
 		$recaptcha_sitekey = get_option( 'tuja_recaptcha_sitekey' );
 		if (!empty($recaptcha_sitekey)) {
@@ -101,32 +144,48 @@ class GroupSignup extends AbstractGroupView {
 			$html_sections[] = sprintf('<div class="tuja-robot-check"><div class="g-recaptcha" data-sitekey="%s"></div></div>', $recaptcha_sitekey);
 		}
 
+		$html_sections[] = sprintf( '<div style="display: none;"><input type="hidden" name="%s" value="%s"></div>',
+			self::FIELD_PERSON_ROLE,
+			$role );
+
 		$html_sections[] = sprintf('<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Jag anmäler mig');
 
 		return sprintf('<form method="post">%s</form>', join($html_sections));
 	}
 
-	private function create_person($group): Person
-	{
-		$new_person = new Person();
-		$new_person->group_id = $group->id;
-		$new_person->name = $_POST[self::FIELD_PERSON_NAME];
-		$new_person->email = $_POST[self::FIELD_PERSON_EMAIL];
-		$new_person->phone = $_POST[self::FIELD_PERSON_PHONE];
-		$new_person->pno = $_POST[self::FIELD_PERSON_PNO];
-		$new_person->food = $_POST[self::FIELD_PERSON_FOOD];
-		$new_person->set_as_regular_group_member();
+	private function create_person( Group $group ): Person {
+		$person = $this->init_posted_person( $group );
 		try {
-			$new_person_id = $this->person_dao->create($new_person);
-			if ($new_person_id !== false) {
-				$new_person = $this->person_dao->get($new_person_id);
-				return $new_person;
+
+			$category = $group->get_derived_group_category();
+			$person->validate( $category->get_rule_set() );
+
+			$new_person_id = $this->person_dao->create( $person );
+			if ( $new_person_id !== false ) {
+				$person = $this->person_dao->get( $new_person_id );
+
+				return $person;
 			} else {
-				throw new Exception('Ett fel uppstod. Vi vet tyvärr inte riktigt varför.');
+				throw new Exception( 'Ett fel uppstod. Vi vet tyvärr inte riktigt varför.' );
 			}
-		} catch (ValidationException $e) {
-			throw new ValidationException(self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage());
+		} catch ( ValidationException $e ) {
+			throw new ValidationException( self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage() );
 		}
+	}
+
+	private function init_posted_person( Group $group ): Person {
+		$person           = new Person();
+		$person->group_id = $group->id;
+		$person->name     = $_POST[ self::FIELD_PERSON_NAME ];
+		$person->email    = $_POST[ self::FIELD_PERSON_EMAIL ];
+		$person->phone    = $_POST[ self::FIELD_PERSON_PHONE ];
+		$person->pno      = $_POST[ self::FIELD_PERSON_PNO ];
+		$person->food     = $_POST[ self::FIELD_PERSON_FOOD ];
+		$person->set_status( Person::STATUS_CREATED );
+
+		$person->set_as_regular_group_member();
+
+		return $person;
 	}
 
 	private function send_person_welcome_mail( Person $person )
