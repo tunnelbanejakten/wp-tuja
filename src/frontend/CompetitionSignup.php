@@ -11,11 +11,12 @@ use tuja\data\model\ValidationException;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PersonDao;
-use tuja\frontend\router\GroupEditorInitiator;
+use tuja\frontend\router\GroupPeopleEditorInitiator;
 use tuja\util\Recaptcha;
 use tuja\util\rules\RuleEvaluationException;
 use tuja\view\FieldChoices;
 use tuja\view\FieldEmail;
+use tuja\view\FieldPhone;
 use tuja\view\FieldText;
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
@@ -29,6 +30,7 @@ class CompetitionSignup extends FrontendView {
 	const FIELD_GROUP_AGE = self::FIELD_PREFIX_GROUP . 'age';
 	const FIELD_PERSON_NAME = self::FIELD_PREFIX_PERSON . 'name';
 	const FIELD_PERSON_EMAIL = self::FIELD_PREFIX_PERSON . 'email';
+	const FIELD_PERSON_PHONE = self::FIELD_PREFIX_PERSON . 'phone';
 	private $person_dao;
 	private $group_dao;
 
@@ -70,7 +72,7 @@ class CompetitionSignup extends FrontendView {
 				// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
 				$new_group = $this->create_group();
 
-				$edit_link = GroupEditorInitiator::link( $new_group );
+				$edit_link = GroupPeopleEditorInitiator::link( $new_group );
 				if ( ! empty( $edit_link ) ) {
 					return sprintf( '<p class="tuja-message tuja-message-success">Tack! Nästa steg är att gå till <a href="%s">%s</a> och fylla i vad de andra deltagarna i ert lag heter. Vi har också skickat länken till din e-postadress så att du kan ändra er anmälan framöver.</p>', $edit_link, $edit_link );
 				} else {
@@ -125,8 +127,11 @@ class CompetitionSignup extends FrontendView {
 		$person_name_question = new FieldText( 'Vad heter du?', null, false, [], true );
 		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors[ self::FIELD_PERSON_NAME ] );
 
-		$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', 'Vi kommer skicka viktig information inför tävlingen till denna adress. Ni kan ändra till en annan adress senare om det skulle behövas.', false, true );
+		$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', 'Vi kommer skicka viktig information inför tävlingen till denna adress. Ni kan ändra e-postadress senare om det skulle behövas.', false, true );
 		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, $errors[ self::FIELD_PERSON_EMAIL ] );
+
+		$person_phone_question = new FieldPhone( 'Vilket telefonnummer har du?', 'Vi kommer skicka viktig information under tävlingen till detta nummer. Ni kan ändra telefonnummer senare om det skulle behövas.', false, true );
+		$html_sections[]       = $this->render_field( $person_phone_question, self::FIELD_PERSON_PHONE, $errors[ self::FIELD_PERSON_PHONE ] );
 
 		$recaptcha_sitekey = get_option( 'tuja_recaptcha_sitekey' );
 		if ( ! empty( $recaptcha_sitekey ) ) {
@@ -147,7 +152,7 @@ class CompetitionSignup extends FrontendView {
 			throw new ValidationException( self::FIELD_GROUP_AGE, 'No category selected.' );
 		}
 		// DETERMINE REQUESTED CHANGES
-		$new_group                 = new Group();
+		$new_group = new Group();
 		$new_group->set_status( Group::DEFAULT_STATUS );
 		$new_group->name           = $_POST[ self::FIELD_GROUP_NAME ];
 		$new_group->competition_id = $this->get_competition()->id;
@@ -161,15 +166,16 @@ class CompetitionSignup extends FrontendView {
 			throw new ValidationException( self::FIELD_PREFIX_GROUP . $e->getField(), $e->getMessage() );
 		}
 
-		$new_person                   = new Person();
+		$new_person = new Person();
 		$new_person->set_status( Person::DEFAULT_STATUS );
-		$new_person->name             = $_POST[ self::FIELD_PERSON_NAME ];
-		$new_person->email            = $_POST[ self::FIELD_PERSON_EMAIL ];
+		$new_person->name  = $_POST[ self::FIELD_PERSON_NAME ];
+		$new_person->email = $_POST[ self::FIELD_PERSON_EMAIL ];
+		$new_person->phone = $_POST[ self::FIELD_PERSON_PHONE ];
 		$new_person->set_as_group_leader();
 
 		try {
 			// Person is validated before Group is created in order to catch simple input problems, like a missing name or email address.
-			$new_person->validate($category->get_rule_set());
+			$new_person->validate( $category->get_rule_set() );
 		} catch ( ValidationException $e ) {
 			throw new ValidationException( self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage() );
 		}
