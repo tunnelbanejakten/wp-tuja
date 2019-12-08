@@ -39,4 +39,8 @@ class PassthroughRuleSet extends RuleSet {
 	public function get_delete_group_member_period( Competition $competition ): DatePeriod {
 		return $this->year_before_and_after_now();
 	}
+
+	function is_ssn_required(): bool {
+		return false;
+	}
 }

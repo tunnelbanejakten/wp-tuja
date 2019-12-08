@@ -7,8 +7,7 @@ use tuja\util\rules\RuleSet;
 use tuja\util\StateMachine;
 use tuja\util\StateMachineException;
 
-class Person
-{
+class Person {
 	/*
 	Valid values:
 	- 8311090123
@@ -110,7 +109,8 @@ class Person
 		if ( strlen( $this->food ) > 65000 ) {
 			throw new ValidationException( 'food', 'För lång text om mat och allergier.' );
 		}
-		if ( ! empty( trim( $this->pno ) ) && preg_match( '/' . self::PNO_PATTERN . '/', $this->pno ) !== 1 ) {
+		$is_ssn_required = ! empty( trim( $this->pno ) ) || $rule_set->is_ssn_required();
+		if ( $is_ssn_required && preg_match( '/' . self::PNO_PATTERN . '/', $this->pno ) !== 1 ) {
 			throw new ValidationException( 'pno', 'Födelsedag och sånt ser konstigt ut' );
 		}
 		if ( $this->get_status() == null ) {
@@ -139,7 +139,7 @@ class Person
 		return $person;
 	}
 
-	public function set_role_flags($is_competing, $is_attending, $is_group_contact) {
+	public function set_role_flags( $is_competing, $is_attending, $is_group_contact ) {
 		$this->is_competing     = $is_competing;
 		$this->is_attending     = $is_attending;
 		$this->is_group_contact = $is_group_contact;

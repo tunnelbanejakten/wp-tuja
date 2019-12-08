@@ -39,4 +39,8 @@ class CrewMembersRuleSet extends RuleSet {
 	public function get_delete_group_member_period( Competition $competition ): DatePeriod {
 		return $this->up_until_days_before( $competition, 14 );
 	}
+
+	function is_ssn_required(): bool {
+		return false;
+	}
 }
