@@ -20,8 +20,6 @@ use tuja\view\FieldText;
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix. Throwing exceptions might be preferable.
 class GroupPeopleEditor extends AbstractGroupView {
-	const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
-
 	private $read_only;
 
 	public function __construct( $url, $group_key ) {
@@ -34,9 +32,9 @@ class GroupPeopleEditor extends AbstractGroupView {
 		wp_enqueue_script( 'tuja-editgroup-script' ); // Needed?
 
 		try {
-			$group      = $this->get_group();
-			$category   = $group->get_derived_group_category();
-			$errors     = [];
+			$group    = $this->get_group();
+			$category = $group->get_derived_group_category();
+			$errors   = [];
 
 			if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
 				try {
@@ -121,7 +119,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 			true,
 			true,
 			self::ROLE_REGULAR_GROUP_MEMBER,
-			'Lägg till deltagare');
+			'Lägg till deltagare' );
 	}
 
 	private function get_form_extra_contact_html( $errors ) {
@@ -167,10 +165,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( new Person(), $show_name, $show_email, $show_phone, $show_pno, $show_food, ! $is_fixed_list, $role, $errors ) );
 		}
 
-		return sprintf( '<div class="tuja-people" data-count-min="%d" data-count-max="%d">%s</div>',
-			$people_count_min,
-			$people_count_max,
-			join( $html_sections ) );
+		return sprintf( '<div class="tuja-people">%s</div>', join( $html_sections ) );
 	}
 
 	private function get_form_save_button_html() {
@@ -414,6 +409,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 				$person->set_as_regular_group_member();
 				break;
 		}
+
 		return $person;
 	}
 

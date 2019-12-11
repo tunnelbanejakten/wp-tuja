@@ -21,8 +21,6 @@ use tuja\view\FieldText;
 class GroupEditor extends AbstractGroupView {
 	private $group_key;
 
-	const ACTION_NAME_DELETE_PERSON_PREFIX = 'delete_person__';
-
 	private $enable_group_category_selection = true;
 	private $read_only;
 
