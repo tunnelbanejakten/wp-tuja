@@ -7,6 +7,7 @@ use tuja\data\model\Competition;
 use tuja\data\model\GroupCategory;
 use tuja\data\store\GroupCategoryDao;
 use tuja\Frontend;
+use tuja\util\Recaptcha;
 use tuja\view\Field;
 use WP_Post;
 
@@ -18,11 +19,18 @@ abstract class FrontendView {
 	const ACTION_BUTTON_NAME = 'tuja-action';
 	const ACTION_NAME_SAVE = 'save';
 
-	const FIELD_PREFIX_PERSON = 'tuja-person__';
 	const FIELD_PREFIX_GROUP = 'tuja-group__';
 	const FIELD_GROUP_NAME = self::FIELD_PREFIX_GROUP . 'name';
 	const FIELD_GROUP_AGE = self::FIELD_PREFIX_GROUP . 'age';
 	const FIELD_GROUP_EXTRA_CONTACT = self::FIELD_PREFIX_GROUP . 'extracontact';
+
+	const FIELD_PREFIX_PERSON = 'tuja-person__';
+	const FIELD_PERSON_NAME = self::FIELD_PREFIX_PERSON . 'name';
+	const FIELD_PERSON_EMAIL = self::FIELD_PREFIX_PERSON . 'email';
+	const FIELD_PERSON_PHONE = self::FIELD_PREFIX_PERSON . 'phone';
+	const FIELD_PERSON_PNO = self::FIELD_PREFIX_PERSON . 'pno';
+	const FIELD_PERSON_FOOD = self::FIELD_PREFIX_PERSON . 'food';
+	const FIELD_PERSON_ROLE = self::FIELD_PREFIX_PERSON . 'role';
 
 	private $wp_post = null;
 
@@ -131,6 +139,29 @@ abstract class FrontendView {
 		}
 
 		return ! isset( $category ) || $category->get_rule_set()->is_create_registration_allowed( $competition );
+	}
+
+	private function get_recaptcha_site_key(): string {
+		return get_option( 'tuja_recaptcha_sitekey' );
+	}
+
+	protected function get_recaptcha_html(): bool {
+		$recaptcha_sitekey = $this->get_recaptcha_site_key();
+		if ( ! empty( $recaptcha_sitekey ) ) {
+			wp_enqueue_script( 'tuja-recaptcha-script' );
+
+			return sprintf( '<div class="tuja-robot-check"><div class="g-recaptcha" data-sitekey="%s"></div></div>', $recaptcha_sitekey );
+		} else {
+			return '';
+		}
+	}
+
+	protected function validate_recaptcha_html() {
+		$recaptcha_secret = get_option( 'tuja_recaptcha_sitesecret' );
+		if ( ! empty( $recaptcha_secret ) ) {
+			$recaptcha = new Recaptcha( $recaptcha_secret );
+			$recaptcha->verify( $_POST['g-recaptcha-response'] );
+		}
 	}
 
 }

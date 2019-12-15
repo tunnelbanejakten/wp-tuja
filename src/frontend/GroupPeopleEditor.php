@@ -7,12 +7,8 @@ use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
-use tuja\data\store\GroupCategoryDao;
-use tuja\data\store\GroupDao;
 use tuja\frontend\router\GroupHomeInitiator;
 use tuja\util\rules\RuleEvaluationException;
-use tuja\view\EditGroupShortcode;
-use tuja\view\FieldChoices;
 use tuja\view\FieldEmail;
 use tuja\view\FieldPhone;
 use tuja\view\FieldPno;
@@ -227,6 +223,8 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		$html_sections = [];
 
+		// TODO: Handle $errors['__']?
+
 		$random_id = $person->random_id ?: '';
 
 		if ( $show_name ) {
@@ -384,33 +382,6 @@ class GroupPeopleEditor extends AbstractGroupView {
 		}
 
 		return $validation_errors;
-	}
-
-	private function init_posted_person( $id ): Person {
-		$person        = new Person();
-		$person->name  = $_POST[ self::FIELD_PERSON_NAME . '__' . $id ] ?: $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ];
-		$person->email = $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ];
-		$person->phone = $_POST[ self::FIELD_PERSON_PHONE . '__' . $id ];
-		$person->pno   = $_POST[ self::FIELD_PERSON_PNO . '__' . $id ];
-		$person->food  = $_POST[ self::FIELD_PERSON_FOOD . '__' . $id ];
-		$person->set_status( Person::STATUS_CREATED );
-
-		switch ( $_POST[ self::FIELD_PERSON_ROLE . '__' . $id ] ) {
-			case self::ROLE_ADULT_SUPERVISOR:
-				$person->set_as_adult_supervisor();
-				break;
-			case self::ROLE_EXTRA_CONTACT:
-				$person->set_as_extra_contact();
-				break;
-			case self::ROLE_GROUP_LEADER:
-				$person->set_as_group_leader();
-				break;
-			default:
-				$person->set_as_regular_group_member();
-				break;
-		}
-
-		return $person;
 	}
 
 	private function get_submitted_person_ids(): array {

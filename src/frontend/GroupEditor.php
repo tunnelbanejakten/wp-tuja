@@ -35,9 +35,8 @@ class GroupEditor extends AbstractGroupView {
 		wp_enqueue_script( 'tuja-editgroup-script' ); // Needed?
 
 		try {
-			$group      = $this->get_group();
-			$form_group = $this->get_form_group_html();
-			$errors     = [];
+			$group  = $this->get_group();
+			$errors = [];
 
 			if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
 				try {
@@ -52,8 +51,9 @@ class GroupEditor extends AbstractGroupView {
 
 			$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
 
-			$form_save_button   = $this->get_form_save_button_html();
-			$home_link          = GroupHomeInitiator::link( $group );
+			$form          = $this->get_form_group_html( $errors );
+			$submit_button = $this->get_form_save_button_html();
+			$home_link     = GroupHomeInitiator::link( $group );
 			include( 'views/group-editor.php' );
 		} catch ( Exception $e ) {
 			printf( '<p class="tuja-message tuja-message-error">%s</p>', $e->getMessage() );
@@ -69,7 +69,7 @@ class GroupEditor extends AbstractGroupView {
 		return $this->read_only;
 	}
 
-	private function get_form_group_html() {
+	private function get_form_group_html( array $errors ) {
 		$html_sections = [];
 
 		$group = $this->get_group();

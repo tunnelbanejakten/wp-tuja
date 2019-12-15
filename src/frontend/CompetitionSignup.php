@@ -12,7 +12,6 @@ use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PersonDao;
 use tuja\frontend\router\GroupPeopleEditorInitiator;
-use tuja\util\Recaptcha;
 use tuja\util\rules\RuleEvaluationException;
 use tuja\view\FieldChoices;
 use tuja\view\FieldEmail;
@@ -26,11 +25,6 @@ class CompetitionSignup extends FrontendView {
 
 	const FIELD_PREFIX_PERSON = 'tuja-person__';
 	const FIELD_PREFIX_GROUP = 'tuja-group__';
-	const FIELD_GROUP_NAME = self::FIELD_PREFIX_GROUP . 'name';
-	const FIELD_GROUP_AGE = self::FIELD_PREFIX_GROUP . 'age';
-	const FIELD_PERSON_NAME = self::FIELD_PREFIX_PERSON . 'name';
-	const FIELD_PERSON_EMAIL = self::FIELD_PREFIX_PERSON . 'email';
-	const FIELD_PERSON_PHONE = self::FIELD_PREFIX_PERSON . 'phone';
 	private $person_dao;
 	private $group_dao;
 
@@ -46,8 +40,38 @@ class CompetitionSignup extends FrontendView {
 		global $wpdb;
 
 		$competition = $this->get_competition();
+		$errors      = [];
 
-		$form = $this->render_form();
+		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
+			try {
+				$this->validate_recaptcha_html();
+
+				// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
+				$new_group = $this->create_group();
+
+				$edit_link = GroupPeopleEditorInitiator::link( $new_group );
+				if ( ! empty( $edit_link ) ) {
+					printf( '<p class="tuja-message tuja-message-success">Tack! Nästa steg är att gå till <a href="%s">%s</a> och fylla i vad de andra deltagarna i ert lag heter. Vi har också skickat länken till din e-postadress så att du kan ändra er anmälan framöver.</p>', $edit_link, $edit_link );
+				} else {
+					printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>' );
+				}
+
+				return;
+			} catch ( ValidationException $e ) {
+				$errors = [ $e->getField() => $e->getMessage() ];
+			} catch ( RuleEvaluationException $e ) {
+				$errors = [ '__' => $e->getMessage() ];
+			} catch ( Exception $e ) {
+				// TODO: Create helper method for generating field names based on "group or person" and attribute name.
+				$errors = [ '__' => $e->getMessage() ];
+			}
+		}
+
+		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
+
+		$form           = $this->get_form_html( $errors );
+
+		$submit_button  = $this->get_submit_button_html();
 
 		include( 'views/competition-signup.php' );
 	}
@@ -60,43 +84,8 @@ class CompetitionSignup extends FrontendView {
 		return $this->competition_dao->get_by_key( $this->competition_key );
 	}
 
-	public function render_form(): String {
-		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
-			try {
-				$recaptcha_secret = get_option( 'tuja_recaptcha_sitesecret' );
-				if ( ! empty( $recaptcha_secret ) ) {
-					$recaptcha = new Recaptcha( $recaptcha_secret );
-					$recaptcha->verify( $_POST['g-recaptcha-response'] );
-				}
-
-				// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
-				$new_group = $this->create_group();
-
-				$edit_link = GroupPeopleEditorInitiator::link( $new_group );
-				if ( ! empty( $edit_link ) ) {
-					return sprintf( '<p class="tuja-message tuja-message-success">Tack! Nästa steg är att gå till <a href="%s">%s</a> och fylla i vad de andra deltagarna i ert lag heter. Vi har också skickat länken till din e-postadress så att du kan ändra er anmälan framöver.</p>', $edit_link, $edit_link );
-				} else {
-					return sprintf( '<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>' );
-				}
-			} catch ( ValidationException $e ) {
-				return $this->render_create_form( array( $e->getField() => $e->getMessage() ) );
-			} catch ( RuleEvaluationException $e ) {
-				return $this->render_create_form( array( '__' => $e->getMessage() ) );
-			} catch ( Exception $e ) {
-				// TODO: Create helper method for generating field names based on "group or person" and attribute name.
-				return $this->render_create_form( array( '__' => $e->getMessage() ) );
-			}
-		} else {
-			return $this->render_create_form();
-		}
-	}
-
-	private function render_create_form( $errors = array() ): string {
+	private function get_form_html( $errors = array() ): string {
 		$html_sections = [];
-
-		if ( isset( $errors['__'] ) ) {
-			$html_sections[] = sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] );
-		}
 
 		$group_name_question = new FieldText( 'Vad heter ert lag?', null, false, [], true );
 		$html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors[ self::FIELD_GROUP_NAME ] );
@@ -133,15 +122,13 @@ class CompetitionSignup extends FrontendView {
 		$person_phone_question = new FieldPhone( 'Vilket telefonnummer har du?', 'Vi kommer skicka viktig information under tävlingen till detta nummer. Ni kan ändra telefonnummer senare om det skulle behövas.', false, true );
 		$html_sections[]       = $this->render_field( $person_phone_question, self::FIELD_PERSON_PHONE, $errors[ self::FIELD_PERSON_PHONE ] );
 
-		$recaptcha_sitekey = get_option( 'tuja_recaptcha_sitekey' );
-		if ( ! empty( $recaptcha_sitekey ) ) {
-			wp_enqueue_script( 'tuja-recaptcha-script' );
-			$html_sections[] = sprintf( '<div class="tuja-robot-check"><div class="g-recaptcha" data-sitekey="%s"></div></div>', $recaptcha_sitekey );
-		}
+		$html_sections[] = $this->get_recaptcha_html();
 
-		$html_sections[] = sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Anmäl lag' );
+		return join( $html_sections );
+	}
 
-		return sprintf( '<form method="post">%s</form>', join( $html_sections ) );
+	private function get_submit_button_html() {
+		return sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Anmäl lag' );
 	}
 
 	// TODO: create_group does a bit too much application logic to be in a presentation class. Extract application logic to some utility class.
