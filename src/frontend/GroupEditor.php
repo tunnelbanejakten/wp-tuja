@@ -116,7 +116,7 @@ class GroupEditor extends AbstractGroupView {
 		$html_sections = [];
 
 		if ( ! $this->is_read_only() ) {
-			$html_sections[] = sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>',
+			$html_sections[] = sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s" id="tuja_save_button">%s</button></div>',
 				self::ACTION_BUTTON_NAME,
 				self::ACTION_NAME_SAVE,
 				'Spara' );

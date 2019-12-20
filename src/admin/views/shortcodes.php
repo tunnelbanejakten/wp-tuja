@@ -11,7 +11,7 @@ use tuja\frontend\router\CompetitionSignupInitiator;
         Anmäl lag:
 		<?php
 		$link = CompetitionSignupInitiator::link( $competition );
-		printf( '<a href="%s" target="_blank">%s</a>', $link, $link )
+		printf( '<a href="%s" target="_blank" id="tuja_shortcodes_competitionsignup_link">%s</a>', $link, $link )
 		?>
     </p>
 

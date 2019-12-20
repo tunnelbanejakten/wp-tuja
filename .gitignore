@@ -5,3 +5,4 @@
 .vscode
 /web
 github.log
+/tests/integration/node_modules/

@@ -15,8 +15,8 @@
 		}
 		?>
 
-		<input type="text" name="tuja_competition_name"/>
-		<button type="submit" name="tuja_action" value="competition_create">Skapa</button>
+		<input type="text" name="tuja_competition_name" id="tuja_competition_name"/>
+		<button type="submit" name="tuja_action" value="competition_create" class="button" id="tuja_create_competition_button">Skapa</button>
 	</form>
 	<?php
 	$url = add_query_arg(array(

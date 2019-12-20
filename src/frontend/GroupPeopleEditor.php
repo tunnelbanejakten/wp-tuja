@@ -157,11 +157,11 @@ class GroupPeopleEditor extends AbstractGroupView {
 		}
 
 		if ( ! $is_fixed_list ) {
-			$html_sections[] = sprintf( '<div class="tuja-item-buttons"><button type="button" name="%s" value="%s" class="tuja-add-person">%s</button></div>', self::ACTION_BUTTON_NAME, 'new_person', $add_button_label );
+			$html_sections[] = sprintf( '<div class="tuja-item-buttons"><button type="button" value="%s" class="tuja-add-person">%s</button></div>', 'new_person', $add_button_label );
 			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( new Person(), $show_name, $show_email, $show_phone, $show_pno, $show_food, ! $is_fixed_list, $role, $errors ) );
 		}
 
-		return sprintf( '<div class="tuja-people">%s</div>', join( $html_sections ) );
+		return sprintf( '<div class="tuja-people tuja-person-role-%s">%s</div>', $role, join( $html_sections ) );
 	}
 
 	private function get_form_save_button_html() {

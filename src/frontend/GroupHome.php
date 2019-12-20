@@ -11,7 +11,7 @@ use tuja\frontend\router\GroupPeopleEditorInitiator;
 
 class GroupHome extends AbstractGroupView {
 	public function __construct( $url, $group_key ) {
-		parent::__construct( $url, $group_key, '%s' );
+		parent::__construct( $url, $group_key, 'Hej %s' );
 	}
 
 	function output() {

@@ -20,6 +20,6 @@ AdminUtils::printTopMenu( $competition );
         printf( '<p><a href="%s">%s</a></p>', $url, $form->name );
     }
     ?>
-    <input type="text" name="tuja_form_name"/>
-    <button type="submit" class="button" name="tuja_action" value="form_create">Skapa</button>
+    <input type="text" name="tuja_form_name" id="tuja_form_name"/>
+    <button type="submit" class="button" name="tuja_action" value="form_create" id="tuja_form_create_button">Skapa</button>
 </form>

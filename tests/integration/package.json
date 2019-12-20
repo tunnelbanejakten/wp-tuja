@@ -1,0 +1,17 @@
+{
+  "name": "wp-tuja-tests",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "jest",
+    "test:visible": "HEADLESS=false jest"
+  },
+  "dependencies": {},
+  "main": "index.test.js",
+  "license": "MIT",
+  "devDependencies": {
+    "faker": "^4.1.0",
+    "jest": "^24.9.0",
+    "jest-puppeteer": "^4.3.0",
+    "puppeteer": "^2.0.0"
+  }
+}

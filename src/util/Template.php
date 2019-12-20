@@ -65,6 +65,7 @@ class Template
 			'group_key'                              => $group->random_id,
 			'group_home_link'                        => GroupHomeInitiator::link( $group ),
 			'group_edit_link'                        => GroupEditorInitiator::link( $group ),
+			'group_edit_link'                        => GroupEditorInitiator::link( $group ),
 			'group_signup_link'                      => GroupSignupInitiator::link( $group ),
 			'group_registration_evaluation_warnings' => self::group_parameter_registration_issues( 'Sådant som ni **borde** fixa:', $evaluation_result, RuleResult::WARNING ),
 			'group_registration_evaluation_errors'   => self::group_parameter_registration_issues( 'Sådant som ni **måste** fixa för att få starta:', $evaluation_result, RuleResult::BLOCKER )

@@ -11,11 +11,13 @@ use tuja\data\model\ValidationException;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PersonDao;
+use tuja\frontend\router\GroupHomeInitiator;
 use tuja\frontend\router\GroupPeopleEditorInitiator;
 use tuja\util\rules\RuleEvaluationException;
 use tuja\view\FieldChoices;
 use tuja\view\FieldEmail;
 use tuja\view\FieldPhone;
+use tuja\view\FieldPno;
 use tuja\view\FieldText;
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
@@ -49,9 +51,9 @@ class CompetitionSignup extends FrontendView {
 				// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
 				$new_group = $this->create_group();
 
-				$edit_link = GroupPeopleEditorInitiator::link( $new_group );
+				$edit_link = GroupHomeInitiator::link( $new_group );
 				if ( ! empty( $edit_link ) ) {
-					printf( '<p class="tuja-message tuja-message-success">Tack! Nästa steg är att gå till <a href="%s">%s</a> och fylla i vad de andra deltagarna i ert lag heter. Vi har också skickat länken till din e-postadress så att du kan ändra er anmälan framöver.</p>', $edit_link, $edit_link );
+					printf( '<p class="tuja-message tuja-message-success">Tack! Nästa steg är att gå till <a href="%s" id="tuja_signup_success_edit_link" data-group-key="%s">%s</a> och fylla i vad de andra deltagarna i ert lag heter. Vi har också skickat länken till din e-postadress så att du kan ändra er anmälan framöver.</p>', $edit_link, $new_group->random_id, $edit_link );
 				} else {
 					printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>' );
 				}
@@ -69,9 +71,9 @@ class CompetitionSignup extends FrontendView {
 
 		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
 
-		$form           = $this->get_form_html( $errors );
+		$form = $this->get_form_html( $errors );
 
-		$submit_button  = $this->get_submit_button_html();
+		$submit_button = $this->get_submit_button_html();
 
 		include( 'views/competition-signup.php' );
 	}
@@ -122,13 +124,16 @@ class CompetitionSignup extends FrontendView {
 		$person_phone_question = new FieldPhone( 'Vilket telefonnummer har du?', 'Vi kommer skicka viktig information under tävlingen till detta nummer. Ni kan ändra telefonnummer senare om det skulle behövas.', false, true );
 		$html_sections[]       = $this->render_field( $person_phone_question, self::FIELD_PERSON_PHONE, $errors[ self::FIELD_PERSON_PHONE ] );
 
+		$person_name_question = new FieldPno( 'Vad har du för födelsedag?', 'Vi rekommenderar dig att fylla i fullständigt personnummer.', false, true );
+		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors[ self::FIELD_PERSON_PNO ] );
+
 		$html_sections[] = $this->get_recaptcha_html();
 
 		return join( $html_sections );
 	}
 
 	private function get_submit_button_html() {
-		return sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Anmäl lag' );
+		return sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s" id="tuja_signup_button">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Anmäl lag' );
 	}
 
 	// TODO: create_group does a bit too much application logic to be in a presentation class. Extract application logic to some utility class.
@@ -158,6 +163,7 @@ class CompetitionSignup extends FrontendView {
 		$new_person->name  = $_POST[ self::FIELD_PERSON_NAME ];
 		$new_person->email = $_POST[ self::FIELD_PERSON_EMAIL ];
 		$new_person->phone = $_POST[ self::FIELD_PERSON_PHONE ];
+		$new_person->pno   = $_POST[ self::FIELD_PERSON_PNO ];
 		$new_person->set_as_group_leader();
 
 		try {

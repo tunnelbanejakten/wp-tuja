@@ -10,9 +10,9 @@ AdminUtils::printTopMenu( $competition );
 
 <form method="post" class="tuja">
     <div class="nav-tab-wrapper">
-        <a class="nav-tab nav-tab-active" data-tab-id="tuja-tab-dates">Datum och tider</a>
-        <a class="nav-tab" data-tab-id="tuja-tab-messagetemplates">Meddelandemallar</a>
-        <a class="nav-tab" data-tab-id="tuja-tab-groups">Grupper</a>
+        <a class="nav-tab nav-tab-active" data-tab-id="tuja-tab-dates" id="tuja_tab_dates">Datum och tider</a>
+        <a class="nav-tab" data-tab-id="tuja-tab-messagetemplates" id="tuja_tab_messagetemplates">Meddelandemallar</a>
+        <a class="nav-tab" data-tab-id="tuja-tab-groups" id="tuja_tab_groups">Grupper</a>
     </div>
 
     <div class="tuja-tab" id="tuja-tab-dates">
@@ -124,7 +124,7 @@ AdminUtils::printTopMenu( $competition );
         <div class="tuja-groupcategory-template">
 	        <?= $this->print_group_category_form( new GroupCategory() ) ?>
         </div>
-        <button class="button tuja-add-groupcategory" type="button">
+        <button class="button tuja-add-groupcategory" type="button" id="tuja_add_group_category_button">
             Ny
         </button>
 
@@ -184,6 +184,7 @@ AdminUtils::printTopMenu( $competition );
     <button class="button button-primary"
             type="submit"
             name="tuja_competition_settings_action"
+            id="tuja_save_competition_settings_button"
             value="save">
         Spara
     </button>

@@ -2,6 +2,7 @@
 
 namespace tuja\data\model;
 
+use tuja\util\DateUtils;
 use tuja\util\rules\PassthroughRuleSet;
 use tuja\util\rules\RuleSet;
 use tuja\util\StateMachine;
@@ -109,9 +110,13 @@ class Person {
 		if ( strlen( $this->food ) > 65000 ) {
 			throw new ValidationException( 'food', 'För lång text om mat och allergier.' );
 		}
-		$is_ssn_required = ! empty( trim( $this->pno ) ) || $rule_set->is_ssn_required();
-		if ( $is_ssn_required && preg_match( '/' . self::PNO_PATTERN . '/', $this->pno ) !== 1 ) {
-			throw new ValidationException( 'pno', 'Födelsedag och sånt ser konstigt ut' );
+		$is_ssn_required = ! empty( trim( $this->pno ) ) || ( $this->is_competing() && $rule_set->is_ssn_required() );
+		if ( $is_ssn_required ) {
+			try {
+				DateUtils::fix_pno( $this->pno );
+			} catch ( ValidationException $e ) {
+				throw new ValidationException( 'pno', $e->getMessage() );
+			}
 		}
 		if ( $this->get_status() == null ) {
 			throw new ValidationException( 'status', 'Status måste vara satt.' );
