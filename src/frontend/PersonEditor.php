@@ -113,12 +113,12 @@ class PersonEditor extends AbstractGroupView {
 
 	private function get_submit_button_html( $read_only = false ) {
 		if ( ! $read_only ) {
-			$html_sections[] = sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>',
+			return sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>',
 				self::ACTION_BUTTON_NAME,
 				self::ACTION_NAME_SAVE,
 				'Spara' );
 		} else {
-			$html_sections[] = sprintf( '<p class="tuja-message tuja-message-error">%s</p>',
+			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>',
 				sprintf( 'Du kan inte längre ändra din anmälan. Kontakta <a href="mailto:%s">%s</a> om du behöver ändra något.',
 					get_bloginfo( 'admin_email' ),
 					get_bloginfo( 'admin_email' ) ) );

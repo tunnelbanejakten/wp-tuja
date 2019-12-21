@@ -248,6 +248,121 @@ describe('wp-tuja', () => {
       }
     })
 
+    it.each([
+      [
+        '  David Dawson  ',
+        'David Dawson',
+        '83-01-01',
+        '19830101-0000',
+        'Vegan   ',
+        'Vegan'
+      ],
+      [
+        'Emily Emilia Edvina Ellison',
+        'Emily Emilia Edvina Ellison',
+        '830131-1234',
+        '19830131-1234',
+        '',
+        ''
+      ],
+      [
+        'B',
+        'B',
+        '101010',
+        '20101010-0000',
+        '    .',
+        '.'
+      ]
+    ])('should be possible to sign up as new team member "%s"', async (nameInput, nameExpected, pnoInput, pnoExpected, foodInput, foodExpected) => {
+      await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
+
+      await type('input#tuja-person__name', nameInput)
+      await type('input#tuja-person__pno', pnoInput)
+      await type('input#tuja-person__food', foodInput)
+
+      await clickLink('button[name="tuja-action"]')
+
+      await expectSuccessMessage('Tack')
+
+      const editPersonUrl = await page.$eval('#tuja_signup_success_edit_link', node => node.href)
+      await goto(editPersonUrl)
+
+      await expectFormValue('input#tuja-person__name', nameExpected)
+      await expectFormValue('input#tuja-person__pno', pnoExpected)
+      await expectFormValue('input#tuja-person__food', foodExpected)
+    })
+
+    it('should be possible to sign up and later change registration', async () => {
+
+      //
+      // Signing up
+      //
+
+      let name = 'Alice'
+      let pno = '19840101-0000'
+      let food = ''
+      await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
+
+      await type('input#tuja-person__name', name)
+      await type('input#tuja-person__pno', pno)
+      await type('input#tuja-person__food', food)
+
+      await clickLink('button[name="tuja-action"]')
+
+      await expectSuccessMessage('Tack')
+
+      const editPersonUrl = await page.$eval('#tuja_signup_success_edit_link', node => node.href)
+
+      //
+      // Editing registration first time
+      //
+
+      await goto(editPersonUrl)
+      await expectFormValue('input#tuja-person__name', name)
+      await expectFormValue('input#tuja-person__pno', pno)
+      await expectFormValue('input#tuja-person__food', food)
+
+      name = 'Alicia'
+      pno = '19840202-0000'
+      food = 'Allergic to gluten'
+
+      await type('input#tuja-person__name', name)
+      await type('input#tuja-person__pno', pno)
+      await type('input#tuja-person__food', food)
+
+      await clickLink('button[name="tuja-action"]')
+
+      await expectSuccessMessage('Ändringarna har sparats. Tack.')
+
+      await goto(editPersonUrl)
+      await expectFormValue('input#tuja-person__name', name)
+      await expectFormValue('input#tuja-person__pno', pno)
+      await expectFormValue('input#tuja-person__food', food)
+
+      //
+      // Editing registration second time
+      //
+
+      name = 'Allison'
+      pno = '19840303-0000'
+      food = 'Allergic to lactose'
+
+      await goto(editPersonUrl)
+      await type('input#tuja-person__name', name)
+      await type('input#tuja-person__pno', pno)
+      await type('input#tuja-person__food', food)
+
+      await clickLink('button[name="tuja-action"]')
+
+      await expectSuccessMessage('Ändringarna har sparats. Tack.')
+
+      await goto(editPersonUrl)
+
+      await expectFormValue('input#tuja-person__name', name)
+      await expectFormValue('input#tuja-person__pno', pno)
+      await expectFormValue('input#tuja-person__food', food)
+    })
+
     it('should be possible to edit team members', async () => {
       const newName = `New and improved ${groupProps.name}`
 
@@ -316,7 +431,6 @@ describe('wp-tuja', () => {
         await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Groups&tuja_competition=${competitionId}`)
 
         // Select crew category in tuja_new_group_type
-        await page.screenshot({ path: 'screenshot.png', fullPage: true })
         const id = await page.$eval('select[name="tuja_new_group_type"] > option:last-child', node => node.value)
         await page.select('select[name="tuja_new_group_type"]', id)
 
@@ -335,7 +449,7 @@ describe('wp-tuja', () => {
       })
     })
 
-    it('should be possible with good data', async () => {
+    it('should be possible to sign up as crew member', async () => {
       // TODO: More positive test cases
       await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
 
@@ -359,7 +473,7 @@ describe('wp-tuja', () => {
     it.each([
       ['Trudy', '', '070-1234567', 'No fondness for spam', 'E-postadressen ser konstig ut'] // Missing required field
       // TODO: More negative test cases
-    ])('should be not be possible with bad data', async (name, email, phone, food, expectedErrorMessage) => {
+    ])('should not be possible to sign up as a crew member with bad data', async (name, email, phone, food, expectedErrorMessage) => {
       await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
 
       await type('input[name^="tuja-person__name"]', name)

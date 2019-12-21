@@ -34,6 +34,8 @@ class Frontend extends Plugin {
 
 		remove_filter( 'the_content', 'wpautop' ); // Don't let Wordpress add <p> tags to our HTML.
 
+		$_POST = array_map("trim", $_POST);
+
 		$this->init_page_controller();
 	}
 
