@@ -44,7 +44,7 @@ class GroupSignup extends AbstractGroupView {
 				$this->send_person_welcome_mail( $new_person );
 
 				if ( ! empty( $edit_link ) ) {
-					printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan. Gå till <a href="%s">%s</a> om du behöver ändra din anmälan senare. Vi har också skickat länken till din e-postadress.</p>', $edit_link, $edit_link );
+					printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan. Gå till <a href="%s" id="tuja_signup_success_edit_link">%s</a> om du behöver ändra din anmälan senare. Vi har också skickat länken till din e-postadress.</p>', $edit_link, $edit_link );
 				} else {
 					printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>' );
 				}

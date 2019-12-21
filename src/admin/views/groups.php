@@ -4,7 +4,7 @@ AdminUtils::printTopMenu( $competition );
 ?>
 
 <form method="post" action="<?= add_query_arg() ?>" class="tuja">
-    <table>
+    <table id="tuja_groups_list">
         <thead>
         <tr>
             <th rowspan="2" valign="top">Namn</th>
@@ -33,8 +33,9 @@ AdminUtils::printTopMenu( $competition );
 			print '<tr>';
 
 			// Print name and age range
-			printf( '<td><a href="%s">%s</a></td>' .
+			printf( '<td data-group-key="%s"><a href="%s">%s</a></td>' .
 			        '<td>%.1f (%.1f-%.1f) år</td>',
+				$group->random_id,
 				$group_data['details_link'],
 				htmlspecialchars( $group->name ),
 				$group->age_competing_avg,

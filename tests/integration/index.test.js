@@ -51,6 +51,24 @@ const expectElementCount = async (selector, expectedCount) => {
   expect(await page.$$(selector)).toHaveLength(expectedCount)
 }
 
+const asAdmin = async (closure) => {
+  // Log in to Admin console
+  await goto('http://localhost:8080/wp-admin')
+  await type('#user_login', 'admin')
+  await type('#user_pass', 'admin')
+  await clickLink('#wp-submit')
+
+  await closure()
+
+  await goto(`http://localhost:8080/wp-login.php?action=logout`)
+  const logoutLink = await page.$('a')
+  await Promise.all([
+      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+      logoutLink.click()
+    ]
+  )
+}
+
 describe('wp-tuja', () => {
 
   let competitionId = null
@@ -61,79 +79,67 @@ describe('wp-tuja', () => {
 
     jest.setTimeout(300000)
 
-    // Log in to Admin console
-    await goto('http://localhost:8080/wp-admin')
-    await type('#user_login', 'admin')
-    await type('#user_pass', 'admin')
-    await clickLink('#wp-submit')
+    await asAdmin(async () => {
+      // Go to Tuja page in Admin console
+      await goto('http://localhost:8080/wp-admin/admin.php?page=tuja')
 
-    // Go to Tuja page in Admin console
-    await goto('http://localhost:8080/wp-admin/admin.php?page=tuja')
+      // Create new competition
+      competitionName = 'Test Competition ' + new Date().getTime()
 
-    // Create new competition
-    competitionName = 'Test Competition ' + new Date().getTime()
+      await type('#tuja_competition_name', competitionName)
+      await clickLink('#tuja_create_competition_button')
 
-    await type('#tuja_competition_name', competitionName)
-    await clickLink('#tuja_create_competition_button')
-
-    const links = await page.$$('form.tuja a')
-    let link = null
-    for (let i = 0; i < links.length; i++) {
-      const el = links[i]
-      const linkText = await el.evaluate(node => node.innerText)
-      const isEqual = linkText === competitionName
-      if (isEqual) {
-        link = el
-        break
+      const links = await page.$$('form.tuja a')
+      let link = null
+      for (let i = 0; i < links.length; i++) {
+        const el = links[i]
+        const linkText = await el.evaluate(node => node.innerText)
+        const isEqual = linkText === competitionName
+        if (isEqual) {
+          link = el
+          break
+        }
       }
-    }
-    const [resp] = await Promise.all([
-        page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-        link.click()
-      ]
-    )
+      const [resp] = await Promise.all([
+          page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+          link.click()
+        ]
+      )
 
-    competitionId = querystring.parse(resp.url()).tuja_competition
-    await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Shortcodes&tuja_competition=${competitionId}`)
+      competitionId = querystring.parse(resp.url()).tuja_competition
+      await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Shortcodes&tuja_competition=${competitionId}`)
 
-    const signUpLink = await page.$('#tuja_shortcodes_competitionsignup_link')
-    const signUpLinkUrl = await signUpLink.evaluate(node => node.href)
+      const signUpLink = await page.$('#tuja_shortcodes_competitionsignup_link')
+      const signUpLinkUrl = await signUpLink.evaluate(node => node.href)
 
-    competitionKey = signUpLinkUrl.split(/\//)[3]
+      competitionKey = signUpLinkUrl.split(/\//)[3]
 
-    // console.log('🦋', competitionId, competitionKey)
+      // console.log('🦋', competitionId, competitionKey)
 
-    await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+      await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
-    await click('#tuja_tab_groups')
+      await click('#tuja_tab_groups')
 
-    await click('#tuja_competition_settings_initial_group_status-accepted')
+      await click('#tuja_competition_settings_initial_group_status-accepted')
 
-    const addGroupCategory = async (name, isCrew, ruleSetName) => {
-      await click('#tuja_add_group_category_button')
-      const groupCategoryForm = await page.$('div.tuja-groupcategory-form:last-of-type')
-      const groupCategoryName = await groupCategoryForm.$('input[type=text]')
-      const groupCategoryNameFieldName = await groupCategoryName.evaluate(node => node.name)
-      const tempGroupCategoryId = groupCategoryNameFieldName.split(/__/)[2]
-      await groupCategoryName.type(name)
-      const groupCategoryRules = await groupCategoryForm.$('select[name="groupcategory__ruleset__' + tempGroupCategoryId + '"]')
-      await groupCategoryRules.select(ruleSetName)
-      await page.click('input[name="groupcategory__iscrew__' + tempGroupCategoryId + '"][value="' + isCrew + '"]')
-    }
+      const addGroupCategory = async (name, isCrew, ruleSetName) => {
+        await click('#tuja_add_group_category_button')
+        const groupCategoryForm = await page.$('div.tuja-groupcategory-form:last-of-type')
+        const groupCategoryName = await groupCategoryForm.$('input[type=text]')
+        const groupCategoryNameFieldName = await groupCategoryName.evaluate(node => node.name)
+        const tempGroupCategoryId = groupCategoryNameFieldName.split(/__/)[2]
+        await groupCategoryName.type(name)
+        const groupCategoryRules = await groupCategoryForm.$('select[name="groupcategory__ruleset__' + tempGroupCategoryId + '"]')
+        await groupCategoryRules.select(ruleSetName)
+        await page.click('input[name="groupcategory__iscrew__' + tempGroupCategoryId + '"][value="' + isCrew + '"]')
+      }
 
-    await addGroupCategory('Young Participants', false, 'tuja\\util\\rules\\YoungParticipantsRuleSet')
-    await addGroupCategory('Old Participants', false, 'tuja\\util\\rules\\OlderParticipantsRuleSet')
-    await addGroupCategory('The Crew', true, 'tuja\\util\\rules\\CrewMembersRuleSet')
+      await addGroupCategory('Young Participants', false, 'tuja\\util\\rules\\YoungParticipantsRuleSet')
+      await addGroupCategory('Old Participants', false, 'tuja\\util\\rules\\OlderParticipantsRuleSet')
+      await addGroupCategory('The Crew', true, 'tuja\\util\\rules\\CrewMembersRuleSet')
 
-    await clickLink('#tuja_save_competition_settings_button')
-
-    await goto(`http://localhost:8080/wp-login.php?action=logout`)
-    const logoutLink = await page.$('a')
-    await Promise.all([
-        page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-        logoutLink.click()
-      ]
-    )
+      await clickLink('#tuja_save_competition_settings_button')
+    })
   })
 
   describe('Signing up as new team', () => {
@@ -297,6 +303,73 @@ describe('wp-tuja', () => {
       await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__name__"]', 'Bob')
       await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__pno__"]', '19791231-0000')
       await expectFormValue('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', 'extra-contact@example.com')
+    })
+  })
+
+  describe('Crew', () => {
+
+    let groupProps = null
+
+    beforeAll(async () => {
+      await asAdmin(async () => {
+        // Go to admin console
+        await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Groups&tuja_competition=${competitionId}`)
+
+        // Select crew category in tuja_new_group_type
+        await page.screenshot({ path: 'screenshot.png', fullPage: true })
+        const id = await page.$eval('select[name="tuja_new_group_type"] > option:last-child', node => node.value)
+        await page.select('select[name="tuja_new_group_type"]', id)
+
+        // Type crew group name in tuja_new_group_name
+        await type('input[name="tuja_new_group_name"]', '_ The Regular Crew') // Underscore added to ensure group shown first in list(s)
+
+        // Click correct tuja_action button
+        await clickLink('button[name="tuja_action"][value="group_create"]')
+
+        // Wait for page to load and extract crew group id from link in group list
+        const groupTableRow = await page.$('table#tuja_groups_list > tbody > tr:first-child > td:first-child')
+        const key = await groupTableRow.evaluate(node => node.dataset.groupKey)
+        groupProps = {
+          key
+        }
+      })
+    })
+
+    it('should be possible with good data', async () => {
+      // TODO: More positive test cases
+      await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
+
+      await type('input#tuja-person__name', 'Carol')
+      await type('input#tuja-person__email', 'carol@example.com')
+      await type('input#tuja-person__phone', '070-12345678')
+      await type('input#tuja-person__food', 'Picky about eggs')
+
+      await clickLink('button[name="tuja-action"]')
+
+      await expectSuccessMessage('Tack')
+
+      const editPersonUrl = await page.$eval('#tuja_signup_success_edit_link', node => node.href)
+      await goto(editPersonUrl)
+
+      await expectFormValue('input#tuja-person__name', 'Carol')
+      await expectFormValue('input#tuja-person__email', 'carol@example.com')
+      await expectFormValue('input#tuja-person__phone', '+467012345678')
+      await expectFormValue('input#tuja-person__food', 'Picky about eggs')
+    })
+    it.each([
+      ['Trudy', '', '070-1234567', 'No fondness for spam', 'E-postadressen ser konstig ut'] // Missing required field
+      // TODO: More negative test cases
+    ])('should be not be possible with bad data', async (name, email, phone, food, expectedErrorMessage) => {
+      await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
+
+      await type('input[name^="tuja-person__name"]', name)
+      await type('input[name^="tuja-person__email"]', email)
+      await type('input[name^="tuja-person__phone"]', phone)
+      await type('input[name^="tuja-person__food"]', food)
+
+      await clickLink('button[name="tuja-action"]')
+
+      await expectErrorMessage(expectedErrorMessage)
     })
   })
 })
