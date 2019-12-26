@@ -1,10 +1,10 @@
 <?php
- /*
-    Plugin Name: Tuja
-    Description: Made for Tunnelbanejakten.se
-    Version: 1.0.0
-    Author: Mikael Svensson & Mattias Forsman
-    Author URI: https://tunnelbanejakten.se
+/*
+   Plugin Name: Tuja
+   Description: Made for Tunnelbanejakten.se
+   Version: 1.0.0
+   Author: Mikael Svensson & Mattias Forsman
+   Author URI: https://tunnelbanejakten.se
 */
 
 namespace tuja;
@@ -13,8 +13,7 @@ use Exception;
 use tuja\util\Database;
 use tuja\util\Id;
 
-abstract class Plugin
-{
+abstract class Plugin {
 	const VERSION = '1.0.0';
 	const SLUG = 'tuja';
 	const TABLE_PREFIX = 'tuja_';
@@ -23,21 +22,21 @@ abstract class Plugin
 	const EMAIL_ADDRESS = '';
 
 	static public function get_url() {
-		return plugin_dir_url(self::FILE);
+		return plugin_dir_url( self::FILE );
 	}
 
 	public function __construct() {
 		// Create/update database tables on activation
-		register_activation_hook(self::FILE, array($this, 'install'));
+		register_activation_hook( self::FILE, array( $this, 'install' ) );
 
 		// Autoload all classes
-		spl_autoload_register(array($this, 'autoloader'));
+		spl_autoload_register( array( $this, 'autoloader' ) );
 
-		add_filter('query_vars', array($this, 'query_vars'));
-		add_filter('rewrite_rules_array', array($this, 'rewrite_rules'));
+		add_filter( 'query_vars', array( $this, 'query_vars' ) );
+		add_filter( 'rewrite_rules_array', array( $this, 'rewrite_rules' ) );
 
-		add_action('wp_ajax_tuja_upload_images', array('tuja\util\ImageManager', 'handle_image_upload'));
-		add_action('wp_ajax_nopriv_tuja_upload_images', array('tuja\util\ImageManager', 'handle_image_upload'));
+		add_action( 'wp_ajax_tuja_upload_images', array( 'tuja\util\ImageManager', 'handle_image_upload' ) );
+		add_action( 'wp_ajax_nopriv_tuja_upload_images', array( 'tuja\util\ImageManager', 'handle_image_upload' ) );
 
 		$this->init();
 	}
@@ -46,25 +45,25 @@ abstract class Plugin
 		// Overridden by child classes
 	}
 
-	public function query_vars($vars) {
+	public function query_vars( $vars ) {
 		$vars[] = 'group_id';
 
 		return $vars;
 	}
 
-	public function rewrite_rules($rules) {
-		$rules = array( '([^/]+)/([' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '})/?$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]') + $rules;
+	public function rewrite_rules( $rules ) {
+		$rules = array( '([^/]+)/([' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '})/?$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]' ) + $rules;
 
 		return $rules;
 	}
 
 	public function install() {
-		require_once( ABSPATH . 'wp-admin/includes/upgrade.php');
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		$tables  = array();
 		$charset = 'DEFAULT CHARACTER SET utf8 COLLATE utf8_swedish_ci';
 
 		$tables[] = '
-			CREATE TABLE ' . Database::get_table('competition') . ' (
+			CREATE TABLE ' . Database::get_table( 'competition' ) . ' (
 				id                                   INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id                            VARCHAR(20)    NOT NULL,
 				name                                 VARCHAR(100)   NOT NULL,
@@ -84,7 +83,7 @@ abstract class Plugin
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE ' . Database::get_table('team') . ' (
+			CREATE TABLE ' . Database::get_table( 'team' ) . ' (
 				id                 INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id          VARCHAR(20)  NOT NULL,
 				competition_id     INTEGER      NOT NULL,
@@ -104,7 +103,7 @@ abstract class Plugin
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE ' . Database::get_table('person') . ' (
+			CREATE TABLE ' . Database::get_table( 'person' ) . ' (
 				id               INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id        VARCHAR(20)  NOT NULL,
 				UNIQUE KEY idx_person_token (random_id)
@@ -131,7 +130,7 @@ abstract class Plugin
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE ' . Database::get_table('form') . ' (
+			CREATE TABLE ' . Database::get_table( 'form' ) . ' (
 				id                                INTEGER AUTO_INCREMENT PRIMARY KEY,
 				competition_id                    INTEGER      NOT NULL,
 				name                              VARCHAR(100) NOT NULL,
@@ -141,7 +140,7 @@ abstract class Plugin
 			) ' . $charset;
 
 		$tables[] = "
-			CREATE TABLE " . Database::get_table('form_question_group') . " (
+			CREATE TABLE " . Database::get_table( 'form_question_group' ) . " (
 				id         INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id  VARCHAR(20)  NOT NULL,
 				form_id    INTEGER      NOT NULL,
@@ -151,7 +150,7 @@ abstract class Plugin
 			) " . $charset;
 
 		$tables[] = "
-			CREATE TABLE " . Database::get_table('form_question') . " (
+			CREATE TABLE " . Database::get_table( 'form_question' ) . " (
 				id                 INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id          VARCHAR(20),
 				form_id            INTEGER,
@@ -164,7 +163,7 @@ abstract class Plugin
 			) " . $charset;
 
 		$tables[] = '
-			CREATE TABLE ' . Database::get_table('form_question_response') . ' (
+			CREATE TABLE ' . Database::get_table( 'form_question_response' ) . ' (
 				id               INTEGER AUTO_INCREMENT PRIMARY KEY,
 				form_question_id INTEGER NOT NULL,
 				team_id          INTEGER NOT NULL,
@@ -174,7 +173,7 @@ abstract class Plugin
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE ' . Database::get_table('form_question_points') . ' (
+			CREATE TABLE ' . Database::get_table( 'form_question_points' ) . ' (
 				form_question_id INTEGER NOT NULL,
 				team_id          INTEGER NOT NULL,
 				points           INTEGER,
@@ -183,7 +182,7 @@ abstract class Plugin
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE ' . Database::get_table('message') . ' (
+			CREATE TABLE ' . Database::get_table( 'message' ) . ' (
 				id                INTEGER AUTO_INCREMENT PRIMARY KEY,
 				form_question_id  INTEGER,
 				team_id           INTEGER,
@@ -196,7 +195,7 @@ abstract class Plugin
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE ' . Database::get_table('team_category') . ' (
+			CREATE TABLE ' . Database::get_table( 'team_category' ) . ' (
 				id             INTEGER          AUTO_INCREMENT PRIMARY KEY,
 				competition_id INTEGER NOT NULL,
 				is_crew        BOOLEAN NOT NULL DEFAULT FALSE,
@@ -205,7 +204,7 @@ abstract class Plugin
 			) ' . $charset;
 
 		$tables[] = '
-			CREATE TABLE ' . Database::get_table('message_template') . ' (
+			CREATE TABLE ' . Database::get_table( 'message_template' ) . ' (
 				id                      INTEGER AUTO_INCREMENT PRIMARY KEY,
 				competition_id          INTEGER NOT NULL,
 				name                    VARCHAR(100),
@@ -214,6 +213,44 @@ abstract class Plugin
 				auto_send_trigger       VARCHAR(100),
 				auto_send_recipient     VARCHAR(100),
 				delivery_method         VARCHAR(10)
+			) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'station' ) . ' (
+				id                      INTEGER AUTO_INCREMENT PRIMARY KEY,
+				random_id               VARCHAR(20),
+				competition_id          INTEGER NOT NULL,
+				name                    VARCHAR(100),
+				location_gps_coord_lat  DOUBLE,
+				location_gps_coord_long DOUBLE,
+				location_description    TEXT,
+				UNIQUE KEY idx_station_token (random_id)
+			) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'ticket' ) . ' (
+				team_id                   INTEGER NOT NULL,
+				station_id                INTEGER NOT NULL,
+				on_complete_password_used VARCHAR(100),
+				PRIMARY KEY (team_id, station_id)
+			) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'ticket_station_config' ) . ' (
+				station_id           INTEGER NOT NULL,
+				colour               VARCHAR(100),
+				word                 VARCHAR(100),
+				symbol               TEXT,
+				on_complete_password VARCHAR(100),
+				PRIMARY KEY (station_id)
+			) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'ticket_coupon_weight' ) . ' (
+				from_station_id   INTEGER NOT NULL,
+				to_station_id     INTEGER NOT NULL,
+				to_weight         DOUBLE NOT NULL,
+				PRIMARY KEY (from_station_id, to_station_id)
 			) ' . $charset;
 
 		$keys = array(
@@ -246,32 +283,42 @@ abstract class Plugin
 
 			[ 'team_category', 'competition_id', 'competition', 'CASCADE' ],
 
-			[ 'message_template', 'competition_id', 'competition', 'CASCADE' ]
+			[ 'message_template', 'competition_id', 'competition', 'CASCADE' ],
+
+			[ 'station', 'competition_id', 'competition', 'CASCADE' ],
+
+			[ 'ticket', 'team_id', 'team', 'CASCADE' ],
+			[ 'ticket', 'station_id', 'station', 'CASCADE' ],
+			[ 'ticket_station_config', 'station_id', 'station', 'CASCADE' ],
+			[ 'ticket_coupon_weight', 'from_station_id', 'station', 'CASCADE' ],
+			[ 'ticket_coupon_weight', 'to_station_id', 'station', 'CASCADE' ]
 		);
 
-		foreach ($tables as $table) {
-			dbDelta($table);
+		foreach ( $tables as $table ) {
+			dbDelta( $table );
 		}
 
 		try {
 			Database::start_transaction();
-			foreach ($keys as $key) {
-				Database::add_foreign_key($key[0], $key[1], $key[2], $key[3]);
+			foreach ( $keys as $key ) {
+				Database::add_foreign_key( $key[0], $key[1], $key[2], $key[3] );
 			}
 
 			Database::commit();
 		} catch ( Exception $e ) {
 			Database::rollback();
-			error_log($e->getMessage());
+			error_log( $e->getMessage() );
 		}
 	}
 
-	public function autoloader($name) {
+	public function autoloader( $name ) {
 		// Does $name start with our namespace?
-		if ( strncmp($name, __NAMESPACE__, strlen(__NAMESPACE__)) !== 0) return;
+		if ( strncmp( $name, __NAMESPACE__, strlen( __NAMESPACE__ ) ) !== 0 ) {
+			return;
+		}
 
-		$classname = explode('\\', $name);
-		$classname = array_pop($classname);
+		$classname = explode( '\\', $name );
+		$classname = array_pop( $classname );
 
 		$paths = array(
 			self::PATH . '/data/store/' . $classname . '.php',
@@ -291,16 +338,18 @@ abstract class Plugin
 			self::PATH . '/inc/' . $classname . '.php',
 		);
 
-		foreach ($paths as $path) {
-			if (!file_exists($path)) continue;
+		foreach ( $paths as $path ) {
+			if ( ! file_exists( $path ) ) {
+				continue;
+			}
 
-			include_once($path);
+			include_once( $path );
 		}
 	}
 }
 
-if (is_admin()) {
-	require_once(Plugin::PATH . '/inc/admin.php');
+if ( is_admin() ) {
+	require_once( Plugin::PATH . '/inc/admin.php' );
 } else {
-	require_once(Plugin::PATH . '/inc/frontend.php');
+	require_once( Plugin::PATH . '/inc/frontend.php' );
 }

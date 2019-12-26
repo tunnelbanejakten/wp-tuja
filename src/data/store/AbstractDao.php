@@ -12,6 +12,8 @@ use tuja\data\model\question\ImagesQuestion;
 use tuja\data\model\question\NumberQuestion;
 use tuja\data\model\question\OptionsQuestion;
 use tuja\data\model\question\TextQuestion;
+use tuja\data\model\Station;
+use tuja\data\model\TicketDesign;
 use tuja\util\Id;
 
 class AbstractDao {
@@ -83,7 +85,7 @@ class AbstractDao {
 					@$config['score_type'],
 					$result->type == self::QUESTION_TYPE_TEXT,
 					@$config['values'] ?: [],
-					@$config['invalid_values'] ?: []);
+					@$config['invalid_values'] ?: [] );
 
 				return $q;
 			case self::QUESTION_TYPE_PICK_ONE:
@@ -110,6 +112,7 @@ class AbstractDao {
 					$result->question_group_id,
 					$result->sort_order,
 					@$config['score_max'] );
+
 				return $q;
 			case self::QUESTION_TYPE_NUMBER:
 				$q = new NumberQuestion(
@@ -127,15 +130,39 @@ class AbstractDao {
 		}
 	}
 
-	protected static function to_form($result): Form
-	{
-		$f = new Form();
-		$f->id = $result->id;
-		$f->competition_id = $result->competition_id;
-		$f->name = $result->name;
+	protected static function to_form( $result ): Form {
+		$f                                     = new Form();
+		$f->id                                 = $result->id;
+		$f->competition_id                     = $result->competition_id;
+		$f->name                               = $result->name;
 		$f->allow_multiple_responses_per_group = $result->allow_multiple_responses_per_team;
-		$f->submit_response_start = self::from_db_date($result->submit_response_start);
-		$f->submit_response_end = self::from_db_date($result->submit_response_end);
+		$f->submit_response_start              = self::from_db_date( $result->submit_response_start );
+		$f->submit_response_end                = self::from_db_date( $result->submit_response_end );
+
 		return $f;
+	}
+
+	protected static function to_station( $result ): Station {
+		$s                          = new Station();
+		$s->id                      = $result->id;
+		$s->random_id               = $result->random_id;
+		$s->competition_id          = $result->competition_id;
+		$s->name                    = $result->name;
+		$s->location_gps_coord_lat  = $result->location_gps_coord_lat;
+		$s->location_gps_coord_long = $result->location_gps_coord_long;
+		$s->location_description    = $result->location_description;
+
+		return $s;
+	}
+
+	protected static function to_ticket_design( $result ): TicketDesign {
+		$td                       = new TicketDesign();
+		$td->station_id           = $result->station_id;
+		$td->colour               = $result->colour;
+		$td->word                 = $result->word;
+		$td->symbol               = $result->symbol;
+		$td->on_complete_password = $result->on_complete_password;
+
+		return $td;
 	}
 }

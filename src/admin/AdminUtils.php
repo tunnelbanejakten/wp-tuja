@@ -39,6 +39,7 @@ class AdminUtils
 
 		$menu_config = [
 			'Competition'         => 'Formulär',
+			'Stations'            => 'Stationer',
 			'Groups'              => 'Grupper',
 			'Scoreboard'          => 'Poängställning',
 			'CompetitionSettings' => 'Inställningar',
