@@ -26,9 +26,9 @@
 .tuja-field input[type=week],
 .tuja-field input[type=number],
 .tuja-field input[type=search] {
-	width: 100%;
-	box-sizing: border-box;
-	margin-bottom: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 5px;
 }
 
 .tuja-field input::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
@@ -45,23 +45,23 @@
 }
 
 .tuja-question-group .tuja-question-group-title {
-	font-size: 1.25em;
-	padding: 10px 0;
+    font-size: 1.25em;
+    padding: 10px 0;
 }
 
 .tuja-field > label {
     display: block;
-	margin: 0 0 5px 0;
-	font-weight: bold;
+    margin: 0 0 5px 0;
+    font-weight: bold;
 }
 
 .tuja-help,
 .tuja-question-hint {
     font-size: 80%;
     font-weight: normal;
-	color: #666;
-	display: block;
-	line-height: 1.5em;
+    color: #666;
+    display: block;
+    line-height: 1.5em;
 }
 
 .tuja-item-buttons {
@@ -115,6 +115,37 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
     border-color: lightcoral !important;
 }
 
+.tuja-tickets {
+    margin: 0 0 1em 0;
+}
+
+.tuja-ticket {
+    margin: 10px 0 0 0;
+    padding: 10px;
+
+    color: rgba(0, 0, 0, 0.6);
+    text-align: center;
+
+    border-radius: 5px;
+    border: none;
+    box-shadow: inset 0px 0px 0px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box; /* Include padding and border in element's width and height */
+}
+
+.tuja-ticket-station {
+    font-size: 125%;
+}
+
+.tuja-ticket-word {
+    font-size: 300%;
+    font-weight: bolder;
+}
+
+.tuja-ticket-word-description {
+    margin: 10px 0;
+    font-size: 80%;
+}
+
 .tuja-field-error .tuja-message {
     font-size: 80%;
     margin-top: 0;
@@ -127,12 +158,12 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 }
 
 .tuja-fieldchoices {
-	width: unset !important;
+    width: unset !important;
 }
 
 .tuja-fieldimages-radiobutton,
 .tuja-fieldchoices-radiobutton {
-	margin-bottom: 5px;
+    margin-bottom: 5px;
 }
 
 .tuja-fieldimages-radiobutton label,
@@ -155,36 +186,36 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 }
 
 .tuja-fieldimages .tuja-image-select {
-	border: 2px dashed #ccc;
-	border-radius: 5px;
-	padding: 10px;
-	cursor: pointer;
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
 }
 
 .tuja-fieldimages .tuja-image-select > * {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 .tuja-image .dropzone {
-	min-height: 0;
+    min-height: 0;
 }
 
 .tuja-image .dz-image img {
-	margin: 0;
+    margin: 0;
 }
 
 .tuja-image .dropzone .dz-preview {
-	margin: 5px;
+    margin: 5px;
 }
 
 .tuja-image .dz-preview ~ label,
 .tuja-image .dz-preview ~ p,
 .tuja-image .dropzone .dz-preview .dz-details {
-	display: none;
+    display: none;
 }
 
 .tuja-image .dropzone .dz-preview .dz-image {
-	border-radius: 0;
+    border-radius: 0;
 }
 
 .tuja-image .dropzone .dz-preview .dz-image img {
@@ -196,14 +227,14 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 }
 
 .tuja-image .dropzone .dz-preview:hover .dz-image img {
-	-webkit-transform: none;
+    -webkit-transform: none;
     -moz-transform: none;
     -ms-transform: none;
     -o-transform: none;
     transform: none;
     -webkit-filter: none;
-	filter: none;
-	opacity: 0.75;
+    filter: none;
+    opacity: 0.75;
 }
 
 .tuja-image-preview img {
@@ -215,7 +246,7 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 }
 
 .tuja-question {
-	margin-bottom: 1.25em;
+    margin-bottom: 1.25em;
 }
 
 .tuja-question input[disabled],
@@ -228,11 +259,11 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 }
 
 @media (max-width: 768px) {
-	.tuja-fieldimages .tuja-image {
-		flex-direction: column;
-	}
+    .tuja-fieldimages .tuja-image {
+        flex-direction: column;
+    }
 
-	.tuja-fieldimages .tuja-image > div {
-		margin-bottom: 10px;
-	}
+    .tuja-fieldimages .tuja-image > div {
+        margin-bottom: 10px;
+    }
 }

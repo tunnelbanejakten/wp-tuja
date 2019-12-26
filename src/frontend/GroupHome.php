@@ -8,6 +8,7 @@ use tuja\data\model\Group;
 use tuja\data\store\GroupDao;
 use tuja\frontend\router\GroupEditorInitiator;
 use tuja\frontend\router\GroupPeopleEditorInitiator;
+use tuja\frontend\router\GroupTicketsInitiator;
 
 class GroupHome extends AbstractGroupView {
 	public function __construct( $url, $group_key ) {
@@ -19,6 +20,7 @@ class GroupHome extends AbstractGroupView {
 			$group            = $this->get_group();
 			$edit_group_link  = GroupEditorInitiator::link( $group );
 			$edit_people_link = GroupPeopleEditorInitiator::link( $group );
+			$tickets_link     = GroupTicketsInitiator::link( $group );
 			include( 'views/group-home.php' );
 		} catch ( Exception $e ) {
 			printf( '<p class="tuja-message tuja-message-error">%s</p>', $e->getMessage() );

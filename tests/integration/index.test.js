@@ -13,6 +13,7 @@ const type = async (selector, value) => {
 }
 
 const goto = async (url) => {
+  console.log('➡️ Navigating to ', url)
   await Promise.all([
       page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 }),
       page.goto(url)
@@ -52,6 +53,8 @@ const expectElementCount = async (selector, expectedCount) => {
 }
 
 const asAdmin = async (closure) => {
+  // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
+  await page.emulate(puppeteer.devices['iPad Pro landscape'])
   // Log in to Admin console
   await goto('http://localhost:8080/wp-admin')
   await type('#user_login', 'admin')
@@ -67,6 +70,12 @@ const asAdmin = async (closure) => {
       logoutLink.click()
     ]
   )
+  // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
+  await page.emulate(puppeteer.devices['iPhone 6 Plus'])
+}
+
+const takeScreenshot = async () => {
+  await page.screenshot({ path: `screenshot-${new Date().getTime()}.png`, fullPage: true })
 }
 
 describe('wp-tuja', () => {
@@ -74,6 +83,25 @@ describe('wp-tuja', () => {
   let competitionId = null
   let competitionKey = null
   let competitionName = null
+
+  const signUpTeam = async () => {
+    const name = faker.lorem.words()
+    await goto(`http://localhost:8080/${competitionKey}/anmal`)
+    await expectPageTitle(`Anmäl er till ${competitionName}`)
+    const teamLeader = faker.helpers.contextualCard()
+    await click('#tuja-group__age-0')
+    await type('#tuja-group__name', name)
+    await type('#tuja-person__name', teamLeader.name)
+    await type('#tuja-person__email', teamLeader.email)
+    await type('#tuja-person__phone', '070-123456')
+    await type('#tuja-person__pno', '1980-01-01')
+    await clickLink('#tuja_signup_button')
+    await expectSuccessMessage('Tack')
+    const groupPortalLinkNode = await page.$('#tuja_signup_success_edit_link')
+    const portalUrl = await groupPortalLinkNode.evaluate(node => node.href)
+    const key = await groupPortalLinkNode.evaluate(node => node.dataset.groupKey)
+    return { key, portalUrl, name, teamLeader }
+  }
 
   beforeAll(async () => {
 
@@ -114,8 +142,6 @@ describe('wp-tuja', () => {
 
       competitionKey = signUpLinkUrl.split(/\//)[3]
 
-      // console.log('🦋', competitionId, competitionKey)
-
       await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
       await click('#tuja_tab_groups')
@@ -142,27 +168,215 @@ describe('wp-tuja', () => {
     })
   })
 
-  describe('Signing up as new team', () => {
+  describe('Tickets', () => {
 
-    const signUpTeam = async () => {
-      const name = faker.lorem.words()
-      await goto(`http://localhost:8080/${competitionKey}/anmal`)
-      await expectPageTitle(`Anmäl er till ${competitionName}`)
-      const teamLeader = faker.helpers.contextualCard()
-      await click('#tuja-group__age-0')
-      await type('#tuja-group__name', name)
-      await type('#tuja-person__name', teamLeader.name)
-      await type('#tuja-person__email', teamLeader.email)
-      await type('#tuja-person__phone', '070-123456')
-      await type('#tuja-person__pno', '1980-01-01')
-      await clickLink('#tuja_signup_button')
-      // await page.screenshot({ path: 'screenshot.png', fullPage: true })
-      await expectSuccessMessage('Tack')
-      const groupPortalLinkNode = await page.$('#tuja_signup_success_edit_link')
-      const portalUrl = await groupPortalLinkNode.evaluate(node => node.href)
-      const key = await groupPortalLinkNode.evaluate(node => node.dataset.groupKey)
-      return { key, portalUrl, name, teamLeader }
-    }
+    let stationsProps = null
+
+    beforeAll(async () => {
+      // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
+      await page.emulate(puppeteer.devices['iPhone 6 Plus'])
+
+      await asAdmin(async () => {
+
+        //
+        // Configure stations
+        //
+
+        await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Stations&tuja_competition=${competitionId}`)
+
+        await type('#tuja_station_name', 'Hornstull')
+        await clickLink('#tuja_station_create_button')
+
+        await type('#tuja_station_name', 'Slussen')
+        await clickLink('#tuja_station_create_button')
+
+        await type('#tuja_station_name', 'Mariatorget')
+        await clickLink('#tuja_station_create_button')
+
+        await type('#tuja_station_name', 'Skanstull')
+        await clickLink('#tuja_station_create_button')
+
+        //
+        // Configure ticketing
+        //
+
+        stationsProps = await page.$$eval('form.tuja a[data-key]', nodes => nodes.map(node => ({
+          id: node.dataset.id,
+          key: node.dataset.key,
+          name: node.textContent
+        })))
+
+        stationsProps[0].word = 'BLUEBERRY'
+        stationsProps[1].word = 'RASPBERRY'
+        stationsProps[2].word = 'STRAWBERRY'
+        stationsProps[3].word = 'CLOUDBERRY'
+        stationsProps[0].colour = '#b7fda0'
+        stationsProps[1].colour = '#fdd9a8'
+        stationsProps[2].colour = '#b0eefd'
+        stationsProps[3].colour = '#fdbcc0'
+        stationsProps[0].password = 'treasure'
+        stationsProps[1].password = 'gold'
+        stationsProps[2].password = 'loot'
+        stationsProps[3].password = 'winnings'
+
+        await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=StationsTicketing&tuja_competition=${competitionId}`)
+
+        await page.$eval(`input[name="tuja_ticketdesign__${stationsProps[0].id}__colour"]`, (node, color) => node.value = color, stationsProps[0].colour)
+        await page.$eval(`input[name="tuja_ticketdesign__${stationsProps[1].id}__colour"]`, (node, color) => node.value = color, stationsProps[1].colour)
+        await page.$eval(`input[name="tuja_ticketdesign__${stationsProps[2].id}__colour"]`, (node, color) => node.value = color, stationsProps[2].colour)
+        await page.$eval(`input[name="tuja_ticketdesign__${stationsProps[3].id}__colour"]`, (node, color) => node.value = color, stationsProps[3].colour)
+        await type(`input[name="tuja_ticketdesign__${stationsProps[0].id}__word"]`, stationsProps[0].word)
+        await type(`input[name="tuja_ticketdesign__${stationsProps[1].id}__word"]`, stationsProps[1].word)
+        await type(`input[name="tuja_ticketdesign__${stationsProps[2].id}__word"]`, stationsProps[2].word)
+        await type(`input[name="tuja_ticketdesign__${stationsProps[3].id}__word"]`, stationsProps[3].word)
+        await type(`input[name="tuja_ticketdesign__${stationsProps[0].id}__password"]`, stationsProps[0].password)
+        await type(`input[name="tuja_ticketdesign__${stationsProps[1].id}__password"]`, stationsProps[1].password)
+        await type(`input[name="tuja_ticketdesign__${stationsProps[2].id}__password"]`, stationsProps[2].password)
+        await type(`input[name="tuja_ticketdesign__${stationsProps[3].id}__password"]`, stationsProps[3].password)
+
+        await type(`input[name="tuja_ticketcouponweight__${stationsProps[0].id}__${stationsProps[1].id}"]`, '1')
+        await type(`input[name="tuja_ticketcouponweight__${stationsProps[0].id}__${stationsProps[2].id}"]`, '2')
+        await type(`input[name="tuja_ticketcouponweight__${stationsProps[0].id}__${stationsProps[3].id}"]`, '3')
+        await type(`input[name="tuja_ticketcouponweight__${stationsProps[1].id}__${stationsProps[2].id}"]`, '4')
+        await type(`input[name="tuja_ticketcouponweight__${stationsProps[1].id}__${stationsProps[3].id}"]`, '5')
+        await type(`input[name="tuja_ticketcouponweight__${stationsProps[2].id}__${stationsProps[3].id}"]`, '6')
+
+        await clickLink('button[name="tuja_action"][value="save"]')
+      })
+    })
+
+    it('get tickets', async () => {
+      const groupAliceProps = await signUpTeam()
+      const groupBobProps = await signUpTeam()
+
+      //
+      // Verify that Alice's team has no tickets.
+      //
+
+      await goto(`http://localhost:8080/${groupAliceProps.key}/biljetter`)
+      await expectElementCount('div.tuja-ticket', 0)
+
+      //
+      // Verify that Bob's team has no tickets.
+      //
+
+      await goto(`http://localhost:8080/${groupBobProps.key}/biljetter`)
+      await expectElementCount('div.tuja-ticket', 0)
+
+      //
+      // Bob's team uses their first password and gets their first two tickets.
+      //
+
+      await goto(`http://localhost:8080/${groupBobProps.key}/biljetter`)
+      await type('#tuja_ticket_password', stationsProps[0].password)
+      await clickLink('#tuja_validate_ticket_button')
+
+      await expectSuccessMessage('Ni har fått 2 nya biljetter.')
+      await expectElementCount('div.tuja-ticket', 2)
+      const initialTicketWordsForTeamBob = await page.$$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      expect(initialTicketWordsForTeamBob).toHaveLength(2)
+      expect(initialTicketWordsForTeamBob.includes(stationsProps[0].word)).toBeFalsy()
+      expect(initialTicketWordsForTeamBob.includes(stationsProps[1].word)).toBeTruthy()
+      expect(initialTicketWordsForTeamBob.includes(stationsProps[2].word) ? !initialTicketWordsForTeamBob.includes(stationsProps[3].word) : initialTicketWordsForTeamBob.includes(stationsProps[3].word)).toBeTruthy()
+
+      //
+      // Bob's team tried to cheat and use their first password once more.
+      //
+
+      await goto(`http://localhost:8080/${groupBobProps.key}/biljetter`)
+      await type('#tuja_ticket_password', stationsProps[0].password)
+      await clickLink('#tuja_validate_ticket_button')
+      await expectErrorMessage(`Cannot use ${stationsProps[0].password} twice`)
+      await expectElementCount('div.tuja-ticket', 2)
+      const ticketWordsAfterRetry = await page.$$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      expect(ticketWordsAfterRetry).toEqual(initialTicketWordsForTeamBob)
+
+      //
+      // Alice's team uses the same code as Bob's team used (once successfully and once to cheat)
+      //
+
+      await goto(`http://localhost:8080/${groupAliceProps.key}/biljetter`)
+      await expectElementCount('div.tuja-ticket', 0)
+      await type('#tuja_ticket_password', stationsProps[0].password)
+      await clickLink('#tuja_validate_ticket_button')
+      await expectSuccessMessage('Ni har fått 2 nya biljetter.')
+      await expectElementCount('div.tuja-ticket', 2)
+      const initialTicketWordsForTeamAlice = await page.$$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      expect(initialTicketWordsForTeamAlice).toHaveLength(2)
+      expect(initialTicketWordsForTeamAlice.includes(stationsProps[0].word)).toBeFalsy()
+      expect(initialTicketWordsForTeamAlice.includes(stationsProps[1].word)).toBeTruthy()
+      expect(initialTicketWordsForTeamAlice.includes(stationsProps[2].word) ? !initialTicketWordsForTeamAlice.includes(stationsProps[3].word) : initialTicketWordsForTeamAlice.includes(stationsProps[3].word)).toBeTruthy()
+
+      //
+      // Bob's team uses their second password and gets the final two tickets.
+      //
+
+      await goto(`http://localhost:8080/${groupBobProps.key}/biljetter`)
+      await type('#tuja_ticket_password', stationsProps[1].password)
+      await clickLink('#tuja_validate_ticket_button')
+      await expectSuccessMessage('Ni har fått 2 nya biljetter.')
+      const finalTicketWords = await page.$$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      expect(finalTicketWords).toHaveLength(4)
+      expect(finalTicketWords.includes(stationsProps[0].word)).toBeTruthy()
+      expect(finalTicketWords.includes(stationsProps[1].word)).toBeTruthy()
+      expect(finalTicketWords.includes(stationsProps[2].word)).toBeTruthy()
+      expect(finalTicketWords.includes(stationsProps[3].word)).toBeTruthy()
+
+      //
+      // Bob's team uses their third password but cannot get any more tickets.
+      //
+
+      await goto(`http://localhost:8080/${groupBobProps.key}/biljetter`)
+      await type('#tuja_ticket_password', stationsProps[2].password)
+      await clickLink('#tuja_validate_ticket_button')
+      await expectSuccessMessage('Ni har fått 0 nya biljetter.')
+      const finalRetryTicketWords = await page.$$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      expect(finalRetryTicketWords).toHaveLength(4)
+      expect(finalRetryTicketWords.includes(stationsProps[0].word)).toBeTruthy()
+      expect(finalRetryTicketWords.includes(stationsProps[1].word)).toBeTruthy()
+      expect(finalRetryTicketWords.includes(stationsProps[2].word)).toBeTruthy()
+      expect(finalRetryTicketWords.includes(stationsProps[3].word)).toBeTruthy()
+
+      //
+      // Verify that Alice's team (still) has two tickets.
+      //
+
+      await goto(`http://localhost:8080/${groupAliceProps.key}/biljetter`)
+      await expectElementCount('div.tuja-ticket', 2)
+    })
+
+    it('should not care about capitalization of password', async () => {
+      const groupAliceProps = await signUpTeam()
+      await goto(`http://localhost:8080/${groupAliceProps.key}/biljetter`)
+
+      //
+      // Start by verifying that invalid passwords are rejected with an error message
+      //
+
+      const invalidPassword = 'invalid'+stationsProps[0].password
+      await type('#tuja_ticket_password', invalidPassword)
+      await clickLink('#tuja_validate_ticket_button')
+      await expectErrorMessage(`The password ${invalidPassword} is not correct`)
+
+      //
+      // Try a couple of valid passwords
+      //
+
+      const validPasswords = [
+        'TREAsure',
+        '  gold',
+        'LOOT  '
+      ]
+      for (const password of validPasswords) {
+        await type('#tuja_ticket_password', password)
+        await clickLink('#tuja_validate_ticket_button')
+
+        await expectSuccessMessage('Ni har fått') // We don't care about the number of tickets, just that we don't get an error
+      }
+    })
+  })
+
+  describe('Signing up as new team', () => {
 
     let groupProps = null
 
@@ -364,9 +578,9 @@ describe('wp-tuja', () => {
     })
 
     it('should be possible to edit team members', async () => {
-      const newName = `New and improved ${groupProps.name}`
+      const tempGroupProps = await signUpTeam()
 
-      await goto(groupProps.portalUrl)
+      await goto(tempGroupProps.portalUrl)
       await clickLink('#tuja_edit_people_link')
 
       //
@@ -378,8 +592,8 @@ describe('wp-tuja', () => {
       await expectElementCount('div.tuja-person-role-adult_supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
       await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person', 0)
 
-      await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__name__"]', groupProps.teamLeader.name)
-      await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__email__"]', groupProps.teamLeader.email)
+      await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__name__"]', tempGroupProps.teamLeader.name)
+      await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__email__"]', tempGroupProps.teamLeader.email)
       await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__phone__"]', '+4670123456')
 
       //
@@ -389,7 +603,6 @@ describe('wp-tuja', () => {
       await type('div.tuja-person-role-group_leader input[name^="tuja-person__name__"]', 'Alice')
       await type('div.tuja-person-role-group_leader input[name^="tuja-person__pno__"]', '1980-01-02')
       await type('div.tuja-person-role-group_leader input[name^="tuja-person__food__"]', 'Vegan')
-
 
       //
       // Add two new team members
@@ -439,7 +652,7 @@ describe('wp-tuja', () => {
       //
       // Reload page without re-posting data (just in case the form shows data from $_POST rather than actual database values)
       //
-      await goto(`http://localhost:8080/${groupProps.key}/andra-personer`)
+      await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
 
       //
       // Verify data when reloading the page
@@ -465,7 +678,7 @@ describe('wp-tuja', () => {
       //
       // Reload page without re-posting data (just in case the form shows data from $_POST rather than actual database values)
       //
-      await goto(`http://localhost:8080/${groupProps.key}/andra-personer`)
+      await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
 
       //
       // Verify that Dave is now the one and only regular team member
@@ -529,6 +742,7 @@ describe('wp-tuja', () => {
       await expectFormValue('input#tuja-person__phone', '+467012345678')
       await expectFormValue('input#tuja-person__food', 'Picky about eggs')
     })
+
     it.each([
       ['Trudy', '', '070-1234567', 'No fondness for spam', 'E-postadressen ser konstig ut'] // Missing required field
       // TODO: More negative test cases

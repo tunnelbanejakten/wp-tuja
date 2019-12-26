@@ -23,7 +23,8 @@ class Controller {
 			new GroupEditorInitiator(),
 			new CompetitionSignupInitiator(),
 			new PersonEditorInitiator(),
-			new GroupHomeInitiator()
+			new GroupHomeInitiator(),
+			new GroupTicketsInitiator()
 		];
 	}
 

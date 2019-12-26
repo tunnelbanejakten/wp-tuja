@@ -51,6 +51,7 @@ class Admin extends Plugin {
 			wp_enqueue_script( 'tuja-admin-reports-jsoneditor', 'https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js' );
 			wp_enqueue_script( 'tuja-admin-reports', static::get_url() . '/assets/js/admin-reports.js' );
 			wp_enqueue_script( 'tuja-admin-forms', static::get_url() . '/assets/js/admin-forms.js' );
+			wp_enqueue_script( 'tuja-admin-stations-ticketing', static::get_url() . '/assets/js/admin-stations-ticketing.js' );
 		}
 	}
 

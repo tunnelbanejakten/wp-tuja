@@ -321,3 +321,7 @@ div.tuja-admin-questiongroup-form div.je-indented-panel {
     margin-left: 0 !important;
     border-left: none !important;
 }
+
+input.tuja-ticket-couponweight {
+    width: 4em;
+}
