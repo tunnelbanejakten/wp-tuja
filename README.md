@@ -12,6 +12,27 @@ Go to http://localhost:8080/wp-admin/plugins.php and activate the Tuja plugin/
 Configuring e-mail: You must install some kind of e-mail plugin in order for Wordpress 
 to be able to send e-mail. One such plugin is https://wordpress.org/plugins/wp-mail-smtp/.
 
+Remember to change Permalink format to "Post name" (or at least not "Plain").
+
+# Integration Tests
+
+There are a number of integration tests for verifying that the basic use cases are working.
+
+The tests are written in Javascript (using the Jest framework) and use Puppeteer (which uses Google Chrome) for browser automation.
+
+Prerequisites:
+
+* Install `node`
+* Install `yarn`
+* Run `yarn` in directory `tests/integration`
+
+Running the test:
+
+* Open a terminal in `./` and run `docker-compose up`
+* Open a terminal in `./tests/integration` and run `yarn test:visible`
+
+You can alternatively run `yarn test` if you don't want to see the browser window during testing.
+
 # Debugging
 
 Open shell to Wordpress installation:
