@@ -51,11 +51,40 @@ class CompetitionSignup extends FrontendView {
 				// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
 				$new_group = $this->create_group();
 
-				$edit_link = GroupHomeInitiator::link( $new_group );
-				if ( ! empty( $edit_link ) ) {
-					printf( '<p class="tuja-message tuja-message-success">Tack! Nästa steg är att gå till <a href="%s" id="tuja_signup_success_edit_link" data-group-key="%s">%s</a> och fylla i vad de andra deltagarna i ert lag heter. Vi har också skickat länken till din e-postadress så att du kan ändra er anmälan framöver.</p>', $edit_link, $new_group->random_id, $edit_link );
+				$group_home_link  = GroupHomeInitiator::link( $new_group );
+				$edit_people_link = GroupPeopleEditorInitiator::link( $new_group );
+				$support_email    = get_bloginfo( 'admin_email' );
+
+				if ( $new_group->get_status() == Group::STATUS_AWAITING_APPROVAL ) {
+					printf( '
+						<p class="tuja-message tuja-message-warning">Ert lag står på väntelistan.</p>
+						<p>
+							Det är många som vill vara med i Tunnelbanejakten i år och vi har tyvärr fullt just nu, men
+							vi jobbar febrilt på att hitta ytterligare funktionärer så att vi kan öppna upp för fler
+							lag. Om du känner någon som kan tänka sig att ställa upp som funktionärer så får du gärna
+							höra av dig till <a href="mailto:%s">%s</a>.
+						</p>
+						<p>
+							På <a href="%s" id="tuja_group_home_link" data-group-id="%d" data-group-key="%s">%s</a> kan ni se statusen för
+							er anmälan men vi kontaktar er även via e-post när ni tagits bort från väntelistan.
+						</p>
+						<p>
+							Vi har också skickat länken till din e-postadress.
+						</p>', $support_email, $support_email, $group_home_link, $new_group->id, $new_group->random_id, $group_home_link );
 				} else {
-					printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>' );
+					printf( '
+						<p class="tuja-message tuja-message-success">Tack för er anmälan!</p>
+						<p>
+							Ni måste nu fylla i vad de andra deltagarna i ert lag heter här:
+							<a href="%s" id="tuja_edit_people_link">%s</a>
+						</p>
+						<p>
+							På <a href="%s" id="tuja_group_home_link" data-group-id="%d" data-group-key="%s">%s</a> kan ni göra andra 
+							administrative saker, bland annat byta lagets namn eller tävlingsklass om det skulle behövas.
+						</p>
+						<p>
+							Vi har också skickat länkarna till din e-postadress.
+						</p>', $edit_people_link, $edit_people_link, $group_home_link, $new_group->id, $new_group->random_id, $group_home_link );
 				}
 
 				return;
@@ -133,7 +162,17 @@ class CompetitionSignup extends FrontendView {
 	}
 
 	private function get_submit_button_html() {
-		return sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s" id="tuja_signup_button">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Anmäl lag' );
+		$is_automatically_accepted = $this->get_competition()->initial_group_status !== Group::STATUS_AWAITING_APPROVAL;
+
+		return sprintf( '
+			<div class="tuja-buttons">
+				<button type="submit" name="%s" value="%s" id="tuja_signup_button">%s</button>
+			</div>
+			%s',
+			self::ACTION_BUTTON_NAME,
+			self::ACTION_NAME_SAVE,
+			$is_automatically_accepted ? 'Anmäl lag' : 'Anmäl lag till väntelista',
+			$is_automatically_accepted ? '' : '<p class="tuja-message tuja-message-warning">Varför väntelista? Jo, så många har anmält sig att vi just nu kan vi inte ta emot fler lag. Ni kan dock anmäla laget till väntelistan och så hör vi av oss om läget förändras.</p>' );
 	}
 
 	// TODO: create_group does a bit too much application logic to be in a presentation class. Extract application logic to some utility class.
