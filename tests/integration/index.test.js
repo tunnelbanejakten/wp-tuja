@@ -29,15 +29,15 @@ const clickLink = async (selector) => {
   )
 }
 
-const expectSuccessMessage = async (expected) => {
-  const actual = await page.$eval('p.tuja-message-success', node => node.innerText)
+const expectToContain = async (selector, expected) => {
+  const actual = await page.$eval(selector, node => node.innerText)
   await expect(actual).toContain(expected)
 }
+const expectSuccessMessage = async (expected) => expectToContain('.tuja-message-success', expected)
 
-const expectErrorMessage = async (expected) => {
-  const actual = await page.$eval('.tuja-message-error', node => node.innerText)
-  await expect(actual).toContain(expected)
-}
+const expectWarningMessage = async (expected) => expectToContain('.tuja-message-warning', expected)
+
+const expectErrorMessage = async (expected) => expectToContain('.tuja-message-error', expected)
 
 const expectFormValue = async (selector, expected) => {
   const actual = await page.$eval(selector, node => node.value)
@@ -84,7 +84,7 @@ describe('wp-tuja', () => {
   let competitionKey = null
   let competitionName = null
 
-  const signUpTeam = async () => {
+  const signUpTeam = async (isAutomaticallyAccepted = true) => {
     const name = faker.lorem.words()
     await goto(`http://localhost:8080/${competitionKey}/anmal`)
     await expectPageTitle(`Anmäl er till ${competitionName}`)
@@ -95,12 +95,24 @@ describe('wp-tuja', () => {
     await type('#tuja-person__email', teamLeader.email)
     await type('#tuja-person__phone', '070-123456')
     await type('#tuja-person__pno', '1980-01-01')
+    if (isAutomaticallyAccepted) {
+      await expectToContain('#tuja_signup_button', 'Anmäl lag')
+    } else {
+      await expectToContain('#tuja_signup_button', 'Anmäl lag till väntelista')
+      await expectWarningMessage('Varför väntelista?')
+    }
     await clickLink('#tuja_signup_button')
-    await expectSuccessMessage('Tack')
-    const groupPortalLinkNode = await page.$('#tuja_signup_success_edit_link')
+    if (isAutomaticallyAccepted) {
+      await expectSuccessMessage('Tack')
+    } else {
+      await expectWarningMessage('Ert lag står på väntelistan')
+    }
+    await takeScreenshot()
+    const groupPortalLinkNode = await page.$('#tuja_group_home_link')
     const portalUrl = await groupPortalLinkNode.evaluate(node => node.href)
     const key = await groupPortalLinkNode.evaluate(node => node.dataset.groupKey)
-    return { key, portalUrl, name, teamLeader }
+    const id = await groupPortalLinkNode.evaluate(node => node.dataset.groupId)
+    return { key, id, portalUrl, name, teamLeader }
   }
 
   beforeAll(async () => {
@@ -353,7 +365,7 @@ describe('wp-tuja', () => {
       // Start by verifying that invalid passwords are rejected with an error message
       //
 
-      const invalidPassword = 'invalid'+stationsProps[0].password
+      const invalidPassword = 'invalid' + stationsProps[0].password
       await type('#tuja_ticket_password', invalidPassword)
       await clickLink('#tuja_validate_ticket_button')
       await expectErrorMessage(`The password ${invalidPassword} is not correct`)
@@ -378,318 +390,389 @@ describe('wp-tuja', () => {
 
   describe('Signing up as new team', () => {
 
-    let groupProps = null
-
     beforeAll(async () => {
       // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
       await page.emulate(puppeteer.devices['iPhone 6 Plus'])
 
-      groupProps = await signUpTeam()
     })
 
-    it('should give a link for editing', async () => {
-      expect(groupProps.portalUrl).toBe(`http://localhost:8080/${groupProps.key}`)
-      await goto(groupProps.portalUrl)
-      await expectPageTitle(`Hej ${groupProps.name}`)
+    describe('when teams need to be approved', () => {
+
+      let groupProps = null
+
+      beforeAll(async () => {
+        await asAdmin(async () => {
+          await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+
+          await click('#tuja_tab_groups')
+
+          await click('#tuja_competition_settings_initial_group_status-awaiting_approval')
+
+          await clickLink('#tuja_save_competition_settings_button')
+        })
+        groupProps = await signUpTeam(false)
+      })
+
+      it('the team portal becomes available after team has been accepted', async () => {
+        const toBeAcceptedGroup = await signUpTeam(false)
+
+        await goto(toBeAcceptedGroup.portalUrl)
+        await expectWarningMessage('Ert lag står på väntelistan')
+        await expectElementCount('div.entry-content p > a', 0) // No links shown
+        await expectElementCount('div.entry-content p.tuja-message-success', 0)
+        await expectElementCount('div.entry-content p.tuja-message-warning', 1)
+        await expectElementCount('div.entry-content p.tuja-message-error', 0)
+
+        await asAdmin(async () => {
+          await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${toBeAcceptedGroup.id}`)
+
+          await clickLink('button[name="tuja_points_action"][value="transition__accepted"]')
+        })
+
+        await goto(toBeAcceptedGroup.portalUrl)
+        await expectElementCount('div.entry-content p > a', 3) // No links shown
+        await expectElementCount('div.entry-content p.tuja-message-success', 0)
+        await expectElementCount('div.entry-content p.tuja-message-warning', 0)
+        await expectElementCount('div.entry-content p.tuja-message-error', 0)
+      })
+
+      it.each([
+        '',
+        'andra',
+        'andra-personer',
+        'biljetter',
+        'anmal-mig',
+      ])('should NOT be possible to do anything on team page /%s', async (urlSuffix) => {
+        await goto(`http://localhost:8080/${groupProps.key}/${urlSuffix}`)
+
+        await expectWarningMessage('Ert lag står på väntelistan')
+
+        await expectElementCount('div.entry-content p > a', 0) // No links shown
+        await expectElementCount('div.entry-content form', 0) // No forms shown
+        await expectElementCount('div.entry-content button', 0) // No buttons shown
+      })
     })
 
-    it('should be possible to change name and category', async () => {
-      const newName = `New and improved ${groupProps.name}`
+    describe('when all teams get accepted automatically', () => {
+      let groupProps = null
 
-      await goto(groupProps.portalUrl)
-      await clickLink('#tuja_edit_group_link')
-      await click('#tuja-group__age-1')
-      await type('#tuja-group__name', newName)
-      await clickLink('#tuja_save_button')
-      await expectSuccessMessage('Ändringarna har sparats.')
+      beforeAll(async () => {
+        await asAdmin(async () => {
+          await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
-      await goto(groupProps.portalUrl)
-      await expectPageTitle(`Hej ${newName}`)
-    })
+          await click('#tuja_tab_groups')
 
-    it.each([
-      ['8311090123', '19831109-0123'],
-      ['831109-0123', '19831109-0123'],
-      ['198311090123', '19831109-0123'],
-      ['19831109-0123', '19831109-0123'],
-      ['831109', '19831109-0000'],
-      ['83-11-09', '19831109-0000'],
-      ['63-11-09', '19631109-0000'],
-      ['73-11-09', '19731109-0000'],
-      ['03-11-09', '20031109-0000'],
-      ['13-11-09', '20131109-0000'],
-      ['19831109', '19831109-0000'],
-      ['1983-11-09', '19831109-0000'],
-      ['198311090000', '19831109-0000'],
-      ['8311090000', '19831109-0000'],
-      ['1983-11-09--0123', '19831109-0123']
-    ])('should accept valid PNO %s', async (input, expected) => {
-      await goto(`http://localhost:8080/${groupProps.key}/andra-personer`)
+          await click('#tuja_competition_settings_initial_group_status-accepted')
 
-      await type('div.tuja-person-role-group_leader input[name^="tuja-person__pno__"]', input)
-      await clickLink('button[name="tuja-action"]')
-      await expectSuccessMessage('Ändringarna har sparats.')
+          await clickLink('#tuja_save_competition_settings_button')
+        })
+        groupProps = await signUpTeam()
+      })
 
-      await goto(`http://localhost:8080/${groupProps.key}/andra-personer`)
-      await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__pno__"]', expected)
-    })
+      it('team portal is accessible', async () => {
+        expect(groupProps.portalUrl).toBe(`http://localhost:8080/${groupProps.key}`)
+        await goto(groupProps.portalUrl)
+        await expectPageTitle(`Hej ${groupProps.name}`)
+      })
 
-    it.each([
-      ['19831109-012', true],
-      ['19831109-01', true],
-      ['12345', true],
-      ['198300000000', true],
-      ['8300000000', true],
-      ['830000000000', true],
-      ['1234567890', true],
-      ['nej', true],
-      ['19909999-0000', true],
-      ['19830230-0000', false]
-    ])('should reject invalid PNO %s', async (input, isClientSideFailure) => {
-      await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
+      it('should be possible to change name and category', async () => {
+        const newName = `New and improved ${groupProps.name}`
 
-      await type('input[name^="tuja-person__name"]', 'Alice')
-      await type('input[name^="tuja-person__pno"]', input)
-      if (isClientSideFailure) {
-        await click('button[name="tuja-action"]')
-        await page.waitFor(500)
-        const isInvalid = await page.$eval('input[name^="tuja-person__pno"]', el => el.matches(`:invalid`))
-        expect(isInvalid).toBeTruthy()
-      } else {
+        await goto(groupProps.portalUrl)
+        await clickLink('#tuja_edit_group_link')
+        await click('#tuja-group__age-1')
+        await type('#tuja-group__name', newName)
+        await clickLink('#tuja_save_button')
+        await expectSuccessMessage('Ändringarna har sparats.')
+
+        await goto(groupProps.portalUrl)
+        await expectPageTitle(`Hej ${newName}`)
+      })
+
+      it.each([
+        ['8311090123', '19831109-0123'],
+        ['831109-0123', '19831109-0123'],
+        ['198311090123', '19831109-0123'],
+        ['19831109-0123', '19831109-0123'],
+        ['831109', '19831109-0000'],
+        ['83-11-09', '19831109-0000'],
+        ['63-11-09', '19631109-0000'],
+        ['73-11-09', '19731109-0000'],
+        ['03-11-09', '20031109-0000'],
+        ['13-11-09', '20131109-0000'],
+        ['19831109', '19831109-0000'],
+        ['1983-11-09', '19831109-0000'],
+        ['198311090000', '19831109-0000'],
+        ['8311090000', '19831109-0000'],
+        ['1983-11-09--0123', '19831109-0123']
+      ])('should accept valid PNO %s', async (input, expected) => {
+        await goto(`http://localhost:8080/${groupProps.key}/andra-personer`)
+
+        await type('div.tuja-person-role-group_leader input[name^="tuja-person__pno__"]', input)
+        await clickLink('button[name="tuja-action"]')
+        await expectSuccessMessage('Ändringarna har sparats.')
+
+        await goto(`http://localhost:8080/${groupProps.key}/andra-personer`)
+        await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__pno__"]', expected)
+      })
+
+      it.each([
+        ['19831109-012', true],
+        ['19831109-01', true],
+        ['12345', true],
+        ['198300000000', true],
+        ['8300000000', true],
+        ['830000000000', true],
+        ['1234567890', true],
+        ['nej', true],
+        ['19909999-0000', true],
+        ['19830230-0000', false]
+      ])('should reject invalid PNO %s', async (input, isClientSideFailure) => {
+        await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
+
+        await type('input[name^="tuja-person__name"]', 'Alice')
+        await type('input[name^="tuja-person__pno"]', input)
+        if (isClientSideFailure) {
+          await click('button[name="tuja-action"]')
+          await page.waitFor(500)
+          const isInvalid = await page.$eval('input[name^="tuja-person__pno"]', el => el.matches(`:invalid`))
+          expect(isInvalid).toBeTruthy()
+        } else {
+          await clickLink('button[name="tuja-action"]')
+
+          await expectErrorMessage('Ogiltigt datum eller personnummer')
+        }
+      })
+
+      it.each([
+        [
+          '  David Dawson  ',
+          'David Dawson',
+          '83-01-01',
+          '19830101-0000',
+          'Vegan   ',
+          'Vegan'
+        ],
+        [
+          'Emily Emilia Edvina Ellison',
+          'Emily Emilia Edvina Ellison',
+          '830131-1234',
+          '19830131-1234',
+          '',
+          ''
+        ],
+        [
+          'B',
+          'B',
+          '101010',
+          '20101010-0000',
+          '    .',
+          '.'
+        ]
+      ])('should be possible to sign up as new team member "%s"', async (nameInput, nameExpected, pnoInput, pnoExpected, foodInput, foodExpected) => {
+        await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
+
+        await type('input#tuja-person__name', nameInput)
+        await type('input#tuja-person__pno', pnoInput)
+        await type('input#tuja-person__food', foodInput)
+
         await clickLink('button[name="tuja-action"]')
 
-        await expectErrorMessage('Ogiltigt datum eller personnummer')
-      }
-    })
+        await expectSuccessMessage('Tack')
 
-    it.each([
-      [
-        '  David Dawson  ',
-        'David Dawson',
-        '83-01-01',
-        '19830101-0000',
-        'Vegan   ',
-        'Vegan'
-      ],
-      [
-        'Emily Emilia Edvina Ellison',
-        'Emily Emilia Edvina Ellison',
-        '830131-1234',
-        '19830131-1234',
-        '',
-        ''
-      ],
-      [
-        'B',
-        'B',
-        '101010',
-        '20101010-0000',
-        '    .',
-        '.'
-      ]
-    ])('should be possible to sign up as new team member "%s"', async (nameInput, nameExpected, pnoInput, pnoExpected, foodInput, foodExpected) => {
-      await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
+        const editPersonUrl = await page.$eval('#tuja_signup_success_edit_link', node => node.href)
+        await goto(editPersonUrl)
 
-      await type('input#tuja-person__name', nameInput)
-      await type('input#tuja-person__pno', pnoInput)
-      await type('input#tuja-person__food', foodInput)
+        await expectFormValue('input#tuja-person__name', nameExpected)
+        await expectFormValue('input#tuja-person__pno', pnoExpected)
+        await expectFormValue('input#tuja-person__food', foodExpected)
+      })
 
-      await clickLink('button[name="tuja-action"]')
+      it('should be possible to sign up and later change registration', async () => {
 
-      await expectSuccessMessage('Tack')
+        //
+        // Signing up
+        //
 
-      const editPersonUrl = await page.$eval('#tuja_signup_success_edit_link', node => node.href)
-      await goto(editPersonUrl)
+        let name = 'Alice'
+        let pno = '19840101-0000'
+        let food = ''
+        await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
 
-      await expectFormValue('input#tuja-person__name', nameExpected)
-      await expectFormValue('input#tuja-person__pno', pnoExpected)
-      await expectFormValue('input#tuja-person__food', foodExpected)
-    })
+        await type('input#tuja-person__name', name)
+        await type('input#tuja-person__pno', pno)
+        await type('input#tuja-person__food', food)
 
-    it('should be possible to sign up and later change registration', async () => {
+        await clickLink('button[name="tuja-action"]')
 
-      //
-      // Signing up
-      //
+        await expectSuccessMessage('Tack')
 
-      let name = 'Alice'
-      let pno = '19840101-0000'
-      let food = ''
-      await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
+        const editPersonUrl = await page.$eval('#tuja_signup_success_edit_link', node => node.href)
 
-      await type('input#tuja-person__name', name)
-      await type('input#tuja-person__pno', pno)
-      await type('input#tuja-person__food', food)
+        //
+        // Editing registration first time
+        //
 
-      await clickLink('button[name="tuja-action"]')
+        await goto(editPersonUrl)
+        await expectFormValue('input#tuja-person__name', name)
+        await expectFormValue('input#tuja-person__pno', pno)
+        await expectFormValue('input#tuja-person__food', food)
 
-      await expectSuccessMessage('Tack')
+        name = 'Alicia'
+        pno = '19840202-0000'
+        food = 'Allergic to gluten'
 
-      const editPersonUrl = await page.$eval('#tuja_signup_success_edit_link', node => node.href)
+        await type('input#tuja-person__name', name)
+        await type('input#tuja-person__pno', pno)
+        await type('input#tuja-person__food', food)
 
-      //
-      // Editing registration first time
-      //
+        await clickLink('button[name="tuja-action"]')
 
-      await goto(editPersonUrl)
-      await expectFormValue('input#tuja-person__name', name)
-      await expectFormValue('input#tuja-person__pno', pno)
-      await expectFormValue('input#tuja-person__food', food)
+        await expectSuccessMessage('Ändringarna har sparats. Tack.')
 
-      name = 'Alicia'
-      pno = '19840202-0000'
-      food = 'Allergic to gluten'
+        await goto(editPersonUrl)
+        await expectFormValue('input#tuja-person__name', name)
+        await expectFormValue('input#tuja-person__pno', pno)
+        await expectFormValue('input#tuja-person__food', food)
 
-      await type('input#tuja-person__name', name)
-      await type('input#tuja-person__pno', pno)
-      await type('input#tuja-person__food', food)
+        //
+        // Editing registration second time
+        //
 
-      await clickLink('button[name="tuja-action"]')
+        name = 'Allison'
+        pno = '19840303-0000'
+        food = 'Allergic to lactose'
 
-      await expectSuccessMessage('Ändringarna har sparats. Tack.')
+        await goto(editPersonUrl)
+        await type('input#tuja-person__name', name)
+        await type('input#tuja-person__pno', pno)
+        await type('input#tuja-person__food', food)
 
-      await goto(editPersonUrl)
-      await expectFormValue('input#tuja-person__name', name)
-      await expectFormValue('input#tuja-person__pno', pno)
-      await expectFormValue('input#tuja-person__food', food)
+        await clickLink('button[name="tuja-action"]')
 
-      //
-      // Editing registration second time
-      //
+        await expectSuccessMessage('Ändringarna har sparats. Tack.')
 
-      name = 'Allison'
-      pno = '19840303-0000'
-      food = 'Allergic to lactose'
+        await goto(editPersonUrl)
 
-      await goto(editPersonUrl)
-      await type('input#tuja-person__name', name)
-      await type('input#tuja-person__pno', pno)
-      await type('input#tuja-person__food', food)
+        await expectFormValue('input#tuja-person__name', name)
+        await expectFormValue('input#tuja-person__pno', pno)
+        await expectFormValue('input#tuja-person__food', food)
+      })
 
-      await clickLink('button[name="tuja-action"]')
+      it('should be possible to edit team members', async () => {
+        const tempGroupProps = await signUpTeam()
 
-      await expectSuccessMessage('Ändringarna har sparats. Tack.')
+        await goto(tempGroupProps.portalUrl)
+        await clickLink('#tuja_edit_people_link')
 
-      await goto(editPersonUrl)
+        //
+        // Verify data from when the team was registered
+        //
 
-      await expectFormValue('input#tuja-person__name', name)
-      await expectFormValue('input#tuja-person__pno', pno)
-      await expectFormValue('input#tuja-person__food', food)
-    })
+        await expectElementCount('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person', 1)
+        await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person', 0)
+        await expectElementCount('div.tuja-person-role-adult_supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
+        await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person', 0)
 
-    it('should be possible to edit team members', async () => {
-      const tempGroupProps = await signUpTeam()
+        await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__name__"]', tempGroupProps.teamLeader.name)
+        await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__email__"]', tempGroupProps.teamLeader.email)
+        await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__phone__"]', '+4670123456')
 
-      await goto(tempGroupProps.portalUrl)
-      await clickLink('#tuja_edit_people_link')
+        //
+        // Change team leader
+        //
 
-      //
-      // Verify data from when the team was registered
-      //
+        await type('div.tuja-person-role-group_leader input[name^="tuja-person__name__"]', 'Alice')
+        await type('div.tuja-person-role-group_leader input[name^="tuja-person__pno__"]', '1980-01-02')
+        await type('div.tuja-person-role-group_leader input[name^="tuja-person__food__"]', 'Vegan')
 
-      await expectElementCount('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person', 1)
-      await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person', 0)
-      await expectElementCount('div.tuja-person-role-adult_supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
-      await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person', 0)
+        //
+        // Add two new team members
+        //
 
-      await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__name__"]', tempGroupProps.teamLeader.name)
-      await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__email__"]', tempGroupProps.teamLeader.email)
-      await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__phone__"]', '+4670123456')
+        await click('div.tuja-person-role-regular_group_member button.tuja-add-person')
+        await click('div.tuja-person-role-regular_group_member button.tuja-add-person')
+        await expectElementCount('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person', 1)
+        await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person', 2)
+        await expectElementCount('div.tuja-person-role-adult_supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
+        await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person', 0)
+        await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__name__"]', 2)
+        await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', 0)
+        await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__phone__"]', 0)
+        await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__pno__"]', 2)
+        await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__food__"]', 2)
 
-      //
-      // Change team leader
-      //
+        await type('div.tuja-person-role-regular_group_member div.tuja-signup-person:nth-child(1) input[name^="tuja-person__name__"]', 'Bob')
+        await type('div.tuja-person-role-regular_group_member div.tuja-signup-person:nth-child(1) input[name^="tuja-person__pno__"]', '1979-12-31')
+        await type('div.tuja-person-role-regular_group_member div.tuja-signup-person:nth-child(2) input[name^="tuja-person__name__"]', 'Dave')
+        await type('div.tuja-person-role-regular_group_member div.tuja-signup-person:nth-child(2) input[name^="tuja-person__pno__"]', '1990-08-08')
 
-      await type('div.tuja-person-role-group_leader input[name^="tuja-person__name__"]', 'Alice')
-      await type('div.tuja-person-role-group_leader input[name^="tuja-person__pno__"]', '1980-01-02')
-      await type('div.tuja-person-role-group_leader input[name^="tuja-person__food__"]', 'Vegan')
+        //
+        // Add extra contact
+        //
 
-      //
-      // Add two new team members
-      //
+        await click('div.tuja-person-role-extra_contact button.tuja-add-person')
+        await expectElementCount('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person', 1)
+        await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person', 2)
+        await expectElementCount('div.tuja-person-role-adult_supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
+        await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person', 1)
+        await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__name__"]', 0)
+        await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', 1)
+        await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__phone__"]', 0)
+        await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__pno__"]', 0)
+        await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__food__"]', 0)
 
-      await click('div.tuja-person-role-regular_group_member button.tuja-add-person')
-      await click('div.tuja-person-role-regular_group_member button.tuja-add-person')
-      await expectElementCount('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person', 1)
-      await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person', 2)
-      await expectElementCount('div.tuja-person-role-adult_supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
-      await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person', 0)
-      await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__name__"]', 2)
-      await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', 0)
-      await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__phone__"]', 0)
-      await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__pno__"]', 2)
-      await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__food__"]', 2)
+        await type('div.tuja-person-role-extra_contact input[name^="tuja-person__email__"]', 'extra-contact@example.com')
 
-      await type('div.tuja-person-role-regular_group_member div.tuja-signup-person:nth-child(1) input[name^="tuja-person__name__"]', 'Bob')
-      await type('div.tuja-person-role-regular_group_member div.tuja-signup-person:nth-child(1) input[name^="tuja-person__pno__"]', '1979-12-31')
-      await type('div.tuja-person-role-regular_group_member div.tuja-signup-person:nth-child(2) input[name^="tuja-person__name__"]', 'Dave')
-      await type('div.tuja-person-role-regular_group_member div.tuja-signup-person:nth-child(2) input[name^="tuja-person__pno__"]', '1990-08-08')
+        //
+        // Save changes
+        //
 
-      //
-      // Add extra contact
-      //
+        await clickLink('button[name="tuja-action"]')
+        await expectSuccessMessage('Ändringarna har sparats.')
 
-      await click('div.tuja-person-role-extra_contact button.tuja-add-person')
-      await expectElementCount('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person', 1)
-      await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person', 2)
-      await expectElementCount('div.tuja-person-role-adult_supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
-      await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person', 1)
-      await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__name__"]', 0)
-      await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', 1)
-      await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__phone__"]', 0)
-      await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__pno__"]', 0)
-      await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__food__"]', 0)
+        //
+        // Reload page without re-posting data (just in case the form shows data from $_POST rather than actual database values)
+        //
+        await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
 
-      await type('div.tuja-person-role-extra_contact input[name^="tuja-person__email__"]', 'extra-contact@example.com')
+        //
+        // Verify data when reloading the page
+        //
 
-      //
-      // Save changes
-      //
+        await expectFormValue('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__name__"]', 'Alice')
+        await expectFormValue('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__pno__"]', '19800102-0000')
+        await expectFormValue('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__food__"]', 'Vegan')
+        await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__name__"]', 'Bob')
+        await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__pno__"]', '19791231-0000')
+        await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(2) input[name^="tuja-person__name__"]', 'Dave')
+        await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(2) input[name^="tuja-person__pno__"]', '19900808-0000')
+        await expectFormValue('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', 'extra-contact@example.com')
 
-      await clickLink('button[name="tuja-action"]')
-      await expectSuccessMessage('Ändringarna har sparats.')
+        //
+        // Delete Bob
+        //
 
-      //
-      // Reload page without re-posting data (just in case the form shows data from $_POST rather than actual database values)
-      //
-      await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
+        await click('div.tuja-person-role-regular_group_member div.tuja-signup-person:nth-child(1) button.tuja-delete-person')
+        await clickLink('button[name="tuja-action"]')
+        await expectSuccessMessage('Ändringarna har sparats.')
 
-      //
-      // Verify data when reloading the page
-      //
+        //
+        // Reload page without re-posting data (just in case the form shows data from $_POST rather than actual database values)
+        //
+        await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
 
-      await expectFormValue('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__name__"]', 'Alice')
-      await expectFormValue('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__pno__"]', '19800102-0000')
-      await expectFormValue('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__food__"]', 'Vegan')
-      await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__name__"]', 'Bob')
-      await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__pno__"]', '19791231-0000')
-      await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(2) input[name^="tuja-person__name__"]', 'Dave')
-      await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(2) input[name^="tuja-person__pno__"]', '19900808-0000')
-      await expectFormValue('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', 'extra-contact@example.com')
+        //
+        // Verify that Dave is now the one and only regular team member
+        //
 
-      //
-      // Delete Bob
-      //
-
-      await click('div.tuja-person-role-regular_group_member div.tuja-signup-person:nth-child(1) button.tuja-delete-person')
-      await clickLink('button[name="tuja-action"]')
-      await expectSuccessMessage('Ändringarna har sparats.')
-
-      //
-      // Reload page without re-posting data (just in case the form shows data from $_POST rather than actual database values)
-      //
-      await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
-
-      //
-      // Verify that Dave is now the one and only regular team member
-      //
-
-      await expectElementCount('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person', 1)
-      await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person', 1)
-      await expectElementCount('div.tuja-person-role-adult_supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
-      await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person', 1)
-      await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__name__"]', 'Dave')
-      await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__pno__"]', '19900808-0000')
+        await expectElementCount('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person', 1)
+        await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person', 1)
+        await expectElementCount('div.tuja-person-role-adult_supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
+        await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person', 1)
+        await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__name__"]', 'Dave')
+        await expectFormValue('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__pno__"]', '19900808-0000')
+      })
     })
   })
 
