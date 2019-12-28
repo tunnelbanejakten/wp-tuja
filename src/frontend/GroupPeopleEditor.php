@@ -29,6 +29,9 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		try {
 			$group    = $this->get_group();
+
+			$this->check_group_status( $group );
+
 			$category = $group->get_derived_group_category();
 			$errors   = [];
 
@@ -55,7 +58,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 			$home_link          = GroupHomeInitiator::link( $group );
 			include( 'views/group-people-editor.php' );
 		} catch ( Exception $e ) {
-			printf( '<p class="tuja-message tuja-message-error">%s</p>', $e->getMessage() );
+			print $this->get_exception_message_html( $e );
 		}
 	}
 

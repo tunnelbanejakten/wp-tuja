@@ -23,6 +23,9 @@ class PersonEditor extends AbstractGroupView {
 		try {
 			$person = $this->get_person();
 			$group  = $this->get_group();
+
+			$this->check_group_status( $group );
+
 			$errors = [];
 			if ( $person->group_id != $group->id ) {
 				throw new Exception( 'Fel grupp.' );
@@ -55,7 +58,7 @@ class PersonEditor extends AbstractGroupView {
 
 			include( 'views/person-editor.php' );
 		} catch ( Exception $e ) {
-			printf( '<p class="tuja-message tuja-message-error">%s</p>', $e->getMessage() );
+			printf( $this->get_exception_message_html($e) );
 		}
 	}
 

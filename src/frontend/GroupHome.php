@@ -18,12 +18,15 @@ class GroupHome extends AbstractGroupView {
 	function output() {
 		try {
 			$group            = $this->get_group();
+
+			$this->check_group_status( $group );
+
 			$edit_group_link  = GroupEditorInitiator::link( $group );
 			$edit_people_link = GroupPeopleEditorInitiator::link( $group );
 			$tickets_link     = GroupTicketsInitiator::link( $group );
 			include( 'views/group-home.php' );
 		} catch ( Exception $e ) {
-			printf( '<p class="tuja-message tuja-message-error">%s</p>', $e->getMessage() );
+			print $this->get_exception_message_html( $e );
 		}
 	}
 }

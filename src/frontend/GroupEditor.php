@@ -11,6 +11,7 @@ use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\frontend\router\GroupHomeInitiator;
 use tuja\util\rules\RuleEvaluationException;
+use tuja\util\WarningException;
 use tuja\view\EditGroupShortcode;
 use tuja\view\FieldChoices;
 use tuja\view\FieldEmail;
@@ -36,6 +37,9 @@ class GroupEditor extends AbstractGroupView {
 
 		try {
 			$group  = $this->get_group();
+
+			$this->check_group_status( $group );
+
 			$errors = [];
 
 			if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
@@ -56,7 +60,7 @@ class GroupEditor extends AbstractGroupView {
 			$home_link     = GroupHomeInitiator::link( $group );
 			include( 'views/group-editor.php' );
 		} catch ( Exception $e ) {
-			printf( '<p class="tuja-message tuja-message-error">%s</p>', $e->getMessage() );
+			print $this->get_exception_message_html( $e );
 		}
 	}
 

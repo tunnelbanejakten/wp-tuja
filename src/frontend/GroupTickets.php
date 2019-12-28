@@ -24,6 +24,9 @@ class GroupTickets extends AbstractGroupView {
 		try {
 			$ticket_dao      = new TicketDao();
 			$group           = $this->get_group();
+
+			$this->check_group_status( $group );
+
 			$error_message   = '';
 			$success_message = '';
 
@@ -50,7 +53,7 @@ class GroupTickets extends AbstractGroupView {
 
 			include( 'views/group-tickets.php' );
 		} catch ( Exception $e ) {
-			printf( '<p class="tuja-message tuja-message-error">%s</p>', $e->getMessage() );
+			print $this->get_exception_message_html( $e );
 		}
 	}
 

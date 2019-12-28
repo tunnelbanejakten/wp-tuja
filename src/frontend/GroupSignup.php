@@ -20,9 +20,12 @@ class GroupSignup extends AbstractGroupView {
 	}
 
 	function output() {
-		$errors = [];
 		try {
-			$group = $this->get_group();
+			$errors         = [];
+			$errors_overall = '';
+			$group          = $this->get_group();
+
+			$this->check_group_status( $group );
 
 			if ( ! $this->is_edit_allowed( $group ) ) {
 				return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.' );
@@ -32,46 +35,49 @@ class GroupSignup extends AbstractGroupView {
 
 			$collect_contact_information = $real_category->get_rule_set()->is_contact_information_required_for_regular_group_member();
 			$collect_ssn                 = $real_category->get_rule_set()->is_ssn_required();
+			try {
 
-			if ( $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
-				$this->validate_recaptcha_html();
+				if ( $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
+					$this->validate_recaptcha_html();
 
-				// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
-				$new_person = $this->create_person( $group );
+					// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
+					$new_person = $this->create_person( $group );
 
-				$edit_link = PersonEditorInitiator::link( $group, $new_person );
+					$edit_link = PersonEditorInitiator::link( $group, $new_person );
 
-				$this->send_person_welcome_mail( $new_person );
+					$this->send_person_welcome_mail( $new_person );
 
-				if ( ! empty( $edit_link ) ) {
-					printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan. Gå till <a href="%s" id="tuja_signup_success_edit_link">%s</a> om du behöver ändra din anmälan senare. Vi har också skickat länken till din e-postadress.</p>', $edit_link, $edit_link );
-				} else {
-					printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>' );
+					if ( ! empty( $edit_link ) ) {
+						printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan. Gå till <a href="%s" id="tuja_signup_success_edit_link">%s</a> om du behöver ändra din anmälan senare. Vi har också skickat länken till din e-postadress.</p>', $edit_link, $edit_link );
+					} else {
+						printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>' );
+					}
+
+					return;
 				}
-
-				return;
+			} catch ( ValidationException $e ) {
+				// TODO: Create helper method for generating field names based on "group or person" and attribute name.
+				$errors = [ $e->getField() => $e->getMessage() ];
+			} catch ( Exception $e ) {
+				$errors_overall = $this->get_exception_message_html( $e );
 			}
-		} catch ( ValidationException $e ) {
-			// TODO: Create helper method for generating field names based on "group or person" and attribute name.
-			$errors = [ $e->getField() => $e->getMessage() ];
+
+
+			$form = $this->get_form_html(
+				true,
+				$collect_contact_information,
+				$collect_contact_information,
+				$collect_ssn,
+				true,
+				self::ROLE_REGULAR_GROUP_MEMBER,
+				$errors );
+
+			$submit_button = $this->get_submit_button_html();
+
+			include( 'views/group-signup.php' );
 		} catch ( Exception $e ) {
-			$errors = [ $e->getMessage() ];
+			print $this->get_exception_message_html( $e );
 		}
-
-		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
-
-		$form = $this->get_form_html(
-			true,
-			$collect_contact_information,
-			$collect_contact_information,
-			$collect_ssn,
-			true,
-			self::ROLE_REGULAR_GROUP_MEMBER,
-			$errors );
-
-		$submit_button = $this->get_submit_button_html();
-
-		include( 'views/group-signup.php' );
 	}
 
 	// TODO: DRY?

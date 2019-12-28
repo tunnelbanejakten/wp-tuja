@@ -5,6 +5,7 @@ namespace tuja\frontend;
 
 use DateTime;
 use Exception;
+use Throwable;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\store\CompetitionDao;
@@ -12,6 +13,7 @@ use tuja\data\store\GroupDao;
 use tuja\data\store\MessageTemplateDao;
 use tuja\data\store\PersonDao;
 use tuja\util\messaging\MessageSender;
+use tuja\util\WarningException;
 
 abstract class AbstractGroupView extends FrontendView {
 	const ROLE_ADULT_SUPERVISOR = "adult_supervisor";
@@ -99,5 +101,17 @@ abstract class AbstractGroupView extends FrontendView {
 		}
 
 		return $person;
+	}
+
+	protected function check_group_status( Group $group ) {
+		if ( $group->get_status() === Group::STATUS_AWAITING_APPROVAL ) {
+			throw new WarningException( 'Ert lag står på väntelistan och därför är den här sidan låst just nu.' );
+		}
+	}
+
+	protected function get_exception_message_html( Throwable $e ) {
+		return sprintf( '<p class="tuja-message %s">%s</p>',
+			$e instanceof WarningException ? 'tuja-message-warning' : 'tuja-message-error',
+			$e->getMessage() );
 	}
 }
