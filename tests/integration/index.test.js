@@ -2,77 +2,114 @@ const querystring = require('querystring')
 const puppeteer = require('puppeteer')
 const faker = require('faker')
 
-const click = async (selector) => {
-  await page.click(selector)
+class PageWrapper {
+  get page () {
+    return this._page
+  }
+
+  async init (page) {
+    if (page) {
+      console.log('🎁 Wrapping default page')
+      this._page = page
+    } else {
+      console.log('🎁 Wrapping new incognito browser')
+      // Create a new incognito browser context.
+      const context = await browser.createIncognitoBrowserContext()
+      // Create a new page in a pristine context.
+      this._page = await context.newPage()
+    }
+    return this
+  }
+
+  async type (selector, value) {
+    const el = await this._page.$(selector)
+    await el.evaluate(el => el.value = '')
+    await el.type(value)
+  }
+
+  async goto (url, waitForNetwork = false) {
+    console.log('➡️ Navigating to ', url)
+    await Promise.all([
+        this._page.waitForNavigation({ waitUntil: waitForNetwork ? 'networkidle2' : 'domcontentloaded', timeout: 10000 }),
+        this._page.goto(url)
+      ]
+    )
+  }
+
+  async clickLink (selector) {
+    await Promise.all([
+        this._page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 }),
+        this._page.click(selector)
+      ]
+    )
+  }
+
+  async click (selector) {
+    await this._page.click(selector)
+  }
+
+  async expectToContain (selector, expected) {
+    const actual = await this._page.$eval(selector, node => node.innerText)
+    await expect(actual).toContain(expected)
+  }
+
+  async expectSuccessMessage (expected) {
+    await expectToContain('.tuja-message-success', expected)
+  }
+
+  async expectWarningMessage (expected) {
+    await expectToContain('.tuja-message-warning', expected)
+  }
+
+  async expectErrorMessage (expected) {
+    await expectToContain('.tuja-message-error', expected)
+  }
+
+  async expectFormValue (selector, expected) {
+    const actual = await this._page.$eval(selector, node => node.value)
+    await expect(actual).toBe(expected)
+  }
+
+  async expectPageTitle (expected) {
+    expect(await this._page.title()).toContain(expected)
+  }
+
+  async expectElementCount (selector, expectedCount) {
+    expect(await this._page.$$(selector)).toHaveLength(expectedCount)
+  }
+
+  async $ (selector) {
+    return this._page.$(selector)
+  }
+
+  async $eval (selector, func) {
+    return this._page.$eval(selector, func)
+  }
+
+  async $$eval (selector, func) {
+    return this._page.$$eval(selector, func)
+  }
+
 }
 
-const type = async (selector, value) => {
-  const el = await page.$(selector)
-  await el.evaluate(el => el.value = '')
-  await el.type(value)
-}
+const defaultPage = new PageWrapper()
 
-const goto = async (url) => {
-  console.log('➡️ Navigating to ', url)
-  await Promise.all([
-      page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 }),
-      page.goto(url)
-    ]
-  )
-}
+const adminPage = new PageWrapper()
 
-const clickLink = async (selector) => {
-  await Promise.all([
-      page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 }),
-      page.click(selector)
-    ]
-  )
-}
-
-const expectToContain = async (selector, expected) => {
-  const actual = await page.$eval(selector, node => node.innerText)
-  await expect(actual).toContain(expected)
-}
-const expectSuccessMessage = async (expected) => expectToContain('.tuja-message-success', expected)
-
-const expectWarningMessage = async (expected) => expectToContain('.tuja-message-warning', expected)
-
-const expectErrorMessage = async (expected) => expectToContain('.tuja-message-error', expected)
-
-const expectFormValue = async (selector, expected) => {
-  const actual = await page.$eval(selector, node => node.value)
-  await expect(actual).toBe(expected)
-}
-
-const expectPageTitle = async (expected) => {
-  expect(await page.title()).toContain(expected)
-}
-
-const expectElementCount = async (selector, expectedCount) => {
-  expect(await page.$$(selector)).toHaveLength(expectedCount)
-}
-
-const asAdmin = async (closure) => {
-  // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
-  await page.emulate(puppeteer.devices['iPad Pro landscape'])
-  // Log in to Admin console
-  await goto('http://localhost:8080/wp-admin')
-  await type('#user_login', 'admin')
-  await type('#user_pass', 'admin')
-  await clickLink('#wp-submit')
-
-  await closure()
-
-  await goto(`http://localhost:8080/wp-login.php?action=logout`)
-  const logoutLink = await page.$('a')
-  await Promise.all([
-      page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-      logoutLink.click()
-    ]
-  )
-  // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
-  await page.emulate(puppeteer.devices['iPhone 6 Plus'])
-}
+const click = async (selector) => defaultPage.page.click(selector)
+const $ = async (selector, func) => defaultPage.$(selector, func)
+const $eval = async (selector, func) => defaultPage.$eval(selector, func)
+const $$eval = async (selector, func) => defaultPage.$$eval(selector, func)
+const type = async (selector, value) => defaultPage.type(selector, value)
+const goto = async (url) => defaultPage.goto(url)
+const clickLink = async (selector) => defaultPage.clickLink(selector)
+const expectToContain = async (selector, expected) => defaultPage.expectToContain(selector, expected)
+const expectSuccessMessage = async (expected) => defaultPage.expectSuccessMessage(expected)
+const expectWarningMessage = async (expected) => defaultPage.expectWarningMessage(expected)
+const expectErrorMessage = async (expected) => defaultPage.expectErrorMessage(expected)
+const expectFormValue = async (selector, expected) => defaultPage.expectFormValue(selector, expected)
+const expectPageTitle = async (expected) => defaultPage.expectPageTitle(expected)
+const expectElementCount = async (selector, expectedCount) => defaultPage.expectElementCount(selector, expectedCount)
 
 const takeScreenshot = async () => {
   await page.screenshot({ path: `screenshot-${new Date().getTime()}.png`, fullPage: true })
@@ -108,76 +145,118 @@ describe('wp-tuja', () => {
       await expectWarningMessage('Ert lag står på väntelistan')
     }
     await takeScreenshot()
-    const groupPortalLinkNode = await page.$('#tuja_group_home_link')
+    const groupPortalLinkNode = await $('#tuja_group_home_link')
     const portalUrl = await groupPortalLinkNode.evaluate(node => node.href)
     const key = await groupPortalLinkNode.evaluate(node => node.dataset.groupKey)
     const id = await groupPortalLinkNode.evaluate(node => node.dataset.groupId)
     return { key, id, portalUrl, name, teamLeader }
   }
 
+  const initAdminPage = async () => {
+    await adminPage.init()
+    // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
+    await adminPage.page.emulate(puppeteer.devices['iPad Pro landscape'])
+    // Log in to Admin console
+    await adminPage.goto('http://localhost:8080/wp-admin', true)
+    await adminPage.type('#user_login', 'admin')
+    await adminPage.type('#user_pass', 'admin')
+    await adminPage.clickLink('#wp-submit')
+  }
+
+  const initDefaultPage = async () => {
+    await defaultPage.init()
+    // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
+    await defaultPage.page.emulate(puppeteer.devices['iPhone 6 Plus'])
+  }
+
+  const createCompetition = async () => {
+    // Go to Tuja page in Admin console
+    await adminPage.goto('http://localhost:8080/wp-admin/admin.php?page=tuja')
+
+    // Create new competition
+    competitionName = 'Test Competition ' + new Date().getTime()
+
+    await adminPage.type('#tuja_competition_name', competitionName)
+    await adminPage.clickLink('#tuja_create_competition_button')
+
+    const links = await adminPage.page.$$('form.tuja a')
+    let link = null
+    for (let i = 0; i < links.length; i++) {
+      const el = links[i]
+      const linkText = await el.evaluate(node => node.innerText)
+      const isEqual = linkText === competitionName
+      if (isEqual) {
+        link = el
+        break
+      }
+    }
+    const [resp] = await Promise.all([
+        adminPage.page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+        link.click()
+      ]
+    )
+
+    competitionId = querystring.parse(resp.url()).tuja_competition
+    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Shortcodes&tuja_competition=${competitionId}`)
+
+    const signUpLink = await adminPage.page.$('#tuja_shortcodes_competitionsignup_link')
+    const signUpLinkUrl = await signUpLink.evaluate(node => node.href)
+
+    competitionKey = signUpLinkUrl.split(/\//)[3]
+    return ({ id: competitionId, key: competitionKey, name: competitionName })
+  }
+
+  const configureDefaultGroupStatus = async (status) => {
+    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+
+    await adminPage.click('#tuja_tab_groups')
+
+    await adminPage.click(`#tuja_competition_settings_initial_group_status-${status}`)
+
+    await adminPage.clickLink('#tuja_save_competition_settings_button')
+  }
+
+  const configureGroupCategories = async () => {
+    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+
+    await adminPage.click('#tuja_tab_groups')
+
+    const addGroupCategory = async (name, isCrew, ruleSetName) => {
+      await adminPage.click('#tuja_add_group_category_button')
+      const groupCategoryForm = await adminPage.page.$('div.tuja-groupcategory-form:last-of-type')
+      const groupCategoryName = await groupCategoryForm.$('input[type=text]')
+      const groupCategoryNameFieldName = await groupCategoryName.evaluate(node => node.name)
+      const tempGroupCategoryId = groupCategoryNameFieldName.split(/__/)[2]
+      await groupCategoryName.type(name)
+      const groupCategoryRules = await groupCategoryForm.$('select[name="groupcategory__ruleset__' + tempGroupCategoryId + '"]')
+      await groupCategoryRules.select(ruleSetName)
+      await adminPage.page.click('input[name="groupcategory__iscrew__' + tempGroupCategoryId + '"][value="' + isCrew + '"]')
+    }
+
+    await addGroupCategory('Young Participants', false, 'tuja\\util\\rules\\YoungParticipantsRuleSet')
+    await addGroupCategory('Old Participants', false, 'tuja\\util\\rules\\OlderParticipantsRuleSet')
+    await addGroupCategory('The Crew', true, 'tuja\\util\\rules\\CrewMembersRuleSet')
+
+    await adminPage.clickLink('#tuja_save_competition_settings_button')
+  }
+
   beforeAll(async () => {
 
     jest.setTimeout(300000)
 
-    await asAdmin(async () => {
-      // Go to Tuja page in Admin console
-      await goto('http://localhost:8080/wp-admin/admin.php?page=tuja')
+    await defaultPage.init()
 
-      // Create new competition
-      competitionName = 'Test Competition ' + new Date().getTime()
+    await initAdminPage()
+    await initDefaultPage()
 
-      await type('#tuja_competition_name', competitionName)
-      await clickLink('#tuja_create_competition_button')
+    const competitionData = await createCompetition()
+    competitionId = competitionData.id
+    competitionKey = competitionData.key
+    competitionName = competitionData.name
 
-      const links = await page.$$('form.tuja a')
-      let link = null
-      for (let i = 0; i < links.length; i++) {
-        const el = links[i]
-        const linkText = await el.evaluate(node => node.innerText)
-        const isEqual = linkText === competitionName
-        if (isEqual) {
-          link = el
-          break
-        }
-      }
-      const [resp] = await Promise.all([
-          page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-          link.click()
-        ]
-      )
+    await configureDefaultGroupStatus('accepted')
 
-      competitionId = querystring.parse(resp.url()).tuja_competition
-      await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Shortcodes&tuja_competition=${competitionId}`)
-
-      const signUpLink = await page.$('#tuja_shortcodes_competitionsignup_link')
-      const signUpLinkUrl = await signUpLink.evaluate(node => node.href)
-
-      competitionKey = signUpLinkUrl.split(/\//)[3]
-
-      await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
-
-      await click('#tuja_tab_groups')
-
-      await click('#tuja_competition_settings_initial_group_status-accepted')
-
-      const addGroupCategory = async (name, isCrew, ruleSetName) => {
-        await click('#tuja_add_group_category_button')
-        const groupCategoryForm = await page.$('div.tuja-groupcategory-form:last-of-type')
-        const groupCategoryName = await groupCategoryForm.$('input[type=text]')
-        const groupCategoryNameFieldName = await groupCategoryName.evaluate(node => node.name)
-        const tempGroupCategoryId = groupCategoryNameFieldName.split(/__/)[2]
-        await groupCategoryName.type(name)
-        const groupCategoryRules = await groupCategoryForm.$('select[name="groupcategory__ruleset__' + tempGroupCategoryId + '"]')
-        await groupCategoryRules.select(ruleSetName)
-        await page.click('input[name="groupcategory__iscrew__' + tempGroupCategoryId + '"][value="' + isCrew + '"]')
-      }
-
-      await addGroupCategory('Young Participants', false, 'tuja\\util\\rules\\YoungParticipantsRuleSet')
-      await addGroupCategory('Old Participants', false, 'tuja\\util\\rules\\OlderParticipantsRuleSet')
-      await addGroupCategory('The Crew', true, 'tuja\\util\\rules\\CrewMembersRuleSet')
-
-      await clickLink('#tuja_save_competition_settings_button')
-    })
+    await configureGroupCategories()
   })
 
   describe('Tickets', () => {
@@ -185,76 +264,70 @@ describe('wp-tuja', () => {
     let stationsProps = null
 
     beforeAll(async () => {
-      // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
-      await page.emulate(puppeteer.devices['iPhone 6 Plus'])
+      //
+      // Configure stations
+      //
 
-      await asAdmin(async () => {
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Stations&tuja_competition=${competitionId}`)
 
-        //
-        // Configure stations
-        //
+      await adminPage.type('#tuja_station_name', 'Hornstull')
+      await adminPage.clickLink('#tuja_station_create_button')
 
-        await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Stations&tuja_competition=${competitionId}`)
+      await adminPage.type('#tuja_station_name', 'Slussen')
+      await adminPage.clickLink('#tuja_station_create_button')
 
-        await type('#tuja_station_name', 'Hornstull')
-        await clickLink('#tuja_station_create_button')
+      await adminPage.type('#tuja_station_name', 'Mariatorget')
+      await adminPage.clickLink('#tuja_station_create_button')
 
-        await type('#tuja_station_name', 'Slussen')
-        await clickLink('#tuja_station_create_button')
+      await adminPage.type('#tuja_station_name', 'Skanstull')
+      await adminPage.clickLink('#tuja_station_create_button')
 
-        await type('#tuja_station_name', 'Mariatorget')
-        await clickLink('#tuja_station_create_button')
+      //
+      // Configure ticketing
+      //
 
-        await type('#tuja_station_name', 'Skanstull')
-        await clickLink('#tuja_station_create_button')
+      stationsProps = await adminPage.page.$$eval('form.tuja a[data-key]', nodes => nodes.map(node => ({
+        id: node.dataset.id,
+        key: node.dataset.key,
+        name: node.textContent
+      })))
 
-        //
-        // Configure ticketing
-        //
+      stationsProps[0].word = 'BLUEBERRY'
+      stationsProps[1].word = 'RASPBERRY'
+      stationsProps[2].word = 'STRAWBERRY'
+      stationsProps[3].word = 'CLOUDBERRY'
+      stationsProps[0].colour = '#b7fda0'
+      stationsProps[1].colour = '#fdd9a8'
+      stationsProps[2].colour = '#b0eefd'
+      stationsProps[3].colour = '#fdbcc0'
+      stationsProps[0].password = 'treasure'
+      stationsProps[1].password = 'gold'
+      stationsProps[2].password = 'loot'
+      stationsProps[3].password = 'winnings'
 
-        stationsProps = await page.$$eval('form.tuja a[data-key]', nodes => nodes.map(node => ({
-          id: node.dataset.id,
-          key: node.dataset.key,
-          name: node.textContent
-        })))
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=StationsTicketing&tuja_competition=${competitionId}`)
 
-        stationsProps[0].word = 'BLUEBERRY'
-        stationsProps[1].word = 'RASPBERRY'
-        stationsProps[2].word = 'STRAWBERRY'
-        stationsProps[3].word = 'CLOUDBERRY'
-        stationsProps[0].colour = '#b7fda0'
-        stationsProps[1].colour = '#fdd9a8'
-        stationsProps[2].colour = '#b0eefd'
-        stationsProps[3].colour = '#fdbcc0'
-        stationsProps[0].password = 'treasure'
-        stationsProps[1].password = 'gold'
-        stationsProps[2].password = 'loot'
-        stationsProps[3].password = 'winnings'
+      await adminPage.page.$eval(`input[name="tuja_ticketdesign__${stationsProps[0].id}__colour"]`, (node, color) => node.value = color, stationsProps[0].colour)
+      await adminPage.page.$eval(`input[name="tuja_ticketdesign__${stationsProps[1].id}__colour"]`, (node, color) => node.value = color, stationsProps[1].colour)
+      await adminPage.page.$eval(`input[name="tuja_ticketdesign__${stationsProps[2].id}__colour"]`, (node, color) => node.value = color, stationsProps[2].colour)
+      await adminPage.page.$eval(`input[name="tuja_ticketdesign__${stationsProps[3].id}__colour"]`, (node, color) => node.value = color, stationsProps[3].colour)
+      await adminPage.type(`input[name="tuja_ticketdesign__${stationsProps[0].id}__word"]`, stationsProps[0].word)
+      await adminPage.type(`input[name="tuja_ticketdesign__${stationsProps[1].id}__word"]`, stationsProps[1].word)
+      await adminPage.type(`input[name="tuja_ticketdesign__${stationsProps[2].id}__word"]`, stationsProps[2].word)
+      await adminPage.type(`input[name="tuja_ticketdesign__${stationsProps[3].id}__word"]`, stationsProps[3].word)
+      await adminPage.type(`input[name="tuja_ticketdesign__${stationsProps[0].id}__password"]`, stationsProps[0].password)
+      await adminPage.type(`input[name="tuja_ticketdesign__${stationsProps[1].id}__password"]`, stationsProps[1].password)
+      await adminPage.type(`input[name="tuja_ticketdesign__${stationsProps[2].id}__password"]`, stationsProps[2].password)
+      await adminPage.type(`input[name="tuja_ticketdesign__${stationsProps[3].id}__password"]`, stationsProps[3].password)
 
-        await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=StationsTicketing&tuja_competition=${competitionId}`)
+      await adminPage.type(`input[name="tuja_ticketcouponweight__${stationsProps[0].id}__${stationsProps[1].id}"]`, '1')
+      await adminPage.type(`input[name="tuja_ticketcouponweight__${stationsProps[0].id}__${stationsProps[2].id}"]`, '2')
+      await adminPage.type(`input[name="tuja_ticketcouponweight__${stationsProps[0].id}__${stationsProps[3].id}"]`, '3')
+      await adminPage.type(`input[name="tuja_ticketcouponweight__${stationsProps[1].id}__${stationsProps[2].id}"]`, '4')
+      await adminPage.type(`input[name="tuja_ticketcouponweight__${stationsProps[1].id}__${stationsProps[3].id}"]`, '5')
+      await adminPage.type(`input[name="tuja_ticketcouponweight__${stationsProps[2].id}__${stationsProps[3].id}"]`, '6')
 
-        await page.$eval(`input[name="tuja_ticketdesign__${stationsProps[0].id}__colour"]`, (node, color) => node.value = color, stationsProps[0].colour)
-        await page.$eval(`input[name="tuja_ticketdesign__${stationsProps[1].id}__colour"]`, (node, color) => node.value = color, stationsProps[1].colour)
-        await page.$eval(`input[name="tuja_ticketdesign__${stationsProps[2].id}__colour"]`, (node, color) => node.value = color, stationsProps[2].colour)
-        await page.$eval(`input[name="tuja_ticketdesign__${stationsProps[3].id}__colour"]`, (node, color) => node.value = color, stationsProps[3].colour)
-        await type(`input[name="tuja_ticketdesign__${stationsProps[0].id}__word"]`, stationsProps[0].word)
-        await type(`input[name="tuja_ticketdesign__${stationsProps[1].id}__word"]`, stationsProps[1].word)
-        await type(`input[name="tuja_ticketdesign__${stationsProps[2].id}__word"]`, stationsProps[2].word)
-        await type(`input[name="tuja_ticketdesign__${stationsProps[3].id}__word"]`, stationsProps[3].word)
-        await type(`input[name="tuja_ticketdesign__${stationsProps[0].id}__password"]`, stationsProps[0].password)
-        await type(`input[name="tuja_ticketdesign__${stationsProps[1].id}__password"]`, stationsProps[1].password)
-        await type(`input[name="tuja_ticketdesign__${stationsProps[2].id}__password"]`, stationsProps[2].password)
-        await type(`input[name="tuja_ticketdesign__${stationsProps[3].id}__password"]`, stationsProps[3].password)
-
-        await type(`input[name="tuja_ticketcouponweight__${stationsProps[0].id}__${stationsProps[1].id}"]`, '1')
-        await type(`input[name="tuja_ticketcouponweight__${stationsProps[0].id}__${stationsProps[2].id}"]`, '2')
-        await type(`input[name="tuja_ticketcouponweight__${stationsProps[0].id}__${stationsProps[3].id}"]`, '3')
-        await type(`input[name="tuja_ticketcouponweight__${stationsProps[1].id}__${stationsProps[2].id}"]`, '4')
-        await type(`input[name="tuja_ticketcouponweight__${stationsProps[1].id}__${stationsProps[3].id}"]`, '5')
-        await type(`input[name="tuja_ticketcouponweight__${stationsProps[2].id}__${stationsProps[3].id}"]`, '6')
-
-        await clickLink('button[name="tuja_action"][value="save"]')
-      })
+      await adminPage.clickLink('button[name="tuja_action"][value="save"]')
     })
 
     it('get tickets', async () => {
@@ -285,7 +358,7 @@ describe('wp-tuja', () => {
 
       await expectSuccessMessage('Ni har fått 2 nya biljetter.')
       await expectElementCount('div.tuja-ticket', 2)
-      const initialTicketWordsForTeamBob = await page.$$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      const initialTicketWordsForTeamBob = await $$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
       expect(initialTicketWordsForTeamBob).toHaveLength(2)
       expect(initialTicketWordsForTeamBob.includes(stationsProps[0].word)).toBeFalsy()
       expect(initialTicketWordsForTeamBob.includes(stationsProps[1].word)).toBeTruthy()
@@ -300,7 +373,7 @@ describe('wp-tuja', () => {
       await clickLink('#tuja_validate_ticket_button')
       await expectErrorMessage(`Cannot use ${stationsProps[0].password} twice`)
       await expectElementCount('div.tuja-ticket', 2)
-      const ticketWordsAfterRetry = await page.$$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      const ticketWordsAfterRetry = await $$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
       expect(ticketWordsAfterRetry).toEqual(initialTicketWordsForTeamBob)
 
       //
@@ -313,7 +386,7 @@ describe('wp-tuja', () => {
       await clickLink('#tuja_validate_ticket_button')
       await expectSuccessMessage('Ni har fått 2 nya biljetter.')
       await expectElementCount('div.tuja-ticket', 2)
-      const initialTicketWordsForTeamAlice = await page.$$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      const initialTicketWordsForTeamAlice = await $$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
       expect(initialTicketWordsForTeamAlice).toHaveLength(2)
       expect(initialTicketWordsForTeamAlice.includes(stationsProps[0].word)).toBeFalsy()
       expect(initialTicketWordsForTeamAlice.includes(stationsProps[1].word)).toBeTruthy()
@@ -327,7 +400,7 @@ describe('wp-tuja', () => {
       await type('#tuja_ticket_password', stationsProps[1].password)
       await clickLink('#tuja_validate_ticket_button')
       await expectSuccessMessage('Ni har fått 2 nya biljetter.')
-      const finalTicketWords = await page.$$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      const finalTicketWords = await $$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
       expect(finalTicketWords).toHaveLength(4)
       expect(finalTicketWords.includes(stationsProps[0].word)).toBeTruthy()
       expect(finalTicketWords.includes(stationsProps[1].word)).toBeTruthy()
@@ -342,7 +415,7 @@ describe('wp-tuja', () => {
       await type('#tuja_ticket_password', stationsProps[2].password)
       await clickLink('#tuja_validate_ticket_button')
       await expectSuccessMessage('Ni har fått 0 nya biljetter.')
-      const finalRetryTicketWords = await page.$$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      const finalRetryTicketWords = await $$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
       expect(finalRetryTicketWords).toHaveLength(4)
       expect(finalRetryTicketWords.includes(stationsProps[0].word)).toBeTruthy()
       expect(finalRetryTicketWords.includes(stationsProps[1].word)).toBeTruthy()
@@ -390,26 +463,12 @@ describe('wp-tuja', () => {
 
   describe('Signing up as new team', () => {
 
-    beforeAll(async () => {
-      // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
-      await page.emulate(puppeteer.devices['iPhone 6 Plus'])
-
-    })
-
     describe('when teams need to be approved', () => {
 
       let groupProps = null
 
       beforeAll(async () => {
-        await asAdmin(async () => {
-          await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
-
-          await click('#tuja_tab_groups')
-
-          await click('#tuja_competition_settings_initial_group_status-awaiting_approval')
-
-          await clickLink('#tuja_save_competition_settings_button')
-        })
+        await configureDefaultGroupStatus('awaiting_approval')
         groupProps = await signUpTeam(false)
       })
 
@@ -423,11 +482,11 @@ describe('wp-tuja', () => {
         await expectElementCount('div.entry-content p.tuja-message-warning', 1)
         await expectElementCount('div.entry-content p.tuja-message-error', 0)
 
-        await asAdmin(async () => {
-          await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${toBeAcceptedGroup.id}`)
+        // await asAdmin(async () => {
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${toBeAcceptedGroup.id}`)
 
-          await clickLink('button[name="tuja_points_action"][value="transition__accepted"]')
-        })
+        await adminPage.clickLink('button[name="tuja_points_action"][value="transition__accepted"]')
+        // })
 
         await goto(toBeAcceptedGroup.portalUrl)
         await expectElementCount('div.entry-content p > a', 3) // No links shown
@@ -457,15 +516,7 @@ describe('wp-tuja', () => {
       let groupProps = null
 
       beforeAll(async () => {
-        await asAdmin(async () => {
-          await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
-
-          await click('#tuja_tab_groups')
-
-          await click('#tuja_competition_settings_initial_group_status-accepted')
-
-          await clickLink('#tuja_save_competition_settings_button')
-        })
+        await configureDefaultGroupStatus('accepted')
         groupProps = await signUpTeam()
       })
 
@@ -535,7 +586,7 @@ describe('wp-tuja', () => {
         if (isClientSideFailure) {
           await click('button[name="tuja-action"]')
           await page.waitFor(500)
-          const isInvalid = await page.$eval('input[name^="tuja-person__pno"]', el => el.matches(`:invalid`))
+          const isInvalid = await $eval('input[name^="tuja-person__pno"]', el => el.matches(`:invalid`))
           expect(isInvalid).toBeTruthy()
         } else {
           await clickLink('button[name="tuja-action"]')
@@ -580,7 +631,7 @@ describe('wp-tuja', () => {
 
         await expectSuccessMessage('Tack')
 
-        const editPersonUrl = await page.$eval('#tuja_signup_success_edit_link', node => node.href)
+        const editPersonUrl = await $eval('#tuja_signup_success_edit_link', node => node.href)
         await goto(editPersonUrl)
 
         await expectFormValue('input#tuja-person__name', nameExpected)
@@ -607,7 +658,7 @@ describe('wp-tuja', () => {
 
         await expectSuccessMessage('Tack')
 
-        const editPersonUrl = await page.$eval('#tuja_signup_success_edit_link', node => node.href)
+        const editPersonUrl = await $eval('#tuja_signup_success_edit_link', node => node.href)
 
         //
         // Editing registration first time
@@ -781,27 +832,25 @@ describe('wp-tuja', () => {
     let groupProps = null
 
     beforeAll(async () => {
-      await asAdmin(async () => {
-        // Go to admin console
-        await goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Groups&tuja_competition=${competitionId}`)
+      // Go to admin console
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Groups&tuja_competition=${competitionId}`)
 
-        // Select crew category in tuja_new_group_type
-        const id = await page.$eval('select[name="tuja_new_group_type"] > option:last-child', node => node.value)
-        await page.select('select[name="tuja_new_group_type"]', id)
+      // Select crew category in tuja_new_group_type
+      const id = await adminPage.$eval('select[name="tuja_new_group_type"] > option:last-child', node => node.value)
+      await adminPage.page.select('select[name="tuja_new_group_type"]', id)
 
-        // Type crew group name in tuja_new_group_name
-        await type('input[name="tuja_new_group_name"]', '_ The Regular Crew') // Underscore added to ensure group shown first in list(s)
+      // Type crew group name in tuja_new_group_name
+      await adminPage.type('input[name="tuja_new_group_name"]', '_ The Regular Crew') // Underscore added to ensure group shown first in list(s)
 
-        // Click correct tuja_action button
-        await clickLink('button[name="tuja_action"][value="group_create"]')
+      // Click correct tuja_action button
+      await adminPage.clickLink('button[name="tuja_action"][value="group_create"]')
 
-        // Wait for page to load and extract crew group id from link in group list
-        const groupTableRow = await page.$('table#tuja_groups_list > tbody > tr:first-child > td:first-child')
-        const key = await groupTableRow.evaluate(node => node.dataset.groupKey)
-        groupProps = {
-          key
-        }
-      })
+      // Wait for page to load and extract crew group id from link in group list
+      const groupTableRow = await adminPage.$('table#tuja_groups_list > tbody > tr:first-child > td:first-child')
+      const key = await groupTableRow.evaluate(node => node.dataset.groupKey)
+      groupProps = {
+        key
+      }
     })
 
     it('should be possible to sign up as crew member', async () => {
@@ -817,7 +866,7 @@ describe('wp-tuja', () => {
 
       await expectSuccessMessage('Tack')
 
-      const editPersonUrl = await page.$eval('#tuja_signup_success_edit_link', node => node.href)
+      const editPersonUrl = await $eval('#tuja_signup_success_edit_link', node => node.href)
       await goto(editPersonUrl)
 
       await expectFormValue('input#tuja-person__name', 'Carol')
