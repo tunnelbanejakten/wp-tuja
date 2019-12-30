@@ -24,7 +24,8 @@ class Controller {
 			new CompetitionSignupInitiator(),
 			new PersonEditorInitiator(),
 			new GroupHomeInitiator(),
-			new GroupTicketsInitiator()
+			new GroupTicketsInitiator(),
+			new FormInitiator()
 		];
 	}
 

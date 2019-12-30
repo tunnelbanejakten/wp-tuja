@@ -16,12 +16,12 @@ AdminUtils::printTopMenu( $competition );
         <div class="tuja-admin-question-properties">
             <div class="tuja-admin-question-property tuja-admin-question-short">
                 <label for="">Svar accepteras fr.o.m.</label>
-                <input type="datetime-local" name="tuja-submit-response-start" placeholder="yyyy-mm-dd hh:mm"
+                <input type="datetime-local" name="tuja-submit-response-start" id="tuja-submit-response-start" placeholder="yyyy-mm-dd hh:mm"
                        value="<?= DateUtils::to_date_local_value($this->form->submit_response_start) ?>"/>
             </div>
             <div class="tuja-admin-question-property tuja-admin-question-short">
                 <label for="">Svar accepteras t.o.m.</label>
-                <input type="datetime-local" name="tuja-submit-response-end" placeholder="yyyy-mm-dd hh:mm"
+                <input type="datetime-local" name="tuja-submit-response-end" id="tuja-submit-response-end" placeholder="yyyy-mm-dd hh:mm"
                        value="<?= DateUtils::to_date_local_value($this->form->submit_response_end) ?>"/>
             </div>
         </div>
