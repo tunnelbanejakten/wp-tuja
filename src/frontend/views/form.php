@@ -1,3 +1,1 @@
-<form method="post">
-	<?= $form ?>
-</form>
+<?= $form ?>

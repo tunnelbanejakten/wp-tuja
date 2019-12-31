@@ -9,10 +9,7 @@ use tuja\view\CreateGroupShortcode;
 use tuja\view\CreatePersonShortcode;
 use tuja\view\EditGroupShortcode;
 use tuja\view\EditPersonShortcode;
-use tuja\view\FormReadonlyShortcode;
-use tuja\view\FormShortcode;
 use tuja\view\GroupNameShortcode;
-use tuja\view\PointsShortcode;
 use WP_Query;
 
 class Frontend extends Plugin {
