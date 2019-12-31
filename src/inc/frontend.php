@@ -15,8 +15,6 @@ use WP_Query;
 class Frontend extends Plugin {
 
 	public function init() {
-		add_shortcode( 'tuja_form', array( $this, 'form_shortcode' ) );
-		add_shortcode( 'tuja_points', array( $this, 'points_shortcode' ) );
 		add_shortcode( 'tuja_group_name', array( $this, 'group_name_shortcode' ) );
 		add_shortcode( 'tuja_edit_group', array( $this, 'edit_group_shortcode' ) );
 		add_shortcode( 'tuja_create_group', array( $this, 'create_group_shortcode' ) );
@@ -77,28 +75,6 @@ class Frontend extends Plugin {
 
 		wp_enqueue_style( 'tuja-wp-theme', static::get_url() . '/assets/css/wp.css' );
 		wp_enqueue_style( 'tuja-dropzone', static::get_url() . '/assets/css/dropzone.min.css' );
-	}
-
-	public function form_shortcode( $atts ) {
-		global $wp_query, $wpdb;
-		$form_id          = $atts['form'];
-		$is_readonly      = self::bool_attr( $atts, 'readonly' );
-		$is_crew_override = self::bool_attr( $atts, 'crew_override' );
-		$group_id         = $wp_query->query_vars['group_id'];
-		$component        = $is_readonly ?
-			new FormReadonlyShortcode( $wpdb, $form_id, $group_id ) :
-			new FormShortcode( $wpdb, $form_id, $group_id, $is_crew_override );
-
-		return $component->render();
-	}
-
-	public function points_shortcode( $atts ) {
-		global $wp_query, $wpdb;
-		$form_id   = $atts['form'];
-		$group_id  = $wp_query->query_vars['group_id'];
-		$component = new PointsShortcode( $wpdb, $form_id, $group_id );
-
-		return $component->render();
 	}
 
 	public function group_name_shortcode( $atts ) {

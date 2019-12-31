@@ -43,6 +43,10 @@ class PageWrapper {
     await this._page.click(selector)
   }
 
+  async close () {
+    await this._page.close()
+  }
+
   async expectToContain (selector, expected) {
     const actual = await this._page.$eval(selector, node => node.innerText)
     await expect(actual).toContain(expected)
@@ -143,7 +147,6 @@ describe('wp-tuja', () => {
     } else {
       await expectWarningMessage('Ert lag står på väntelistan')
     }
-    await takeScreenshot()
     const groupPortalLinkNode = await $('#tuja_group_home_link')
     const portalUrl = await groupPortalLinkNode.evaluate(node => node.href)
     const key = await groupPortalLinkNode.evaluate(node => node.dataset.groupKey)
@@ -312,7 +315,6 @@ describe('wp-tuja', () => {
     }
 
     beforeAll(async () => {
-      await configureDefaultGroupStatus('accepted')
       groupProps = await signUpTeam()
 
       formId = await createForm()
@@ -687,6 +689,10 @@ describe('wp-tuja', () => {
         groupProps = await signUpTeam(false)
       })
 
+      afterAll(async () => {
+        await configureDefaultGroupStatus('accepted')
+      })
+
       it('the team portal becomes available after team has been accepted', async () => {
         const toBeAcceptedGroup = await signUpTeam(false)
 
@@ -731,7 +737,6 @@ describe('wp-tuja', () => {
       let groupProps = null
 
       beforeAll(async () => {
-        await configureDefaultGroupStatus('accepted')
         groupProps = await signUpTeam()
       })
 
@@ -1044,7 +1049,7 @@ describe('wp-tuja', () => {
 
   describe('Crew', () => {
 
-    let groupProps = null
+    let crewGroupProps = null
 
     beforeAll(async () => {
       // Go to admin console
@@ -1063,14 +1068,152 @@ describe('wp-tuja', () => {
       // Wait for page to load and extract crew group id from link in group list
       const groupTableRow = await adminPage.$('table#tuja_groups_list > tbody > tr:first-child > td:first-child')
       const key = await groupTableRow.evaluate(node => node.dataset.groupKey)
-      groupProps = {
+      crewGroupProps = {
         key
       }
     })
 
+    describe('report score', () => {
+      let competingGroupProps = null
+      let stationScoreReportForm = 0
+
+      const createForm = async () => {
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Competition&tuja_competition=${competitionId}`)
+
+        const formName = 'The Stations'
+        await adminPage.type('#tuja_form_name', formName)
+        await adminPage.clickLink('#tuja_form_create_button')
+
+        const links = await adminPage.page.$$('form.tuja a')
+        let link = null
+        for (let i = 0; i < links.length; i++) {
+          const el = links[i]
+          const linkText = await el.evaluate(node => node.innerText)
+          const isEqual = linkText === formName
+          if (isEqual) {
+            link = el
+            break
+          }
+        }
+
+        const formId = querystring.parse(await link.evaluate(node => node.href)).tuja_form
+
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
+
+        await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
+        await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
+        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
+        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
+        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
+        await adminPage.clickLink('#tuja_form_questions_back')
+        await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
+        await adminPage.clickLink('div.tuja-admin-question:nth-of-type(3) a[href*="FormQuestions"]')
+        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
+        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
+        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
+
+        return formId
+      }
+
+      beforeAll(async () => {
+        competingGroupProps = await signUpTeam()
+        stationScoreReportForm = await createForm()
+      })
+
+      it('should be possible for crew member to report score', async () => {
+
+        const goToForm = async () => {
+          await defaultPage.goto(`http://localhost:8080/${crewGroupProps.key}/rapportera-poang/${stationScoreReportForm}`)
+          // Select first form question group
+          const formGroupId = await defaultPage.$eval('select#tuja_pointsshortcode__filter-questions > option:nth-child(2)', node => node.value)
+          await defaultPage.page.select('#tuja_pointsshortcode__filter-questions', formGroupId)
+          // Select recently created competing team
+          await defaultPage.page.select('#tuja_pointsshortcode__filter-groups', competingGroupProps.id)
+        }
+
+        await goToForm()
+
+        await defaultPage.expectElementCount('input.tuja-fieldtext', 3)
+
+        await defaultPage.type('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '2')
+        await defaultPage.type('div.tuja-field:nth-of-type(3) input.tuja-fieldtext', '3')
+        await defaultPage.type('div.tuja-field:nth-of-type(4) input.tuja-fieldtext', '4')
+        await defaultPage.clickLink('button[name="tuja_pointsshortcode__action"][value="update"]')
+
+        await defaultPage.expectSuccessMessage('Poängen har sparats.')
+        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '2')
+        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(3) input.tuja-fieldtext', '3')
+        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(4) input.tuja-fieldtext', '4')
+
+        await goToForm()
+
+        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '2')
+        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(3) input.tuja-fieldtext', '3')
+        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(4) input.tuja-fieldtext', '4')
+
+        await defaultPage.type('div.tuja-field:nth-of-type(4) input.tuja-fieldtext', '9')
+        await defaultPage.clickLink('button[name="tuja_pointsshortcode__action"][value="update"]')
+
+        await goToForm()
+
+        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '2')
+        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(3) input.tuja-fieldtext', '3')
+        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(4) input.tuja-fieldtext', '9')
+      })
+
+      it('should NOT be possible for competing team to view the form', async () => {
+        await goto(`http://localhost:8080/${competingGroupProps.key}/rapportera-poang/${stationScoreReportForm}`)
+
+        await expectErrorMessage('Bara funktionärer får använda detta formulär.')
+        await expectElementCount('form', 0)
+        await expectElementCount('button', 0)
+        await expectElementCount('input', 0)
+        await expectElementCount('select', 0)
+      })
+
+      it('should NOT be possible for two crew members to unknowingly overwrite each other\'s reported score', async () => {
+        const initSession = async () => {
+          const session = await new PageWrapper().init()
+          await session.goto(`http://localhost:8080/${crewGroupProps.key}/rapportera-poang/${stationScoreReportForm}`)
+          // Select first form question group
+          const formGroupId = await session.$eval('select#tuja_pointsshortcode__filter-questions > option:nth-child(2)', node => node.value)
+          await session.page.select('#tuja_pointsshortcode__filter-questions', formGroupId)
+          // Select recently created competing team
+          await session.page.select('#tuja_pointsshortcode__filter-groups', competingGroupProps.id)
+          return session
+        }
+        const aliceSession = await initSession()
+        const bobSession = await initSession()
+
+        await aliceSession.type('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '1')
+        await aliceSession.type('div.tuja-field:nth-of-type(3) input.tuja-fieldtext', '2')
+        await aliceSession.type('div.tuja-field:nth-of-type(4) input.tuja-fieldtext', '3')
+        await aliceSession.clickLink('button[name="tuja_pointsshortcode__action"][value="update"]')
+
+        await aliceSession.expectSuccessMessage('Poängen har sparats.')
+
+        await bobSession.type('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '4')
+        await bobSession.type('div.tuja-field:nth-of-type(3) input.tuja-fieldtext', '5')
+        await bobSession.type('div.tuja-field:nth-of-type(4) input.tuja-fieldtext', '6')
+        await bobSession.clickLink('button[name="tuja_pointsshortcode__action"][value="update"]')
+
+        await bobSession.expectErrorMessage('Någon annan har hunnit rapportera in andra poäng')
+
+        await aliceSession.close()
+        await bobSession.close()
+
+        const verifySession = await initSession()
+        await verifySession.page.waitForSelector('div.tuja-field')
+        await verifySession.expectFormValue('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '1')
+        await verifySession.expectFormValue('div.tuja-field:nth-of-type(3) input.tuja-fieldtext', '2')
+        await verifySession.expectFormValue('div.tuja-field:nth-of-type(4) input.tuja-fieldtext', '3')
+        await verifySession.close()
+      })
+    })
+
     it('should be possible to sign up as crew member', async () => {
       // TODO: More positive test cases
-      await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
+      await goto(`http://localhost:8080/${crewGroupProps.key}/anmal-mig`)
 
       await type('input#tuja-person__name', 'Carol')
       await type('input#tuja-person__email', 'carol@example.com')
@@ -1094,7 +1237,7 @@ describe('wp-tuja', () => {
       ['Trudy', '', '070-1234567', 'No fondness for spam', 'E-postadressen ser konstig ut'] // Missing required field
       // TODO: More negative test cases
     ])('should not be possible to sign up as a crew member with bad data', async (name, email, phone, food, expectedErrorMessage) => {
-      await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
+      await goto(`http://localhost:8080/${crewGroupProps.key}/anmal-mig`)
 
       await type('input[name^="tuja-person__name"]', name)
       await type('input[name^="tuja-person__email"]', email)
