@@ -4,15 +4,20 @@
 
   jQuery(document).ready(function ($) {
 
-    var dropzones = []
-    var groupId = $('input[name="group"]').val()
+    var groupId = $('input[name="group"]').attr('value')
 
-    $('.dropzone').each(function (i, el) {
-      var answerName = $(this).closest('.tuja-image').attr('id')
+    $('div.tuja-image-select').each(function (i, el) {
+      var fieldName = $(this).closest('.tuja-image').data('fieldName')
+      var preexistingFiles = $(this).closest('.tuja-image').data('preexisting')
       var $question = $(this).closest('.tuja-question')
       var $lock = $(this).closest('form').find('input[name="tuja_formshortcode__optimistic_lock"]')
 
-      var dz = new Dropzone(el, {
+      var isFileCountLimitReacted = function () {
+        var inputFieldsCount = $question.find('.dropzone input[type="hidden"]').length
+        return inputFieldsCount >= maxFilesCount
+      }
+
+      new Dropzone(el, {
         url: WPAjax.ajaxUrl,
         resizeWidth: 1000,
         acceptedFiles: 'image/*',
@@ -23,72 +28,60 @@
         dictDefaultMessage: 'Klicka här för att ladda upp bilder',
         init: function () {
           var self = this
-          var uploadCount = 0
 
           self.on('sending', function (file, xhr, formData) {
             formData.append('action', 'tuja_upload_images')
             formData.append('group', groupId)
             formData.append('question', $question.data('id'))
-            formData.append('lock', $lock.val())
+            formData.append('lock', $lock.attr('value'))
           })
 
-          $question.find('.clear-image-field').click(function () {
-            $question.find('input').first().val('')
-            $question.find('input').slice(1).remove()
-            $question.find('.dz-preview').remove()
-            self.removeAllFiles()
-            self.options.maxFiles = maxFilesCount
-            self.emit('reset')
-            uploadCount = 0
-            self.enable()
-            $question.find('.clear-image-field').toggle(uploadCount > 0)
+          self.on('addedfile', function (file) {
+            if (isFileCountLimitReacted()) {
+              self.removeFile(file)
+            }
           })
 
-          self.on('success', function (f, res) {
-              if (res.error === false && res.image) {
-                const selector = 'input[name="' + answerName + '[images][]"]'
-                var $oldImage = $(selector).first()
-                uploadCount++
+          self.on('success', function (file, res) {
+            var serverFilename = res.image
+            // Create the remove button
+            var $removeButton = $('<button class="button remove-image">Ta bort</button>')
 
-                if ($oldImage.val() === '') {
-                  $oldImage.val(res.image)
-                  $oldImage.attr('data-filename', f.name)
-                } else {
-                  var $newImage = $(selector).first().clone(false)
-                  $newImage.val(res.image)
-                  $newImage.attr('data-filename', f.name)
-                  $oldImage.after($newImage)
-                }
-              }
-            }
-          )
-          self.on('success', function (f, res) {
-              $question.find('.clear-image-field').toggle(uploadCount > 0)
-              if (uploadCount >= maxFilesCount) {
-                self.disable()
-              }
-            }
-          )
+            // Listen to the click event
+            $removeButton.click(function (e) {
+              // Make sure the button click doesn't submit the form:
+              e.preventDefault()
+              e.stopPropagation()
 
-          if ($('input[name="' + answerName + '[images][]"]').val() !== '') {
-
-            $('input[name="' + answerName + '[images][]"]').each(function (i, o) {
-              let inputEl = $(o)
-              var imageUrl = WPAjax.base_image_url + 'group-' + groupId + '/' + (inputEl.data('thumbnail-url') || inputEl.val())
-              var mockFile = { name: 'Bild', size: 12345 }
-
-              self.emit('addedfile', mockFile)
-              self.emit('thumbnail', mockFile, imageUrl)
-              self.emit('complete', mockFile)
-              self.options.maxFiles = self.options.maxFiles - 1
-              uploadCount++
+              // Remove the file preview.
+              self.removeFile(file)
             })
-            $question.find('.clear-image-field').toggle(uploadCount > 0)
-          }
-        },
-      })
+            // Add the button to the file preview element.
+            $(file.previewElement)
+              .append($('<div class="tuja-item-buttons" />')
+                .append($removeButton))
+              .append($('<input/>')
+                .attr('type', 'hidden')
+                .attr('name', fieldName)
+                .attr('value', serverFilename))
+          })
 
-      dropzones.push(dz)
+          for (var preexistingFile of preexistingFiles) {
+            var filename = preexistingFile.filename
+            var resizedImageUrl = preexistingFile.resizedImageUrl
+            var imageUrl = WPAjax.base_image_url + 'group-' + groupId + '/' + (resizedImageUrl || filename)
+            var mockFile = { name: filename, size: 12345 }
+            var mockResponse = {
+              image: filename
+            }
+
+            self.emit('addedfile', mockFile)
+            self.emit('thumbnail', mockFile, imageUrl)
+            self.emit('complete', mockFile)
+            self.emit('success', mockFile, mockResponse)
+          }
+        }
+      })
     })
   })
 })()

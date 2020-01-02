@@ -6,8 +6,7 @@ namespace tuja\view;
 use tuja\data\model\Group;
 use tuja\util\ImageManager;
 
-class FieldImages extends Field
-{
+class FieldImages extends Field {
 	const SHORT_LIST_LIMIT = 5;
 
 	private $image_manager;
@@ -18,8 +17,8 @@ class FieldImages extends Field
 	}
 
 	public function get_posted_answer( $form_field ) {
-		if (isset($_POST[$form_field])) {
-			$data   = sanitize_post( $_POST[ $form_field ] );
+		if ( isset( $_POST[ $form_field ] ) ) {
+			$data = sanitize_post( $_POST[ $form_field ] );
 
 			return [
 				'images'  => $data['images'],
@@ -31,7 +30,7 @@ class FieldImages extends Field
 	}
 
 	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' ) {
-		$hint = isset($this->hint) ? sprintf('<small class="tuja-question-hint">%s</small>', $this->hint) : '';
+		$hint = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
 
 		return sprintf(
 			'<div class="tuja-field tuja-%s"><label>%s%s</label>%s%s</div>',
@@ -58,16 +57,16 @@ class FieldImages extends Field
 	}
 
 	private function render_image_upload( $field_name, $group_key, $answer_object ) {
-		wp_enqueue_script('jquery');
-		wp_enqueue_script('tuja-dropzone');
-		wp_enqueue_script('tuja-upload-script');
+		wp_enqueue_script( 'jquery' );
+		wp_enqueue_script( 'tuja-dropzone' );
+		wp_enqueue_script( 'tuja-upload-script' );
 
 		if ( is_array( $answer_object ) && ! is_array( $answer_object[0] ) && ! empty( $answer_object[0] ) ) {
-		    // Fix legacy format (JSON as string in array)
+			// Fix legacy format (JSON as string in array)
 			$answer_object = json_decode( $answer_object[0], true );
 		}
 
-		$images = array();
+		$images = [];
 		if ( isset( $answer_object ) && isset( $answer_object['images'] ) ) {
 			if ( ! empty( $answer_object['images'] ) ) {
 				foreach ( $answer_object['images'] as $filename ) {
@@ -77,30 +76,21 @@ class FieldImages extends Field
 						ImageManager::DEFAULT_THUMBNAIL_PIXEL_COUNT,
 						$group_key );
 
-					$images[] = sprintf( '<input type="hidden" name="%s[images][]" value="%s" data-thumbnail-url="%s">',
-						$field_name,
-						$filename,
-						$resized_image_url ? basename( $resized_image_url ) : '' );
+					$images[] = [
+						'filename'        => $filename,
+						'resizedImageUrl' => $resized_image_url ? basename( $resized_image_url ) : ''
+					];
 				}
 			}
 		}
 
-		if ( empty( $images ) ) {
-			$images[] = sprintf( '<input type="hidden" name="%s[images][]" value="">', $field_name );
-		}
-
 		ob_start();
 		?>
-        <div class="tuja-image" id="<?php echo $field_name; ?>">
-            <div class="tuja-image-select">
-                <div class="dropzone"></div>
-                <div class="tuja-item-buttons tuja-item-buttons-center">
-                    <button type="button" class="clear-image-field">Ta bort dessa bilder</button>
-                </div>
-            </div>
-			<?php echo implode('', $images); ?>
+        <div class="tuja-image" data-field-name="<?php echo $field_name; ?>[images][]"
+             data-preexisting="<?php echo htmlspecialchars( json_encode( $images ) ); ?>">
+            <div class="tuja-image-select dropzone"></div>
             <div class="tuja-image-options">
-	            <?php echo $this->render_comment_field( $field_name, isset( $answer_object ) ? $answer_object['comment'] : '' ); ?>
+				<?php echo $this->render_comment_field( $field_name, isset( $answer_object ) ? $answer_object['comment'] : '' ); ?>
             </div>
         </div>
 		<?php

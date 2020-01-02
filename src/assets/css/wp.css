@@ -195,19 +195,18 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 }
 
 .tuja-fieldimages .tuja-image-select {
-
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 10px;
 }
-.tuja-fieldimages .tuja-image-select .dropzone,
-.tuja-fieldimages .tuja-image-select .dropzone > * {
+
+.tuja-fieldimages .tuja-image-select.dropzone,
+.tuja-fieldimages .tuja-image-select.dropzone > * {
     cursor: pointer;
 }
 
-.tuja-image .dropzone {
+.tuja-fieldimages .tuja-image-select.dropzone {
     min-height: 0;
-    border: none;
     padding: 0;
     text-align: center;
 }

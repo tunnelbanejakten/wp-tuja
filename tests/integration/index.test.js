@@ -367,7 +367,7 @@ describe('wp-tuja', () => {
 
     it('should be possible to answer upload-image questions', async () => {
       const chooseFiles = async (files) => {
-        const button = await defaultPage.page.waitForSelector('div.tuja-image-select div.dropzone.dz-clickable')
+        const button = await defaultPage.page.waitForSelector('div.tuja-image-select.dropzone.dz-clickable')
         const buttonBoundingBox = await button.boundingBox()
         const [fileChooser] = await Promise.all([
           defaultPage.page.waitForFileChooser(),
@@ -407,6 +407,13 @@ describe('wp-tuja', () => {
         await expectElementCount('div.tuja-fieldimages div.dz-preview', uploadData.length)
       }
 
+      const removeAllImages = async () => {
+        const handles = await defaultPage.page.$$('div.dropzone button.remove-image')
+        for (const handle of handles) {
+          await handle.click()
+        }
+      }
+
       //
       // Upload one image
       //
@@ -422,9 +429,8 @@ describe('wp-tuja', () => {
       //
       // Remove uploaded images
       //
-
       await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`, true)
-      await click('div.tuja-fieldimages button.clear-image-field')
+      await removeAllImages()
 
       await expectElementCount('div.tuja-fieldimages div.dz-preview', 0)
 
@@ -445,7 +451,7 @@ describe('wp-tuja', () => {
       await saveAndVerifyUploads(false)
 
       // Remove all images
-      await click('div.tuja-fieldimages button.clear-image-field')
+      await removeAllImages()
 
       // Upload one image
       await chooseFiles(['./pexels-photo-174667.jpeg'])
@@ -467,17 +473,16 @@ describe('wp-tuja', () => {
       //
 
       // Remove all images
-      await click('div.tuja-fieldimages button.clear-image-field')
+      await removeAllImages()
+      await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 0)
 
       // Upload one image
       await chooseFiles(['./pexels-photo-1578484.jpeg'])
-      // Verify that the Dropzone is still enabled
-      await expectElementCount('div.tuja-image-select div.dropzone.dz-clickable', 1)
+      await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 1)
 
       // Upload one image more
       await chooseFiles(['./pexels-photo-174667.jpeg'])
-      // Verify that the Dropzone has been disabled
-      await expectElementCount('div.tuja-image-select div.dropzone.dz-clickable', 0)
+      await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 2)
 
       // Save (and verify that both images are saved)
       await saveAndVerifyUploads(false)
