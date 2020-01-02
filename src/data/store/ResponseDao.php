@@ -17,7 +17,7 @@ class ResponseDao extends AbstractDao
 		self::QUESTION_FILTER_ALL                       => [
 			'sql_from'  => 'wp_tuja_form_question AS q LEFT JOIN wp_tuja_form_question_response AS r ON q.id = r.form_question_id',
 			'sql_where' => [
-				'r.id IS NULL OR r.id IN (SELECT MAX(latest.id) FROM wp_tuja_form_question_response AS latest WHERE latest.team_id = r.team_id AND latest.form_question_id = r.form_question_id)'
+				'(r.id IS NULL OR r.id IN (SELECT MAX(latest.id) FROM wp_tuja_form_question_response AS latest WHERE latest.team_id = r.team_id AND latest.form_question_id = r.form_question_id))'
 			]
 		],
 		self::QUESTION_FILTER_UNREVIEWED_ALL            => [

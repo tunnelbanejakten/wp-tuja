@@ -94,7 +94,9 @@ class PageWrapper {
   }
 
   async takeScreenshot () {
-    await this._page.screenshot({ path: `screenshot-${new Date().getTime()}.png`, fullPage: true })
+    const path = `screenshot-${new Date().getTime()}.png`
+    // console.log('📷', path)
+    await this._page.screenshot({ path: path, fullPage: true })
   }
 }
 
@@ -165,10 +167,16 @@ describe('wp-tuja', () => {
     await adminPage.clickLink('#wp-submit')
   }
 
-  const initUserPage = async (p = defaultPage) => {
+  const initUserPage = async (p) => {
     await p.init()
     // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
     await p.page.emulate(puppeteer.devices['iPhone 6 Plus'])
+  }
+
+  const createNewUserPage = async () => {
+    const p = new PageWrapper()
+    await initUserPage(p)
+    return p
   }
 
   const createCompetition = async () => {
@@ -249,7 +257,7 @@ describe('wp-tuja', () => {
     await defaultPage.init()
 
     await initAdminPage()
-    await initUserPage()
+    await initUserPage(defaultPage)
 
     const competitionData = await createCompetition()
     competitionId = competitionData.id
@@ -358,45 +366,121 @@ describe('wp-tuja', () => {
     })
 
     it('should be possible to answer upload-image questions', async () => {
+      const chooseFiles = async (files) => {
+        const button = await defaultPage.page.waitForSelector('div.tuja-image-select div.dropzone.dz-clickable')
+        const buttonBoundingBox = await button.boundingBox()
+        const [fileChooser] = await Promise.all([
+          defaultPage.page.waitForFileChooser(),
+          // We must manually click the top-left corner of the div.dropzone.dz-clickable element since we cannot use the
+          // "element.click" function since it would click the center of the div.dropzone.dz-clickable element and
+          // under some circumstances the center is actually covered by image thumbnails. Hence, we must click manually.
+          defaultPage.page.mouse.click(buttonBoundingBox.x + 1, buttonBoundingBox.y + 1)
+        ])
+        await fileChooser.accept(files)
+
+        // Wait for uploads to complete (successfully or not, but still completed)
+        await Promise.all(files.map(file => defaultPage.page.waitForSelector(`div.dz-preview.dz-complete .dz-image img[alt="${file.substr(2)}"]`)))
+      }
+
+      const getFileUploadFieldsData = async () => defaultPage.$$eval(
+        'div.tuja-image input[type="hidden"][name^="tuja_formshortcode__response__"][name$="[images][]"][value$=".jpeg"]',
+        nodes => nodes.map(node => ({
+          fileName: node.value,
+          fileDigest: node.value.split(/\./)[0],
+          thumbnailName: node.dataset.thumbnailUrl
+        })))
+
+      const saveAndVerifyUploads = async (forceReload = false) => {
+        const uploadData = await getFileUploadFieldsData()
+
+        await clickLink('button[name="tuja_formshortcode__action"][value="update"]')
+        await expectSuccessMessage('Era svar har sparats')
+
+        if (forceReload) {
+          await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`, true)
+        }
+
+        for (const data of uploadData) {
+          await expectElementCount('div.tuja-image input[type="hidden"][name*="tuja_formshortcode__response__"][value="' + data.fileName + '"]', 1)
+          await expectElementCount('div.tuja-image-select img[src*="' + data.fileDigest + '"]', 1)
+        }
+        await expectElementCount('div.tuja-fieldimages div.dz-preview', uploadData.length)
+      }
 
       //
-      // Upload image
+      // Upload one image
       //
 
       await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
 
-      const [fileChooser] = await Promise.all([
-        defaultPage.page.waitForFileChooser(),
-        click('div.tuja-image-select.dropzone'),
-      ])
-      await fileChooser.accept(['./pexels-photo-1578484.jpeg'])
+      await chooseFiles(['./pexels-photo-1578484.jpeg'])
 
       await expectElementCount('div.tuja-fieldimages div.dz-preview', 1)
 
-      const input = await defaultPage.page.waitForSelector('div.tuja-image input[type="hidden"][name^="tuja_formshortcode__response__"][name$="[images][]"][value$=".jpeg"]')
-      const fileName = await input.evaluate(node => node.value)
-      const fileDigest = fileName.split(/\./)[0]
-
-      await clickLink('button[name="tuja_formshortcode__action"][value="update"]')
-
-      expect(await $eval('div.tuja-image-select img', node => node.src)).toContain(`http://localhost:8080/wp-content/uploads/tuja/group-${groupProps.key}/${fileDigest}`)
-
-      await expectFormValue('div.tuja-image input[type="hidden"][name*="tuja_formshortcode__response__"]', fileName)
-      await expectElementCount('div.tuja-fieldimages div.dz-preview', 1)
+      await saveAndVerifyUploads(false)
 
       //
       // Remove uploaded images
       //
 
       await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`, true)
-      await click('div.tuja-image-options button.clear-image-field')
+      await click('div.tuja-fieldimages button.clear-image-field')
 
-      await clickLink('button[name="tuja_formshortcode__action"][value="update"]')
       await expectElementCount('div.tuja-fieldimages div.dz-preview', 0)
 
-      // Reload
-      await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`, true)
+      // Save and reload
+      await saveAndVerifyUploads(true)
+
       await expectElementCount('div.tuja-fieldimages div.dz-preview', 0)
+
+      //
+      // Upload two images (but select 1+2 images)
+      //
+
+      await chooseFiles(['./pexels-photo-1578484.jpeg', './pexels-photo-2285996.jpeg'])
+      await expectElementCount('div.dz-preview.dz-complete .dz-image img[alt="pexels-photo-1578484.jpeg"]', 1)
+      await expectElementCount('div.dz-preview.dz-complete .dz-image img[alt="pexels-photo-2285996.jpeg"]', 1)
+
+      // Save (and verify that both images are saved)
+      await saveAndVerifyUploads(false)
+
+      // Remove all images
+      await click('div.tuja-fieldimages button.clear-image-field')
+
+      // Upload one image
+      await chooseFiles(['./pexels-photo-174667.jpeg'])
+      await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 1)
+      await expectElementCount('.dz-image img[alt="pexels-photo-174667.jpeg"]', 1)
+
+      // Try to upload two additional images (only one will succeed)
+      await chooseFiles(['./pexels-photo-1578484.jpeg', './pexels-photo-2285996.jpeg'])
+      await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 2)
+      await expectElementCount('.dz-image img[alt="pexels-photo-1578484.jpeg"]', 1)
+      await expectElementCount('.dz-image img[alt="pexels-photo-174667.jpeg"]', 1)
+
+      // Save (and verify that only two images are saved)
+      await saveAndVerifyUploads(false)
+
+      //
+      // Replace uploaded images two new one (selected one by one) and make sure the Dropzone is disabled after
+      // picking the second one.
+      //
+
+      // Remove all images
+      await click('div.tuja-fieldimages button.clear-image-field')
+
+      // Upload one image
+      await chooseFiles(['./pexels-photo-1578484.jpeg'])
+      // Verify that the Dropzone is still enabled
+      await expectElementCount('div.tuja-image-select div.dropzone.dz-clickable', 1)
+
+      // Upload one image more
+      await chooseFiles(['./pexels-photo-174667.jpeg'])
+      // Verify that the Dropzone has been disabled
+      await expectElementCount('div.tuja-image-select div.dropzone.dz-clickable', 0)
+
+      // Save (and verify that both images are saved)
+      await saveAndVerifyUploads(false)
     })
 
     it('should NOT be possible to SEE questions BEFORE form has been OPENED', async () => {
@@ -422,8 +506,8 @@ describe('wp-tuja', () => {
     })
 
     it('should NOT be possible for two people in the same team to overwrite each others answers', async () => {
-      const aliceSession = await new PageWrapper().init()
-      const bobSession = await new PageWrapper().init()
+      const aliceSession = await createNewUserPage()
+      const bobSession = await createNewUserPage()
 
       await aliceSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
       await bobSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
@@ -452,8 +536,8 @@ describe('wp-tuja', () => {
     })
 
     it('should be possible for two people in the same team to give the same answer concurrently', async () => {
-      const aliceSession = await new PageWrapper().init()
-      const bobSession = await new PageWrapper().init()
+      const aliceSession = await createNewUserPage()
+      const bobSession = await createNewUserPage()
 
       // Alice sets the initial answers
       await aliceSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
@@ -703,11 +787,8 @@ describe('wp-tuja', () => {
         await expectElementCount('div.entry-content p.tuja-message-warning', 1)
         await expectElementCount('div.entry-content p.tuja-message-error', 0)
 
-        // await asAdmin(async () => {
         await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${toBeAcceptedGroup.id}`)
-
         await adminPage.clickLink('button[name="tuja_points_action"][value="transition__accepted"]')
-        // })
 
         await goto(toBeAcceptedGroup.portalUrl)
         await expectElementCount('div.entry-content p > a', 3) // No links shown
@@ -1173,7 +1254,7 @@ describe('wp-tuja', () => {
 
       it('should NOT be possible for two crew members to unknowingly overwrite each other\'s reported score', async () => {
         const initSession = async () => {
-          const session = await new PageWrapper().init()
+          const session = await createNewUserPage()
           await session.goto(`http://localhost:8080/${crewGroupProps.key}/rapportera-poang/${stationScoreReportForm}`)
           // Select first form question group
           const formGroupId = await session.$eval('select#tuja_pointsshortcode__filter-questions > option:nth-child(2)', node => node.value)

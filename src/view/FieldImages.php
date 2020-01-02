@@ -92,11 +92,15 @@ class FieldImages extends Field
 		ob_start();
 		?>
         <div class="tuja-image" id="<?php echo $field_name; ?>">
-            <div class="tuja-image-select dropzone"></div>
+            <div class="tuja-image-select">
+                <div class="dropzone"></div>
+                <div class="tuja-item-buttons tuja-item-buttons-center">
+                    <button type="button" class="clear-image-field">Ta bort dessa bilder</button>
+                </div>
+            </div>
 			<?php echo implode('', $images); ?>
             <div class="tuja-image-options">
 	            <?php echo $this->render_comment_field( $field_name, isset( $answer_object ) ? $answer_object['comment'] : '' ); ?>
-                <button type="button" class="clear-image-field">Rensa bilder</button>
             </div>
         </div>
 		<?php

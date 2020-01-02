@@ -73,6 +73,10 @@
     text-align: right;
 }
 
+.tuja-item-buttons.tuja-item-buttons-center {
+    text-align: center;
+}
+
 .tuja-item-buttons button {
     padding: 1em 1.2em;
     font-size: 80%;
@@ -188,22 +192,24 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 
 .tuja-fieldimages .tuja-image > div {
     flex: 1;
-    margin-right: 1em;
 }
 
 .tuja-fieldimages .tuja-image-select {
-    border: 2px dashed #ccc;
+
+    border: 1px solid #ddd;
     border-radius: 5px;
     padding: 10px;
-    cursor: pointer;
 }
-
-.tuja-fieldimages .tuja-image-select > * {
+.tuja-fieldimages .tuja-image-select .dropzone,
+.tuja-fieldimages .tuja-image-select .dropzone > * {
     cursor: pointer;
 }
 
 .tuja-image .dropzone {
     min-height: 0;
+    border: none;
+    padding: 0;
+    text-align: center;
 }
 
 .tuja-image .dz-image img {
