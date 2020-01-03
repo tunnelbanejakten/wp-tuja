@@ -6,97 +6,95 @@ use Exception;
 use tuja\data\store\GroupDao;
 use tuja\data\store\ResponseDao;
 
-class ImageManager
-{
+class ImageManager {
 	const DEFAULT_THUMBNAIL_PIXEL_COUNT = 200 * 200;
 
-    public function __construct()
-    {
-        $dir = wp_upload_dir('tuja', true, false);
-        if (!isset($dir['path'])) {
-            throw new Exception('Could not find folder to put image in.');
-        }
-        $this->directory = trailingslashit($dir['path']);
-        $this->public_url_directory = trailingslashit($dir['url']);
-    }
+	public function __construct() {
+		$dir = wp_upload_dir( 'tuja', true, false );
+		if ( ! isset( $dir['path'] ) ) {
+			throw new Exception( 'Could not find folder to put image in.' );
+		}
+		$this->directory            = trailingslashit( $dir['path'] );
+		$this->public_url_directory = trailingslashit( $dir['url'] );
+	}
 
-	public function import_jpeg( $file_path, $group_key = null ): string
-    {
-        if (file_exists($file_path)) {
-			if(function_exists('exif_imagetype')) {
-				$is_valid_jpeg = exif_imagetype($file_path) == IMAGETYPE_JPEG;
-			} else {
-				$is_valid_jpeg = @imagecreatefromjpeg($file_path) !== false;
+	public function import_jpeg( $file_path, $group_key = null ): string {
+		if ( file_exists( $file_path ) ) {
+
+			list ( , , $type ) = getimagesize( $file_path );
+			if ( $type != IMG_JPG && $type != IMG_PNG ) {
+				throw new Exception( 'Unsupported image format.' );
 			}
 
-            if (!$is_valid_jpeg) {
-                throw new Exception('Not valid JPEG image.');
-            }
+			$image_editor = wp_get_image_editor( $file_path );
+			if ( is_wp_error( $image_editor ) ) {
+				throw new Exception( 'Not a valid image.' );
+			}
 
-	        $md5           = md5_file( $file_path );
-	        $file_id       = $md5 . '.jpg';
-	        $sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
-	        if ( ! is_dir( $this->directory . $sub_directory ) ) {
-		        mkdir( $this->directory . $sub_directory, 0755, true );
-	        }
-	        $new_path = $this->directory . $sub_directory . $file_id;
+			$ext           = $type == IMG_JPG ? 'jpg' : 'png';
+			$md5           = md5_file( $file_path );
+			$filename      = $md5 . '.' . $ext;
+			$sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
+			if ( ! is_dir( $this->directory . $sub_directory ) ) {
+				mkdir( $this->directory . $sub_directory, 0755, true );
+			}
+			$new_path = $this->directory . $sub_directory . $filename;
 
-            if (file_exists($new_path)) {
-                // This exact file has been uploaded before.
-	            return $file_id;
-            }
+			if ( file_exists( $new_path ) ) {
+				// This exact file has been uploaded before.
+				return $filename;
+			}
 
-            if ($this->move($file_path, $new_path)) {
-	            return $file_id;
-            } else {
-                throw new Exception(sprintf('Could not save uploaded file to %s', $new_path));
-            }
+			if ( $this->move( $file_path, $new_path ) ) {
+				return $filename;
+			} else {
+				throw new Exception( sprintf( 'Could not save uploaded file to %s', $new_path ) );
+			}
 
-        } else {
-            throw new Exception(sprintf('File %s not found', $file_path));
-        }
-    }
+		} else {
+			throw new Exception( sprintf( 'File %s not found', $file_path ) );
+		}
+	}
 
-	public function get_resized_image_url( $filename, $pixels, $group_key = null )
-    {
-	    list ( $file_id, $ext ) = explode( '.', $filename );
-	    $dst_filename  = "$file_id-$pixels.$ext";
-	    $sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
-	    $dst_path      = $this->directory . $sub_directory . $dst_filename;
-        if (file_exists($dst_path)) {
-	        return $this->public_url_directory . $sub_directory . $dst_filename;
-        }
+	public function get_resized_image_url( $filename, $pixels, $group_key = null ) {
+		list ( $file_id, $ext ) = explode( '.', $filename );
+		$dst_filename  = "$file_id-$pixels.$ext";
+		$sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
+		$dst_path      = $this->directory . $sub_directory . $dst_filename;
+		if ( file_exists( $dst_path ) ) {
+			return $this->public_url_directory . $sub_directory . $dst_filename;
+		}
 
-	    $src_path  = $this->directory . $sub_directory . "$file_id.$ext";
-	    list( $width, $height, $image_type ) = @getimagesize( $src_path );
-	    if ( $image_type != IMAGETYPE_JPEG ) {
-		    return false;
-	    }
-        $src_image = @imagecreatefromjpeg($src_path);
-        if ($src_image !== false) {
-            $dst_width = sqrt(($pixels * $width) / $height);
-            $dst_height = $dst_width * ($height / $width);
-            $dst_image = imagecreatetruecolor($dst_width, $dst_height);
-            if (@imagecopyresampled($dst_image, $src_image, 0, 0, 0, 0, $dst_width, $dst_height, $width, $height)) {
-                if (@imagejpeg($dst_image, $dst_path)) {
-	                return $this->public_url_directory . $sub_directory . $dst_filename;
-                }
-            }
-        } else {
-	        if ( $group_key != null ) {
-        	    // The group_key is set but we didn't find the image in the group's sub-directory. Check if it for some reason is still in the root directory.
-		        return $this->get_resized_image_url( $filename, $pixels, null );
-	        }
-        }
-        return false;
-    }
+		$src_path     = $this->directory . $sub_directory . "$file_id.$ext";
+		$image_editor = wp_get_image_editor( $src_path );
+		if ( is_wp_error( $image_editor ) ) {
+			if ( $group_key != null ) {
+				// The group_key is set but we didn't find the image in the group's sub-directory. Check if it for some reason is still in the root directory.
+				return $this->get_resized_image_url( $filename, $pixels, null );
+			}
 
-    public function get_public_url($file_md5_hash): string
-    {
-        return $this->public_url_directory . $file_md5_hash . '.jpg';
-    }
+			return false;
+		}
 
-    // TODO: Look into overlap between move() and move_to_group()
+		$src_size = $image_editor->get_size();
+		if ( is_wp_error( $src_size ) ) {
+			return false;
+		}
+		$width  = $src_size['width'];
+		$height = $src_size['height'];
+
+		$dst_width  = sqrt( ( $pixels * $width ) / $height );
+		$dst_height = $dst_width * ( $height / $width );
+		$image_editor->resize( $dst_width, $dst_height, false );
+		$saved = $image_editor->save( $dst_path );
+		if ( is_wp_error( $saved ) ) {
+			return false;
+		} else {
+			return $this->public_url_directory . $sub_directory . $dst_filename;
+		}
+	}
+
+	// TODO: Look into overlap between move() and move_to_group()
 	public function move_to_group( $source_filename, $old_group_key, $new_group_key ) {
 		$old_sub_directory = isset( $old_group_key ) ? "group-$old_group_key/" : '';
 		$old_dir           = $this->directory . $old_sub_directory;
@@ -125,56 +123,56 @@ class ImageManager
 		}
 	}
 
-    private function move($old, $new)
-    {
-        if (is_uploaded_file($old)) {
-            return move_uploaded_file($old, $new);
-        } else {
-            return rename($old, $new);
-        }
+	private function move( $old, $new ) {
+		if ( is_uploaded_file( $old ) ) {
+			return move_uploaded_file( $old, $new );
+		} else {
+			return rename( $old, $new );
+		}
 	}
-	
+
 	/**
 	 * Handles image uploads from FromShortcode via AJAX.
 	 */
 	public static function handle_image_upload() {
-		if(!empty($_FILES['file']) && !empty($_POST['group']) && !empty($_POST['question'])) {
+		if ( ! empty( $_FILES['file'] ) && ! empty( $_POST['group'] ) && ! empty( $_POST['question'] ) ) {
 			$group_dao = new GroupDao();
-			$group = $group_dao->get_by_key( sanitize_text_field( $_POST['group'] ) );
-			$question = (int)$_POST['question'];
+			$group     = $group_dao->get_by_key( sanitize_text_field( $_POST['group'] ) );
+			$question  = (int) $_POST['question'];
 
 			$response_dao = new ResponseDao();
 
 			// Check lock. If lock is empty no answers has been sent so just proceed.
-			if(($lock_res = $response_dao->get($group->id, 0, true)) && !empty($lock_res->created)) {
+			if ( ( $lock_res = $response_dao->get( $group->id, 0, true ) ) && ! empty( $lock_res->created ) ) {
 				$lock_res = $lock_res->created->getTimestamp();
-				$lock = (int)$_POST['lock'];
-				if($lock === 0 || $lock_res !== $lock) {
-					wp_send_json(array(
+				$lock     = (int) $_POST['lock'];
+				if ( $lock === 0 || $lock_res !== $lock ) {
+					wp_send_json( array(
 						'error' => 'Din bild kunde inte laddas upp eftersom någon annan i ditt lag har uppdaterat era svar. Ladda om sidan och prova igen.'
-					), 409);
+					), 409 );
 					exit;
 				}
 			}
 
 			$upload_dir = '/tuja/group-' . $group->random_id;
-			add_filter('upload_dir', function ($dirs) use ($upload_dir) {
+			add_filter( 'upload_dir', function ( $dirs ) use ( $upload_dir ) {
 				$dirs['subdir'] = $upload_dir;
-				$dirs['path'] = $dirs['basedir'] . $upload_dir;
-				$dirs['url'] = $dirs['baseurl'] . $upload_dir;
+				$dirs['path']   = $dirs['basedir'] . $upload_dir;
+				$dirs['url']    = $dirs['baseurl'] . $upload_dir;
 
-				if(!file_exists($dirs['basedir'] . $upload_dir)) {
-					mkdir($dirs['basedir'] . $upload_dir, 0755, true);
+				if ( ! file_exists( $dirs['basedir'] . $upload_dir ) ) {
+					mkdir( $dirs['basedir'] . $upload_dir, 0755, true );
 				}
-			
+
 				return $dirs;
-			});
+			} );
 
 			$upload_overrides = array(
-				'test_form' => false,
-				'unique_filename_callback' => function($dir, $name, $ext) use($question) {
-					$name = md5($name . $question);
-					return $name.$ext;
+				'test_form'                => false,
+				'unique_filename_callback' => function ( $dir, $name, $ext ) use ( $question ) {
+					$name = md5( $name . $question );
+
+					return $name . $ext;
 				}
 			);
 
@@ -183,32 +181,34 @@ class ImageManager
 			// arrays we need to turn them into strings. We know that this function will only be called with one uploaded file at a time
 			// so it is safe to just take the first element in each value array.
 			$file = $_FILES['file'];
-			if(isset($file['error'][0])) {
-				$file = array_map(function($e) { return $e[0]; }, $file);
+			if ( isset( $file['error'][0] ) ) {
+				$file = array_map( function ( $e ) {
+					return $e[0];
+				}, $file );
 			}
 
-			$movefile = wp_handle_upload($file, $upload_overrides);
+			$movefile = wp_handle_upload( $file, $upload_overrides );
 
 			if ( $movefile && ! isset( $movefile['error'] ) ) {
-				$filename = explode('/', $movefile['file']);
-				$filename = array_pop($filename);
+				$filename = explode( '/', $movefile['file'] );
+				$filename = array_pop( $filename );
 
-				wp_send_json(array(
+				wp_send_json( array(
 					'error' => false,
 					'image' => $filename
-				));
+				) );
 				exit;
 			}
 
-			wp_send_json(array(
+			wp_send_json( array(
 				'error' => 'Din bild kunde inte sparas. Ladda om sidan och prova igen eller kontakta kundtjänst.'
-			), 500);
+			), 500 );
 			exit;
 		}
 
-		wp_send_json(array(
+		wp_send_json( array(
 			'error' => 'Datan som skickades är ogiltig.'
-		), 400);
+		), 400 );
 		exit;
 	}
 }
