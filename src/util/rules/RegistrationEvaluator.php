@@ -52,7 +52,7 @@ class RegistrationEvaluator {
 						$carry[] = new RuleResult( $rule_name, RuleResult::WARNING, 'Personnummer/födelsedag verkar inte vara korrekt.' );
 					}
 				} else {
-					$carry[] = new RuleResult( $rule_name, RuleResult::BLOCKER, 'Personnummer/födelsedag har inget angetts.' );
+					$carry[] = new RuleResult( $rule_name, RuleResult::BLOCKER, 'Personnummer eller födelsedag måste anges.' );
 				}
 			}
 
@@ -72,13 +72,13 @@ class RegistrationEvaluator {
 		$count_adult_participants = count( $adult_participants );
 		if ( $this->rule_set->is_adult_supervisor_required() ) {
 			if ( $count_adults == 0 ) {
-				return [ new RuleResult( 'Vuxen i laget', RuleResult::BLOCKER, 'Laget måste ha med sig en vuxen under dagen.' ) ];
+				return [ new RuleResult( 'Vuxen som följer med', RuleResult::BLOCKER, 'Laget måste ha med sig en vuxen under dagen.' ) ];
 			} elseif ( $count_adult_participants > 0 ) {
 				return [
 					new RuleResult(
-						'Vuxen i laget',
-						RuleResult::WARNING,
-						'Laget har tävlande vuxna.'
+						'Vuxen som följer med',
+						RuleResult::BLOCKER,
+						'Vuxna som följer med ska inte anges som lagmedlemmar.'
 					)
 				];
 			}
@@ -112,14 +112,8 @@ class RegistrationEvaluator {
 						return [ new RuleResult( 'Kontaktperson', RuleResult::WARNING, 'Vi rekommenderar att en av de tävlande är kontaktperson och lagledare.' ) ];
 					}
 				}
-			case 2:
-				if ( $this->rule_set->is_adult_supervisor_required() ) {
-					return [ new RuleResult( 'Kontaktperson', RuleResult::OK, 'Två kontaktpersoner har angivits.' ) ];
-				} else {
-					return [ new RuleResult( 'Kontaktperson', RuleResult::WARNING, 'Ni har angett att två personer är kontaktpersoner och lagledare. Vanligtvis räcker det med en.' ) ];
-				}
 			default:
-				return [ new RuleResult( 'Kontaktperson', RuleResult::BLOCKER, 'Bara en eller två personer kan vara kontaktpersoner/lagledare.' ) ];
+				return [];
 		}
 	}
 

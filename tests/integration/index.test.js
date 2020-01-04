@@ -130,13 +130,12 @@ describe('wp-tuja', () => {
     const name = faker.lorem.words()
     await goto(`http://localhost:8080/${competitionKey}/anmal`)
     await expectPageTitle(`Anmäl er till ${competitionName}`)
-    const teamLeader = faker.helpers.contextualCard()
     await click('#tuja-group__age-0')
     await type('#tuja-group__name', name)
-    await type('#tuja-person__name', teamLeader.name)
-    await type('#tuja-person__email', teamLeader.email)
+    await type('#tuja-person__name', 'Amber')
+    await type('#tuja-person__email', 'amber@example.com')
     await type('#tuja-person__phone', '070-123456')
-    await type('#tuja-person__pno', '1980-01-01')
+    await type('#tuja-person__pno', '19800101-1234')
     if (isAutomaticallyAccepted) {
       await expectToContain('#tuja_signup_button', 'Anmäl lag')
     } else {
@@ -153,7 +152,7 @@ describe('wp-tuja', () => {
     const portalUrl = await groupPortalLinkNode.evaluate(node => node.href)
     const key = await groupPortalLinkNode.evaluate(node => node.dataset.groupKey)
     const id = await groupPortalLinkNode.evaluate(node => node.dataset.groupId)
-    return { key, id, portalUrl, name, teamLeader }
+    return { key, id, portalUrl, name }
   }
 
   const initAdminPage = async () => {
@@ -1016,6 +1015,69 @@ describe('wp-tuja', () => {
         await expectFormValue('input#tuja-person__food', food)
       })
 
+      it('should evaluate registration rules for team size', async () => {
+        const tempGroupProps = await signUpTeam()
+
+        await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
+
+        const saveAndVerify = async (isTeamSizeWarningExpected) => {
+          await clickLink('button[name="tuja-action"]')
+          await expectSuccessMessage('Ändringarna har sparats.')
+
+          await goto(`http://localhost:8080/${tempGroupProps.key}`)
+          await takeScreenshot()
+          if (isTeamSizeWarningExpected) {
+            await expectWarningMessage('Anmälan är inte riktigt komplett.')
+          } else {
+            await expectElementCount('.tuja-message-warning', 0)
+          }
+
+          await goto(`http://localhost:8080/${tempGroupProps.key}/status`)
+          await takeScreenshot()
+          if (isTeamSizeWarningExpected) {
+            await expectElementCount('.tuja-group-status-blocker-message', 1)
+            await expectElementCount('.tuja-group-status-warning-message', 0)
+          } else {
+            await expectElementCount('.tuja-group-status-blocker-message', 0)
+            await expectElementCount('.tuja-group-status-warning-message', 0)
+          }
+
+          await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
+        }
+
+        const addCompetingTeamMember = async (name, birthDate) => {
+          await click('div.tuja-person-role-regular_group_member button.tuja-add-person')
+          await type('div.tuja-person-role-regular_group_member div.tuja-signup-person:last-child input[name^="tuja-person__name__"]', name)
+          await type('div.tuja-person-role-regular_group_member div.tuja-signup-person:last-child input[name^="tuja-person__pno__"]', birthDate)
+        }
+
+        // Add two team members (and verify that a warning is shown about TOO FEW competing team members, and that the group sign-up status is INCOMPLETE)
+        await addCompetingTeamMember('Bob', '20001010-1234')
+        await addCompetingTeamMember('Carol', '20011011-1234')
+        await saveAndVerify(true)
+
+        // Add one extra contact (and verify that a warning is still shown about too few competing team members, and that the group sign-up status is INCOMPLETE)
+        await click('div.tuja-person-role-extra_contact button.tuja-add-person')
+        await type('div.tuja-person-role-extra_contact input[name^="tuja-person__email__"]', 'extra-contact@example.com')
+        await saveAndVerify(true)
+
+        // Add one team member (and verify that a warning is no longer shown, and that the group sign-up status is ACCEPTED)
+        await addCompetingTeamMember('Dave', '20021012-1234')
+        await saveAndVerify(false)
+
+        // Add five team members (and verify that warning about TOO MANY competing team members, and that the group sign-up status is INCOMPLETE)
+        await addCompetingTeamMember('Emily', '20031013-1234')
+        await addCompetingTeamMember('Fred', '20041014-1234')
+        await addCompetingTeamMember('Grace', '20051015-1234')
+        await addCompetingTeamMember('Henry', '20061016-1234')
+        await addCompetingTeamMember('Isabella', '20071017-1234')
+        await saveAndVerify(true)
+
+        // Remove one team member (and verify that a warning is no longer shown, and that the group sign-up status is ACCEPTED)
+        await click('div.tuja-person-role-regular_group_member div.tuja-signup-person:last-child button.tuja-delete-person')
+        await saveAndVerify(false)
+      })
+
       it('should be possible to edit team members', async () => {
         const tempGroupProps = await signUpTeam()
 
@@ -1031,8 +1093,8 @@ describe('wp-tuja', () => {
         await expectElementCount('div.tuja-person-role-adult_supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
         await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person', 0)
 
-        await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__name__"]', tempGroupProps.teamLeader.name)
-        await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__email__"]', tempGroupProps.teamLeader.email)
+        await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__name__"]', 'Amber')
+        await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__email__"]', 'amber@example.com')
         await expectFormValue('div.tuja-person-role-group_leader input[name^="tuja-person__phone__"]', '+4670123456')
 
         //

@@ -8,8 +8,7 @@ use tuja\util\rules\RegistrationEvaluator;
 use tuja\util\StateMachine;
 use tuja\util\StateMachineException;
 
-class Group
-{
+class Group {
 	private static $group_calculators = [];
 
 	const STATUS_CREATED = 'created';
@@ -75,16 +74,16 @@ class Group
 	public $is_always_editable = false;
 
 	public function __construct( $random_id = null ) {
-		$this->status = new StateMachine( null, self::STATUS_TRANSITIONS );
+		$this->status    = new StateMachine( null, self::STATUS_TRANSITIONS );
 		$this->random_id = $random_id;
 	}
 
 	public function validate() {
-		if ( strlen(trim($this->name)) < 1) {
-			throw new ValidationException('name', 'Namnet måste fyllas i.');
+		if ( strlen( trim( $this->name ) ) < 1 ) {
+			throw new ValidationException( 'name', 'Namnet måste fyllas i.' );
 		}
-		if ( strlen($this->name) > 100) {
-			throw new ValidationException('name', 'Namnet får inte vara längre än 100 bokstäver.');
+		if ( strlen( $this->name ) > 100 ) {
+			throw new ValidationException( 'name', 'Namnet får inte vara längre än 100 bokstäver.' );
 		}
 		if ( $this->get_status() == null ) {
 			throw new ValidationException( 'status', 'Status måste vara satt.' );
@@ -103,7 +102,7 @@ class Group
 		}
 	}
 
-	public function evaluate_registration() {
+	public function evaluate_registration(): array {
 		$category = $this->get_derived_group_category();
 		if ( isset( $category ) ) {
 			$rule_set  = $category->get_rule_set();
@@ -129,6 +128,10 @@ class Group
 
 	public function get_status_changes() {
 		return $this->status->get_state_changes();
+	}
+
+	public function clear_status_changes() {
+		$this->status->clear_status_changes();
 	}
 
 }

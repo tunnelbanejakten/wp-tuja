@@ -26,7 +26,8 @@ class Controller {
 			new GroupHomeInitiator(),
 			new GroupTicketsInitiator(),
 			new FormInitiator(),
-			new PointsOverrideInitiator()
+			new PointsOverrideInitiator(),
+			new GroupStatusInitiator()
 		];
 	}
 

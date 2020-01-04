@@ -45,6 +45,7 @@ class PersonEditor extends AbstractGroupView {
 
 						return;
 					}
+					$this->group_dao->run_registration_rules( $group );
 				} else {
 					$errors = [ '__' => 'Tyvärr så kan anmälningar inte ändras nu.' ];
 				}

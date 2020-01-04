@@ -5,9 +5,9 @@ namespace tuja\frontend;
 
 use Exception;
 use tuja\data\model\Group;
-use tuja\data\store\GroupDao;
 use tuja\frontend\router\GroupEditorInitiator;
 use tuja\frontend\router\GroupPeopleEditorInitiator;
+use tuja\frontend\router\GroupStatusInitiator;
 use tuja\frontend\router\GroupTicketsInitiator;
 
 class GroupHome extends AbstractGroupView {
@@ -17,9 +17,17 @@ class GroupHome extends AbstractGroupView {
 
 	function output() {
 		try {
-			$group            = $this->get_group();
+			$group = $this->get_group();
 
 			$this->check_group_status( $group );
+
+			if ( $group->get_status() == Group::STATUS_INCOMPLETE_DATA ) {
+				$rule_result        = $group->evaluate_registration();
+				$incomplete_message = sprintf(
+					'<p class="tuja-message tuja-message-warning">Anmälan är inte riktigt komplett. <br><a href="%s">Visa problem med anmälan</a></p>',
+					GroupStatusInitiator::link( $group )
+				);
+			}
 
 			$edit_group_link  = GroupEditorInitiator::link( $group );
 			$edit_people_link = GroupPeopleEditorInitiator::link( $group );

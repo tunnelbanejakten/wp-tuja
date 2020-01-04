@@ -40,7 +40,7 @@ class GroupSignup extends AbstractGroupView {
 				if ( $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
 					$this->validate_recaptcha_html();
 
-					// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
+					// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an error of error messages.
 					$new_person = $this->create_person( $group );
 
 					$edit_link = PersonEditorInitiator::link( $group, $new_person );
@@ -52,6 +52,8 @@ class GroupSignup extends AbstractGroupView {
 					} else {
 						printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>' );
 					}
+
+					$this->group_dao->run_registration_rules( $group );
 
 					return;
 				}

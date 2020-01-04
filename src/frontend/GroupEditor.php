@@ -169,6 +169,7 @@ class GroupEditor extends AbstractGroupView {
 				if ( $affected_rows === false ) {
 					$overall_success = false;
 				}
+				$this->group_dao->run_registration_rules( $group );
 			} catch ( ValidationException $e ) {
 				$validation_errors[ $e->getField() ] = $e->getMessage();
 				$overall_success                     = false;

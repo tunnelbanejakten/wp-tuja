@@ -174,7 +174,7 @@ class Group {
 		}, $points_overrides ), array_values( $points_overrides ) );
 
 		$person_dao = new PersonDao();
-		$people     = $person_dao->get_all_in_group( $group->id );
+		$people     = $person_dao->get_all_in_group( $group->id, true );
 
 		$registration_evaluation = $group->evaluate_registration();
 

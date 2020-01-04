@@ -12,8 +12,7 @@ use tuja\util\Database;
 use tuja\util\Id;
 use tuja\util\Phone;
 
-class PersonDao extends AbstractDao
-{
+class PersonDao extends AbstractDao {
 	const QUERY_COLUMNS = 'p.*, pp.*, (DATEDIFF(CURDATE(), STR_TO_DATE(LEFT(pp.pno, 8), \'%%Y%%m%%d\')) / 365.25) age';
 
 	private $props_table;
@@ -61,19 +60,19 @@ class PersonDao extends AbstractDao
 	private function add_record( Person $person, $status = Person::STATUS_CREATED ) {
 		$affected_rows = $this->wpdb->insert( $this->props_table,
 			array(
-				'person_id'       => $person->id,
-				'created_at'      => self::to_db_date( new DateTime() ),
-				'status'          => $status,
+				'person_id'  => $person->id,
+				'created_at' => self::to_db_date( new DateTime() ),
+				'status'     => $status,
 
-				'name'                          => $person->name,
-				'team_id'                       => $person->group_id,
-				'phone'                         => $person->phone,
-				'email'                         => $person->email,
-				'food'                          => $person->food,
-				'is_competing'                  => $person->is_competing() ? 1 : 0,
-				'is_team_contact'               => $person->is_contact() ? 1 : 0,
-				'is_attending'                  => $person->is_attending() ? 1 : 0,
-				'pno'                           => DateUtils::fix_pno( $person->pno )
+				'name'            => $person->name,
+				'team_id'         => $person->group_id,
+				'phone'           => $person->phone,
+				'email'           => $person->email,
+				'food'            => $person->food,
+				'is_competing'    => $person->is_competing() ? 1 : 0,
+				'is_team_contact' => $person->is_contact() ? 1 : 0,
+				'is_attending'    => $person->is_attending() ? 1 : 0,
+				'pno'             => DateUtils::fix_pno( $person->pno )
 			),
 			array(
 				'%d',
@@ -157,8 +156,8 @@ class PersonDao extends AbstractDao
 		return null;
 	}
 
-	function get_all_in_group( $group_id, $date = null ) {
-		return $this->get_objects(
+	function get_all_in_group( $group_id, $include_deleted = false, $date = null ) {
+		$objects = $this->get_objects(
 			function ( $row ) {
 				return self::to_person( $row );
 			},
@@ -180,10 +179,14 @@ class PersonDao extends AbstractDao
 				)',
 			$group_id,
 			self::to_db_date( $date ?: new DateTime() ) );
+
+		return $include_deleted ? $objects : array_filter( $objects, function ( Person $person ) {
+			return $person->get_status() != Person::STATUS_DELETED;
+		} );
 	}
 
-	function get_all_in_competition( $competition_id, $date = null ) {
-		return $this->get_objects(
+	function get_all_in_competition( $competition_id, $include_deleted = false, $date = null ) {
+		$objects = $this->get_objects(
 			function ( $row ) {
 				return self::to_person( $row );
 			},
@@ -208,6 +211,10 @@ class PersonDao extends AbstractDao
 				)',
 			$competition_id,
 			self::to_db_date( $date ?: new DateTime() ) );
+
+		return $include_deleted ? $objects : array_filter( $objects, function ( Person $person ) {
+			return $person->get_status() != Person::STATUS_DELETED;
+		} );
 	}
 
 	function anonymize( $group_ids = [], $exclude_contacts = false ) {
@@ -279,18 +286,18 @@ class PersonDao extends AbstractDao
 	}
 
 	private static function to_person( $result ): Person {
-		$p                   = new Person();
-		$p->id               = $result->person_id;
-		$p->random_id        = $result->random_id;
-		$p->name             = $result->name;
-		$p->group_id         = $result->team_id;
-		$p->phone            = Phone::fix_phone_number( $result->phone ); // TODO: Should normalizing the phone number be something we do when we read it from the database? Why not when stored?
-		$p->phone_verified   = $result->phone_verified;
-		$p->email            = $result->email;
-		$p->email_verified   = $result->email_verified;
-		$p->food             = $result->food;
-		$p->pno              = $result->pno;
-		$p->age              = $result->age;
+		$p                 = new Person();
+		$p->id             = $result->person_id;
+		$p->random_id      = $result->random_id;
+		$p->name           = $result->name;
+		$p->group_id       = $result->team_id;
+		$p->phone          = Phone::fix_phone_number( $result->phone ); // TODO: Should normalizing the phone number be something we do when we read it from the database? Why not when stored?
+		$p->phone_verified = $result->phone_verified;
+		$p->email          = $result->email;
+		$p->email_verified = $result->email_verified;
+		$p->food           = $result->food;
+		$p->pno            = $result->pno;
+		$p->age            = $result->age;
 		$p->set_status( $result->status );
 		$p->set_role_flags(
 			$result->is_competing != 0,

@@ -22,7 +22,7 @@ class ReportPayments extends AbstractReport {
 		$fee_competing = isset( $_GET['tuja_reports_fee_competing'] ) ? intval($_GET['tuja_reports_fee_competing']) : 0;
 
 		return array_map( function ( Group $group ) use ( $date, $fee_competing ) {
-			$people = ( new PersonDao() )->get_all_in_group( $group->id, $date );
+			$people = ( new PersonDao() )->get_all_in_group( $group->id, false, $date );
 
 			$amount = $fee_competing * $group->count_competing;
 

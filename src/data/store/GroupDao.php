@@ -4,20 +4,21 @@ namespace tuja\data\store;
 
 use DateTime;
 use Exception;
+use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
-use tuja\data\model\Group;
 use tuja\util\Anonymizer;
 use tuja\util\Database;
 use tuja\util\messaging\EventMessageSender;
+use tuja\util\rules\RuleResult;
 
 class GroupDao extends AbstractDao {
 	private $props_table;
 
 	function __construct() {
 		parent::__construct();
-		$this->table                 = Database::get_table( 'team' );
-		$this->props_table           = Database::get_table( 'team_properties' );
+		$this->table       = Database::get_table( 'team' );
+		$this->props_table = Database::get_table( 'team_properties' );
 	}
 
 	function create( Group $group ) {
@@ -68,6 +69,34 @@ class GroupDao extends AbstractDao {
 		return $success;
 	}
 
+	/**
+	 * Evaluate the group's registration and change the group's status if necessary.
+	 *
+	 * @param Group $group
+	 */
+	function run_registration_rules( Group $group ) {
+		$current_group_status = $group->get_status();
+		if ( $current_group_status == Group::STATUS_INCOMPLETE_DATA || $current_group_status == Group::STATUS_ACCEPTED ) {
+
+			$evaluation_result   = $group->evaluate_registration();
+			$registration_errors = array_filter( $evaluation_result, function ( RuleResult $rule_result ) {
+				return $rule_result->status == RuleResult::BLOCKER;
+			} );
+
+			$is_complete_registration = count( $registration_errors ) == 0;
+			try {
+				if ( ! $is_complete_registration && $current_group_status == Group::STATUS_ACCEPTED ) {
+					$group->set_status( Group::STATUS_INCOMPLETE_DATA );
+					$this->add_record( $group );
+				} elseif ( $is_complete_registration && $current_group_status == Group::STATUS_INCOMPLETE_DATA ) {
+					$group->set_status( Group::STATUS_ACCEPTED );
+					$this->add_record( $group );
+				}
+			} catch ( ValidationException $e ) {
+			}
+		}
+	}
+
 	private function add_record( Group $group ) {
 		$affected_rows = $this->wpdb->insert( $this->props_table,
 			array(
@@ -93,6 +122,10 @@ class GroupDao extends AbstractDao {
 			try {
 				$change_message_sender = new EventMessageSender();
 				$change_message_sender->send_group_status_change_messages( $group );
+
+				// Empty the list of status changes so that we don't sent the same message twice
+				// if/when add_record is called multiple times during a page load.
+				$group->clear_status_changes();
 			} catch ( Exception $e ) {
 				var_dump( $e );
 			}
@@ -161,21 +194,21 @@ class GroupDao extends AbstractDao {
 		$g->is_always_editable = $result->is_always_editable;
 		$g->set_status( $result->status );
 
-		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, $date );
+		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, true, $date );
 		$people_competing          = array_filter( $people, function ( Person $person ) {
 			return $person->is_competing();
 		} );
 		$people_competing_with_age = array_filter( $people, function ( Person $person ) {
 			return $person->is_competing() && $person->age > 0;
 		} );
-		$g->age_competing_avg = count( $people_competing_with_age ) > 0 ? array_sum(
-			                        array_map(
-				                        function ( Person $person ) {
-					                        return $person->age;
-				                        },
-				                        $people_competing_with_age ) )
-		                        / count( $people_competing_with_age ) : null;
-		$g->age_competing_min = array_reduce(
+		$g->age_competing_avg      = count( $people_competing_with_age ) > 0 ? array_sum(
+			                                                                       array_map(
+				                                                                       function ( Person $person ) {
+					                                                                       return $person->age;
+				                                                                       },
+				                                                                       $people_competing_with_age ) )
+		                                                                       / count( $people_competing_with_age ) : null;
+		$g->age_competing_min      = array_reduce(
 			array_map(
 				function ( Person $person ) {
 					return $person->age;
@@ -185,7 +218,7 @@ class GroupDao extends AbstractDao {
 				return $min === null || $age < $min ? $age : $min;
 			},
 			null );
-		$g->age_competing_max = array_reduce(
+		$g->age_competing_max      = array_reduce(
 			array_map(
 				function ( Person $person ) {
 					return $person->age;

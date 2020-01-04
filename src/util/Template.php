@@ -6,15 +6,17 @@ use tuja\data\model\Competition;
 use tuja\frontend\router\CompetitionSignupInitiator;
 use tuja\frontend\router\GroupEditorInitiator;
 use tuja\frontend\router\GroupHomeInitiator;
+use tuja\frontend\router\GroupPeopleEditorInitiator;
 use tuja\frontend\router\GroupSignupInitiator;
+use tuja\frontend\router\GroupStatusInitiator;
+use tuja\frontend\router\GroupTicketsInitiator;
 use tuja\frontend\router\PersonEditorInitiator;
 use tuja\util\markdown\Parsedown;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\util\rules\RuleResult;
 
-class Template
-{
+class Template {
 	private $content;
 
 	private function __construct( $content ) {
@@ -65,8 +67,10 @@ class Template
 			'group_key'                              => $group->random_id,
 			'group_home_link'                        => GroupHomeInitiator::link( $group ),
 			'group_edit_link'                        => GroupEditorInitiator::link( $group ),
-			'group_edit_link'                        => GroupEditorInitiator::link( $group ),
+			'group_people_edit_link'                 => GroupPeopleEditorInitiator::link( $group ),
 			'group_signup_link'                      => GroupSignupInitiator::link( $group ),
+			'group_status_link'                      => GroupStatusInitiator::link( $group ),
+			'group_tickets_link'                     => GroupTicketsInitiator::link( $group ),
 			'group_registration_evaluation_warnings' => self::group_parameter_registration_issues( 'Sådant som ni **borde** fixa:', $evaluation_result, RuleResult::WARNING ),
 			'group_registration_evaluation_errors'   => self::group_parameter_registration_issues( 'Sådant som ni **måste** fixa för att få starta:', $evaluation_result, RuleResult::BLOCKER )
 		];

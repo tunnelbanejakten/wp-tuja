@@ -55,6 +55,8 @@ class CompetitionSignup extends FrontendView {
 				$edit_people_link = GroupPeopleEditorInitiator::link( $new_group );
 				$support_email    = get_bloginfo( 'admin_email' );
 
+				$this->group_dao->run_registration_rules( $new_group );
+
 				if ( $new_group->get_status() == Group::STATUS_AWAITING_APPROVAL ) {
 					printf( '
 						<p class="tuja-message tuja-message-warning">Ert lag står på väntelistan.</p>
@@ -80,7 +82,7 @@ class CompetitionSignup extends FrontendView {
 						</p>
 						<p>
 							På <a href="%s" id="tuja_group_home_link" data-group-id="%d" data-group-key="%s">%s</a> kan ni göra andra 
-							administrative saker, bland annat byta lagets namn eller tävlingsklass om det skulle behövas.
+							administrativa saker, bland annat byta lagets namn eller tävlingsklass om det skulle behövas.
 						</p>
 						<p>
 							Vi har också skickat länkarna till din e-postadress.

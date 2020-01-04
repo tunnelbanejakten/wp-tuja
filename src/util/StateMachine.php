@@ -41,4 +41,8 @@ class StateMachine {
 		return $this->state_changes;
 	}
 
+	public function clear_status_changes() {
+		$this->state_changes = [];
+	}
+
 }

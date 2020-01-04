@@ -41,6 +41,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 					if ( empty( $errors ) ) {
 						printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
 					}
+					$this->group_dao->run_registration_rules( $group );
 				} catch ( RuleEvaluationException $e ) {
 					$errors = array( '__' => $e->getMessage() );
 				}
@@ -405,8 +406,6 @@ class GroupPeopleEditor extends AbstractGroupView {
 	}
 
 	private function get_current_group_members(): array {
-		return array_filter( $this->person_dao->get_all_in_group( $this->get_group()->id ), function ( Person $person ) {
-			return $person->get_status() != Person::STATUS_DELETED;
-		} );
+		return $this->person_dao->get_all_in_group( $this->get_group()->id );
 	}
 }
