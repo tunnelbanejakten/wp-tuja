@@ -60,6 +60,10 @@ class PageWrapper {
     await this.expectToContain('.tuja-message-warning', expected)
   }
 
+  async expectInfoMessage (expected) {
+    await this.expectToContain('.tuja-message-info', expected)
+  }
+
   async expectErrorMessage (expected) {
     await this.expectToContain('.tuja-message-error', expected)
   }
@@ -113,6 +117,7 @@ const goto = async (url, waitForNetwork = false) => defaultPage.goto(url, waitFo
 const clickLink = async (selector) => defaultPage.clickLink(selector)
 const expectToContain = async (selector, expected) => defaultPage.expectToContain(selector, expected)
 const expectSuccessMessage = async (expected) => defaultPage.expectSuccessMessage(expected)
+const expectInfoMessage = async (expected) => defaultPage.expectInfoMessage(expected)
 const expectWarningMessage = async (expected) => defaultPage.expectWarningMessage(expected)
 const expectErrorMessage = async (expected) => defaultPage.expectErrorMessage(expected)
 const expectFormValue = async (selector, expected) => defaultPage.expectFormValue(selector, expected)
@@ -1025,7 +1030,6 @@ describe('wp-tuja', () => {
           await expectSuccessMessage('Ändringarna har sparats.')
 
           await goto(`http://localhost:8080/${tempGroupProps.key}`)
-          await takeScreenshot()
           if (isTeamSizeWarningExpected) {
             await expectWarningMessage('Anmälan är inte riktigt komplett.')
           } else {
@@ -1033,7 +1037,6 @@ describe('wp-tuja', () => {
           }
 
           await goto(`http://localhost:8080/${tempGroupProps.key}/status`)
-          await takeScreenshot()
           if (isTeamSizeWarningExpected) {
             await expectElementCount('.tuja-group-status-blocker-message', 1)
             await expectElementCount('.tuja-group-status-warning-message', 0)
@@ -1395,6 +1398,44 @@ describe('wp-tuja', () => {
       await clickLink('button[name="tuja-action"]')
 
       await expectErrorMessage(expectedErrorMessage)
+    })
+  })
+
+  describe('Checking in', () => {
+    it('basic tests', async () => {
+      const tempGroupProps = await signUpTeam()
+
+      // cannot check in unless status is AWAITING_CHECKIN
+      await goto(`http://localhost:8080/${tempGroupProps.key}/incheckning`)
+      await expectErrorMessage('Incheckningen är inte öppen för ert lag.')
+      await expectElementCount('button', 0)
+      await expectElementCount('input', 0)
+
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${tempGroupProps.id}`)
+      await adminPage.clickLink('button[name="tuja_points_action"][value="transition__accepted"]')
+      await adminPage.clickLink('button[name="tuja_points_action"][value="transition__awaiting_checkin"]')
+
+      // message shown when team answers NO
+      await goto(`http://localhost:8080/${tempGroupProps.key}/incheckning`)
+      await click('#tuja-checkin-answer-1')
+      await clickLink('button[name="tuja-action"]')
+      await expectInfoMessage('Okej, då behöver ni gå till Kundtjänst.')
+      await expectElementCount('button', 0)
+      await expectElementCount('input', 0)
+
+      // message shown when team answers YES
+      await goto(`http://localhost:8080/${tempGroupProps.key}/incheckning`)
+      await click('#tuja-checkin-answer-0')
+      await clickLink('button[name="tuja-action"]')
+      await expectSuccessMessage('Tack, ni är nu incheckade.')
+      await expectElementCount('button', 0)
+      await expectElementCount('input', 0)
+
+      // cannot check in when status is CHECKEDIN
+      await goto(`http://localhost:8080/${tempGroupProps.key}/incheckning`)
+      await expectSuccessMessage('Ni är redan incheckade.')
+      await expectElementCount('button', 0)
+      await expectElementCount('input', 0)
     })
   })
 })
