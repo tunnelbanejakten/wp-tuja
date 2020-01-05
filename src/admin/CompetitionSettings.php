@@ -10,11 +10,13 @@ use tuja\data\model\ValidationException;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\MessageTemplateDao;
+use tuja\data\store\StringsDao;
 use tuja\util\DateUtils;
 use tuja\util\messaging\EventMessageSender;
 use tuja\util\rules\CrewMembersRuleSet;
 use tuja\util\rules\OlderParticipantsRuleSet;
 use tuja\util\rules\YoungParticipantsRuleSet;
+use tuja\util\Strings;
 
 class CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
@@ -27,8 +29,10 @@ class CompetitionSettings {
 	];
 
 	public function handle_post() {
-		if(!isset($_POST['tuja_competition_settings_action'])) return;
-		
+		if ( ! isset( $_POST['tuja_competition_settings_action'] ) ) {
+			return;
+		}
+
 		$competition_dao = new CompetitionDao();
 		$competition     = $competition_dao->get( $_GET['tuja_competition'] );
 
@@ -40,6 +44,7 @@ class CompetitionSettings {
 			$this->competition_settings_save_other( $competition );
 			$this->competition_settings_save_groups( $competition );
 			$this->competition_settings_save_message_templates( $competition );
+			$this->competition_settings_save_strings( $competition );
 		}
 	}
 
@@ -60,7 +65,7 @@ class CompetitionSettings {
 			return is_file( __DIR__ . '/default_message_templates/' . $file );
 		} );
 
-		$default_message_templates = join('<br>',  array_map(
+		$default_message_templates = join( '<br>', array_map(
 			function ( $filename ) {
 				$config = parse_ini_file( __DIR__ . '/default_message_templates/' . $filename );
 				if ( $config === false ) {
@@ -409,5 +414,26 @@ class CompetitionSettings {
 		$event_options[ EventMessageSender::new_group_member_event_name( false ) ] = 'person anmäler sig till deltagarlag';
 
 		return $event_options;
+	}
+
+	private function competition_settings_save_strings( Competition $competition ) {
+		$final_list   = Strings::get_list();
+		$default_list = Strings::get_default_list();
+
+		$updated_list = [];
+		foreach ( array_keys( $final_list ) as $key ) {
+			$submitted_value = @$_POST[ self::string_field_name( $key ) ];
+			if ( ! empty( $submitted_value ) && $submitted_value != $default_list[ $key ] ) {
+				$updated_list[ $key ] = $submitted_value;
+			}
+		}
+
+		( new StringsDao() )->set_all( $competition->id, $updated_list );
+
+		Strings::init( $competition->id, true );
+	}
+
+	public static function string_field_name( string $key ) {
+		return 'tuja_strings__' . str_replace( '.', '_', $key );
 	}
 }

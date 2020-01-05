@@ -216,6 +216,14 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'string' ) . ' (
+				competition_id  INTEGER NOT NULL,
+				name            VARCHAR(100),
+				value           TEXT,
+				PRIMARY KEY (competition_id, name)
+			) ' . $charset;
+
+		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'station' ) . ' (
 				id                      INTEGER AUTO_INCREMENT PRIMARY KEY,
 				random_id               VARCHAR(20),
@@ -284,6 +292,8 @@ abstract class Plugin {
 			[ 'team_category', 'competition_id', 'competition', 'CASCADE' ],
 
 			[ 'message_template', 'competition_id', 'competition', 'CASCADE' ],
+
+			[ 'string', 'competition_id', 'competition', 'CASCADE' ],
 
 			[ 'station', 'competition_id', 'competition', 'CASCADE' ],
 

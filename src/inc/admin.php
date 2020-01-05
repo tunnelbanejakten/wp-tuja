@@ -4,6 +4,7 @@ namespace tuja;
 
 use tuja\data\store\CompetitionDao;
 use tuja\data\model\Competition;
+use tuja\util\Strings;
 
 class Admin extends Plugin {
 
@@ -13,6 +14,8 @@ class Admin extends Plugin {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu_item' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'admin_action_tuja_report', array( $this, 'render_report' ) );
+
+		Strings::init( intval( $_GET['tuja_competition'] ) );
 	}
 
 	function render_report() {
@@ -31,7 +34,7 @@ class Admin extends Plugin {
 
 
 	public function add_admin_menu_item() {
-		add_menu_page( 'Tunnelbanejakten', 'Tunnelbanejakten', 'edit_pages', static::SLUG, array($this, 'route') );
+		add_menu_page( 'Tunnelbanejakten', 'Tunnelbanejakten', 'edit_pages', static::SLUG, array( $this, 'route' ) );
 	}
 
 	public function assets() {
@@ -56,11 +59,11 @@ class Admin extends Plugin {
 	}
 
 	public function route() {
-		if(empty($_GET['tuja_view'])) {
+		if ( empty( $_GET['tuja_view'] ) ) {
 			$db_competition = new CompetitionDao();
 
-			if(isset($_POST['tuja_action']) && ($_POST['tuja_action'] === 'competition_create')) {
-				$props = new Competition();
+			if ( isset( $_POST['tuja_action'] ) && ( $_POST['tuja_action'] === 'competition_create' ) ) {
+				$props       = new Competition();
 				$props->name = $_POST['tuja_competition_name'];
 				$db_competition->create( $props );
 			}

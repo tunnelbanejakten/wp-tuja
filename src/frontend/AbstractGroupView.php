@@ -13,6 +13,7 @@ use tuja\data\store\GroupDao;
 use tuja\data\store\MessageTemplateDao;
 use tuja\data\store\PersonDao;
 use tuja\util\messaging\MessageSender;
+use tuja\util\Strings;
 use tuja\util\WarningException;
 
 abstract class AbstractGroupView extends FrontendView {
@@ -48,6 +49,12 @@ abstract class AbstractGroupView extends FrontendView {
 
 		return $group;
 	}
+
+	function get_content() {
+		Strings::init($this->get_group()->competition_id);
+		return parent::get_content();
+	}
+
 
 	function get_title() {
 		try {
