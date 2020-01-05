@@ -9,8 +9,7 @@ use tuja\util\messaging\OutgoingEmailMessage;
 use tuja\util\messaging\OutgoingSMSMessage;
 use tuja\util\Template;
 
-class MessageTemplate
-{
+class MessageTemplate {
 	const SMS = 'sms';
 	const EMAIL = 'email';
 
@@ -47,14 +46,18 @@ class MessageTemplate
 				return new OutgoingSMSMessage(
 					new MessageSender(),
 					$contact,
-					Template::string( $this->body )->render( $template_parameters, false ) );
+					$this->render_body( $template_parameters, true ) );
 			case self::EMAIL:
 				return new OutgoingEmailMessage(
 					new MessageSender(),
 					$contact,
-					Template::string( $this->body )->render( $template_parameters, true ),
+					$this->render_body( $template_parameters ),
 					Template::string( $this->subject )->render( $template_parameters ) );
 		}
 		throw new Exception( 'Invalid type: ' . $this->delivery_method );
+	}
+
+	public function render_body( $template_parameters, $is_plaintext = false ) {
+		return Template::string( $this->body )->render( $template_parameters, ! $is_plaintext );
 	}
 }

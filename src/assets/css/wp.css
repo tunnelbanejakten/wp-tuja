@@ -116,6 +116,12 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
     background-color: #deffde;
 }
 
+.tuja-message.tuja-message-info {
+    border-color: #81a6f0;
+    color: #002e8a;
+    background-color: #e0ebff;
+}
+
 .tuja-robot-check {
     margin: 1em 0;
 }
