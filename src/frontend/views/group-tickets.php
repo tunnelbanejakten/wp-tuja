@@ -1,6 +1,7 @@
 <?php
 
 use tuja\data\model\Ticket;
+use tuja\util\Strings;
 
 ?>
 <form method="post">
@@ -13,20 +14,18 @@ use tuja\data\model\Ticket;
 			print( join( array_map( function ( Ticket $ticket ) {
 				return sprintf( '
                     <div class="tuja-ticket" style="background-color: %s">
-                        <div class="tuja-ticket-station">Biljett för kontroll <strong>%s</strong></div>
-                        <div class="tuja-ticket-word-description">
-                            När ni kommer till kontrollen ska ni visa den här biljetten på 
-                            er mobil eller säga detta lösen:
-                        </div>
+                        <div class="tuja-ticket-station">%s</div>
+                        <div class="tuja-ticket-word-description">%s</div>
                         <div class="tuja-ticket-word">%s</div>
                     </div>',
 					$ticket->colour,
-					$ticket->station->name,
+					Strings::get( 'group_tickets.ticket.station', sprintf( '<strong>%s</strong>', $ticket->station->name ) ),
+					Strings::get( 'group_tickets.ticket.word_description' ),
 					$ticket->word
 				);
 			}, $tickets ) ) );
 		} else {
-			printf( '<p>Ni har ännu inte några biljetter.</p>' );
+			printf( '<p>%s</p>', Strings::get( 'group_tickets.ticket.no_tickets_yet' ) );
 		}
 		?>
     </div>

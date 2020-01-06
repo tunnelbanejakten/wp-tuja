@@ -25,9 +25,6 @@ class Template {
 	}
 
 	public function render( $parameters = array(), $is_markdown = false ) {
-		if ( $is_markdown ) {
-			$parameters = array_map( 'htmlspecialchars', $parameters );
-		}
 		$rendered_content = $this->content;
 		foreach ( $parameters as $name => $value ) {
 			$rendered_content = str_replace( '{{' . $name . '}}', $value, $rendered_content );

@@ -6,6 +6,7 @@ namespace tuja\frontend;
 use Exception;
 use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
+use tuja\util\Strings;
 use tuja\view\FieldEmail;
 use tuja\view\FieldPhone;
 use tuja\view\FieldPno;
@@ -93,7 +94,7 @@ class PersonEditor extends AbstractGroupView {
 		}
 
 		if ( $show_pno ) {
-			$person_name_question = new FieldPno( 'Födelsedag och sånt', 'Vi rekommenderar att du fyller i fullständigt personnummer.', $read_only );
+			$person_name_question = new FieldPno( 'Födelsedag och sånt', Strings::get('person.form.pno.hint'), $read_only );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, @$errors['pno'], $person->pno );
 		}
 
@@ -108,7 +109,7 @@ class PersonEditor extends AbstractGroupView {
 		}
 
 		if ( $show_food ) {
-			$person_name_question = new FieldText( 'Allergier och matönskemål', 'Arrangemanget är köttfritt och nötfritt. Fyll i här om du har ytterligare behov.', $read_only );
+			$person_name_question = new FieldText( 'Allergier och matönskemål', Strings::get('person.form.food.hint'), $read_only );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, @$errors['food'], $person->food );
 		}
 

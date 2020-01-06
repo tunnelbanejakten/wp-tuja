@@ -76,7 +76,7 @@ class Form {
 
 			$success = $this->db_question_group->create( $group_props );
 
-			$success === 1 ? AdminUtils::printSuccess('Grupp skapad!') : AdminUtils::printError('Kunde inte skapa grupp.');
+			$success !== false ? AdminUtils::printSuccess('Grupp skapad!') : AdminUtils::printError('Kunde inte skapa grupp.');
 		} elseif (substr($_POST['tuja_action'], 0, strlen(self::ACTION_NAME_DELETE_PREFIX)) == self::ACTION_NAME_DELETE_PREFIX) {
 			$question_group_id_to_delete = substr( $_POST['tuja_action'], strlen( self::ACTION_NAME_DELETE_PREFIX ) );
 			$affected_rows = $this->db_question_group->delete( $question_group_id_to_delete );

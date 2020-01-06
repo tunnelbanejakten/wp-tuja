@@ -9,6 +9,7 @@ use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
 use tuja\frontend\router\GroupHomeInitiator;
 use tuja\util\rules\RuleEvaluationException;
+use tuja\util\Strings;
 use tuja\view\FieldEmail;
 use tuja\view\FieldPhone;
 use tuja\view\FieldPno;
@@ -28,7 +29,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		wp_enqueue_script( 'tuja-editgroup-script' ); // Needed?
 
 		try {
-			$group    = $this->get_group();
+			$group = $this->get_group();
 
 			$this->check_group_status( $group );
 
@@ -53,6 +54,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 			if ( $category->get_rule_set()->is_adult_supervisor_required() ) {
 				$form_adult_supervisor = $this->get_form_adult_supervisor_html( $errors );
 			}
+			list ( $group_size_min, $group_size_max ) = $category->get_rule_set()->get_group_size_range();
 			$form_group_contact = $this->get_form_group_contact_html( $errors );
 			$form_group_members = $this->get_form_group_members_html( $errors );
 			$form_save_button   = $this->get_form_save_button_html();
@@ -179,9 +181,9 @@ class GroupPeopleEditor extends AbstractGroupView {
 		} else {
 			// TODO: Should other error messages also contain email link?
 			$html_sections[] = sprintf( '<p class="tuja-message tuja-message-error">%s</p>',
-				sprintf( 'Du kan inte längre ändra er anmälan. Kontakta <a href="mailto:%s">%s</a> om du behöver ändra något.',
-					get_bloginfo( 'admin_email' ),
-					get_bloginfo( 'admin_email' ) ) );
+				Strings::get( 'group_people_editor.read_only.message',
+					sprintf( '<a href="mailto:%s">%s</a>', get_bloginfo( 'admin_email' ), get_bloginfo( 'admin_email' ) ) )
+			);
 		}
 
 		return join( $html_sections );
@@ -237,22 +239,22 @@ class GroupPeopleEditor extends AbstractGroupView {
 		}
 
 		if ( $show_pno ) {
-			$person_name_question = new FieldPno( 'Födelsedag och sånt (ååmmddnnnn)', 'Vi rekommenderar alla att fylla in fullständigt personnummer.', $read_only, true );
+			$person_name_question = new FieldPno( 'Födelsedag och sånt (ååmmddnnnn)', Strings::get( 'person.form.pno.hint' ), $read_only, true );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO . '__' . $random_id, @$errors[ $random_id . '__pno' ], $person->pno );
 		}
 
 		if ( $show_email ) {
-			$person_name_question = new FieldEmail( 'E-postadress', 'Vi skickar ut viktig information inför tävlingen via e-post.', $read_only, true );
+			$person_name_question = new FieldEmail( 'E-postadress', Strings::get( 'person.form.email.hint' ), $read_only, true );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, @$errors[ $random_id . '__email' ], $person->email );
 		}
 
 		if ( $show_phone ) {
-			$person_name_question = new FieldPhone( 'Telefonnummer', 'Vi skickar viktig information under tävlingen via SMS.', $read_only, true );
+			$person_name_question = new FieldPhone( 'Telefonnummer', Strings::get( 'person.form.phone.hint' ), $read_only, true );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, @$errors[ $random_id . '__phone' ], $person->phone );
 		}
 
 		if ( $show_food ) {
-			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', 'Vi bjuder på mackor och fika efter tävlingen.', $read_only, [], true );
+			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', Strings::get( 'person.form.food.hint' ), $read_only, [], true );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD . '__' . $random_id, @$errors[ $random_id . '__food' ], $person->food );
 		}
 

@@ -1,41 +1,46 @@
+<?php
+
+use tuja\util\Strings;
+
+?>
 <form method="post">
-    <?= $errors_overall ?>
+	<?= $errors_overall ?>
 
-    <h2>Lagledare</h2>
+	<?= Strings::get( 'group_people_editor.group_contact.header' ) ?>
     <p>
-        <small>Lagledaren får information via e-post <em>innan</em> tävlingen och via SMS <em>under</em> tävlingen. I övrigt är lagledaren som vem som helst i laget.</small>
+        <small><?= Strings::get( 'group_people_editor.group_contact.description' ) ?></small>
     </p>
 
-    <?= $form_group_contact ?>
+	<?= $form_group_contact ?>
 
-    <h2>Resten av laget</h2>
+    <h2><?= Strings::get( 'group_people_editor.group_members.header' ) ?></h2>
     <p>
-        <small>Ni kan ha 3-7 lagmedlemmar, utöver lagledaren.</small>
+        <small><?= Strings::get( 'group_people_editor.group_members.description', $group_size_min - 1, $group_size_max - 1 ) ?></small>
     </p>
 
-    <?= $form_group_members ?>
+	<?= $form_group_members ?>
 
-    <?php if ( ! empty( $form_adult_supervisor ) ) { ?>
-        <h2>Vuxen som följer med</h2>
+	<?php if ( ! empty( $form_adult_supervisor ) ) { ?>
+        <h2><?= Strings::get( 'group_people_editor.adult_supervisors.header' ) ?></h2>
         <p>
-            <small>I denna tävlingsklass, dvs. <?= $category->name ?>, kräver vi att minst en vuxen går med under dagen. Denna ledare är inte med och tävlar och betalar därför ingen deltagaravgift, men får förstås gratis fika efter tävlingen ändå.</small>
+            <small><?= Strings::get( 'group_people_editor.adult_supervisors.description', $category->name ) ?></small>
         </p>
 
-        <?= $form_adult_supervisor ?>
+		<?= $form_adult_supervisor ?>
 
-    <?php } ?>
+	<?php } ?>
 
-    <h2>Extra kontaktperson</h2>
+    <h2><?= Strings::get( 'group_people_editor.extra_contacts.header' ) ?></h2>
 
     <p>
-        <small>Här kan du ange om vi ska skicka information till någon mer än lagledaren<?= ! empty( $form_adult_supervisor ) ? ' och den vuxna ledaren' :'' ?>. Detta kan vara användbart om lagets anmälan administreras av någon som inte kommer vara med under tävlingsdagen.</small>
+        <small><?= Strings::get( 'group_people_editor.extra_contacts.description' ) ?></small>
     </p>
 
 	<?= $form_extra_contact ?>
 
-    <?= $form_save_button ?>
+	<?= $form_save_button ?>
 
     <p>
-        <?php printf( '<a href="%s">Tillbaka</a>', $home_link ) ?>
+		<?php printf( '<a href="%s">Tillbaka</a>', $home_link ) ?>
     </p>
 </form>

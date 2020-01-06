@@ -6,6 +6,7 @@ namespace tuja\frontend;
 use Exception;
 use tuja\data\store\TicketDao;
 use tuja\frontend\router\GroupHomeInitiator;
+use tuja\util\Strings;
 use tuja\util\ticket\CouponToTicketTsl2020;
 use tuja\view\FieldText;
 
@@ -22,8 +23,8 @@ class GroupTickets extends AbstractGroupView {
 
 	function output() {
 		try {
-			$ticket_dao      = new TicketDao();
-			$group           = $this->get_group();
+			$ticket_dao = new TicketDao();
+			$group      = $this->get_group();
 
 			$this->check_group_status( $group );
 
@@ -36,7 +37,14 @@ class GroupTickets extends AbstractGroupView {
 					$ticket_validator = new CouponToTicketTsl2020();
 					$new_stations     = $ticket_validator->get_tickets_from_coupon_code( $group, $password );
 
-					$success_message = sprintf( '<p class="tuja-message tuja-message-success" data-granted-tickets-count="%d">Ni har fått %s.</p>', count( $new_stations ), count( $new_stations ) == 1 ? 'en ny biljett' : sprintf( '%d nya biljetter', count( $new_stations ) ) );
+					$success_message = sprintf( '<p class="tuja-message tuja-message-success" data-granted-tickets-count="%d">%s</p>',
+						count( $new_stations ),
+						Strings::get(
+							count( $new_stations ) == 1
+								? 'group_tickets.new_tickets.message.one'
+								: 'group_tickets.new_tickets.message.many',
+							count( $new_stations )
+						) );
 					unset( $_POST[ self::FIELD_PASSWORD ] );
 				} catch ( Exception $e ) {
 					$error_message = sprintf( '<p class="tuja-message tuja-message-error">Tyvärr gick något snett. Försök en gång till och om det fortfarande inte fungerar så bör ni kontakta kundtjänst. Felmeddelande: %s.</p>', $e->getMessage() );
@@ -62,9 +70,9 @@ class GroupTickets extends AbstractGroupView {
 
 		$field           = new FieldText(
 			$has_tickets_already ?
-				'Skriv lösenord för att få fler biljetter' :
-				'Skriv lösenord för att få biljetter',
-			'Ni får lösenord från funktionär när ni slutfört en kontroll.' );
+				Strings::get('group_tickets.input_field.label.rest') :
+				Strings::get('group_tickets.input_field.label.first'),
+			Strings::get('group_tickets.input_field.hint') );
 		$html_sections[] = $this->render_field( $field, self::FIELD_PASSWORD, null, @$_POST[ self::FIELD_PASSWORD ] );
 
 		return join( $html_sections );
@@ -74,6 +82,6 @@ class GroupTickets extends AbstractGroupView {
 		return sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s" id="tuja_validate_ticket_button">%s</button></div>',
 			self::ACTION_BUTTON_NAME,
 			self::ACTION_NAME_VALIDATE_TICKET,
-			'Byt lösenordet mot biljetter' );
+			Strings::get('group_tickets.submit.button.label') );
 	}
 }

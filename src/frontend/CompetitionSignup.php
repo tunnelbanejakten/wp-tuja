@@ -14,6 +14,8 @@ use tuja\data\store\PersonDao;
 use tuja\frontend\router\GroupHomeInitiator;
 use tuja\frontend\router\GroupPeopleEditorInitiator;
 use tuja\util\rules\RuleEvaluationException;
+use tuja\util\Strings;
+use tuja\util\Template;
 use tuja\view\FieldChoices;
 use tuja\view\FieldEmail;
 use tuja\view\FieldPhone;
@@ -38,6 +40,12 @@ class CompetitionSignup extends FrontendView {
 		$this->group_dao       = new GroupDao();
 	}
 
+	function get_content() {
+		Strings::init( $this->get_competition()->id );
+
+		return parent::get_content();
+	}
+
 	function output() {
 		global $wpdb;
 
@@ -58,35 +66,17 @@ class CompetitionSignup extends FrontendView {
 				$this->group_dao->run_registration_rules( $new_group );
 
 				if ( $new_group->get_status() == Group::STATUS_AWAITING_APPROVAL ) {
-					printf( '
-						<p class="tuja-message tuja-message-warning">Ert lag står på väntelistan.</p>
-						<p>
-							Det är många som vill vara med i Tunnelbanejakten i år och vi har tyvärr fullt just nu, men
-							vi jobbar febrilt på att hitta ytterligare funktionärer så att vi kan öppna upp för fler
-							lag. Om du känner någon som kan tänka sig att ställa upp som funktionärer så får du gärna
-							höra av dig till <a href="mailto:%s">%s</a>.
-						</p>
-						<p>
-							På <a href="%s" id="tuja_group_home_link" data-group-id="%d" data-group-key="%s">%s</a> kan ni se statusen för
-							er anmälan men vi kontaktar er även via e-post när ni tagits bort från väntelistan.
-						</p>
-						<p>
-							Vi har också skickat länken till din e-postadress.
-						</p>', $support_email, $support_email, $group_home_link, $new_group->id, $new_group->random_id, $group_home_link );
+					printf( '<p class="tuja-message tuja-message-warning">%s</p>', Strings::get( 'competition_signup.submitted.awaiting_approval.warning_message' ) );
+					print Template::string( Strings::get( 'competition_signup.submitted.awaiting_approval.body_text' ) )->render( [
+						'support_email'   => sprintf( '<a href="mailto:%s">%s</a>', $support_email, $support_email ),
+						'group_home_link' => sprintf( '<a href="%s" id="tuja_group_home_link" data-group-id="%d" data-group-key="%s">%s</a>', $group_home_link, $new_group->id, $new_group->random_id, $group_home_link )
+					], true );;
 				} else {
-					printf( '
-						<p class="tuja-message tuja-message-success">Tack för er anmälan!</p>
-						<p>
-							Ni måste nu fylla i vad de andra deltagarna i ert lag heter här:
-							<a href="%s" id="tuja_edit_people_link">%s</a>
-						</p>
-						<p>
-							På <a href="%s" id="tuja_group_home_link" data-group-id="%d" data-group-key="%s">%s</a> kan ni göra andra 
-							administrativa saker, bland annat byta lagets namn eller tävlingsklass om det skulle behövas.
-						</p>
-						<p>
-							Vi har också skickat länkarna till din e-postadress.
-						</p>', $edit_people_link, $edit_people_link, $group_home_link, $new_group->id, $new_group->random_id, $group_home_link );
+					printf( '<p class="tuja-message tuja-message-success">%s</p>', Strings::get( 'competition_signup.submitted.accepted.success_message' ) );
+					print Template::string( Strings::get( 'competition_signup.submitted.accepted.body_text' ) )->render( [
+						'edit_people_link' => sprintf( '<a href="%s" id="tuja_edit_people_link">%s</a>', $edit_people_link, $edit_people_link ),
+						'group_home_link'  => sprintf( '<a href="%s" id="tuja_group_home_link" data-group-id="%d" data-group-key="%s">%s</a>', $group_home_link, $new_group->id, $new_group->random_id, $group_home_link )
+					], true );;
 				}
 
 				return;
@@ -149,13 +139,13 @@ class CompetitionSignup extends FrontendView {
 		$person_name_question = new FieldText( 'Vad heter du?', null, false, [], true );
 		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors[ self::FIELD_PERSON_NAME ] );
 
-		$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', 'Vi kommer skicka viktig information inför tävlingen till denna adress. Ni kan ändra e-postadress senare om det skulle behövas.', false, true );
+		$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', Strings::get( 'competition_signup.form.email.hint' ), false, true );
 		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, $errors[ self::FIELD_PERSON_EMAIL ] );
 
-		$person_phone_question = new FieldPhone( 'Vilket telefonnummer har du?', 'Vi kommer skicka viktig information under tävlingen till detta nummer. Ni kan ändra telefonnummer senare om det skulle behövas.', false, true );
+		$person_phone_question = new FieldPhone( 'Vilket telefonnummer har du?', Strings::get( 'competition_signup.form.phone.hint' ), false, true );
 		$html_sections[]       = $this->render_field( $person_phone_question, self::FIELD_PERSON_PHONE, $errors[ self::FIELD_PERSON_PHONE ] );
 
-		$person_name_question = new FieldPno( 'Vad har du för födelsedag?', 'Vi rekommenderar dig att fylla i fullständigt personnummer.', false, true );
+		$person_name_question = new FieldPno( 'Vad har du för födelsedag?', Strings::get( 'person.form.pno.hint' ), false, true );
 		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors[ self::FIELD_PERSON_PNO ] );
 
 		$html_sections[] = $this->get_recaptcha_html();
@@ -166,6 +156,14 @@ class CompetitionSignup extends FrontendView {
 	private function get_submit_button_html() {
 		$is_automatically_accepted = $this->get_competition()->initial_group_status !== Group::STATUS_AWAITING_APPROVAL;
 
+		$label = $is_automatically_accepted
+			? Strings::get( 'competition_signup.default.button.label' )
+			: Strings::get( 'competition_signup.waiting_list.button.label' );
+
+		$warning = $is_automatically_accepted
+			? Strings::get( 'competition_signup.default.warning_message' )
+			: Strings::get( 'competition_signup.waiting_list.warning_message' );
+
 		return sprintf( '
 			<div class="tuja-buttons">
 				<button type="submit" name="%s" value="%s" id="tuja_signup_button">%s</button>
@@ -173,8 +171,8 @@ class CompetitionSignup extends FrontendView {
 			%s',
 			self::ACTION_BUTTON_NAME,
 			self::ACTION_NAME_SAVE,
-			$is_automatically_accepted ? 'Anmäl lag' : 'Anmäl lag till väntelista',
-			$is_automatically_accepted ? '' : '<p class="tuja-message tuja-message-warning">Varför väntelista? Jo, så många har anmält sig att vi just nu kan vi inte ta emot fler lag. Ni kan dock anmäla laget till väntelistan och så hör vi av oss om läget förändras.</p>' );
+			$label,
+			! empty( $warning ) ? sprintf( '<p class="tuja-message tuja-message-warning">%s</p>', $warning ) : '' );
 	}
 
 	// TODO: create_group does a bit too much application logic to be in a presentation class. Extract application logic to some utility class.

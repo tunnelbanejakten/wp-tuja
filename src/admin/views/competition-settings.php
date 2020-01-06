@@ -189,10 +189,18 @@ AdminUtils::printTopMenu( $competition );
 			<?php
 			$final_list   = Strings::get_list();
 			$default_list = Strings::get_default_list();
+			$last_header = null;
 			foreach ( $final_list as $key => $value ) {
+				list ( $header ) = explode( '.', $key );
 				$is_default_value = $default_list[ $key ] == $final_list[ $key ];
 				$value            = $is_default_value ? '' : $value;
 				$placeholder      = $default_list[ $key ];
+				if ( $last_header != $header ) {
+					printf(
+						'<tr><td colspan="2"><h3>%s</h3></td></tr>',
+						$header
+					);
+				}
 				if ( substr( $key, - 10 ) == '.body_text' ) {
 					printf(
 						'<tr><td style="width: auto; vertical-align: top">%s</td><td style="width: 100%%"><textarea name="%s" rows="10" style="width: 100%%" placeholder="%s">%s</textarea></td></tr>',
@@ -211,6 +219,7 @@ AdminUtils::printTopMenu( $competition );
 						$value
 					);
 				}
+				$last_header = $header;
 			}
 			?>
             </tbody>

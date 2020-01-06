@@ -9,6 +9,7 @@ use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
 use tuja\frontend\router\PersonEditorInitiator;
 use tuja\util\messaging\EventMessageSender;
+use tuja\util\Strings;
 use tuja\view\FieldEmail;
 use tuja\view\FieldPhone;
 use tuja\view\FieldPno;
@@ -48,9 +49,14 @@ class GroupSignup extends AbstractGroupView {
 					$this->send_person_welcome_mail( $new_person );
 
 					if ( ! empty( $edit_link ) ) {
-						printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan. Gå till <a href="%s" id="tuja_signup_success_edit_link">%s</a> om du behöver ändra din anmälan senare. Vi har också skickat länken till din e-postadress.</p>', $edit_link, $edit_link );
+						printf( '<p class="tuja-message tuja-message-success">%s</p>',
+							Strings::get( 'group_signup.success.message.with_link',
+								sprintf( '<a href="%s" id="tuja_signup_success_edit_link">%s</a>',
+									$edit_link,
+									$edit_link ) ) );
 					} else {
-						printf( '<p class="tuja-message tuja-message-success">Tack för din anmälan.</p>' );
+						printf( '<p class="tuja-message tuja-message-success">%s</p>',
+							Strings::get( 'group_signup.success.message.without_link' ) );
 					}
 
 					$this->group_dao->run_registration_rules( $group );
@@ -102,22 +108,22 @@ class GroupSignup extends AbstractGroupView {
 		}
 
 		if ( $show_pno ) {
-			$person_name_question = new FieldPno( 'Vad har du för födelsedag?', 'Vi rekommenderar dig att fylla i fullständigt personnummer.' );
+			$person_name_question = new FieldPno( 'Vad har du för födelsedag?', Strings::get( 'person.form.pno.hint' ) );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, @$errors[ self::FIELD_PERSON_PNO ] );
 		}
 
 		if ( $show_email ) {
-			$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', 'Vi skickar ut viktig information inför tävlingen via e-post.' );
+			$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', Strings::get( 'person.form.email.hint' ) );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, @$errors[ self::FIELD_PERSON_EMAIL ] );
 		}
 
 		if ( $show_phone ) {
-			$person_name_question = new FieldPhone( 'Vilket telefonnummer har du?', 'Vi skickar viktig information under tävlingen via SMS.' );
+			$person_name_question = new FieldPhone( 'Vilket telefonnummer har du?', Strings::get( 'person.form.phone.hint' ) );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE, @$errors[ self::FIELD_PERSON_PHONE ] );
 		}
 
 		if ( $show_food ) {
-			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', 'Vi bjuder på mackor och fika efter tävlingen.' );
+			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', Strings::get( 'person.form.food.hint' ) );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, @$errors[ self::FIELD_PERSON_FOOD ] );
 		}
 
