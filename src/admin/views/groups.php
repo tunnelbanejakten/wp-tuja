@@ -1,22 +1,22 @@
 <?php namespace tuja\admin;
 
 AdminUtils::printTopMenu( $competition );
-?>
 
+?>
+<p>Filter: <?= $filters ?>.</p>
 <form method="post" action="<?= add_query_arg() ?>" class="tuja">
     <table id="tuja_groups_list">
         <thead>
         <tr>
+            <th rowspan="2" valign="top"><input type="checkbox" id="tuja_group_toggle_all"></th>
             <th rowspan="2" valign="top">Namn</th>
             <th rowspan="2" valign="top">Ålder</th>
-            <th colspan="2" valign="top">Tävlingsklass</th>
+            <th rowspan="2" valign="top">Tävlingsklass</th>
             <th colspan="3" valign="top">Antal</th>
             <th colspan="3" valign="top">Anmälningsstatus</th>
             <th rowspan="2" valign="top">Rättning</th>
         </tr>
         <tr>
-            <td>Vald</td>
-            <td>Faktisk</td>
             <td>Tävlande</td>
             <td>Övriga</td>
             <td>Kontakter</td>
@@ -25,6 +25,55 @@ AdminUtils::printTopMenu( $competition );
             <td>Meddelanden</td>
         </tr>
         </thead>
+        <tfoot>
+        <tr>
+            <td colspan="3" valign="top">&nbsp;&nbsp;&rdsh; För valda grupper:</td>
+            <td>
+				<?php
+				// Print group category selector
+				$category_options = [];
+				foreach ( $group_category_map as $id => $label ) {
+					$category_options[] = sprintf( '<option value="%d">%s</option>',
+						$id,
+						$label );
+				}
+				printf( '<select name="tuja_group_batch__category">%s</select>',
+					join( '', $category_options )
+				);
+				?>
+                <div class="tuja-buttons">
+                    <button type="submit" class="button" name="tuja_action" value="tuja_group_batch__category">Ändra</button>
+                </div>
+            </td>
+            <td colspan="3"></td>
+            <td>
+				<?php
+				$status_options = [];
+				foreach ( array_keys( \tuja\data\model\Group::STATUS_TRANSITIONS ) as $key ) {
+					$status_options[] = sprintf( '<option value="%s">%s</option>',
+						$key,
+						$key );
+				}
+				printf( '<select name="tuja_group_batch__status">%s</select>',
+					join( '', $status_options )
+				);
+				?>
+                <div class="tuja-buttons">
+                    <button type="submit" class="button" name="tuja_action" value="tuja_group_batch__status">Ändra</button>
+                </div>
+            </td>
+            <td>
+                <select name="tuja_group_batch__alwayseditable">
+                    <option value="yes">Ja</option>
+                    <option value="no">Nej</option>
+                </select>
+                <div class="tuja-buttons">
+                    <button type="submit" class="button" name="tuja_action" value="tuja_group_batch__alwayseditable">Ändra</button>
+                </div>
+            </td>
+            <td colspan="4"></td>
+        </tr>
+        </tfoot>
         <tbody>
 		<?php
 		foreach ( $groups_data as $group_data ) {
@@ -32,15 +81,21 @@ AdminUtils::printTopMenu( $competition );
 
 			print '<tr>';
 
+			printf( '<td><input type="checkbox" name="tuja_group__selection[]" value="%d" class="tuja-group-checkbox" %s></td>',
+				$group->id,
+				in_array( $group->id, $_POST['tuja_group__selection'] ) ? 'checked="checked"' : ''
+			);
+
 			// Print name and age range
 			printf( '<td data-group-key="%s"><a href="%s">%s</a></td>' .
-			        '<td>%.1f (%.1f-%.1f) år</td>',
+			        '<td><span title="%.1f år (%.1f-%.1f)">&approx;%.0f år</span></td>',
 				$group->random_id,
 				$group_data['details_link'],
 				htmlspecialchars( $group->name ),
 				$group->age_competing_avg,
 				$group->age_competing_min,
-				$group->age_competing_max
+				$group->age_competing_max,
+				$group->age_competing_avg
 			);
 
 			// Print group category selector
@@ -51,12 +106,7 @@ AdminUtils::printTopMenu( $competition );
 					$id === @$_POST[ 'tuja_group_type__' . $id ] || $id == $group->category_id ? 'selected="selected"' : '',
 					$label );
 			}
-			printf( '<td><select name="tuja_group__%d__category"><option value="0">Systemet väljer</option>%s</select></td>' .
-			        '<td>%s</td>',
-				$group->id,
-				join( '', $category_options ),
-				$group_data['category'] ? $group_data['category']->name : ''
-			);
+			printf( '<td>%s</td>', $group_data['category'] ? $group_data['category']->name : '' );
 
 			// Print summary of group members
 			printf( '<td>%d st</td>' .
@@ -73,13 +123,7 @@ AdminUtils::printTopMenu( $competition );
 				$group->get_status()
 			);
 
-			$id = uniqid();
-			printf( '<td><input type="checkbox" name="tuja_group__%d__alwayseditable" id="%s" value="yes" %s><label for="%s">Tillåtet</label></td>',
-				$group->id,
-				$id,
-				$group->is_always_editable ? 'checked="checked"' : '',
-				$id
-			);
+			printf( '<td>%s</td>', $group->is_always_editable ? 'Ja, tillåtet' : 'Nej' );
 
 			// Print summary sign-up status
 			printf( '<td>%s %s %s</td>',
@@ -115,10 +159,6 @@ AdminUtils::printTopMenu( $competition );
         </tbody>
     </table>
 
-    <div class="tuja-buttons">
-        <button type="submit" class="button" name="tuja_action" value="group_update">Uppdatera</button>
-    </div>
-
     <input type="text" name="tuja_new_group_name"/>
     <select name="tuja_new_group_type">
 		<?php
@@ -152,7 +192,15 @@ AdminUtils::printTopMenu( $competition );
     <tbody>
     <tr>
         <td>Antal tävlande personer:</td>
+        <td><?= $people_competing + $people_following ?> st</td>
+    </tr>
+    <tr>
+        <td style="padding-left: 2em">varav tävlande:</td>
         <td><?= $people_competing ?> st</td>
+    </tr>
+    <tr>
+        <td style="padding-left: 2em">varav vuxna som följer med:</td>
+        <td><?= $people_following ?> st</td>
     </tr>
     <tr>
         <td>Antal tävlande lag:</td>
