@@ -39,6 +39,7 @@ class ReportPayments extends AbstractReport {
 		}, array_filter(
 			$this->group_dao->get_all_in_competition(
 				$this->competition->id,
+				false,
 				$date
 			),
 			function ( Group $group ) {

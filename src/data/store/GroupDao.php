@@ -175,13 +175,17 @@ class GroupDao extends AbstractDao {
 			$key );
 	}
 
-	function get_all_in_competition( $competition_id, $date = null ) {
-		return $this->get_objects(
+	function get_all_in_competition( $competition_id, $include_deleted = false, $date = null ) {
+		$objects = $this->get_objects(
 			function ( $row ) use ( $date ) {
 				return self::to_group( $row, $date );
 			},
 			$this->generate_query( [ 'g.competition_id = %d' ] ),
 			$competition_id );
+
+		return $include_deleted ? $objects : array_filter( $objects, function ( Group $group ) {
+			return $group->get_status() != Group::STATUS_DELETED;
+		} );
 	}
 
 	private static function to_group( $result, $date ): Group {

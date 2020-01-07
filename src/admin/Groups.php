@@ -77,7 +77,7 @@ class Groups {
 
 				$exclude_contacts = false;
 
-				$all_groups = $group_dao->get_all_in_competition( $this->competition->id );
+				$all_groups = $group_dao->get_all_in_competition( $this->competition->id, true );
 
 				$category_calculator = new GroupCategoryCalculator( $this->competition->id );
 				$competing_groups    = array_filter( $all_groups, function ( Group $grp ) use ( $category_calculator ) {
@@ -147,7 +147,7 @@ class Groups {
 		$category_unknown->is_crew = false;
 
 		$groups_data = [];
-		$groups      = $db_groups->get_all_in_competition( $competition->id );
+		$groups      = $db_groups->get_all_in_competition( $competition->id , true);
 
 		$unreviewed_answers = $this->get_unreviewed_answers_count();
 

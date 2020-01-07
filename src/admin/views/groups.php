@@ -81,15 +81,15 @@ AdminUtils::printTopMenu( $competition );
 
 			print '<tr>';
 
-			printf( '<td><input type="checkbox" name="tuja_group__selection[]" value="%d" class="tuja-group-checkbox" %s></td>',
+			printf( '<td data-group-key="%s"><input type="checkbox" name="tuja_group__selection[]" value="%d" class="tuja-group-checkbox" %s></td>',
+				$group->random_id,
 				$group->id,
 				in_array( $group->id, $_POST['tuja_group__selection'] ) ? 'checked="checked"' : ''
 			);
 
 			// Print name and age range
-			printf( '<td data-group-key="%s"><a href="%s">%s</a></td>' .
+			printf( '<td><a href="%s">%s</a></td>' .
 			        '<td><span title="%.1f år (%.1f-%.1f)">&approx;%.0f år</span></td>',
-				$group->random_id,
 				$group_data['details_link'],
 				htmlspecialchars( $group->name ),
 				$group->age_competing_avg,

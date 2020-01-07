@@ -37,7 +37,9 @@ class Scoreboard {
 		$db_groups = new GroupDao();
 		$db_group_categories = new GroupCategoryDao();
 
-		$groups = $db_groups->get_all_in_competition( $this->competition->id );
+		$groups = array_values( array_filter( $db_groups->get_all_in_competition( $this->competition->id ), function ( Group $group ) {
+			return $group->get_status() !== Group::STATUS_DELETED;
+		} ) );
 		$group_categories = $db_group_categories->get_all_in_competition( $this->competition->id );
 
 		$competition = $this->competition;

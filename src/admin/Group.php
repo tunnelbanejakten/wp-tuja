@@ -178,7 +178,7 @@ class Group {
 
 		$registration_evaluation = $group->evaluate_registration();
 
-		$groups = $db_groups->get_all_in_competition( $competition->id );
+		$groups = $db_groups->get_all_in_competition( $competition->id, true );
 
 		$group_signup_link = GroupSignupInitiator::link( $group );
 		$group_editor_link = GroupEditorInitiator::link( $group );
