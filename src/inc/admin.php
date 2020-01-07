@@ -2,6 +2,7 @@
 
 namespace tuja;
 
+use tuja\admin\AdminUtils;
 use tuja\data\store\CompetitionDao;
 use tuja\data\model\Competition;
 use tuja\util\Strings;
@@ -34,7 +35,18 @@ class Admin extends Plugin {
 
 
 	public function add_admin_menu_item() {
-		add_menu_page( 'Tunnelbanejakten', 'Tunnelbanejakten', 'edit_pages', static::SLUG, array( $this, 'route' ) );
+		add_menu_page( 'Tunnelbanejakten', 'Tunnelbanejakten', 'edit_pages', static::SLUG, array(
+			$this,
+			'route_support'
+		) );
+		add_submenu_page( self::SLUG, 'För kundtjänst', 'För kundtjänst', 'edit_pages', static::SLUG, array(
+			$this,
+			'route_support'
+		) );
+		add_submenu_page( self::SLUG, 'För admin', 'För admin', 'edit_pages', static::SLUG . '_admin', array(
+			$this,
+			'route_admin'
+		) );
 	}
 
 	public function assets() {
@@ -47,7 +59,7 @@ class Admin extends Plugin {
 		// Load scripts based on screen->id
 		$screen = get_current_screen();
 
-		if ( $screen->id === 'toplevel_page_tuja' ) {
+		if ( $screen->id === 'toplevel_page_tuja' || $screen->id === 'tunnelbanejakten_page_tuja_admin' ) {
 			wp_enqueue_script( 'tuja-admin-competition-settings', static::get_url() . '/assets/js/admin-competition-settings.js' );
 			wp_enqueue_script( 'tuja-admin-message-send', static::get_url() . '/assets/js/admin-message-send.js' );
 			wp_enqueue_script( 'tuja-admin-review-component', static::get_url() . '/assets/js/admin-review-component.js' );
@@ -59,7 +71,17 @@ class Admin extends Plugin {
 		}
 	}
 
-	public function route() {
+	public function route_support() {
+		$this->route( false );
+	}
+
+	public function route_admin() {
+		$this->route( true );
+	}
+
+	public function route( $is_admin ) {
+		AdminUtils::set_admin_mode( $is_admin );
+
 		if ( empty( $_GET['tuja_view'] ) ) {
 			$db_competition = new CompetitionDao();
 

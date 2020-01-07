@@ -185,7 +185,7 @@ describe('wp-tuja', () => {
 
   const createCompetition = async () => {
     // Go to Tuja page in Admin console
-    await adminPage.goto('http://localhost:8080/wp-admin/admin.php?page=tuja')
+    await adminPage.goto('http://localhost:8080/wp-admin/admin.php?page=tuja_admin')
 
     // Create new competition
     competitionName = 'Test Competition ' + new Date().getTime()
@@ -211,7 +211,7 @@ describe('wp-tuja', () => {
     )
 
     competitionId = querystring.parse(resp.url()).tuja_competition
-    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Shortcodes&tuja_competition=${competitionId}`)
+    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Shortcodes&tuja_competition=${competitionId}`)
 
     const signUpLink = await adminPage.page.$('#tuja_shortcodes_competitionsignup_link')
     const signUpLinkUrl = await signUpLink.evaluate(node => node.href)
@@ -221,7 +221,7 @@ describe('wp-tuja', () => {
   }
 
   const configureDefaultGroupStatus = async (status) => {
-    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
     await adminPage.click('#tuja_tab_groups')
 
@@ -231,7 +231,7 @@ describe('wp-tuja', () => {
   }
 
   const configureGroupCategories = async () => {
-    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
     await adminPage.click('#tuja_tab_groups')
 
@@ -279,7 +279,7 @@ describe('wp-tuja', () => {
     let groupProps = null
 
     const createForm = async () => {
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Competition&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Competition&tuja_competition=${competitionId}`)
 
       const formName = 'The Form'
       await adminPage.type('#tuja_form_name', formName)
@@ -299,7 +299,7 @@ describe('wp-tuja', () => {
 
       const formId = querystring.parse(await link.evaluate(node => node.href)).tuja_form
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
 
       await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
       await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
@@ -318,7 +318,7 @@ describe('wp-tuja', () => {
       const formOpenDate = new Date(new Date().getTime() + startMinutes * MINUTE - localTzOffsetMinutes * MINUTE).toISOString().substr(0, 16)
       const formCloseDate = new Date(new Date().getTime() + endMinutes * MINUTE - localTzOffsetMinutes * MINUTE).toISOString().substr(0, 16)
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
 
       await adminPage.page.$eval('#tuja-submit-response-start', (node, date) => node.value = date, formOpenDate)
       await adminPage.page.$eval('#tuja-submit-response-end', (node, date) => node.value = date, formCloseDate)
@@ -578,7 +578,7 @@ describe('wp-tuja', () => {
       // Configure stations
       //
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Stations&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Stations&tuja_competition=${competitionId}`)
 
       await adminPage.type('#tuja_station_name', 'Hornstull')
       await adminPage.clickLink('#tuja_station_create_button')
@@ -615,7 +615,7 @@ describe('wp-tuja', () => {
       stationsProps[2].password = 'loot'
       stationsProps[3].password = 'winnings'
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=StationsTicketing&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=StationsTicketing&tuja_competition=${competitionId}`)
 
       await adminPage.page.$eval(`input[name="tuja_ticketdesign__${stationsProps[0].id}__colour"]`, (node, color) => node.value = color, stationsProps[0].colour)
       await adminPage.page.$eval(`input[name="tuja_ticketdesign__${stationsProps[1].id}__colour"]`, (node, color) => node.value = color, stationsProps[1].colour)
@@ -796,7 +796,7 @@ describe('wp-tuja', () => {
         await expectElementCount('div.entry-content p.tuja-message-warning', 1)
         await expectElementCount('div.entry-content p.tuja-message-error', 0)
 
-        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${toBeAcceptedGroup.id}`)
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${toBeAcceptedGroup.id}`)
         await adminPage.clickLink('button[name="tuja_points_action"][value="transition__accepted"]')
 
         await goto(toBeAcceptedGroup.portalUrl)
@@ -1204,7 +1204,7 @@ describe('wp-tuja', () => {
 
     beforeAll(async () => {
       // Go to admin console
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Groups&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Groups&tuja_competition=${competitionId}`)
 
       // Select crew category in tuja_new_group_type
       const id = await adminPage.$eval('select[name="tuja_new_group_type"] > option:last-child', node => node.value)
@@ -1229,7 +1229,7 @@ describe('wp-tuja', () => {
       let stationScoreReportForm = 0
 
       const createForm = async () => {
-        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Competition&tuja_competition=${competitionId}`)
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Competition&tuja_competition=${competitionId}`)
 
         const formName = 'The Stations'
         await adminPage.type('#tuja_form_name', formName)
@@ -1249,7 +1249,7 @@ describe('wp-tuja', () => {
 
         const formId = querystring.parse(await link.evaluate(node => node.href)).tuja_form
 
-        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
 
         await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
         await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
@@ -1411,7 +1411,7 @@ describe('wp-tuja', () => {
       await expectElementCount('button', 0)
       await expectElementCount('input', 0)
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${tempGroupProps.id}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${tempGroupProps.id}`)
       await adminPage.clickLink('button[name="tuja_points_action"][value="transition__accepted"]')
       await adminPage.clickLink('button[name="tuja_points_action"][value="transition__awaiting_checkin"]')
 
@@ -1445,7 +1445,7 @@ describe('wp-tuja', () => {
 
     beforeAll(async () => {
       groupProps = await signUpTeam(true)
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${groupProps.id}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${groupProps.id}`)
       await adminPage.clickLink('button[name="tuja_points_action"][value="transition__deleted"]')
     })
 
