@@ -41,9 +41,13 @@ class CompetitionSignup extends FrontendView {
 	}
 
 	function get_content() {
-		Strings::init( $this->get_competition()->id );
+		try {
+			Strings::init( $this->get_competition()->id );
 
-		return parent::get_content();
+			return parent::get_content();
+		} catch ( Exception $e ) {
+			return $this->get_exception_message_html( $e );
+		}
 	}
 
 	function output() {

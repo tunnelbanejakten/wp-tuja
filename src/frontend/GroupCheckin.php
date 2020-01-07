@@ -31,61 +31,57 @@ class GroupCheckin extends AbstractGroupView {
 	}
 
 	function output() {
-		try {
-			$group    = $this->get_group();
-			$category = $group->get_derived_group_category();
+		$group    = $this->get_group();
+		$category = $group->get_derived_group_category();
 
-			if ( $group->get_status() == Group::STATUS_CHECKEDIN ) {
-				printf( '<div class="tuja-message tuja-message-success">%s</div>', Strings::get( 'checkin.already_checked_in' ) );
+		if ( $group->get_status() == Group::STATUS_CHECKEDIN ) {
+			printf( '<div class="tuja-message tuja-message-success">%s</div>', Strings::get( 'checkin.already_checked_in' ) );
+
+			return;
+		}
+
+		if ( $group->get_status() != Group::STATUS_AWAITING_CHECKIN ) {
+			throw new Exception( Strings::get( 'checkin.not_open' ) );
+		}
+
+		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
+			$template_parameters = array_merge(
+				Template::site_parameters(),
+				Template::group_parameters( $group )
+			);
+
+			if ( @$_POST[ self::FIELD_ANSWER ] == Strings::get( 'checkin.yes.label' ) ) {
+				$group->set_status( Group::STATUS_CHECKEDIN );
+				if ( $this->group_dao->update( $group ) ) {
+					printf( '<div class="tuja-message tuja-message-success">%s</div>', Strings::get( 'checkin.yes.title' ) );
+					print Template::string( Strings::get( 'checkin.yes.body_text' ) )->render( $template_parameters, true );
+
+					return;
+				} else {
+					throw new Exception( 'Could not set status to Checked In.' );
+				}
+			} else {
+				printf( '<div class="tuja-message tuja-message-info">%s</div>', Strings::get( 'checkin.no.title' ) );
+				print Template::string( Strings::get( 'checkin.no.body_text' ) )->render( $template_parameters, true );
 
 				return;
 			}
-
-			if ( $group->get_status() != Group::STATUS_AWAITING_CHECKIN ) {
-				throw new Exception( Strings::get( 'checkin.not_open' ) );
-			}
-
-			if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
-				$template_parameters = array_merge(
-					Template::site_parameters(),
-					Template::group_parameters( $group )
-				);
-
-				if ( @$_POST[ self::FIELD_ANSWER ] == Strings::get( 'checkin.yes.label' ) ) {
-					$group->set_status( Group::STATUS_CHECKEDIN );
-					if ( $this->group_dao->update( $group ) ) {
-						printf( '<div class="tuja-message tuja-message-success">%s</div>', Strings::get( 'checkin.yes.title' ) );
-						print Template::string( Strings::get( 'checkin.yes.body_text' ) )->render( $template_parameters, true );
-
-						return;
-					} else {
-						throw new Exception( 'Could not set status to Checked In.' );
-					}
-				} else {
-					printf( '<div class="tuja-message tuja-message-info">%s</div>', Strings::get( 'checkin.no.title' ) );
-					print Template::string( Strings::get( 'checkin.no.body_text' ) )->render( $template_parameters, true );
-
-					return;
-				}
-			}
-
-			$people            = $this->person_dao->get_all_in_group( $group->id );
-			$competing         = array_filter( $people, function ( Person $person ) {
-				return $person->is_competing();
-			} );
-			$adult_supervisors = array_filter( $people, function ( Person $person ) {
-				return $person->is_adult_supervisor();
-			} );
-
-			$form = $this->get_form_html();
-
-			$submit_button = $this->get_submit_button_html();
-
-			$home_link = GroupHomeInitiator::link( $group );
-			include( 'views/group-checkin.php' );
-		} catch ( Exception $e ) {
-			print $this->get_exception_message_html( $e );
 		}
+
+		$people            = $this->person_dao->get_all_in_group( $group->id );
+		$competing         = array_filter( $people, function ( Person $person ) {
+			return $person->is_competing();
+		} );
+		$adult_supervisors = array_filter( $people, function ( Person $person ) {
+			return $person->is_adult_supervisor();
+		} );
+
+		$form = $this->get_form_html();
+
+		$submit_button = $this->get_submit_button_html();
+
+		$home_link = GroupHomeInitiator::link( $group );
+		include( 'views/group-checkin.php' );
 	}
 
 	private function get_submit_button_html() {

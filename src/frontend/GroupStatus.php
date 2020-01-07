@@ -15,25 +15,21 @@ class GroupStatus extends AbstractGroupView {
 	}
 
 	function output() {
-		try {
-			$group = $this->get_group();
+		$group = $this->get_group();
 
-			$rule_result = $group->evaluate_registration();
+		$rule_result = $group->evaluate_registration();
 
-			$blockers = array_filter( $rule_result, function ( RuleResult $rule_result ) {
-				return $rule_result->status == RuleResult::BLOCKER;
-			} );
+		$blockers = array_filter( $rule_result, function ( RuleResult $rule_result ) {
+			return $rule_result->status == RuleResult::BLOCKER;
+		} );
 
-			$warnings = array_filter( $rule_result, function ( RuleResult $rule_result ) {
-				return $rule_result->status == RuleResult::WARNING;
-			} );
+		$warnings = array_filter( $rule_result, function ( RuleResult $rule_result ) {
+			return $rule_result->status == RuleResult::WARNING;
+		} );
 
-			$edit_group_link  = GroupEditorInitiator::link( $group );
-			$edit_people_link = GroupPeopleEditorInitiator::link( $group );
-			$home_link = GroupHomeInitiator::link( $group );
-			include( 'views/group-status.php' );
-		} catch ( Exception $e ) {
-			print $this->get_exception_message_html( $e );
-		}
+		$edit_group_link  = GroupEditorInitiator::link( $group );
+		$edit_people_link = GroupPeopleEditorInitiator::link( $group );
+		$home_link        = GroupHomeInitiator::link( $group );
+		include( 'views/group-status.php' );
 	}
 }

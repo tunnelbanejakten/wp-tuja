@@ -1438,4 +1438,31 @@ describe('wp-tuja', () => {
       await expectElementCount('input', 0)
     })
   })
+
+  describe('Deleting (unregistering) teams', () => {
+
+    let groupProps = null
+
+    beforeAll(async () => {
+      groupProps = await signUpTeam(true)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${groupProps.id}`)
+      await adminPage.clickLink('button[name="tuja_points_action"][value="transition__deleted"]')
+    })
+
+    it.each([
+      '',
+      'andra',
+      'andra-personer',
+      'biljetter',
+      'anmal-mig',
+    ])('should NOT be possible to do anything on team page /%s', async (urlSuffix) => {
+      await goto(`http://localhost:8080/${groupProps.key}/${urlSuffix}`)
+
+      await expectErrorMessage('Laget är avanmält.')
+
+      await expectElementCount('div.entry-content p > a', 0) // No links shown
+      await expectElementCount('div.entry-content form', 0) // No forms shown
+      await expectElementCount('div.entry-content button', 0) // No buttons shown
+    })
+  })
 })

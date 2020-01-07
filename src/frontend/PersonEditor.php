@@ -21,47 +21,43 @@ class PersonEditor extends AbstractGroupView {
 	}
 
 	function output() {
-		try {
-			$person = $this->get_person();
-			$group  = $this->get_group();
+		$person = $this->get_person();
+		$group  = $this->get_group();
 
-			$this->check_group_status( $group );
+		$this->check_group_status( $group );
 
-			$errors = [];
-			if ( $person->group_id != $group->id ) {
-				throw new Exception( 'Fel grupp.' );
-			}
-
-			$is_read_only = ! $this->is_edit_allowed( $group );
-
-			$real_category               = $group->get_derived_group_category();
-			$collect_contact_information = $real_category->get_rule_set()->is_contact_information_required_for_regular_group_member();
-			$collect_ssn                 = $real_category->get_rule_set()->is_ssn_required();
-
-			if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
-				if ( ! $is_read_only ) {
-					$errors = $this->update_person( $person );
-					if ( empty( $errors ) ) {
-						printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
-
-						return;
-					}
-					$this->group_dao->run_registration_rules( $group );
-				} else {
-					$errors = [ '__' => 'Tyvärr så kan anmälningar inte ändras nu.' ];
-				}
-			}
-
-			$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
-
-			$form = $this->get_form_html( $person, true, $collect_contact_information, $collect_contact_information, $collect_ssn, true, $errors, $is_read_only );
-
-			$submit_button = $this->get_submit_button_html( $is_read_only );
-
-			include( 'views/person-editor.php' );
-		} catch ( Exception $e ) {
-			printf( $this->get_exception_message_html($e) );
+		$errors = [];
+		if ( $person->group_id != $group->id ) {
+			throw new Exception( 'Fel grupp.' );
 		}
+
+		$is_read_only = ! $this->is_edit_allowed( $group );
+
+		$real_category               = $group->get_derived_group_category();
+		$collect_contact_information = $real_category->get_rule_set()->is_contact_information_required_for_regular_group_member();
+		$collect_ssn                 = $real_category->get_rule_set()->is_ssn_required();
+
+		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
+			if ( ! $is_read_only ) {
+				$errors = $this->update_person( $person );
+				if ( empty( $errors ) ) {
+					printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
+
+					return;
+				}
+				$this->group_dao->run_registration_rules( $group );
+			} else {
+				$errors = [ '__' => 'Tyvärr så kan anmälningar inte ändras nu.' ];
+			}
+		}
+
+		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
+
+		$form = $this->get_form_html( $person, true, $collect_contact_information, $collect_contact_information, $collect_ssn, true, $errors, $is_read_only );
+
+		$submit_button = $this->get_submit_button_html( $is_read_only );
+
+		include( 'views/person-editor.php' );
 	}
 
 	function get_person(): Person {
@@ -94,7 +90,7 @@ class PersonEditor extends AbstractGroupView {
 		}
 
 		if ( $show_pno ) {
-			$person_name_question = new FieldPno( 'Födelsedag och sånt', Strings::get('person.form.pno.hint'), $read_only );
+			$person_name_question = new FieldPno( 'Födelsedag och sånt', Strings::get( 'person.form.pno.hint' ), $read_only );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, @$errors['pno'], $person->pno );
 		}
 
@@ -109,7 +105,7 @@ class PersonEditor extends AbstractGroupView {
 		}
 
 		if ( $show_food ) {
-			$person_name_question = new FieldText( 'Allergier och matönskemål', Strings::get('person.form.food.hint'), $read_only );
+			$person_name_question = new FieldText( 'Allergier och matönskemål', Strings::get( 'person.form.food.hint' ), $read_only );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, @$errors['food'], $person->food );
 		}
 

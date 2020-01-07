@@ -47,12 +47,21 @@ abstract class AbstractGroupView extends FrontendView {
 			throw new Exception( 'Oj, vi hittade inte laget' );
 		}
 
+		if ( $group->get_status() == Group::STATUS_DELETED ) {
+			throw new Exception( 'Laget är avanmält.' );
+		}
+
 		return $group;
 	}
 
 	function get_content() {
-		Strings::init($this->get_group()->competition_id);
-		return parent::get_content();
+		try {
+			Strings::init( $this->get_group()->competition_id );
+
+			return parent::get_content();
+		} catch ( Exception $e ) {
+			return $this->get_exception_message_html( $e );
+		}
 	}
 
 

@@ -28,41 +28,37 @@ class GroupPeopleEditor extends AbstractGroupView {
 		wp_enqueue_script( 'jquery' );
 		wp_enqueue_script( 'tuja-editgroup-script' ); // Needed?
 
-		try {
-			$group = $this->get_group();
+		$group = $this->get_group();
 
-			$this->check_group_status( $group );
+		$this->check_group_status( $group );
 
-			$category = $group->get_derived_group_category();
-			$errors   = [];
+		$category = $group->get_derived_group_category();
+		$errors   = [];
 
-			if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
-				try {
-					$errors = $this->update_group( $group );
-					if ( empty( $errors ) ) {
-						printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
-					}
-					$this->group_dao->run_registration_rules( $group );
-				} catch ( RuleEvaluationException $e ) {
-					$errors = array( '__' => $e->getMessage() );
+		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
+			try {
+				$errors = $this->update_group( $group );
+				if ( empty( $errors ) ) {
+					printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
 				}
+				$this->group_dao->run_registration_rules( $group );
+			} catch ( RuleEvaluationException $e ) {
+				$errors = array( '__' => $e->getMessage() );
 			}
-
-			$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
-
-			$form_extra_contact = $this->get_form_extra_contact_html( $errors );
-			if ( $category->get_rule_set()->is_adult_supervisor_required() ) {
-				$form_adult_supervisor = $this->get_form_adult_supervisor_html( $errors );
-			}
-			list ( $group_size_min, $group_size_max ) = $category->get_rule_set()->get_group_size_range();
-			$form_group_contact = $this->get_form_group_contact_html( $errors );
-			$form_group_members = $this->get_form_group_members_html( $errors );
-			$form_save_button   = $this->get_form_save_button_html();
-			$home_link          = GroupHomeInitiator::link( $group );
-			include( 'views/group-people-editor.php' );
-		} catch ( Exception $e ) {
-			print $this->get_exception_message_html( $e );
 		}
+
+		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
+
+		$form_extra_contact = $this->get_form_extra_contact_html( $errors );
+		if ( $category->get_rule_set()->is_adult_supervisor_required() ) {
+			$form_adult_supervisor = $this->get_form_adult_supervisor_html( $errors );
+		}
+		list ( $group_size_min, $group_size_max ) = $category->get_rule_set()->get_group_size_range();
+		$form_group_contact = $this->get_form_group_contact_html( $errors );
+		$form_group_members = $this->get_form_group_members_html( $errors );
+		$form_save_button   = $this->get_form_save_button_html();
+		$home_link          = GroupHomeInitiator::link( $group );
+		include( 'views/group-people-editor.php' );
 	}
 
 	function is_read_only(): bool {

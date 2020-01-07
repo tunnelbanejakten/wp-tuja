@@ -42,12 +42,8 @@ class PointsOverride extends AbstractGroupView {
 	}
 
 	function output() {
-		try {
-			$form = $this->get_form_html();
-			include( 'views/points-override.php' );
-		} catch ( Exception $e ) {
-			printf( $this->get_exception_message_html( $e ) );
-		}
+		$form = $this->get_form_html();
+		include( 'views/points-override.php' );
 	}
 
 	public function get_form_html(): String {

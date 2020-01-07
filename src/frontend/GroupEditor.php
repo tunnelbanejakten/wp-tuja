@@ -35,33 +35,29 @@ class GroupEditor extends AbstractGroupView {
 		wp_enqueue_script( 'jquery' );
 		wp_enqueue_script( 'tuja-editgroup-script' ); // Needed?
 
-		try {
-			$group  = $this->get_group();
+		$group = $this->get_group();
 
-			$this->check_group_status( $group );
+		$this->check_group_status( $group );
 
-			$errors = [];
+		$errors = [];
 
-			if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
-				try {
-					$errors = $this->update_group( $group );
-					if ( empty( $errors ) ) {
-						printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
-					}
-				} catch ( RuleEvaluationException $e ) {
-					$errors = array( '__' => $e->getMessage() );
+		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
+			try {
+				$errors = $this->update_group( $group );
+				if ( empty( $errors ) ) {
+					printf( '<p class="tuja-message tuja-message-success">%s</p>', 'Ändringarna har sparats. Tack.' );
 				}
+			} catch ( RuleEvaluationException $e ) {
+				$errors = array( '__' => $e->getMessage() );
 			}
-
-			$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
-
-			$form          = $this->get_form_group_html( $errors );
-			$submit_button = $this->get_form_save_button_html();
-			$home_link     = GroupHomeInitiator::link( $group );
-			include( 'views/group-editor.php' );
-		} catch ( Exception $e ) {
-			print $this->get_exception_message_html( $e );
 		}
+
+		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
+
+		$form          = $this->get_form_group_html( $errors );
+		$submit_button = $this->get_form_save_button_html();
+		$home_link     = GroupHomeInitiator::link( $group );
+		include( 'views/group-editor.php' );
 	}
 
 	// Move to AbstractGroupView
