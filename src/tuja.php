@@ -99,7 +99,8 @@ abstract class Plugin {
 
 				status         VARCHAR(20)  NOT NULL,
 				name           VARCHAR(100) NOT NULL,
-				category_id    INTEGER
+				category_id    INTEGER,
+				note           TEXT
 			) ' . $charset;
 
 		$tables[] = '
@@ -126,7 +127,8 @@ abstract class Plugin {
 				food              TEXT,
 				is_competing      BOOLEAN      NOT NULL DEFAULT TRUE,
 				is_team_contact   BOOLEAN      NOT NULL DEFAULT FALSE,
-				is_attending      BOOLEAN      NOT NULL DEFAULT TRUE
+				is_attending      BOOLEAN      NOT NULL DEFAULT TRUE,
+				note              TEXT
 			) ' . $charset;
 
 		$tables[] = '

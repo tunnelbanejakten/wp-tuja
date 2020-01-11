@@ -49,6 +49,10 @@ abstract class RuleSet {
 
 	abstract function is_ssn_required(): bool;
 
+	abstract function is_person_note_enabled(): bool;
+
+	abstract function is_group_note_enabled(): bool;
+
 	protected function up_until_days_before( Competition $competition, $days_before ): DatePeriod {
 		if ( ! isset( $competition->event_start ) ) {
 			return $this->year_before_and_after_now();

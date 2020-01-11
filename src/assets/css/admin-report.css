@@ -3,7 +3,7 @@ body {
     color: black;
 }
 
-h1, h2, p, div {
+h1, h2, h3, p, div {
     margin: 1rem;
 }
 

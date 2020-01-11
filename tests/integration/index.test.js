@@ -836,18 +836,24 @@ describe('wp-tuja', () => {
         await expectPageTitle(`Hej ${groupProps.name}`)
       })
 
-      it('should be possible to change name and category', async () => {
+      it('should be possible to change name and to change category and to set team note', async () => {
         const newName = `New and improved ${groupProps.name}`
 
         await goto(groupProps.portalUrl)
         await clickLink('#tuja_edit_group_link')
         await click('#tuja-group__age-1')
         await type('#tuja-group__name', newName)
+        await type('#tuja-group__note', 'We will arrive a bit late.')
         await clickLink('#tuja_save_button')
         await expectSuccessMessage('Ändringarna har sparats.')
 
         await goto(groupProps.portalUrl)
         await expectPageTitle(`Hej ${newName}`)
+
+        await goto(`http://localhost:8080/${groupProps.key}/andra`)
+        expect(await $eval('#tuja-group__age-1', node => node.checked)).toBeTruthy()
+        await expectFormValue('#tuja-group__name', newName)
+        await expectFormValue('#tuja-group__note', 'We will arrive a bit late.')
       })
 
       it.each([
@@ -937,6 +943,9 @@ describe('wp-tuja', () => {
         await type('input#tuja-person__pno', pnoInput)
         await type('input#tuja-person__food', foodInput)
 
+        // Members of competing teams should not be able to add a note. The team-level note field and the person-level food field should be enough.
+        await expectElementCount('input#tuja-person__note', 0)
+
         await clickLink('button[name="tuja-action"]')
 
         await expectSuccessMessage('Tack')
@@ -947,6 +956,7 @@ describe('wp-tuja', () => {
         await expectFormValue('input#tuja-person__name', nameExpected)
         await expectFormValue('input#tuja-person__pno', pnoExpected)
         await expectFormValue('input#tuja-person__food', foodExpected)
+        await expectElementCount('input#tuja-person__note', 0)
       })
 
       it('should be possible to sign up and later change registration', async () => {
@@ -963,6 +973,7 @@ describe('wp-tuja', () => {
         await type('input#tuja-person__name', name)
         await type('input#tuja-person__pno', pno)
         await type('input#tuja-person__food', food)
+        await expectElementCount('input#tuja-person__note', 0)
 
         await clickLink('button[name="tuja-action"]')
 
@@ -978,6 +989,7 @@ describe('wp-tuja', () => {
         await expectFormValue('input#tuja-person__name', name)
         await expectFormValue('input#tuja-person__pno', pno)
         await expectFormValue('input#tuja-person__food', food)
+        await expectElementCount('input#tuja-person__note', 0)
 
         name = 'Alicia'
         pno = '19840202-0000'
@@ -995,6 +1007,7 @@ describe('wp-tuja', () => {
         await expectFormValue('input#tuja-person__name', name)
         await expectFormValue('input#tuja-person__pno', pno)
         await expectFormValue('input#tuja-person__food', food)
+        await expectElementCount('input#tuja-person__note', 0)
 
         //
         // Editing registration second time
@@ -1008,6 +1021,7 @@ describe('wp-tuja', () => {
         await type('input#tuja-person__name', name)
         await type('input#tuja-person__pno', pno)
         await type('input#tuja-person__food', food)
+        await expectElementCount('input#tuja-person__note', 0)
 
         await clickLink('button[name="tuja-action"]')
 
@@ -1018,6 +1032,7 @@ describe('wp-tuja', () => {
         await expectFormValue('input#tuja-person__name', name)
         await expectFormValue('input#tuja-person__pno', pno)
         await expectFormValue('input#tuja-person__food', food)
+        await expectElementCount('input#tuja-person__note', 0)
       })
 
       it('should evaluate registration rules for team size', async () => {
@@ -1370,6 +1385,7 @@ describe('wp-tuja', () => {
       await type('input#tuja-person__email', 'carol@example.com')
       await type('input#tuja-person__phone', '070-12345678')
       await type('input#tuja-person__food', 'Picky about eggs')
+      await type('input#tuja-person__note', 'Need to leave early')
 
       await clickLink('button[name="tuja-action"]')
 
@@ -1382,18 +1398,20 @@ describe('wp-tuja', () => {
       await expectFormValue('input#tuja-person__email', 'carol@example.com')
       await expectFormValue('input#tuja-person__phone', '+467012345678')
       await expectFormValue('input#tuja-person__food', 'Picky about eggs')
+      await expectFormValue('input#tuja-person__note', 'Need to leave early')
     })
 
     it.each([
-      ['Trudy', '', '070-1234567', 'No fondness for spam', 'E-postadressen ser konstig ut'] // Missing required field
+      ['Trudy', '', '070-1234567', 'No fondness for spam', 'Need to leave early', 'E-postadressen ser konstig ut'] // Missing required field
       // TODO: More negative test cases
-    ])('should not be possible to sign up as a crew member with bad data', async (name, email, phone, food, expectedErrorMessage) => {
+    ])('should not be possible to sign up as a crew member with bad data', async (name, email, phone, food, note, expectedErrorMessage) => {
       await goto(`http://localhost:8080/${crewGroupProps.key}/anmal-mig`)
 
       await type('input[name^="tuja-person__name"]', name)
       await type('input[name^="tuja-person__email"]', email)
       await type('input[name^="tuja-person__phone"]', phone)
       await type('input[name^="tuja-person__food"]', food)
+      await type('input[name^="tuja-person__note"]', note)
 
       await clickLink('button[name="tuja-action"]')
 

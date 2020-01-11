@@ -72,7 +72,8 @@ class PersonDao extends AbstractDao {
 				'is_competing'    => $person->is_competing() ? 1 : 0,
 				'is_team_contact' => $person->is_contact() ? 1 : 0,
 				'is_attending'    => $person->is_attending() ? 1 : 0,
-				'pno'             => DateUtils::fix_pno( $person->pno )
+				'pno'             => DateUtils::fix_pno( $person->pno ),
+				'note'            => $person->note
 			),
 			array(
 				'%d',
@@ -87,6 +88,7 @@ class PersonDao extends AbstractDao {
 				'%d',
 				'%d',
 				'%d',
+				'%s',
 				'%s'
 			) );
 
@@ -295,6 +297,7 @@ class PersonDao extends AbstractDao {
 		$p->phone_verified = $result->phone_verified;
 		$p->email          = $result->email;
 		$p->email_verified = $result->email_verified;
+		$p->note           = $result->note;
 		$p->food           = $result->food;
 		$p->pno            = $result->pno;
 		$p->age            = $result->age;

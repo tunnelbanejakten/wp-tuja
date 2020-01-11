@@ -35,6 +35,7 @@ class GroupSignup extends AbstractGroupView {
 
 		$collect_contact_information = $real_category->get_rule_set()->is_contact_information_required_for_regular_group_member();
 		$collect_ssn                 = $real_category->get_rule_set()->is_ssn_required();
+		$notes_enabled               = $real_category->get_rule_set()->is_person_note_enabled();
 		try {
 
 			if ( $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
@@ -76,6 +77,7 @@ class GroupSignup extends AbstractGroupView {
 			$collect_contact_information,
 			$collect_ssn,
 			true,
+			$notes_enabled,
 			self::ROLE_REGULAR_GROUP_MEMBER,
 			$errors );
 
@@ -91,6 +93,7 @@ class GroupSignup extends AbstractGroupView {
 		bool $show_phone = true,
 		bool $show_pno = true,
 		bool $show_food = true,
+		bool $show_note = true,
 		string $role = self::ROLE_REGULAR_GROUP_MEMBER,
 		$errors = array()
 	): string {
@@ -121,6 +124,11 @@ class GroupSignup extends AbstractGroupView {
 		if ( $show_food ) {
 			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', Strings::get( 'person.form.food.hint' ) );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, @$errors[ self::FIELD_PERSON_FOOD ] );
+		}
+
+		if ( $show_note ) {
+			$person_name_question = new FieldText( 'Meddelande till tävlingsledningen', Strings::get( 'person.form.note.hint' ) );
+			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NOTE, @$errors[self::FIELD_PERSON_NOTE] );
 		}
 
 		$html_sections[] = $this->get_recaptcha_html();

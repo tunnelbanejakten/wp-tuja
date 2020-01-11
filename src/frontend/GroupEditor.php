@@ -11,6 +11,7 @@ use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\frontend\router\GroupHomeInitiator;
 use tuja\util\rules\RuleEvaluationException;
+use tuja\util\Strings;
 use tuja\util\WarningException;
 use tuja\view\EditGroupShortcode;
 use tuja\view\FieldChoices;
@@ -54,7 +55,7 @@ class GroupEditor extends AbstractGroupView {
 
 		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
 
-		$form          = $this->get_form_group_html( $errors );
+		$form          = $this->get_form_group_html( $errors, true );
 		$submit_button = $this->get_form_save_button_html();
 		$home_link     = GroupHomeInitiator::link( $group );
 		include( 'views/group-editor.php' );
@@ -69,7 +70,7 @@ class GroupEditor extends AbstractGroupView {
 		return $this->read_only;
 	}
 
-	private function get_form_group_html( array $errors ) {
+	private function get_form_group_html( array $errors, $show_note ) {
 		$html_sections = [];
 
 		$group = $this->get_group();
@@ -99,7 +100,7 @@ class GroupEditor extends AbstractGroupView {
 				default:
 					$group_category_question = new FieldChoices(
 						'Vilken klass tävlar ni i?',
-						'Välj den som de flesta av deltagarna tillhör.',
+						Strings::get('group.form.age.hint'),
 						false,
 						$group_category_options,
 						false );
@@ -108,6 +109,10 @@ class GroupEditor extends AbstractGroupView {
 			}
 		}
 
+		if ( $show_note ) {
+			$person_name_question = new FieldText( 'Något annat vi borde känna till?', Strings::get( 'group.form.note.hint' ) );
+			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_GROUP_NOTE, @$errors['note'], $group->note );
+		}
 
 		return join( $html_sections );
 	}
@@ -142,6 +147,7 @@ class GroupEditor extends AbstractGroupView {
 		// DETERMINE REQUESTED CHANGES
 		$posted_values         = [];
 		$posted_values['name'] = $_POST[ self::FIELD_GROUP_NAME ];
+		$posted_values['note'] = $_POST[ self::FIELD_GROUP_NOTE ];
 		if ( isset( $category ) ) {
 			$posted_values['category_id'] = $category->id;
 		}

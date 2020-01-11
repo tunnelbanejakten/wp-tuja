@@ -55,6 +55,7 @@ class Person {
 	private $is_attending;
 	public $pno;
 	public $age;
+	public $note;
 	private $status;
 
 	public function __construct() {
@@ -109,6 +110,9 @@ class Person {
 		}
 		if ( strlen( $this->food ) > 65000 ) {
 			throw new ValidationException( 'food', 'För lång text om mat och allergier.' );
+		}
+		if ( strlen( $this->note ) > 65000 ) {
+			throw new ValidationException( 'note', 'För långt meddelande.' );
 		}
 		$is_ssn_required = ! empty( trim( $this->pno ) ) || ( $this->is_competing() && $rule_set->is_ssn_required() );
 		if ( $is_ssn_required ) {

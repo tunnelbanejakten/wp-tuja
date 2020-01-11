@@ -72,6 +72,7 @@ class Group {
 	public $count_follower;
 	public $count_team_contact;
 	public $is_always_editable = false;
+	public $note;
 
 	public function __construct( $random_id = null ) {
 		$this->status    = new StateMachine( null, self::STATUS_TRANSITIONS );
@@ -87,6 +88,9 @@ class Group {
 		}
 		if ( $this->get_status() == null ) {
 			throw new ValidationException( 'status', 'Status måste vara satt.' );
+		}
+		if ( strlen( $this->note ) > 65000 ) {
+			throw new ValidationException( 'note', 'För långt meddelande.' );
 		}
 	}
 

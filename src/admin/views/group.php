@@ -10,8 +10,14 @@ AdminUtils::printTopMenu( $competition );
 ?>
 
 <form method="post" action="<?= add_query_arg() ?>" class="tuja">
-    <h3>Grupp <?= htmlspecialchars($group->name) ?> (id: <code><?= htmlspecialchars($group->random_id) ?></code>)</h3>
+    <h3>Grupp <?= htmlspecialchars( $group->name ) ?> (id: <code><?= htmlspecialchars( $group->random_id ) ?></code>)
+    </h3>
 
+	<?php
+	if ( ! empty( $group->note ) ) {
+		printf( '<p>Meddelande från laget: <em>%s</em></p>', $group->note );
+	}
+	?>
     <p>
         Länk för att redigera hela laget:
 		<?= sprintf( '<a href="%s">%s</a>', $group_editor_link, $group_editor_link ) ?>
@@ -34,12 +40,12 @@ AdminUtils::printTopMenu( $competition );
     </p>
     <div class="tuja-buttons">
         Ändra status:
-	    <?= join( array_map( function ( $allowed_next_state ) {
-		    return sprintf(
-			    '<button class="button" type="submit" name="tuja_points_action" value="transition__%s">%s</button>',
-			    $allowed_next_state,
-			    $allowed_next_state );
-	    }, \tuja\data\model\Group::STATUS_TRANSITIONS[ $group->get_status() ] ) ) ?>
+		<?= join( array_map( function ( $allowed_next_state ) {
+			return sprintf(
+				'<button class="button" type="submit" name="tuja_points_action" value="transition__%s">%s</button>',
+				$allowed_next_state,
+				$allowed_next_state );
+		}, \tuja\data\model\Group::STATUS_TRANSITIONS[ $group->get_status() ] ) ) ?>
     </div>
 
     <h3>Svar och poäng</h3>
@@ -73,7 +79,7 @@ AdminUtils::printTopMenu( $competition );
 
 	$review_component->render(
 		$_GET[ Group::QUESTION_FILTER_URL_PARAM ] ?: Group::DEFAULT_QUESTION_FILTER,
-		[$group],
+		[ $group ],
 		false );
 	?>
 
@@ -89,6 +95,8 @@ AdminUtils::printTopMenu( $competition );
             <th>Namn</th>
             <th>Personnummer</th>
             <th>Ålder</th>
+            <th>Mat</th>
+            <th>Meddelande</th>
             <th>Medföljare</th>
             <th>Lagledare</th>
             <th>Telefon</th>
@@ -102,12 +110,12 @@ AdminUtils::printTopMenu( $competition );
                 Flytta markerade deltagare till detta lag: <br>
                 <select name="tuja_group_move_people_to">
                     <option value="0">Välj lag</option>
-                    <?= join(array_map(function($g) use ($group) {
-	                    return sprintf( '<option value="%s" %s>%s</option>',
-                            $g->id,
-		                    $group->id == $g->id ? 'disabled="disabled"' : '',
-		                    $g->name);
-                    }, $groups)) ?>
+					<?= join( array_map( function ( $g ) use ( $group ) {
+						return sprintf( '<option value="%s" %s>%s</option>',
+							$g->id,
+							$group->id == $g->id ? 'disabled="disabled"' : '',
+							$g->name );
+					}, $groups ) ) ?>
                 </select>
                 <button class="button" type="submit" name="tuja_points_action" value="move_people">Flytta</button>
             </td>
@@ -123,6 +131,8 @@ AdminUtils::printTopMenu( $competition );
 			                '<td><label for="tuja_group_people__person_%d">%s</label></td>' .
 			                '<td>%s</td>' .
 			                '<td>%.1f</td>' .
+			                '<td><em>%s</em></td>' .
+			                '<td><em>%s</em></td>' .
 			                '<td>%s</td>' .
 			                '<td>%s</td>' .
 			                '<td>%s</td>' .
@@ -135,7 +145,9 @@ AdminUtils::printTopMenu( $competition );
 				$person->name,
 				$person->pno,
 				$person->age,
-				$person->is_adult_supervisor() ? 'Ja' : '' ,
+				$person->food,
+				$person->note,
+				$person->is_adult_supervisor() ? 'Ja' : '',
 				$person->is_group_leader() ? 'Ja' : '',
 				$person->phone,
 				$person->email,
@@ -168,10 +180,10 @@ AdminUtils::printTopMenu( $competition );
     <table>
         <tbody>
 
-        <?php
-        $messages = $db_message->get_by_group($group->id);
-        print $messages_manager->get_html( $messages )
-        ?>
+		<?php
+		$messages = $db_message->get_by_group( $group->id );
+		print $messages_manager->get_html( $messages )
+		?>
         </tbody>
     </table>
 </form>

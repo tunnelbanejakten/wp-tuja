@@ -43,4 +43,12 @@ class PassthroughRuleSet extends RuleSet {
 	function is_ssn_required(): bool {
 		return false;
 	}
+
+	function is_person_note_enabled(): bool {
+		return true;
+	}
+
+	function is_group_note_enabled(): bool {
+		return true;
+	}
 }

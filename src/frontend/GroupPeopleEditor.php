@@ -49,13 +49,14 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
 
-		$form_extra_contact = $this->get_form_extra_contact_html( $errors );
+		$notes_enabled      = $category->get_rule_set()->is_person_note_enabled();
+		$form_extra_contact = $this->get_form_extra_contact_html( $errors, $notes_enabled );
 		if ( $category->get_rule_set()->is_adult_supervisor_required() ) {
-			$form_adult_supervisor = $this->get_form_adult_supervisor_html( $errors );
+			$form_adult_supervisor = $this->get_form_adult_supervisor_html( $errors, $notes_enabled );
 		}
 		list ( $group_size_min, $group_size_max ) = $category->get_rule_set()->get_group_size_range();
-		$form_group_contact = $this->get_form_group_contact_html( $errors );
-		$form_group_members = $this->get_form_group_members_html( $errors );
+		$form_group_contact = $this->get_form_group_contact_html( $errors, $notes_enabled );
+		$form_group_members = $this->get_form_group_members_html( $errors, $notes_enabled );
 		$form_save_button   = $this->get_form_save_button_html();
 		$home_link          = GroupHomeInitiator::link( $group );
 		include( 'views/group-people-editor.php' );
@@ -69,7 +70,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		return $this->read_only;
 	}
 
-	private function get_form_adult_supervisor_html( array $errors ) {
+	private function get_form_adult_supervisor_html( array $errors, bool $notes_enabled ) {
 		$people = array_filter( $this->get_people(), function ( Person $person ) {
 			return $person->is_adult_supervisor();
 		} );
@@ -82,11 +83,12 @@ class GroupPeopleEditor extends AbstractGroupView {
 			false,
 			false,
 			true,
+			$notes_enabled,
 			self::ROLE_ADULT_SUPERVISOR,
 			'Lägg till vuxen' );
 	}
 
-	private function get_form_group_contact_html( array $errors ) {
+	private function get_form_group_contact_html( array $errors, bool $notes_enabled ) {
 		$people = array_filter( $this->get_people(), function ( Person $person ) {
 			return $person->is_group_leader();
 		} );
@@ -99,10 +101,11 @@ class GroupPeopleEditor extends AbstractGroupView {
 			true,
 			true,
 			true,
+			$notes_enabled,
 			self::ROLE_GROUP_LEADER );
 	}
 
-	private function get_form_group_members_html( array $errors ) {
+	private function get_form_group_members_html( array $errors, bool $notes_enabled ) {
 		$people = array_filter( $this->get_people(), function ( Person $person ) {
 			return $person->is_regular_group_member();
 		} );
@@ -116,11 +119,12 @@ class GroupPeopleEditor extends AbstractGroupView {
 			true,
 			true,
 			true,
+			$notes_enabled,
 			self::ROLE_REGULAR_GROUP_MEMBER,
 			'Lägg till deltagare' );
 	}
 
-	private function get_form_extra_contact_html( $errors ) {
+	private function get_form_extra_contact_html( array $errors, bool $notes_enabled ) {
 		$people = array_filter( $this->get_people(), function ( Person $person ) {
 			return $person->is_contact() && ! $person->is_attending();
 		} );
@@ -133,6 +137,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 			false,
 			false,
 			false,
+			$notes_enabled,
 			self::ROLE_EXTRA_CONTACT,
 			'Lägg till extra kontaktperson' );
 	}
@@ -146,6 +151,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		bool $show_pno,
 		bool $show_name,
 		bool $show_food,
+		bool $show_note,
 		string $role,
 		string $add_button_label = 'Ny person'
 	) {
@@ -153,14 +159,14 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		if ( is_array( $people ) ) {
 			$html_sections[] = sprintf( '<div class="tuja-people-existing">%s</div>',
-				join( array_map( function ( $person ) use ( $errors, $is_fixed_list, $show_email, $show_phone, $show_pno, $show_name, $show_food, $role ) {
-					return $this->render_person_form( $person, $show_name, $show_email, $show_phone, $show_pno, $show_food, ! $is_fixed_list, $role, $errors );
+				join( array_map( function ( $person ) use ( $errors, $is_fixed_list, $show_email, $show_phone, $show_pno, $show_name, $show_food, $show_note, $role ) {
+					return $this->render_person_form( $person, $show_name, $show_email, $show_phone, $show_pno, $show_food, $show_note, ! $is_fixed_list, $role, $errors );
 				}, $people ) ) );
 		}
 
 		if ( ! $is_fixed_list ) {
 			$html_sections[] = sprintf( '<div class="tuja-item-buttons"><button type="button" value="%s" class="tuja-add-person">%s</button></div>', 'new_person', $add_button_label );
-			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( new Person(), $show_name, $show_email, $show_phone, $show_pno, $show_food, ! $is_fixed_list, $role, $errors ) );
+			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( new Person(), $show_name, $show_email, $show_phone, $show_pno, $show_food, $show_note, ! $is_fixed_list, $role, $errors ) );
 		}
 
 		return sprintf( '<div class="tuja-people tuja-person-role-%s">%s</div>', $role, join( $html_sections ) );
@@ -216,6 +222,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		bool $show_phone = true,
 		bool $show_pno = true,
 		bool $show_food = true,
+		bool $show_note = true,
 		bool $show_delete = true,
 		string $role = self::ROLE_REGULAR_GROUP_MEMBER,
 		$errors = array()
@@ -252,6 +259,11 @@ class GroupPeopleEditor extends AbstractGroupView {
 		if ( $show_food ) {
 			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', Strings::get( 'person.form.food.hint' ), $read_only, [], true );
 			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD . '__' . $random_id, @$errors[ $random_id . '__food' ], $person->food );
+		}
+
+		if ( $show_note ) {
+			$person_name_question = new FieldText( 'Meddelande till tävlingsledningen', Strings::get( 'person.form.note.hint' ), $read_only, [], true );
+			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NOTE, @$errors['note'], $person->note );
 		}
 
 		$html_sections[] = sprintf( '<div style="display: none;"><input type="hidden" name="%s" value="%s"></div>',

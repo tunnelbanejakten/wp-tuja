@@ -105,7 +105,8 @@ class GroupDao extends AbstractDao {
 
 				'status'      => $group->get_status(),
 				'name'        => $group->name,
-				'category_id' => $group->category_id
+				'category_id' => $group->category_id,
+				'note'        => $group->note
 			),
 			array(
 				'%d',
@@ -113,7 +114,8 @@ class GroupDao extends AbstractDao {
 
 				'%s',
 				'%s',
-				'%d'
+				'%d',
+				'%s'
 			) );
 
 		$success = $affected_rows !== false && $affected_rows === 1;
@@ -196,6 +198,7 @@ class GroupDao extends AbstractDao {
 		$g->category_id        = $result->category_id;
 		$g->competition_id     = $result->competition_id;
 		$g->is_always_editable = $result->is_always_editable;
+		$g->note               = $result->note;
 		$g->set_status( $result->status );
 
 		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, true, $date );

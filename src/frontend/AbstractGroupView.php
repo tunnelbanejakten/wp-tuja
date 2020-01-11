@@ -99,6 +99,7 @@ abstract class AbstractGroupView extends FrontendView {
 		$person->phone = $_POST[ self::FIELD_PERSON_PHONE . $suffix ];
 		$person->pno   = $_POST[ self::FIELD_PERSON_PNO . $suffix ];
 		$person->food  = $_POST[ self::FIELD_PERSON_FOOD . $suffix ];
+		$person->note  = $_POST[ self::FIELD_PERSON_NOTE . $suffix ];
 		$person->set_status( Person::STATUS_CREATED );
 
 		switch ( $_POST[ self::FIELD_PERSON_ROLE . $suffix ] ) {
