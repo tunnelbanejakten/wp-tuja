@@ -15,6 +15,7 @@ use tuja\util\DateUtils;
 use tuja\util\messaging\EventMessageSender;
 use tuja\util\rules\CrewMembersRuleSet;
 use tuja\util\rules\OlderParticipantsRuleSet;
+use tuja\util\rules\PassthroughRuleSet;
 use tuja\util\rules\YoungParticipantsRuleSet;
 use tuja\util\Strings;
 
@@ -22,7 +23,7 @@ class CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	const RULE_SETS = [
-		''                              => 'Inga regler',
+		PassthroughRuleSet::class       => 'Inga regler',
 		YoungParticipantsRuleSet::class => 'Deltagare under 15 år',
 		OlderParticipantsRuleSet::class => 'Deltagare över 15 år',
 		CrewMembersRuleSet::class       => 'Funktionärer'
@@ -60,10 +61,6 @@ class CompetitionSettings {
 		$message_templates = $message_template_dao->get_all_in_competition( $competition->id );
 
 		$event_options = $this->get_event_options();
-
-		$files = array_filter( scandir( __DIR__ . '/default_message_templates' ), function ( $file ) {
-			return is_file( __DIR__ . '/default_message_templates/' . $file );
-		} );
 
 		$template_configs = [
 			'awaiting_checkin.email'                         => [
@@ -212,8 +209,6 @@ class CompetitionSettings {
 		$pattern = '
 			<div class="tuja-groupcategory-form">
 				<input type="text" placeholder="Mallens namn" size="50" name="%s" value="%s">
-				<input type="radio" name="%s" id="%s" value="true" %s><label for="%s">Funktionär</label>
-				<input type="radio" name="%s" id="%s" value="false" %s><label for="%s">Tävlande</label>
 				<select name="%s">%s</select>
 				<button class="button tuja-delete-groupcategory" type="button">
 					Ta bort
@@ -224,14 +219,6 @@ class CompetitionSettings {
 		return sprintf( $pattern,
 			$this->list_item_field_name( 'groupcategory', $category->id, 'name' ),
 			$category->name,
-			$this->list_item_field_name( 'groupcategory', $category->id, 'iscrew' ),
-			$id1,
-			$category->is_crew == true ? 'checked="checked"' : '',
-			$id1,
-			$this->list_item_field_name( 'groupcategory', $category->id, 'iscrew' ),
-			$id2,
-			$category->is_crew != true ? 'checked="checked"' : '',
-			$id2,
 			$this->list_item_field_name( 'groupcategory', $category->id, 'ruleset' ),
 			$rule_set_options_html );
 	}
@@ -332,7 +319,6 @@ class CompetitionSettings {
 				$new_template                      = new GroupCategory();
 				$new_template->competition_id      = $competition->id;
 				$new_template->name                = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
-				$new_template->is_crew             = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'iscrew' ) ] === 'true';
 				$rule_set_class_name               = stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'ruleset' ) ] );
 				$new_template->rule_set_class_name = ! empty( $rule_set_class_name ) && class_exists( $rule_set_class_name ) ? $rule_set_class_name : null;
 
@@ -348,7 +334,6 @@ class CompetitionSettings {
 			if ( isset( $category_map[ $id ] ) ) {
 				try {
 					$category_map[ $id ]->name                = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
-					$category_map[ $id ]->is_crew             = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'iscrew' ) ] === 'true';
 					$rule_set_class_name                      = stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'ruleset' ) ] );
 					$category_map[ $id ]->rule_set_class_name = ! empty( $rule_set_class_name ) && class_exists( $rule_set_class_name ) ? $rule_set_class_name : null;
 

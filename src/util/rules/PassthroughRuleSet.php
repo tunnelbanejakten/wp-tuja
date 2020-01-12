@@ -51,4 +51,8 @@ class PassthroughRuleSet extends RuleSet {
 	function is_group_note_enabled(): bool {
 		return true;
 	}
+
+	function is_crew(): bool {
+		return false;
+	}
 }

@@ -3,7 +3,8 @@
 namespace tuja\data\model;
 
 
-use tuja\util\GroupCategoryCalculator;
+use Exception;
+use tuja\data\store\GroupCategoryDao;
 use tuja\util\rules\RegistrationEvaluator;
 use tuja\util\StateMachine;
 use tuja\util\StateMachineException;
@@ -118,16 +119,14 @@ class Group {
 		return [];
 	}
 
-	public function get_derived_group_category() {
-		return self::get_group_calculator( $this->competition_id )->get_category( $this );
-	}
+	public function get_derived_group_category(): GroupCategory {
+		$group_category_dao = new GroupCategoryDao();
+		$obj                  = $group_category_dao->get( $this->category_id );
 
-	private static function get_group_calculator( $competition_id ): GroupCategoryCalculator {
-		if ( ! isset( self::$group_calculators[ $competition_id ] ) ) {
-			self::$group_calculators[ $competition_id ] = new GroupCategoryCalculator( $competition_id );
+		if ( $obj == false ) {
+			throw new Exception( 'Cannot find category' );
 		}
-
-		return self::$group_calculators[ $competition_id ];
+		return $obj;
 	}
 
 	public function get_status_changes() {

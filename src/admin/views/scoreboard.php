@@ -27,12 +27,11 @@ AdminUtils::printTopMenu( $competition );
 			return $b['score'] - $a['score'];
 		} );
 
-		$score_board = array_map( function ( $obj ) use ( $groups, $category_calculator ) {
-			$group_found = array_filter( $groups, function ( $group ) use ( $obj, $category_calculator ) {
+		$score_board = array_map( function ( $obj ) use ( $groups ) {
+			$group_found     = array_filter( $groups, function ( $group ) use ( $obj ) {
 				return $group->id == $obj['group_id'];
 			} );
-			$group = reset( $group_found );
-//			var_dump( $group );
+			$group           = reset( $group_found );
 			$obj['category'] = $group->get_derived_group_category();
 
 			return $obj;
@@ -43,8 +42,6 @@ AdminUtils::printTopMenu( $competition );
 			$key                               = $team_score['category'] ? $team_score['category']->name : 'Övriga';
 			$score_board_by_category[ $key ][] = $team_score;
 		}
-
-//		var_dump( $score_board_by_category );
 
 		foreach ( $score_board_by_category as $key => $score_board ) {
 			printf( '<tr><td><strong>%s</strong></td></tr>', $key );

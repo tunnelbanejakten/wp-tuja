@@ -2,15 +2,10 @@
 
 namespace tuja\admin;
 
-use tuja\data\model\Form;
 use tuja\data\model\Group;
-use tuja\data\store\GroupCategoryDao;
-use tuja\util\GroupCategoryCalculator;
-use tuja\util\score\ScoreCalculator;
-use tuja\data\store\FormDao;
-use tuja\data\store\GroupDao;
 use tuja\data\store\CompetitionDao;
-use tuja\data\model\ValidationException;
+use tuja\data\store\GroupCategoryDao;
+use tuja\data\store\GroupDao;
 
 class Scoreboard {
 
@@ -43,8 +38,6 @@ class Scoreboard {
 		$group_categories = $db_group_categories->get_all_in_competition( $this->competition->id );
 
 		$competition = $this->competition;
-
-		$category_calculator = new GroupCategoryCalculator( $competition->id );
 
 		include( 'views/scoreboard.php' );
 	}

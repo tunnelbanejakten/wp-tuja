@@ -128,7 +128,7 @@ abstract class FrontendView {
 
 	protected function get_categories( $competition_id ): array {
 		$categories = array_filter( $this->category_dao->get_all_in_competition( $competition_id ), function ( $category ) {
-			return ! $category->is_crew;
+			return ! $category->get_rule_set()->is_crew();
 		} );
 
 		return $categories;

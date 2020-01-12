@@ -20,7 +20,7 @@ class FieldGroupSelector {
 		$crew_category_ids  = array_map( function ( $category ) {
 			return $category->id;
 		}, array_filter( $group_categories, function ( $category ) {
-			return $category->is_crew;
+			return $category->get_rule_set()->is_crew();
 		} ) );
 
 		$group_dao       = new GroupDao();

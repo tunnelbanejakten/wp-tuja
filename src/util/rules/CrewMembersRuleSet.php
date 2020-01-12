@@ -51,4 +51,8 @@ class CrewMembersRuleSet extends RuleSet {
 	function is_group_note_enabled(): bool {
 		return false;
 	}
+
+	function is_crew(): bool {
+		return true;
+	}
 }

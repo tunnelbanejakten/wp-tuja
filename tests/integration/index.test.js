@@ -137,6 +137,7 @@ describe('wp-tuja', () => {
   let competitionId = null
   let competitionKey = null
   let competitionName = null
+  let crewGroupCategoryId = null
 
   function randomTeamName () {
     return [
@@ -252,7 +253,7 @@ describe('wp-tuja', () => {
 
     await adminPage.click('#tuja_tab_groups')
 
-    const addGroupCategory = async (name, isCrew, ruleSetName) => {
+    const addGroupCategory = async (name, ruleSetName) => {
       await adminPage.click('#tuja_add_group_category_button')
       const groupCategoryForm = await adminPage.page.$('div.tuja-groupcategory-form:last-of-type')
       const groupCategoryName = await groupCategoryForm.$('input[type=text]')
@@ -261,14 +262,15 @@ describe('wp-tuja', () => {
       await groupCategoryName.type(name)
       const groupCategoryRules = await groupCategoryForm.$('select[name="groupcategory__ruleset__' + tempGroupCategoryId + '"]')
       await groupCategoryRules.select(ruleSetName)
-      await adminPage.page.click('input[name="groupcategory__iscrew__' + tempGroupCategoryId + '"][value="' + isCrew + '"]')
     }
 
-    await addGroupCategory('Young Participants', false, 'tuja\\util\\rules\\YoungParticipantsRuleSet')
-    await addGroupCategory('Old Participants', false, 'tuja\\util\\rules\\OlderParticipantsRuleSet')
-    await addGroupCategory('The Crew', true, 'tuja\\util\\rules\\CrewMembersRuleSet')
+    const crewGroupCategoryName = 'The Crew'
+    await addGroupCategory('Young Participants', 'tuja\\util\\rules\\YoungParticipantsRuleSet')
+    await addGroupCategory('Old Participants', 'tuja\\util\\rules\\OlderParticipantsRuleSet')
+    await addGroupCategory(crewGroupCategoryName, 'tuja\\util\\rules\\CrewMembersRuleSet')
 
     await adminPage.clickLink('#tuja_save_competition_settings_button')
+    crewGroupCategoryId = await adminPage.$eval('input[type="text"][value="' + crewGroupCategoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
   }
 
   const configureEventDateLimits = async (startMinutes, endMinutes) => {
@@ -891,7 +893,7 @@ describe('wp-tuja', () => {
 
         await goto(groupProps.portalUrl)
         await clickLink('#tuja_edit_group_link')
-        await click('#tuja-group__age-1')
+        await click('input[name="tuja-group__age"]')
         await type('#tuja-group__name', newName)
         await type('#tuja-group__note', 'We will arrive a bit late.')
         await clickLink('#tuja_save_button')
@@ -901,7 +903,7 @@ describe('wp-tuja', () => {
         await expectPageTitle(`Hej ${newName}`)
 
         await goto(`http://localhost:8080/${groupProps.key}/andra`)
-        expect(await $eval('#tuja-group__age-1', node => node.checked)).toBeTruthy()
+        expect(await $eval('input[name="tuja-group__age"]', node => node.checked)).toBeTruthy()
         await expectFormValue('#tuja-group__name', newName)
         await expectFormValue('#tuja-group__note', 'We will arrive a bit late.')
       })
@@ -1272,8 +1274,7 @@ describe('wp-tuja', () => {
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Groups&tuja_competition=${competitionId}`)
 
       // Select crew category in tuja_new_group_type
-      const id = await adminPage.$eval('select[name="tuja_new_group_type"] > option:last-child', node => node.value)
-      await adminPage.page.select('select[name="tuja_new_group_type"]', id)
+      await adminPage.page.select('select[name="tuja_new_group_type"]', crewGroupCategoryId)
 
       // Type crew group name in tuja_new_group_name
       await adminPage.type('input[name="tuja_new_group_name"]', '_ The Regular Crew') // Underscore added to ensure group shown first in list(s)

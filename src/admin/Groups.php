@@ -5,14 +5,14 @@ namespace tuja\admin;
 use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
+use tuja\data\model\ValidationException;
+use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
+use tuja\data\store\GroupDao;
 use tuja\data\store\PersonDao;
 use tuja\data\store\ResponseDao;
-use tuja\util\GroupCategoryCalculator;
+use tuja\util\rules\PassthroughRuleSet;
 use tuja\util\rules\RuleResult;
-use tuja\data\store\GroupDao;
-use tuja\data\store\CompetitionDao;
-use tuja\data\model\ValidationException;
 
 class Groups {
 
@@ -79,11 +79,8 @@ class Groups {
 
 				$all_groups = $group_dao->get_all_in_competition( $this->competition->id, true );
 
-				$category_calculator = new GroupCategoryCalculator( $this->competition->id );
-				$competing_groups    = array_filter( $all_groups, function ( Group $grp ) use ( $category_calculator ) {
-					$category = $grp->get_derived_group_category();
-
-					return $category ? ! $category->is_crew : true;
+				$competing_groups = array_filter( $all_groups, function ( Group $grp ) {
+					return $grp->get_derived_group_category()->get_rule_set()->is_crew();
 				} );
 
 				switch ( $_POST['tuja_anonymizer_filter'] ) {
@@ -142,12 +139,12 @@ class Groups {
 		$people_competing    = 0;
 		$people_following    = 0;
 
-		$category_unknown          = new GroupCategory();
-		$category_unknown->name    = 'okänd';
-		$category_unknown->is_crew = false;
+		$category_unknown                      = new GroupCategory();
+		$category_unknown->name                = 'okänd';
+		$category_unknown->rule_set_class_name = PassthroughRuleSet::class;
 
 		$groups_data = [];
-		$groups      = $db_groups->get_all_in_competition( $competition->id , true);
+		$groups      = $db_groups->get_all_in_competition( $competition->id, true );
 
 		$unreviewed_answers = $this->get_unreviewed_answers_count();
 
@@ -178,7 +175,7 @@ class Groups {
 			$group_data['category']         = $group->get_derived_group_category() ?: $category_unknown;
 			$group_data['count_unreviewed'] = @$unreviewed_answers[ $group->id ] ?: 0;
 
-			if ( ! $group_data['category']->is_crew ) {
+			if ( ! $group_data['category']->get_rule_set()->is_crew() ) {
 				$groups_competing                                     += 1;
 				$people_competing                                     += $group->count_competing;
 				$people_following                                     += $group->count_follower;
@@ -198,7 +195,7 @@ class Groups {
 			[
 				'Tävlande lag',
 				function ( $group_data ) {
-					return ! $group_data['category']->is_crew;
+					return ! $group_data['category']->get_rule_set()->is_crew();
 				}
 			],
 			[
@@ -250,9 +247,7 @@ class Groups {
 				return $category->id;
 			}, $group_categories ),
 			array_map( function ( GroupCategory $category ) {
-				return sprintf( '%s (%s)',
-					$category->name,
-					$category->is_crew ? 'Funktionär' : 'Tävlande' );
+				return $category->name . ($category->get_rule_set()->is_crew() ? ' (Funktionär)' : '');
 			}, $group_categories )
 		);
 	}

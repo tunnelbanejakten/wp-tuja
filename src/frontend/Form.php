@@ -148,7 +148,7 @@ class Form extends AbstractGroupView {
 
 		$group_category              = $group->get_derived_group_category();
 		$crew_user_must_select_group = $this->is_crew_override;
-		$user_is_crew                = isset( $group_category ) && $group_category->is_crew;
+		$user_is_crew                = isset( $group_category ) && $group_category->get_rule_set()->is_crew();
 		if ( $user_is_crew && $crew_user_must_select_group ) {
 			$participant_groups = $this->get_participant_groups();
 
@@ -269,7 +269,7 @@ class Form extends AbstractGroupView {
 
 		$categories             = $this->category_dao->get_all_in_competition( $competition_id );
 		$participant_categories = array_filter( $categories, function ( $category ) {
-			return ! $category->is_crew;
+			return ! $category->get_rule_set()->is_crew();
 		} );
 		$ids                    = array_map( function ( $category ) {
 			return $category->id;

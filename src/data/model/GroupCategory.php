@@ -12,7 +12,6 @@ class GroupCategory
 {
 	public $id;
 	public $competition_id;
-	public $is_crew;
 	public $name;
 	public $rule_set_class_name;
 

@@ -70,8 +70,8 @@ class AbstractGroupShortcode extends AbstractShortcode
     protected function get_categories($competition_id): array
     {
         $filter_crew_categories = $this->is_crew_form == true;
-        $categories = array_filter($this->category_dao->get_all_in_competition($competition_id), function ($category) use ($filter_crew_categories) {
-            return $category->is_crew == $filter_crew_categories;
+        $categories = array_filter($this->category_dao->get_all_in_competition($competition_id), function (GroupCategory $category) use ($filter_crew_categories) {
+            return $category->get_rule_set()->is_crew() == $filter_crew_categories;
         });
         return $categories;
     }
