@@ -43,7 +43,7 @@ class ReportPayments extends AbstractReport {
 				$date
 			),
 			function ( Group $group ) {
-				return ! $group->get_derived_group_category()->get_rule_set()->is_crew();
+				return ! $group->get_category()->get_rule_set()->is_crew();
 			} ) );
 	}
 

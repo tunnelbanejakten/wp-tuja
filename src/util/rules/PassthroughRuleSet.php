@@ -9,7 +9,7 @@ use tuja\data\model\Competition;
 class PassthroughRuleSet extends RuleSet {
 
 	function get_group_size_range() {
-		return [ 0, 10000 ];
+		return [ 0, 100 ];
 	}
 
 	function is_group_leader_required(): bool {

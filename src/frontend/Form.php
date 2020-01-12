@@ -29,12 +29,10 @@ class Form extends AbstractGroupView {
 	private $category_dao;
 	private $question_group_dao;
 	private $form_dao;
-	private $is_crew_override;
 
 	const RESPONSE_FIELD_NAME_PREFIX = 'tuja_formshortcode__response__';
 	const ACTION_FIELD_NAME = 'tuja_formshortcode__action';
 	const OPTIMISTIC_LOCK_FIELD_NAME = 'tuja_formshortcode__optimistic_lock';
-	const TEAMS_DROPDOWN_NAME = 'tuja_formshortcode__group';
 
 	public function __construct( string $url, string $group_key, int $form_id ) {
 		parent::__construct( $url, $group_key, 'Svara' );
@@ -146,21 +144,7 @@ class Form extends AbstractGroupView {
 		$html_sections = [];
 		$group         = $this->get_group();
 
-		$group_category              = $group->get_derived_group_category();
-		$crew_user_must_select_group = $this->is_crew_override;
-		$user_is_crew                = isset( $group_category ) && $group_category->get_rule_set()->is_crew();
-		if ( $user_is_crew && $crew_user_must_select_group ) {
-			$participant_groups = $this->get_participant_groups();
-
-			$html_sections[] = sprintf( '<p>%s</p>', $this->get_groups_dropdown( $participant_groups ) );
-
-			$selected_participant_group = $this->get_selected_group( $participant_groups );
-
-			$target_group = $selected_participant_group;
-		} else {
-			$target_group = $group;
-		}
-		$target_group_id = $group->id;
+		$group_id = $group->id;
 
 		if ( ! $this->is_form_opened() ) {
 			return sprintf( '<p class="tuja-message tuja-message-warning">%s</p>', 'Formuläret kan inte visas just nu.' );
@@ -168,14 +152,14 @@ class Form extends AbstractGroupView {
 
 		$is_read_only = ! $this->is_submit_allowed();
 
-		if ( $target_group_id ) {
+		if ( $group_id ) {
 			$message_success = null;
 			$message_error   = null;
 			$errors          = array();
 			$is_update       = isset( $_POST[ self::ACTION_FIELD_NAME ] ) && $_POST[ self::ACTION_FIELD_NAME ] === 'update';
 
 			if ( $is_update ) {
-				$errors = $this->update_answers( $target_group_id );
+				$errors = $this->update_answers( $group_id );
 				if ( empty( $errors ) ) {
 					$message_success = 'Era svar har sparats.';
 					$html_sections[] = sprintf( '<p class="tuja-message tuja-message-success">%s</p>', $message_success );
@@ -188,7 +172,7 @@ class Form extends AbstractGroupView {
 				}
 			}
 
-			$responses       = $this->response_dao->get_latest_by_group( $target_group_id );
+			$responses       = $this->response_dao->get_latest_by_group( $group_id );
 			$question_groups = $this->question_group_dao->get_all_in_form( $this->form_id );
 
 			foreach ( $question_groups as $question_group ) {
@@ -212,7 +196,7 @@ class Form extends AbstractGroupView {
 						$field_name,
 						$is_read_only,
 						isset( $responses[ $question->id ] ) ? $responses[ $question->id ]->submitted_answer : null,
-						$target_group );
+						$group );
 
 					$current_group .= sprintf( '<div class="tuja-question %s" data-id="%d">%s%s</div>',
 						isset( $errors[ $field_name ] ) ? 'tuja-field-error' : '',
@@ -231,7 +215,7 @@ class Form extends AbstractGroupView {
 				$question_ids          = array_map( function ( $question ) {
 					return $question->id;
 				}, $questions );
-				$optimistic_lock_value = $this->get_optimistic_lock_value( $target_group_id, (array) $question_ids );
+				$optimistic_lock_value = $this->get_optimistic_lock_value( $group_id, (array) $question_ids );
 
 				$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::OPTIMISTIC_LOCK_FIELD_NAME, $optimistic_lock_value );
 				$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', 'group', $this->get_group()->random_id );
@@ -245,53 +229,6 @@ class Form extends AbstractGroupView {
 		}
 
 		return sprintf( '<form method="post" enctype="multipart/form-data">%s</form>', join( $html_sections ) );
-	}
-
-	private function get_groups_dropdown( $participant_groups ): string {
-		$field = new FieldChoices(
-			'Vilket lag vill du rapportera för?',
-			'Byt inte lag om du har osparade ändringar.',
-			true,
-			array_merge(
-				array( '' => 'Välj lag' ),
-				array_map( function ( $option ) {
-					return $option->name;
-				}, $participant_groups ) ),
-			false,
-			true );
-
-		return $field->render( self::TEAMS_DROPDOWN_NAME, null );
-	}
-
-	private function get_participant_groups(): array {
-		$form           = $this->form_dao->get( $this->form_id );
-		$competition_id = $form->competition_id;
-
-		$categories             = $this->category_dao->get_all_in_competition( $competition_id );
-		$participant_categories = array_filter( $categories, function ( $category ) {
-			return ! $category->get_rule_set()->is_crew();
-		} );
-		$ids                    = array_map( function ( $category ) {
-			return $category->id;
-		}, $participant_categories );
-
-		$competition_groups = $this->group_dao->get_all_in_competition( $competition_id );
-		$participant_groups = array_filter( $competition_groups, function ( Group $group ) use ( $ids ) {
-			$group_category = $group->get_derived_group_category();
-
-			return isset( $group_category ) && in_array( $group_category->id, $ids );
-		} );
-
-		return $participant_groups;
-	}
-
-	private function get_selected_group( $participant_groups ) {
-		$selected_group_name = $_POST[ self::TEAMS_DROPDOWN_NAME ];
-		$selected_group      = array_values( array_filter( $participant_groups, function ( $group ) use ( $selected_group_name ) {
-			return strcmp( $group->name, $selected_group_name ) == 0;
-		} ) )[0];
-
-		return $selected_group;
 	}
 
 	private function get_optimistic_lock_value( $group_id, array $response_question_ids ) {

@@ -66,6 +66,7 @@ class Group {
 	public $competition_id;
 	public $name;
 	public $category_id;
+	private $category_obj = null;
 	public $age_competing_avg;
 	public $age_competing_min;
 	public $age_competing_max;
@@ -108,7 +109,7 @@ class Group {
 	}
 
 	public function evaluate_registration(): array {
-		$category = $this->get_derived_group_category();
+		$category = $this->get_category();
 		if ( isset( $category ) ) {
 			$rule_set  = $category->get_rule_set();
 			$evaluator = new RegistrationEvaluator( $rule_set );
@@ -119,14 +120,19 @@ class Group {
 		return [];
 	}
 
-	public function get_derived_group_category(): GroupCategory {
-		$group_category_dao = new GroupCategoryDao();
-		$obj                  = $group_category_dao->get( $this->category_id );
+	public function get_category(): GroupCategory {
+		if ( $this->category_obj == null ) {
 
-		if ( $obj == false ) {
-			throw new Exception( 'Cannot find category' );
+			$group_category_dao = new GroupCategoryDao();
+			$obj                = $group_category_dao->get( $this->category_id );
+
+			if ( $obj == false ) {
+				throw new Exception( 'Cannot find category' );
+			}
+			$this->category_obj = $obj;
 		}
-		return $obj;
+
+		return $this->category_obj;
 	}
 
 	public function get_status_changes() {

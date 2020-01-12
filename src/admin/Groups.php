@@ -80,7 +80,7 @@ class Groups {
 				$all_groups = $group_dao->get_all_in_competition( $this->competition->id, true );
 
 				$competing_groups = array_filter( $all_groups, function ( Group $grp ) {
-					return $grp->get_derived_group_category()->get_rule_set()->is_crew();
+					return $grp->get_category()->get_rule_set()->is_crew();
 				} );
 
 				switch ( $_POST['tuja_anonymizer_filter'] ) {
@@ -172,7 +172,7 @@ class Groups {
 				'tuja_view'                                  => 'Group',
 				\tuja\admin\Group::QUESTION_FILTER_URL_PARAM => ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL
 			) );
-			$group_data['category']         = $group->get_derived_group_category() ?: $category_unknown;
+			$group_data['category']         = $group->get_category() ?: $category_unknown;
 			$group_data['count_unreviewed'] = @$unreviewed_answers[ $group->id ] ?: 0;
 
 			if ( ! $group_data['category']->get_rule_set()->is_crew() ) {

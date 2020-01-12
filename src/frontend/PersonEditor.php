@@ -33,7 +33,7 @@ class PersonEditor extends AbstractGroupView {
 
 		$is_read_only = ! $this->is_edit_allowed( $group );
 
-		$real_category               = $group->get_derived_group_category();
+		$real_category               = $group->get_category();
 		$collect_contact_information = $real_category->get_rule_set()->is_contact_information_required_for_regular_group_member();
 		$collect_ssn                 = $real_category->get_rule_set()->is_ssn_required();
 		$notes_enabled               = $real_category->get_rule_set()->is_person_note_enabled();

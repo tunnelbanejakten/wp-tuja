@@ -18,10 +18,10 @@ class ReportGroupScore extends AbstractReport {
 		return array_map( function ( Group $group ) {
 			return [
 				'name'     => $group->name,
-				'category' => $group->get_derived_group_category()->name
+				'category' => $group->get_category()->name
 			];
 		}, array_filter( $this->group_dao->get_all_in_competition( $this->competition->id ), function ( Group $group ) {
-			return ! $group->get_derived_group_category()->get_rule_set()->is_crew();
+			return ! $group->get_category()->get_rule_set()->is_crew();
 		} ) );
 	}
 

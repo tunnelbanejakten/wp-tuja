@@ -38,7 +38,7 @@ class FieldGroupSelector {
 					'key'      => 'competinggroups',
 					'label'    => 'alla tävlande grupper',
 					'selector' => function ( Group $group ) use ( $crew_category_ids ) {
-						$category = $group->get_derived_group_category();
+						$category = $group->get_category();
 
 						return isset( $category ) && ! in_array( $category->id, $crew_category_ids );
 					}
@@ -47,7 +47,7 @@ class FieldGroupSelector {
 					'key'      => 'crewgroups',
 					'label'    => 'alla funktionärsgrupper',
 					'selector' => function ( Group $group ) use ( $crew_category_ids ) {
-						$category = $group->get_derived_group_category();
+						$category = $group->get_category();
 
 						return isset( $category ) && in_array( $category->id, $crew_category_ids );
 					}
@@ -59,7 +59,7 @@ class FieldGroupSelector {
 						'key'      => 'category' . $category->id,
 						'label'    => 'alla grupper i kategorin ' . $category->name,
 						'selector' => function ( Group $group ) use ( $category ) {
-							$group_category = $group->get_derived_group_category();
+							$group_category = $group->get_category();
 
 							return isset( $group_category ) && $group_category->id === $category->id;
 						}

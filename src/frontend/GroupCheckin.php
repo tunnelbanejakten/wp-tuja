@@ -32,7 +32,7 @@ class GroupCheckin extends AbstractGroupView {
 
 	function output() {
 		$group    = $this->get_group();
-		$category = $group->get_derived_group_category();
+		$category = $group->get_category();
 
 		if ( $group->get_status() == Group::STATUS_CHECKEDIN ) {
 			printf( '<div class="tuja-message tuja-message-success">%s</div>', Strings::get( 'checkin.already_checked_in' ) );

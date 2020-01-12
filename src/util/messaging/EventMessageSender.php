@@ -42,7 +42,7 @@ class EventMessageSender {
 
 		$group = $this->group_dao->get($person->group_id);
 
-		$group_category = $group->get_derived_group_category();
+		$group_category = $group->get_category();
 
 		$is_crew_group = isset( $group_category ) && $group_category->get_rule_set()->is_crew();
 

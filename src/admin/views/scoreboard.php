@@ -32,7 +32,7 @@ AdminUtils::printTopMenu( $competition );
 				return $group->id == $obj['group_id'];
 			} );
 			$group           = reset( $group_found );
-			$obj['category'] = $group->get_derived_group_category();
+			$obj['category'] = $group->get_category();
 
 			return $obj;
 		}, $score_board );

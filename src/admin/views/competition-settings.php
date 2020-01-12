@@ -117,46 +117,16 @@ AdminUtils::printTopMenu( $competition );
 
         <p>
             Grupptyper gör det möjligt att hantera flera tävlingsklasser och att skilja på tävlande och funktionärer.
+            Grypptyper ska inte förväxlas med grupper. En tävling kan ha flera grupper och varje person är med i en
+            grupp. Grupptyper är ett sätt att klassificera grupperna utifrån deras roll i tävlingen.
         </p>
-        <div class="tuja-groupcategory-existing">
-			<?= join( array_map( function ( GroupCategory $category ) {
-				return $this->print_group_category_form( $category );
-			}, $category_dao->get_all_in_competition( $competition->id ) ) ) ?>
-        </div>
-        <div class="tuja-groupcategory-template">
-			<?= $this->print_group_category_form( new GroupCategory() ) ?>
-        </div>
-        <button class="button tuja-add-groupcategory" type="button" id="tuja_add_group_category_button">
-            Ny
-        </button>
-
-        <p><strong>Grupper och grupptyper:</strong></p>
-
-        <p>Grypptyper ska inte förväxlas med grupper. En tävling kan ha flera grupper och varje person är med i en
-            grupp. Grupptyper är ett sätt att klassificera grupperna utifrån deras roll i tävlingen.</p>
-
-        <p><strong>Regler för Tävlande eller Funktionär:</strong></p>
-
-        <p>Detta gäller för grupper som har en grupptyp som är Funktionär:</p>
-        <ul>
-            <li>Personer i dessa grupper får rapportera in poäng för vilken grupp som helst.</li>
-            <li>Personer i dessa grupper får besvara formulär åt vilken grupp som helst.</li>
-            <li>Exempel på funktionärsgrupptyper: Kontrollanter, Tävlingsledning.</li>
-        </ul>
-        <p>Detta gäller för grupper som har en grupptyp som är Tävlande:</p>
-        <ul>
-            <li>Personer i dessa grupper får inte rapportera in poäng.</li>
-            <li>Personer i dessa grupper får enbart besvara formulär för egen räkning.</li>
-            <li>Exempel på tävlande grupptyper: Nybörjare, Veteraner, Super-experter.</li>
-        </ul>
-
-        <p><strong>Ytterligare regler som kan appliceras:</strong></p>
-
         <table>
             <thead>
             <tr>
-                <th rowspan="2" valign="top">Uppsättning</th>
+                <th rowspan="2" valign="top">Regeluppsättning</th>
                 <th rowspan="2" valign="top">Vuxen medföljare</th>
+                <th rowspan="2" valign="top">Antal i grupp</th>
+                <th rowspan="2" valign="top">Rapportera poäng</th>
                 <th colspan="3" valign="top">Sista dag för att</th>
             </tr>
             <tr>
@@ -170,9 +140,11 @@ AdminUtils::printTopMenu( $competition );
 			foreach ( self::RULE_SETS as $class_name => $label ) {
 				if ( ! empty( $class_name ) ) {
 					$rules = new $class_name;
-					printf( '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
+					printf( '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
 						$label,
 						$rules->is_adult_supervisor_required() ? 'Ja, krav' : '-',
+						join('-', $rules->get_group_size_range()),
+						$rules->is_crew() ? 'Ja' : '-',
 						$rules->get_create_registration_period( $competition )->end->format( 'd M' ),
 						$rules->get_update_registration_period( $competition )->end->format( 'd M' ),
 						$rules->get_delete_registration_period( $competition )->end->format( 'd M' ) );
@@ -181,6 +153,19 @@ AdminUtils::printTopMenu( $competition );
 			?>
             </tbody>
         </table>
+        <br>
+        <div class="tuja-groupcategory-existing">
+			<?= join( array_map( function ( GroupCategory $category ) {
+				return $this->print_group_category_form( $category );
+			}, $category_dao->get_all_in_competition( $competition->id ) ) ) ?>
+        </div>
+        <div class="tuja-groupcategory-template">
+			<?= $this->print_group_category_form( new GroupCategory() ) ?>
+        </div>
+        <button class="button tuja-add-groupcategory" type="button" id="tuja_add_group_category_button">
+            Ny
+        </button>
+
     </div>
     <div class="tuja-tab" id="tuja-tab-strings">
 

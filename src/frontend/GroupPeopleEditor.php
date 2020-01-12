@@ -32,7 +32,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		$this->check_group_status( $group );
 
-		$category = $group->get_derived_group_category();
+		$category = $group->get_category();
 		$errors   = [];
 
 		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
@@ -285,7 +285,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		$group_id          = $group->id;
 		$competition       = $this->competition_dao->get( $group->competition_id );
 
-		$category = $group->get_derived_group_category();
+		$category = $group->get_category();
 
 		// DETERMINE REQUESTED CHANGES
 		$people = $this->get_current_group_members();
@@ -303,7 +303,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		if ( ! $this->is_edit_allowed( $group ) ) {
 			throw new RuleEvaluationException( 'Det går inte att ändra anmälan nu' );
 		}
-		$real_category = $group->get_derived_group_category();
+		$real_category = $group->get_category();
 		if ( isset( $real_category ) && ! empty( $deleted_ids ) ) {
 			$delete_group_member_allowed = $real_category->get_rule_set()->is_delete_group_member_allowed( $competition );
 			if ( ! $delete_group_member_allowed ) {

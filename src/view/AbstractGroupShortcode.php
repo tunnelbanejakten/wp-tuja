@@ -116,7 +116,7 @@ class AbstractGroupShortcode extends AbstractShortcode
         if ($competition->edit_group_end != null && $competition->edit_group_end < $now) {
             return false;
         }
-	    $category = $group->get_derived_group_category();
+	    $category = $group->get_category();
 	    return ! isset( $category ) || $category->get_rule_set()->is_update_registration_allowed( $competition );
     }
 }
