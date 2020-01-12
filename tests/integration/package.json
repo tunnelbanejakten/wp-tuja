@@ -2,8 +2,8 @@
   "name": "wp-tuja-tests",
   "version": "1.0.0",
   "scripts": {
-    "test": "jest",
-    "test:visible": "HEADLESS=false jest"
+    "test": "jest --runInBand",
+    "test:visible": "HEADLESS=false jest --runInBand"
   },
   "dependencies": {},
   "main": "index.test.js",

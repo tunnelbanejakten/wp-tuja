@@ -23,12 +23,12 @@ AdminUtils::printTopMenu( $competition );
             <div class="tuja-admin-question-properties">
                 <div class="tuja-admin-question-property tuja-admin-question-short">
                     <label for="">Start</label>
-                    <input type="datetime-local" name="tuja_event_start" placeholder="yyyy-mm-dd hh:mm"
+                    <input type="datetime-local" name="tuja_event_start" id="tuja_event_start" placeholder="yyyy-mm-dd hh:mm"
                            value="<?= DateUtils::to_date_local_value( $competition->event_start ) ?>"/>
                 </div>
                 <div class="tuja-admin-question-property tuja-admin-question-short">
                     <label for="">Slut</label>
-                    <input type="datetime-local" name="tuja_event_end" placeholder="yyyy-mm-dd hh:mm"
+                    <input type="datetime-local" name="tuja_event_end" id="tuja_event_end" placeholder="yyyy-mm-dd hh:mm"
                            value="<?= DateUtils::to_date_local_value( $competition->event_end ) ?>"/>
                 </div>
             </div>

@@ -26,6 +26,7 @@ class GroupTickets extends AbstractGroupView {
 		$group      = $this->get_group();
 
 		$this->check_group_status( $group );
+		$this->check_event_is_ongoing( );
 
 		$error_message   = '';
 		$success_message = '';

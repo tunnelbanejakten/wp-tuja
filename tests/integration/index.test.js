@@ -8,7 +8,6 @@ class PageWrapper {
   }
 
   async init () {
-    console.log('🎁 Wrapping new incognito browser')
     // Create a new incognito browser context.
     const context = await browser.createIncognitoBrowserContext()
     // Create a new page in a pristine context.
@@ -102,6 +101,14 @@ class PageWrapper {
     // console.log('📷', path)
     await this._page.screenshot({ path: path, fullPage: true })
   }
+
+  async setDateInput (selector, secondsFromNow) {
+    const localTzOffsetSeconds = new Date().getTimezoneOffset() * 60
+
+    const dateStr = new Date(new Date().getTime() + (secondsFromNow - localTzOffsetSeconds) * 1000).toISOString().substr(0, 16)
+
+    await this._page.$eval(selector, (node, date) => node.value = date, dateStr)
+  }
 }
 
 const defaultPage = new PageWrapper()
@@ -131,8 +138,18 @@ describe('wp-tuja', () => {
   let competitionKey = null
   let competitionName = null
 
+  function randomTeamName () {
+    return [
+      ['The', 'Awesome', 'Five', 'Chill'],
+      ['Moose', 'Wolves', 'Bears', 'Lynx', 'Foxes', 'Wolverines', 'Boars', 'Otters', 'Lemmings'],
+      ['of', 'from'],
+      ['Norrmalm', 'Gothenburg', 'Nacka', 'Kungsholmen', 'Solna', 'Farsta']
+    ].map(options => options[Math.floor(Math.random() * options.length)]).join(' ')
+  }
+
   const signUpTeam = async (isAutomaticallyAccepted = true) => {
-    const name = faker.lorem.words()
+    await configureEventDateLimits(7 * 24 * 60, 7 * 24 * 60 + 60)
+    const name = randomTeamName()
     await goto(`http://localhost:8080/${competitionKey}/anmal`)
     await expectPageTitle(`Anmäl er till ${competitionName}`)
     await click('#tuja-group__age-0')
@@ -254,6 +271,15 @@ describe('wp-tuja', () => {
     await adminPage.clickLink('#tuja_save_competition_settings_button')
   }
 
+  const configureEventDateLimits = async (startMinutes, endMinutes) => {
+    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+
+    await adminPage.setDateInput('#tuja_event_start', startMinutes * 60)
+    await adminPage.setDateInput('#tuja_event_end', endMinutes * 60)
+
+    await adminPage.clickLink('#tuja_save_competition_settings_button')
+  }
+
   beforeAll(async () => {
 
     jest.setTimeout(300000)
@@ -312,16 +338,10 @@ describe('wp-tuja', () => {
     }
 
     const configureFormDateLimits = async (startMinutes, endMinutes) => {
-      const MINUTE = 60 * 1000
-      const localTzOffsetMinutes = new Date().getTimezoneOffset()
-
-      const formOpenDate = new Date(new Date().getTime() + startMinutes * MINUTE - localTzOffsetMinutes * MINUTE).toISOString().substr(0, 16)
-      const formCloseDate = new Date(new Date().getTime() + endMinutes * MINUTE - localTzOffsetMinutes * MINUTE).toISOString().substr(0, 16)
-
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
 
-      await adminPage.page.$eval('#tuja-submit-response-start', (node, date) => node.value = date, formOpenDate)
-      await adminPage.page.$eval('#tuja-submit-response-end', (node, date) => node.value = date, formCloseDate)
+      await adminPage.setDateInput('#tuja-submit-response-start', startMinutes * 60)
+      await adminPage.setDateInput('#tuja-submit-response-end', endMinutes * 60)
 
       await adminPage.clickLink('button[name="tuja_action"][value="form_update"]')
     }
@@ -542,6 +562,9 @@ describe('wp-tuja', () => {
       // if Alice cared about this value or not (we don't know if Alice wanted it to stay the same of if she's okay
       // with Bob changing it.)
       await bobSession.expectFormValue('input.tuja-fieldtext[type="number"]', expectedNumberAnswer)
+
+      await aliceSession.close()
+      await bobSession.close()
     })
 
     it('should be possible for two people in the same team to give the same answer concurrently', async () => {
@@ -566,6 +589,9 @@ describe('wp-tuja', () => {
       // Bob gets no error message, even though his lock value is out-of-date, since he doesn't actually change anything compared to the latest answers (i.e. the answer updated by Alice).
       await bobSession.expectElementCount('.tuja-message-error', 0)
       await bobSession.expectFormValue('input.tuja-fieldtext[type="text"]', 'The new answer')
+
+      await aliceSession.close()
+      await bobSession.close()
     })
   })
 
@@ -643,6 +669,8 @@ describe('wp-tuja', () => {
     it('get tickets', async () => {
       const groupAliceProps = await signUpTeam()
       const groupBobProps = await signUpTeam()
+
+      await configureEventDateLimits(-1, 10) // Event ends in 10 minutes
 
       //
       // Verify that Alice's team has no tickets.
@@ -742,6 +770,9 @@ describe('wp-tuja', () => {
 
     it('should not care about capitalization of password', async () => {
       const groupAliceProps = await signUpTeam()
+
+      await configureEventDateLimits(-1, 10) // Event ends in 10 minutes
+
       await goto(`http://localhost:8080/${groupAliceProps.key}/biljetter`)
 
       //
@@ -769,6 +800,20 @@ describe('wp-tuja', () => {
         await expectSuccessMessage('Ni har fått') // We don't care about the number of tickets, just that we don't get an error
       }
     })
+
+    it('should not be possible to use ticket function before the event', async () => {
+      const groupProps = await signUpTeam()
+
+      await configureEventDateLimits(10, 11) // Event begins in 10 minutes
+
+      await goto(`http://localhost:8080/${groupProps.key}/biljetter`)
+
+      await expectErrorMessage('Tävlingen har inte öppnat än.')
+      await expectElementCount('form', 0)
+      await expectElementCount('button', 0)
+      await expectElementCount('input', 0)
+      await expectElementCount('select', 0)
+    })
   })
 
   describe('Signing up as new team', () => {
@@ -779,7 +824,10 @@ describe('wp-tuja', () => {
 
       beforeAll(async () => {
         await configureDefaultGroupStatus('awaiting_approval')
+
         groupProps = await signUpTeam(false)
+
+        await configureEventDateLimits(7 * 24 * 60, 7 * 24 * 60 + 60)
       })
 
       afterAll(async () => {
@@ -828,6 +876,8 @@ describe('wp-tuja', () => {
 
       beforeAll(async () => {
         groupProps = await signUpTeam()
+
+        await configureEventDateLimits(7 * 24 * 60, 7 * 24 * 60 + 60)
       })
 
       it('team portal is accessible', async () => {
@@ -1237,6 +1287,8 @@ describe('wp-tuja', () => {
       crewGroupProps = {
         key
       }
+
+      await configureEventDateLimits(7 * 24 * 60, 7 * 24 * 60 + 60)
     })
 
     describe('report score', () => {

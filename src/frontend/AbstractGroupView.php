@@ -126,6 +126,16 @@ abstract class AbstractGroupView extends FrontendView {
 		}
 	}
 
+	protected function check_event_is_ongoing() {
+		$competition      = $this->competition_dao->get( $this->get_group()->competition_id );
+		$now              = new DateTime();
+		$is_event_ongoing = ( $competition->event_start == null || $competition->event_start <= $now )
+		                    && ( $competition->event_end == null || $now <= $competition->event_end );
+		if ( ! $is_event_ongoing ) {
+			throw new Exception( 'Tävlingen har inte öppnat än.' );
+		}
+	}
+
 	protected function get_exception_message_html( Throwable $e ) {
 		return sprintf( '<p class="tuja-message %s">%s</p>',
 			$e instanceof WarningException ? 'tuja-message-warning' : 'tuja-message-error',
