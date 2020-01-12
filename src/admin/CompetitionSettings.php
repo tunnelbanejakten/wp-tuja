@@ -65,18 +65,67 @@ class CompetitionSettings {
 			return is_file( __DIR__ . '/default_message_templates/' . $file );
 		} );
 
+		$template_configs = [
+			'awaiting_checkin.email'                         => [
+				'name'                => 'Dags att checka in - E-post',
+				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_ACCEPTED, \tuja\data\model\Group::STATUS_AWAITING_CHECKIN ),
+				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
+				'delivery_method'     => MessageTemplate::EMAIL
+			],
+			'awaiting_checkin.sms'                           => [
+				'name'                => 'Dags att checka in - SMS',
+				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_ACCEPTED, \tuja\data\model\Group::STATUS_AWAITING_CHECKIN ),
+				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
+				'delivery_method'     => MessageTemplate::SMS
+			],
+			'group_accepted_by_default'                      => [
+				'name'                => 'Ny grupp - Direktanmäld',
+				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_CREATED, \tuja\data\model\Group::STATUS_ACCEPTED ),
+				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
+				'delivery_method'     => MessageTemplate::EMAIL
+			],
+			'group_accepted_from_waiting_list.email'         => [
+				'name'                => 'Ny grupp - Inte längre på väntelistan',
+				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_AWAITING_APPROVAL, \tuja\data\model\Group::STATUS_ACCEPTED ),
+				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
+				'delivery_method'     => MessageTemplate::EMAIL
+			],
+			'group_added_to_waiting_list.admin.email'        => [
+				'name'                => 'Ny grupp - Tillagd på väntelistan (till Tuko)',
+				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_CREATED, \tuja\data\model\Group::STATUS_AWAITING_APPROVAL ),
+				'auto_send_recipient' => EventMessageSender::RECIPIENT_ADMIN,
+				'delivery_method'     => MessageTemplate::EMAIL
+			],
+			'group_added_to_waiting_list.groupcontact.email' => [
+				'name'                => 'Ny grupp - Tillagd på väntelistan',
+				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_CREATED, \tuja\data\model\Group::STATUS_AWAITING_APPROVAL ),
+				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
+				'delivery_method'     => MessageTemplate::EMAIL
+			],
+			'signup_completed.email'                         => [
+				'name'                => 'Anmälan komplett',
+				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_INCOMPLETE_DATA, \tuja\data\model\Group::STATUS_ACCEPTED ),
+				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
+				'delivery_method'     => MessageTemplate::EMAIL
+			],
+			'signup_incomplete_data.email'                   => [
+				'name'                => 'Anmälan behöver kompletteras',
+				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_ACCEPTED, \tuja\data\model\Group::STATUS_INCOMPLETE_DATA ),
+				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
+				'delivery_method'     => MessageTemplate::EMAIL
+			]
+		];
+
 		$default_message_templates = join( '<br>', array_map(
-			function ( $filename ) {
-				$config = parse_ini_file( __DIR__ . '/default_message_templates/' . $filename );
-				if ( $config === false ) {
-					return '';
-				}
+			function ( $key, $config ) {
+				$config['subject'] = Strings::get( 'default_message_templates.' . $key . '.subject' );
+				$config['body']    = Strings::get( 'default_message_templates.' . $key . '.body' );
 
 				return sprintf( '<button class="button tuja-add-messagetemplate" type="button" %s>Ny mall %s</button>', join( ' ', array_map( function ( $key, $value ) {
 					return 'data-' . $key . '="' . htmlentities( $value ) . '"';
 				}, array_keys( $config ), array_values( $config ) ) ), $config['name'] ?: basename( $filename, '.ini' ) );
 			},
-			$files ) );
+			array_keys( $template_configs ), array_values( $template_configs ) ) );
 
 		include( 'views/competition-settings.php' );
 	}
