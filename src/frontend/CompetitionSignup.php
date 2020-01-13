@@ -24,6 +24,8 @@ use tuja\view\FieldText;
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
 class CompetitionSignup extends FrontendView {
+	const ROLE_LABEL_GROUP_LEADER = 'Jag kommer vara med och tävla';
+	const ROLE_LABEL_EXTRA_CONTACT = 'Jag administrerar bara lagets anmälan';
 	private $competition_key;
 	private $competition_dao;
 
@@ -52,6 +54,9 @@ class CompetitionSignup extends FrontendView {
 
 	function output() {
 		global $wpdb;
+
+		wp_enqueue_script( 'jquery' );
+		wp_enqueue_script( 'tuja-competitionsignup-script' );
 
 		$competition = $this->get_competition();
 		$errors      = [];
@@ -114,7 +119,7 @@ class CompetitionSignup extends FrontendView {
 	private function get_form_html( $errors = array() ): string {
 		$html_sections = [];
 
-		$group_name_question = new FieldText( 'Vad heter ert lag?', null, false, [], true );
+		$group_name_question = new FieldText( 'Vad heter laget?', null, false, [] );
 		$html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors[ self::FIELD_GROUP_NAME ] );
 
 		$categories = $this->get_categories( $this->get_competition()->id );
@@ -131,7 +136,7 @@ class CompetitionSignup extends FrontendView {
 				break;
 			default:
 				$group_category_question = new FieldChoices(
-					null,
+					'Vilken klass tävlar ni i?',
 					null,
 					false,
 					$group_category_options,
@@ -140,11 +145,22 @@ class CompetitionSignup extends FrontendView {
 				break;
 		}
 
-		$person_name_question = new FieldText( 'Vad heter du?', null, false, [], true );
-		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors[ self::FIELD_PERSON_NAME ] );
+		$reporter_role   = new FieldChoices(
+			'Vem är du?',
+			null,
+			false,
+			[
+				self::ROLE_LABEL_GROUP_LEADER,
+				self::ROLE_LABEL_EXTRA_CONTACT
+			],
+			false );
+		$html_sections[] = $this->render_field( $reporter_role, self::FIELD_PERSON_ROLE, $errors[ self::FIELD_PERSON_ROLE ], $_POST[ self::FIELD_PERSON_ROLE ] ?: self::ROLE_LABEL_GROUP_LEADER );
 
 		$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', Strings::get( 'competition_signup.form.email.hint' ), false, true );
 		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, $errors[ self::FIELD_PERSON_EMAIL ] );
+
+		$person_name_question = new FieldText( 'Vad heter du?', null, false, [], true );
+		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors[ self::FIELD_PERSON_NAME ] );
 
 		$person_phone_question = new FieldPhone( 'Vilket telefonnummer har du?', Strings::get( 'competition_signup.form.phone.hint' ), false, true );
 		$html_sections[]       = $this->render_field( $person_phone_question, self::FIELD_PERSON_PHONE, $errors[ self::FIELD_PERSON_PHONE ] );
@@ -203,11 +219,16 @@ class CompetitionSignup extends FrontendView {
 
 		$new_person = new Person();
 		$new_person->set_status( Person::DEFAULT_STATUS );
-		$new_person->name  = $_POST[ self::FIELD_PERSON_NAME ];
 		$new_person->email = $_POST[ self::FIELD_PERSON_EMAIL ];
-		$new_person->phone = $_POST[ self::FIELD_PERSON_PHONE ];
-		$new_person->pno   = $_POST[ self::FIELD_PERSON_PNO ];
-		$new_person->set_as_group_leader();
+		if ( $_POST[ self::FIELD_PERSON_ROLE ] == self::ROLE_LABEL_EXTRA_CONTACT ) {
+			$new_person->name  = $_POST[ self::FIELD_PERSON_EMAIL ];
+			$new_person->set_as_extra_contact();
+		} else {
+			$new_person->name  = $_POST[ self::FIELD_PERSON_NAME ];
+			$new_person->phone = $_POST[ self::FIELD_PERSON_PHONE ];
+			$new_person->pno   = $_POST[ self::FIELD_PERSON_PNO ];
+			$new_person->set_as_group_leader();
+		}
 
 		try {
 			// Person is validated before Group is created in order to catch simple input problems, like a missing name or email address.

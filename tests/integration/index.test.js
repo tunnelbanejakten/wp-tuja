@@ -148,17 +148,21 @@ describe('wp-tuja', () => {
     ].map(options => options[Math.floor(Math.random() * options.length)]).join(' ')
   }
 
-  const signUpTeam = async (isAutomaticallyAccepted = true) => {
+  const signUpTeam = async (isAutomaticallyAccepted = true, isGroupLeader = true) => {
     await configureEventDateLimits(7 * 24 * 60, 7 * 24 * 60 + 60)
     const name = randomTeamName()
     await goto(`http://localhost:8080/${competitionKey}/anmal`)
     await expectPageTitle(`Anmäl er till ${competitionName}`)
     await click('#tuja-group__age-0')
     await type('#tuja-group__name', name)
-    await type('#tuja-person__name', 'Amber')
     await type('#tuja-person__email', 'amber@example.com')
-    await type('#tuja-person__phone', '070-123456')
-    await type('#tuja-person__pno', '19800101-1234')
+    if (isGroupLeader) {
+      await type('#tuja-person__name', 'Amber')
+      await type('#tuja-person__phone', '070-123456')
+      await type('#tuja-person__pno', '19800101-1234')
+    } else {
+      await click('#tuja-person__role-1')
+    }
     if (isAutomaticallyAccepted) {
       await expectToContain('#tuja_signup_button', 'Anmäl lag')
     } else {
@@ -1146,6 +1150,18 @@ describe('wp-tuja', () => {
         // Remove one team member (and verify that a warning is no longer shown, and that the group sign-up status is ACCEPTED)
         await click('div.tuja-person-role-regular_group_member div.tuja-signup-person:last-child button.tuja-delete-person')
         await saveAndVerify(false)
+      })
+
+      it.only('should be possible to sign up as administrator', async () => {
+        const tempGroupProps = await signUpTeam(true, false)
+
+        await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
+
+        await expectElementCount('div.tuja-person-role-group_leader > div.tuja-people-existing > div.tuja-signup-person', 0)
+        await expectElementCount('div.tuja-person-role-regular_group_member > div.tuja-people-existing > div.tuja-signup-person', 0)
+        await expectElementCount('div.tuja-person-role-adult_supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
+        await expectElementCount('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person', 1)
+        await expectFormValue('div.tuja-person-role-extra_contact > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', 'amber@example.com')
       })
 
       it('should be possible to edit team members', async () => {

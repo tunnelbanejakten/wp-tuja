@@ -67,6 +67,7 @@ abstract class FrontendView {
 		wp_register_script( 'tuja-dropzone', Frontend::get_url() . '/assets/js/dropzone.min.js' );
 		wp_register_script( 'tuja-upload-script', Frontend::get_url() . '/assets/js/upload.js' );
 		wp_register_script( 'tuja-points-script', Frontend::get_url() . '/assets/js/points.js' );
+		wp_register_script( 'tuja-competitionsignup-script', Frontend::get_url() . '/assets/js/competition-signup.js' );
 		if ( is_null( $this->wp_post ) ) {
 			$post          = array(
 				'ID'             => 0,
@@ -110,7 +111,7 @@ abstract class FrontendView {
 
 		return sprintf( '<div class="tuja-question %s">%s</div>',
 			! empty( $error_message ) ? 'tuja-field-error' : '',
-			$html);
+			$html );
 	}
 
 	protected function get_posted_category( $competition_id ) {
