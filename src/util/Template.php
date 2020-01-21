@@ -70,8 +70,14 @@ class Template {
 			'group_status_link'                      => GroupStatusInitiator::link( $group ),
 			'group_tickets_link'                     => GroupTicketsInitiator::link( $group ),
 			'group_checkin_link'                     => GroupCheckinInitiator::link( $group ),
-			'group_registration_evaluation_warnings' => self::group_parameter_registration_issues( 'Sådant som ni **borde** fixa:', $evaluation_result, RuleResult::WARNING ),
-			'group_registration_evaluation_errors'   => self::group_parameter_registration_issues( 'Sådant som ni **måste** fixa för att få starta:', $evaluation_result, RuleResult::BLOCKER )
+			'group_registration_evaluation_warnings' => self::group_parameter_registration_issues(
+				Strings::get( 'template.registration_evaluation.warnings.label' ),
+				$evaluation_result,
+				RuleResult::WARNING ),
+			'group_registration_evaluation_errors'   => self::group_parameter_registration_issues(
+				Strings::get( 'template.registration_evaluation.errors.label' ),
+				$evaluation_result,
+				RuleResult::BLOCKER )
 		];
 	}
 
