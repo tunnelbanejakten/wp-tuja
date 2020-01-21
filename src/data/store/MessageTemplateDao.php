@@ -16,10 +16,6 @@ class MessageTemplateDao extends AbstractDao
 	function create( MessageTemplate $message_template ) {
 		$message_template->validate();
 
-		if ( $this->exists( $message_template->name, $message_template->id ) ) {
-			throw new ValidationException( 'name', 'Det finns redan en mall med detta namn.' );
-		}
-
 		$affected_rows = $this->wpdb->insert( $this->table,
 			array(
 				'competition_id'      => $message_template->competition_id,
@@ -46,10 +42,6 @@ class MessageTemplateDao extends AbstractDao
 
 	function update( MessageTemplate $message_template ) {
 		$message_template->validate();
-
-		if ( $this->exists( $message_template->name, $message_template->id ) ) {
-			throw new ValidationException( 'name', 'Det finns redan en mall med detta namn.' );
-		}
 
 		return $this->wpdb->update( $this->table,
 			array(

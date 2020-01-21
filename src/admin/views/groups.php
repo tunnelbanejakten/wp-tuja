@@ -25,6 +25,7 @@ AdminUtils::printTopMenu( $competition );
             <td>Meddelanden</td>
         </tr>
         </thead>
+	    <?php if ( ! empty( $groups_data ) ) { ?>
         <tfoot>
         <tr>
             <td colspan="3" valign="top">&nbsp;&nbsp;&rdsh; För valda grupper:</td>
@@ -74,6 +75,7 @@ AdminUtils::printTopMenu( $competition );
             <td colspan="4"></td>
         </tr>
         </tfoot>
+	    <?php } ?>
         <tbody>
 		<?php
 		foreach ( $groups_data as $group_data ) {

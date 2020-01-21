@@ -19,8 +19,12 @@ AdminUtils::printTopMenu( $competition );
 	}
 	?>
     <p>
-        Länk för att redigera hela laget:
+        Länk till lagportal:
 		<?= sprintf( '<a href="%s">%s</a>', $group_editor_link, $group_editor_link ) ?>
+    </p>
+    <p>
+        Länk för att checka in:
+		<?= sprintf( '<a href="%s">%s</a>', $group_checkin_link, $group_checkin_link ) ?>
     </p>
     <p>
         Länk för att anmäla nya till laget:
@@ -104,6 +108,7 @@ AdminUtils::printTopMenu( $competition );
             <th>Länk för att redigera</th>
         </tr>
         </thead>
+	    <?php if ( ! empty( $people ) ) { ?>
         <tfoot>
         <tr>
             <td colspan="8">
@@ -121,6 +126,7 @@ AdminUtils::printTopMenu( $competition );
             </td>
         </tr>
         </tfoot>
+		<?php } ?>
         <tbody>
 		<?php
 		print join( '', array_map( function ( Person $person ) use ( $group ) {

@@ -124,6 +124,28 @@ class CompetitionSettings {
 			},
 			array_keys( $template_configs ), array_values( $template_configs ) ) );
 
+		$rules_html = [];
+		$i          = 0;
+		foreach ( self::RULE_SETS as $class_name => $label ) {
+			if ( ! empty( $class_name ) ) {
+				$rules = new $class_name;
+
+				$indent = str_repeat( '&nbsp;', 4 );
+
+				$rules_html[''][ $i ]                        = sprintf( '<strong>%s</strong>', $label );
+				$rules_html['Antal i grupp'][ $i ]           = join( '-', $rules->get_group_size_range() );
+				$rules_html['Vuxen medföljare'][ $i ]        = $rules->is_adult_supervisor_required() ? 'Ja, krav' : '-';
+				$rules_html['Får rapportera poäng'][ $i ]    = $rules->is_crew() ? 'Ja' : '-';
+				$rules_html['Sista dag för att'][ $i ]       = '';
+				$rules_html[ $indent . '...anmäla' ][ $i ]   = $rules->get_create_registration_period( $competition )->end->format( 'd M' );
+				$rules_html[ $indent . '...ändra' ][ $i ]    = $rules->get_update_registration_period( $competition )->end->format( 'd M' );
+				$rules_html[ $indent . '...avanmäla' ][ $i ] = $rules->get_delete_registration_period( $competition )->end->format( 'd M' );
+
+				$i = $i + 1;
+			}
+		}
+
+
 		include( 'views/competition-settings.php' );
 	}
 

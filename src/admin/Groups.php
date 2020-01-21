@@ -199,6 +199,12 @@ class Groups {
 				}
 			],
 			[
+				'Lag på väntelistan',
+				function ( $group_data ) {
+					return $group_data['model']->get_status() == Group::STATUS_AWAITING_APPROVAL;
+				}
+			],
+			[
 				'Accepterade lag',
 				function ( $group_data ) {
 					return $group_data['model']->get_status() == Group::STATUS_ACCEPTED;

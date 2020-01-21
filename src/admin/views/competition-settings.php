@@ -23,12 +23,14 @@ AdminUtils::printTopMenu( $competition );
             <div class="tuja-admin-question-properties">
                 <div class="tuja-admin-question-property tuja-admin-question-short">
                     <label for="">Start</label>
-                    <input type="datetime-local" name="tuja_event_start" id="tuja_event_start" placeholder="yyyy-mm-dd hh:mm"
+                    <input type="datetime-local" name="tuja_event_start" id="tuja_event_start"
+                           placeholder="yyyy-mm-dd hh:mm"
                            value="<?= DateUtils::to_date_local_value( $competition->event_start ) ?>"/>
                 </div>
                 <div class="tuja-admin-question-property tuja-admin-question-short">
                     <label for="">Slut</label>
-                    <input type="datetime-local" name="tuja_event_end" id="tuja_event_end" placeholder="yyyy-mm-dd hh:mm"
+                    <input type="datetime-local" name="tuja_event_end" id="tuja_event_end"
+                           placeholder="yyyy-mm-dd hh:mm"
                            value="<?= DateUtils::to_date_local_value( $competition->event_end ) ?>"/>
                 </div>
             </div>
@@ -121,34 +123,14 @@ AdminUtils::printTopMenu( $competition );
             grupp. Grupptyper är ett sätt att klassificera grupperna utifrån deras roll i tävlingen.
         </p>
         <table>
-            <thead>
-            <tr>
-                <th rowspan="2" valign="top">Regeluppsättning</th>
-                <th rowspan="2" valign="top">Vuxen medföljare</th>
-                <th rowspan="2" valign="top">Antal i grupp</th>
-                <th rowspan="2" valign="top">Rapportera poäng</th>
-                <th colspan="3" valign="top">Sista dag för att</th>
-            </tr>
-            <tr>
-                <td>Anmäla</td>
-                <td>Ändra</td>
-                <td>Avanmäla</td>
-            </tr>
-            </thead>
             <tbody>
 			<?php
-			foreach ( self::RULE_SETS as $class_name => $label ) {
-				if ( ! empty( $class_name ) ) {
-					$rules = new $class_name;
-					printf( '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
-						$label,
-						$rules->is_adult_supervisor_required() ? 'Ja, krav' : '-',
-						join('-', $rules->get_group_size_range()),
-						$rules->is_crew() ? 'Ja' : '-',
-						$rules->get_create_registration_period( $competition )->end->format( 'd M' ),
-						$rules->get_update_registration_period( $competition )->end->format( 'd M' ),
-						$rules->get_delete_registration_period( $competition )->end->format( 'd M' ) );
-				}
+			foreach ( $rules_html as $label => $columns ) {
+				printf( '<tr><td><strong>%s</strong></td>%s</tr>',
+					$label,
+					join( array_map( function ( $html ) {
+						return sprintf( '<td>%s</td>', $html );
+					}, $columns ) ) );
 			}
 			?>
             </tbody>
@@ -174,7 +156,7 @@ AdminUtils::printTopMenu( $competition );
 			<?php
 			$final_list   = Strings::get_list();
 			$default_list = Strings::get_default_list();
-			$last_header = null;
+			$last_header  = null;
 			foreach ( $final_list as $key => $value ) {
 				list ( $header ) = explode( '.', $key );
 				$is_default_value = $default_list[ $key ] == $final_list[ $key ];

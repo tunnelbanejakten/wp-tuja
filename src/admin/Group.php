@@ -9,6 +9,7 @@ use tuja\data\store\FormDao;
 use tuja\data\store\MessageDao;
 use tuja\data\store\PersonDao;
 use tuja\data\store\QuestionGroupDao;
+use tuja\frontend\router\GroupCheckinInitiator;
 use tuja\frontend\router\GroupEditorInitiator;
 use tuja\frontend\router\GroupSignupInitiator;
 use tuja\util\rules\RegistrationEvaluator;
@@ -182,6 +183,7 @@ class Group {
 
 		$group_signup_link = GroupSignupInitiator::link( $group );
 		$group_editor_link = GroupEditorInitiator::link( $group );
+		$group_checkin_link = GroupCheckinInitiator::link( $group );
 
 		include( 'views/group.php' );
 	}

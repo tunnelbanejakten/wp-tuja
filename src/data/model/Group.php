@@ -109,15 +109,19 @@ class Group {
 	}
 
 	public function evaluate_registration(): array {
-		$category = $this->get_category();
-		if ( isset( $category ) ) {
-			$rule_set  = $category->get_rule_set();
-			$evaluator = new RegistrationEvaluator( $rule_set );
+		try {
+			$category = $this->get_category();
+			if ( isset( $category ) ) {
+				$rule_set  = $category->get_rule_set();
+				$evaluator = new RegistrationEvaluator( $rule_set );
 
-			return $evaluator->evaluate( $this );
+				return $evaluator->evaluate( $this );
+			}
+
+			return [];
+		} catch ( Exception $e ) {
+			return [];
 		}
-
-		return [];
 	}
 
 	public function get_category(): GroupCategory {
