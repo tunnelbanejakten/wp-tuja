@@ -75,10 +75,16 @@ class CompetitionSettings {
 				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
 				'delivery_method'     => MessageTemplate::SMS
 			],
-			'group_accepted_by_default'                      => [
+			'group_accepted_by_default.groupcontact.email'   => [
 				'name'                => 'Ny grupp - Direktanmäld',
 				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_CREATED, \tuja\data\model\Group::STATUS_ACCEPTED ),
 				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
+				'delivery_method'     => MessageTemplate::EMAIL
+			],
+			'group_accepted_by_default.admin.email'   => [
+				'name'                => 'Ny grupp - Direktanmäld (till Tuko)',
+				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_CREATED, \tuja\data\model\Group::STATUS_ACCEPTED ),
+				'auto_send_recipient' => EventMessageSender::RECIPIENT_ADMIN,
 				'delivery_method'     => MessageTemplate::EMAIL
 			],
 			'group_accepted_from_waiting_list.email'         => [
@@ -115,8 +121,9 @@ class CompetitionSettings {
 
 		$default_message_templates = join( '<br>', array_map(
 			function ( $key, $config ) {
-				$config['subject'] = Strings::get( 'default_message_templates.' . $key . '.subject' );
-				$config['body']    = Strings::get( 'default_message_templates.' . $key . '.body' );
+				$strings           = parse_ini_file( __DIR__ . '/default_message_template/' . $key . '.ini' );
+				$config['subject'] = $strings['subject'];
+				$config['body']    = $strings['body'];
 
 				return sprintf( '<button class="button tuja-add-messagetemplate" type="button" %s>Ny mall %s</button>', join( ' ', array_map( function ( $key, $value ) {
 					return 'data-' . $key . '="' . htmlentities( $value ) . '"';
@@ -182,36 +189,52 @@ class CompetitionSettings {
 
 		return sprintf( '
 			<div class="tuja-messagetemplate-form">
-				<input type="text" placeholder="Mallens namn" size="50" name="%s" value="%s"><br>
-				<div>
-					<select name="%s">
-						<option value="">Gör inget</option>
-						%s
-					</select>
-					när
-					<select name="%s">%s</select>
-					.
+				<input type="text" placeholder="Mallens namn" size="50" name="%s" value="%s" class="tuja-messagetemplate-name" style="width: 100%%"><br>
+				<div class="tuja-messagetemplate-collapsible tuja-messagetemplate-collapsed">
+					<div class="tuja-messagetemplate-collapsecontrol">
+						<a href="#">
+							<span>Visa</span><span>Dölj</span>						
+						</a>
+					</div>
+					<div class="tuja-messagetemplate-content">
+						<select name="%s">%s</select>
+						
+						<br>
+						
+						<input type="text" placeholder="Ämnesrad" size="50" name="%s" value="%s" style="width: 100%%">
+						
+						<br>
+						
+						<textarea id="" cols="80" rows="10" placeholder="Meddelande" name="%s" style="width: 100%%">%s</textarea>
+						
+						<br>
+						
+						<select name="%s">
+							<option value="">Gör inget</option>
+							%s
+						</select>
+						när
+						<select name="%s">%s</select>
+						
+						<br/>
+						
+						<button class="button tuja-delete-messagetemplate" type="button">Ta bort</button>
+					</div>				
 				</div>
-				<select name="%s">%s</select><br>
-				<input type="text" placeholder="Ämnesrad" size="50" name="%s" value="%s"><br>
-				<textarea id="" cols="80" rows="10" placeholder="Meddelande" name="%s">%s</textarea><br>
-				<button class="button tuja-delete-messagetemplate" type="button">
-					Ta bort
-				</button>
 			</div>
 		',
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'name' ),
 			$message_template->name,
-			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_recipient' ),
-			$auto_send_recipient_options,
-			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_trigger' ),
-			$auto_send_trigger_options,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'delivery_method' ),
 			$delivery_method_options,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'subject' ),
 			$message_template->subject,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'body' ),
-			$message_template->body );
+			$message_template->body,
+			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_recipient' ),
+			$auto_send_recipient_options,
+			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_trigger' ),
+			$auto_send_trigger_options );
 	}
 
 	public function print_group_category_form( GroupCategory $category ) {

@@ -109,7 +109,8 @@ class Template {
 
 	public static function site_parameters() {
 		return [
-			'base_url' => get_site_url()
+			'base_url' => get_site_url(),
+			'admin_email' => get_option( 'admin_email' )
 		];
 	}
 

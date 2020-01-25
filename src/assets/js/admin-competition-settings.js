@@ -1,3 +1,17 @@
+var tujaCollapsibleControls = (function () {
+  return {
+    init: function ($, $root) {
+
+      function onClick (event) {
+        $(event.target).closest('div.tuja-messagetemplate-collapsible').toggleClass('tuja-messagetemplate-collapsed')
+        return false
+      }
+
+      $root.find('div.tuja-messagetemplate-collapsecontrol a').click(onClick)
+    }
+  }
+})()
+
 var tujaListItemsControls = (function () {
   return {
     init: function ($, listName) {
@@ -21,6 +35,7 @@ var tujaListItemsControls = (function () {
           input.attr('name', input.attr('name') + id)
         })
         newForm.appendTo(container)
+        tujaCollapsibleControls.init($, newForm)
         return false
       }
 
@@ -34,6 +49,7 @@ var tujaListItemsControls = (function () {
     }
   }
 })()
+
 
 var tujaTabs = (function () {
 
@@ -68,6 +84,7 @@ jQuery.noConflict()
 jQuery(document).ready(function ($) {
   tujaListItemsControls.init($, 'messagetemplate')
   tujaListItemsControls.init($, 'groupcategory')
+  tujaCollapsibleControls.init($, $('#wpbody-content'))
   tujaTabs.init($)
 })
 

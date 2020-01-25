@@ -91,6 +91,27 @@ body.wp-admin th {
 .tuja-messagetemplate-template {
     display: none;
 }
+.tuja-messagetemplate-form {
+    border-bottom: 1px solid #ccc;
+    padding: 0 0 10px 0;
+    margin: 0 0 10px 0;
+}
+
+div.tuja-messagetemplate-collapsible .tuja-messagetemplate-collapsecontrol > a > span:nth-child(1) {
+    display: none;
+}
+div.tuja-messagetemplate-collapsible .tuja-messagetemplate-collapsecontrol > a > span:nth-child(2) {
+    display: block;
+}
+div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messagetemplate-collapsecontrol > a > span:nth-child(1) {
+    display: block;
+}
+div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messagetemplate-collapsecontrol > a > span:nth-child(2) {
+    display: none;
+}
+div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messagetemplate-content {
+    display: none;
+}
 .tuja-message-preview {
     background: #fff;
     border: 1px solid #ccc;
