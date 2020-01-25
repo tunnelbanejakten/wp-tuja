@@ -103,6 +103,12 @@ class CompetitionSignup extends FrontendView {
 
 		$form = $this->get_form_html( $errors );
 
+		$intro = Strings::get( 'competition_signup.intro.body_text' );
+		$intro = ! empty( $intro ) ? sprintf( '<p>%s</p>', Template::string($intro)->render([], true) ) : '';
+
+		$fineprint = Strings::get( 'competition_signup.fineprint.body_text' );
+		$fineprint = ! empty( $fineprint ) ? sprintf( '<p><small>%s</small></p>', Template::string($fineprint)->render([], true) ) : '';
+
 		$submit_button = $this->get_submit_button_html();
 
 		include( 'views/competition-signup.php' );
@@ -156,16 +162,16 @@ class CompetitionSignup extends FrontendView {
 			false );
 		$html_sections[] = $this->render_field( $reporter_role, self::FIELD_PERSON_ROLE, $errors[ self::FIELD_PERSON_ROLE ], $_POST[ self::FIELD_PERSON_ROLE ] ?: self::ROLE_LABEL_GROUP_LEADER );
 
-		$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', Strings::get( 'competition_signup.form.email.hint' ), false, true );
+		$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', Strings::get( 'competition_signup.form.email.hint' ), false );
 		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, $errors[ self::FIELD_PERSON_EMAIL ] );
 
-		$person_name_question = new FieldText( 'Vad heter du?', null, false, [], true );
+		$person_name_question = new FieldText( 'Vad heter du?', null, false, [] );
 		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors[ self::FIELD_PERSON_NAME ] );
 
-		$person_phone_question = new FieldPhone( 'Vilket telefonnummer har du?', Strings::get( 'competition_signup.form.phone.hint' ), false, true );
+		$person_phone_question = new FieldPhone( 'Vilket telefonnummer har du?', Strings::get( 'competition_signup.form.phone.hint' ), false );
 		$html_sections[]       = $this->render_field( $person_phone_question, self::FIELD_PERSON_PHONE, $errors[ self::FIELD_PERSON_PHONE ] );
 
-		$person_name_question = new FieldPno( 'Vad har du för födelsedag?', Strings::get( 'person.form.pno.hint' ), false, true );
+		$person_name_question = new FieldPno( 'Vad har du för födelsedag?', Strings::get( 'person.form.pno.hint' ), false );
 		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors[ self::FIELD_PERSON_PNO ] );
 
 		$html_sections[] = $this->get_recaptcha_html();
