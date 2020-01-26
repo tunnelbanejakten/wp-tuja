@@ -55,6 +55,13 @@
     font-weight: bold;
 }
 
+.tuja-fineprint {
+    margin-top: 1.5em;
+    font-size: 80%;
+    font-weight: normal;
+    line-height: 1.5em;
+}
+
 .tuja-help,
 .tuja-question-hint {
     font-size: 80%;

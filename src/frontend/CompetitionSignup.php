@@ -104,10 +104,10 @@ class CompetitionSignup extends FrontendView {
 		$form = $this->get_form_html( $errors );
 
 		$intro = Strings::get( 'competition_signup.intro.body_text' );
-		$intro = ! empty( $intro ) ? sprintf( '<p>%s</p>', Template::string($intro)->render([], true) ) : '';
+		$intro = ! empty( $intro ) ? Template::string( $intro )->render( [], true ) : '';
 
 		$fineprint = Strings::get( 'competition_signup.fineprint.body_text' );
-		$fineprint = ! empty( $fineprint ) ? sprintf( '<p><small>%s</small></p>', Template::string($fineprint)->render([], true) ) : '';
+		$fineprint = ! empty( $fineprint ) ? sprintf( '<div class="tuja-fineprint">%s</div>', Template::string( $fineprint )->render( [], true ) ) : '';
 
 		$submit_button = $this->get_submit_button_html();
 
@@ -227,7 +227,7 @@ class CompetitionSignup extends FrontendView {
 		$new_person->set_status( Person::DEFAULT_STATUS );
 		$new_person->email = $_POST[ self::FIELD_PERSON_EMAIL ];
 		if ( $_POST[ self::FIELD_PERSON_ROLE ] == self::ROLE_LABEL_EXTRA_CONTACT ) {
-			$new_person->name  = $_POST[ self::FIELD_PERSON_EMAIL ];
+			$new_person->name = $_POST[ self::FIELD_PERSON_EMAIL ];
 			$new_person->set_as_extra_contact();
 		} else {
 			$new_person->name  = $_POST[ self::FIELD_PERSON_NAME ];
