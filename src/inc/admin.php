@@ -16,6 +16,8 @@ class Admin extends Plugin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'admin_action_tuja_report', array( $this, 'render_report' ) );
 
+		add_thickbox();
+
 		Strings::init( intval( $_GET['tuja_competition'] ) );
 	}
 
