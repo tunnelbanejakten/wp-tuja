@@ -11,6 +11,7 @@ use tuja\data\model\Group;
 
 class FieldGroupSelector {
 
+	const GROUP_KEY_ALL = 'all';
 	private $selectors = [];
 	private $groups;
 
@@ -28,7 +29,7 @@ class FieldGroupSelector {
 		$this->selectors = array_merge(
 			array(
 				array(
-					'key'      => 'all',
+					'key'      => self::GROUP_KEY_ALL,
 					'label'    => 'alla grupper, inkl. funk',
 					'selector' => function ( Group $group ) {
 						return true;

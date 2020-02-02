@@ -144,14 +144,9 @@ table.tuja-admin-review {
 table.tuja-admin-review th {
     padding: 0 10px;
 }
-tr.tuja-admin-review-form-row td {
-    border-top: 3px solid #aaa;
-    line-height: 3em;
-}
-
-tr.tuja-admin-review-question-row td {
-    border-top: 2px solid #aaa;
-    padding: 0.5em 0;
+table.tuja-admin-review tr.tuja-admin-review-form-row td:nth-child(2),
+table.tuja-admin-review tr.tuja-admin-review-question-row td:nth-child(2) {
+    padding: 2em 1em 1em 0;
 }
 
 table.tuja-admin-review td div.spacer {
@@ -166,9 +161,12 @@ tr.tuja-admin-review-response-row td div.spacer {
 tr.tuja-admin-review-correctanswer-row td {
     padding: 0.5em 0;
 }
+table.tuja-admin-review th,
+table.tuja-admin-review td {
+    padding: 0.3em 1em 0.3em 0;
+}
 tr.tuja-admin-review-response-row td {
     border-top: 1px solid #aaa;
-    padding: 0.3em 0;
 }
 tr.tuja-admin-review-question-row td:first-child,
 tr.tuja-admin-review-correctanswer-row td:first-child,
@@ -178,7 +176,6 @@ tr.tuja-admin-review-response-row td:first-child {
 
 tr.tuja-admin-review-response-row a.tuja-admin-review-group-link {
     white-space: nowrap;
-    padding-right: 1em;
     max-width: 15em;
     text-overflow: ellipsis;
     display: inline-block;
@@ -279,6 +276,10 @@ span.tuja-admin-groupstatus.tuja-admin-groupstatus-deleted {
 .tuja-admin-noresponse {
     font-style: italic;
     color: #aaa;
+}
+
+div.tuja-admin-review-change-autoscore-container {
+    white-space: nowrap;
 }
 
 div.tuja-admin-review-change-autoscore-container span.tuja-admin-review-corrected-autoscore {

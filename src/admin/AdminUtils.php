@@ -93,7 +93,7 @@ class AdminUtils {
 
 		$image_manager = new ImageManager();
 
-		return join( array_map( function ( $image_id ) use ( $image_manager, $group_key ) {
+		return join('<br>', array_map( function ( $image_id ) use ( $image_manager, $group_key ) {
 			$resized_image_url = $image_manager->get_resized_image_url(
 				$image_id,
 				ImageManager::DEFAULT_THUMBNAIL_PIXEL_COUNT,

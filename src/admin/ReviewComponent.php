@@ -50,10 +50,18 @@ class ReviewComponent {
 	}
 
 	private static function get_auto_score_html( $max_score, $auto_score, $auto_confidence ): string {
-		return sprintf( '<span class="tuja-admin-review-autoscore %s" title="Auto-rättaren är %d &percnt; säker på att den gjort rätt bedömning.">%s p</span>',
-			$max_score > 0 ? AdminUtils::getScoreCssClass( $auto_score ?: 0.0 / $max_score ) : '',
+		return sprintf( '<span class="tuja-admin-review-autoscore %s" title="Auto-rättaren är %d &percnt; säker på att den gjort rätt bedömning.">%s</span>',
+			$max_score > 0 ? AdminUtils::getScoreCssClass( ( $auto_score ?: 0.0 ) / $max_score ) : '',
 			$auto_confidence * 100,
 			$auto_score ?: 0.0 );
+	}
+
+	private static function get_set_score_html( $manual_score_field_name, $max_score, $score ): string {
+		return sprintf( '<span class="tuja-admin-review-autoscore %s"><a href="#" class="tuja-admin-review-set-score" data-target-field="%s" data-score="%d">%d</a></span>',
+			$max_score > 0 ? AdminUtils::getScoreCssClass( ( $score ?: 0.0 ) / $max_score ) : '',
+			$manual_score_field_name,
+			$score ?: 0.0,
+			$score ?: 0.0 );
 	}
 
 	public function handle_post( $selected_filter, $selected_groups ) {
@@ -252,22 +260,42 @@ class ReviewComponent {
 			printf( '<tr class="tuja-admin-review-form-row"><td colspan="6"><strong>%s</strong></td></tr>', $form_entry['form']->name );
 			foreach ( $form_entry['questions'] as $question_id => $question_entry ) {
 
-				$question            = $question_entry['question'];
-				$question_group_text = $question_groups[ $question->question_group_id ]->text;
-				$question_text       = $question_group_text
+				$question                  = $question_entry['question'];
+				$question_group_text       = $question_groups[ $question->question_group_id ]->text;
+				$question_text             = $question_group_text
 					? $question_group_text . " : " . $question->text
 					: $question->text;
-				printf( '<tr class="tuja-admin-review-question-row"><td></td><td colspan="5"><strong>%s</strong></td></tr>',
-					$question_text );
+				$answer_html               = $question->get_correct_answer_html();
+				$is_correct_answer_defined = ! empty( $answer_html );
+				$rowspan                   = $is_correct_answer_defined ? 2 : 1;
+				$valign                    = $is_correct_answer_defined ? 'bottom' : 'bottom';
+				$auto_score_header         = $is_correct_answer_defined ? 'Autorättning' : '';
+				printf( '
+					<tr class="tuja-admin-review-question-row">
+						<td></td>
+						<td colspan="3"><strong>%s</strong></td>
+						<td valign="%s" rowspan="%s">%s</td>
+						<td valign="%s" rowspan="%s">Manuell</td>
+						<td valign="%s" rowspan="%s">Slutlig</td>
+					</tr>
+					',
+					$question_text,
+					$valign,
+					$rowspan,
+					$auto_score_header,
+					$valign,
+					$rowspan,
+					$valign,
+					$rowspan
+				);
 
-				$answer_html = $question->get_correct_answer_html();
-				if ( ! empty( $answer_html ) ) {
-					printf( '' .
-					        '<tr class="tuja-admin-review-correctanswer-row">' .
-					        '  <td colspan="2"></td>' .
-					        '  <td valign="top">Rätt svar</td>' .
-					        '  <td valign="top" colspan="3">%s</td>' .
-					        '</tr>',
+				if ( $is_correct_answer_defined ) {
+					printf( '
+					        <tr class="tuja-admin-review-correctanswer-row">
+					          <td colspan="2"></td>
+					          <td valign="top">Rätt svar</td>
+					          <td valign="top">%s</td>
+					        </tr>',
 						$answer_html );
 				}
 
@@ -291,48 +319,28 @@ class ReviewComponent {
 						$response_ids[] = $response->id;
 						$response_html  = $question->get_submitted_answer_html( $response->submitted_answer, $groups_map[ $response->group_id ] );
 
-						$auto_score_html = self::get_auto_score_html( $question->score_max, $score_question_result->auto, $score_question_result->auto_confidence );
-
 						$is_valid_answer_submitted = $response_html != AbstractQuestion::RESPONSE_MISSING_HTML;
 						$is_auto_score_unreliable  = $score_question_result->auto_confidence < 1.0 || $score_question_result->auto < $question->score_max;
 						if ( $is_valid_answer_submitted && $is_auto_score_unreliable ) {
 							$is_add_incorrect = $score_question_result->auto > 0;
 							$action_field_id  = self::FORM_FIELD_CHANGE_CORRECT_ANSWER_PREFIX . '__' . $response->id;
-							$popup_html       = sprintf( '
-								<input type="hidden" name="%s" id="%s" value="">
-								<div id="tuja-admin-change-autoscore-%d" style="display:none;">
-									<div>
-									     <p>
-									          Vill du ändra rättningsmallen så att <strong>%s</strong> räknas som ett <strong>%s</strong> svar? 
-									     </p>
-									     <div>
-									        <button type="button" class="button button-primary tuja-admin-review-button-yes" data-value="%s" data-target-field="%s">Ja</button>
-									        <button type="button" class="button tuja-admin-review-button-no" data-target-field="%s">Nej</button>
-								        </div>
-									     <p>
-									        <em>Din ändring kommer påverka rättningen av alla svar på denna fråga, både existerande och framtida, under förutsättning att manuell poäng inte satts.</em>									     
-									     </p>
-									</div>
-								</div>',
-								$action_field_id,
-								$action_field_id,
+							$popup_html       = $this->get_popup_html( $action_field_id, $response->id, $response_html, $is_add_incorrect );
+
+							$auto_score_html = $is_correct_answer_defined ? sprintf( '
+									<span class="tuja-admin-review-corrected-autoscore">%s</span>
+									<span class="tuja-admin-review-original-autoscore">%s</span>
+									<a class="thickbox" title="Edit" href="#TB_inline?width=300&height=200&inlineId=tuja-admin-change-autoscore-%d">%s</a>
+									%s',
+								$is_add_incorrect
+									? self::get_auto_score_html( $question->score_max, 0, 1.0 )
+									: self::get_auto_score_html( $question->score_max, $question->score_max, 1.0 ),
+								self::get_auto_score_html( $question->score_max, $score_question_result->auto, $score_question_result->auto_confidence ),
 								$response->id,
-								$response_html,
-								$is_add_incorrect ? 'felaktigt' : 'korrekt',
-								$is_add_incorrect ? self::ACTION_SET_INCORRECT : self::ACTION_SET_CORRECT,
-								$action_field_id,
-								$action_field_id );
-
-							$change_auto_scoring_html = sprintf(
-								                            '<a class="thickbox" title="Edit" href="#TB_inline?width=300&height=200&inlineId=tuja-admin-change-autoscore-%d">%s</a>',
-								                            $response->id,
-								                            $is_add_incorrect ? 'Skulle inte godkänts' : 'Skulle ha godkänts'
-							                            ) . $popup_html;
-
-							$auto_score_html = sprintf( '<div class="tuja-admin-review-change-autoscore-container">%s<span class="tuja-admin-review-corrected-autoscore">%s</span><span class="tuja-admin-review-original-autoscore">%s</span></div>',
-								$change_auto_scoring_html,
-								$is_add_incorrect ? self::get_auto_score_html( $question->score_max, 0, 1.0 ) : self::get_auto_score_html( $question->score_max, $question->score_max, 1.0 ),
-								$auto_score_html );
+								'Felrättat',
+								$popup_html ) : '';
+						} else {
+							$auto_score_html = sprintf( '<span class="tuja-admin-review-original-autoscore">%s</span>',
+								self::get_auto_score_html( $question->score_max, $score_question_result->auto, $score_question_result->auto_confidence ) );
 						}
 						$response_id = $response->id;
 					} else {
@@ -341,19 +349,38 @@ class ReviewComponent {
 						$response_id     = Review::RESPONSE_MISSING_ID;
 					}
 					$score_field_value = isset( $score_question_result->override ) ? $score_question_result->override : '';
+
+					$manual_score_field_name  = join( '__', [
+						self::FORM_FIELD_OVERRIDE_PREFIX,
+						$response_id,
+						$question_id,
+						$group_id
+					] );
+					$manual_score_preset_full = $question->score_max;
+					$manual_score_preset_half = round( $question->score_max / 2 );
+					$manual_score_presets     = [];
+					$manual_score_presets[]   = self::get_set_score_html( $manual_score_field_name, $question->score_max, $manual_score_preset_full );
+					if ( $manual_score_preset_full != $manual_score_preset_half ) {
+						$manual_score_presets[] = self::get_set_score_html( $manual_score_field_name, $question->score_max, $manual_score_preset_half );
+					}
+					$manual_score_presets[] = self::get_set_score_html( $manual_score_field_name, $question->score_max, 0 );
+
 					printf( '' .
-					        '<tr class="tuja-admin-review-response-row">' .
-					        '  <td colspan="2"></td>' .
-					        '  <td valign="top"><a href="%s" class="tuja-admin-review-group-link">%s</a></td>' .
-					        '  <td valign="top">%s</td>' .
-					        '  <td valign="top" align="right">%s</td>' .
-					        '  <td valign="top"><input type="number" name="%s" value="%s" size="5" min="0" max="%d"></td>' .
-					        '</tr>',
+					        '<tr class="tuja-admin-review-response-row">
+					          <td colspan="2"></td>
+					          <td valign="center"><a href="%s" class="tuja-admin-review-group-link">%s</a></td>
+					          <td valign="center">%s</td>
+					          <td valign="center"><div class="tuja-admin-review-change-autoscore-container">%s</div></td>
+					          <td valign="center">%s<input type="number" id="%s" name="%s" value="%s" size="5" min="0" max="%d"></td>
+					          <td valign="center"><span class="tuja-admin-review-final-score">n p</span></td>
+					        </tr>',
 						$group_url,
 						$groups_map[ $group_id ]->name,
 						$response_html,
 						$auto_score_html,
-						join( '__', [ self::FORM_FIELD_OVERRIDE_PREFIX, $response_id, $question_id, $group_id ] ),
+						join( ' ', $manual_score_presets ),
+						$manual_score_field_name,
+						$manual_score_field_name,
 						$score_field_value,
 						$question->score_max ?: 1000 );
 					$limit = $limit - 1;
@@ -379,5 +406,32 @@ class ReviewComponent {
 					return $group->id;
 				}, $selected_groups ) )
 			: [];
+	}
+
+	private function get_popup_html( string $action_field_id, $response_id, string $response_html, bool $is_add_incorrect ): string {
+		return sprintf( '
+			<input type="hidden" name="%s" id="%s" value="">
+			<div id="tuja-admin-change-autoscore-%d" style="display:none;">
+				<div>
+				     <p>
+				          Vill du ändra rättningsmallen så att <strong>%s</strong> räknas som ett <strong>%s</strong> svar? 
+				     </p>
+				     <div>
+				        <button type="button" class="button button-primary tuja-admin-review-button-yes" data-value="%s" data-target-field="%s">Ja</button>
+				        <button type="button" class="button tuja-admin-review-button-no" data-target-field="%s">Nej</button>
+			        </div>
+				     <p>
+				        <em>Din ändring kommer påverka rättningen av alla svar på denna fråga, både existerande och framtida, under förutsättning att manuell poäng inte satts.</em>									     
+				     </p>
+				</div>
+			</div>',
+			$action_field_id,
+			$action_field_id,
+			$response_id,
+			$response_html,
+			$is_add_incorrect ? 'felaktigt' : 'korrekt',
+			$is_add_incorrect ? self::ACTION_SET_INCORRECT : self::ACTION_SET_CORRECT,
+			$action_field_id,
+			$action_field_id );
 	}
 }

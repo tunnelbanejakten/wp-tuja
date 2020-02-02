@@ -13,11 +13,10 @@ use tuja\data\model\Response;
 use tuja\data\model\ValidationException;
 use tuja\util\Database;
 
-class QuestionDao extends AbstractDao
-{
+class QuestionDao extends AbstractDao {
 	function __construct() {
 		parent::__construct();
-		$this->table = Database::get_table('form_question');
+		$this->table = Database::get_table( 'form_question' );
 	}
 
 	private static function get_answer_config( AbstractQuestion $question ) {
@@ -30,9 +29,10 @@ class QuestionDao extends AbstractDao
 			];
 		} elseif ( $question instanceof OptionsQuestion ) {
 			return [
-				'score_max' => $question->score_max,
-				'options'   => $question->possible_answers,
-				'values'    => $question->correct_answers
+				'score_max'  => $question->score_max,
+				'score_type' => $question->score_type,
+				'options'    => $question->possible_answers,
+				'values'     => $question->correct_answers
 			];
 		} elseif ( $question instanceof ImagesQuestion ) {
 			return [
@@ -41,7 +41,7 @@ class QuestionDao extends AbstractDao
 		} elseif ( $question instanceof NumberQuestion ) {
 			return [
 				'score_max' => $question->score_max,
-				'value' => $question->correct_answer
+				'value'     => $question->correct_answer
 			];
 		} else {
 			throw new Exception( 'Unsupported type of question: ' . get_class( $question ) );
@@ -133,7 +133,7 @@ class QuestionDao extends AbstractDao
 			$question->id ) );
 	}
 
-	public function get($question_id) {
+	public function get( $question_id ) {
 		$objects = $this->get_objects(
 			function ( $row ) {
 				return self::to_form_question( $row );
@@ -146,7 +146,7 @@ class QuestionDao extends AbstractDao
 			',
 			$question_id );
 
-		return reset($objects);
+		return reset( $objects );
 	}
 
 	function get_all_in_form( $form_id ) {

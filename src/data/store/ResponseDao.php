@@ -116,7 +116,7 @@ class ResponseDao extends AbstractDao
 
 	public function get($group_id, $question_id = 0, $latest = false) {
 		$query = 'SELECT * FROM ' . $this->table . ' WHERE team_id = %d AND form_question_id ' . ($question_id ? '=' : '!=') . ' %d ORDER BY id';
-		
+
 		if($latest) {
 			$query .= ' DESC LIMIT 1';
 		}
@@ -203,7 +203,7 @@ class ResponseDao extends AbstractDao
 			WHERE 
 				%s
 				%s
-				AND f.competition_id = %d
+				AND f.competition_id = %%d
 			ORDER BY
 				f.id, q.id, r.team_id
 			',
@@ -218,8 +218,7 @@ class ResponseDao extends AbstractDao
 			}, self::TABLE_COLUMNS_FORMS ) ),
 			self::QUESTION_FILTERS[ $question_filter ]['sql_from'],
 			join( ' AND ', self::QUESTION_FILTERS[ $question_filter ]['sql_where'] ),
-			count( $group_ids ) > 0 ? sprintf( ' AND r.team_id IN (%s)', join( ', ', $group_ids ) ) : '',
-			(int) $competition_id
+			count( $group_ids ) > 0 ? sprintf( ' AND r.team_id IN (%s)', join( ', ', $group_ids ) ) : ''
 		);
 
 		// CONVERT RAW DATA TO OBJECTS
@@ -259,7 +258,8 @@ class ResponseDao extends AbstractDao
 					'form'     => $form
 				];
 			},
-			$query );
+			$query,
+			(int) $competition_id);
 
 		$result = [];
 

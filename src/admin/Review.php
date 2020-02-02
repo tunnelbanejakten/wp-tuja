@@ -19,6 +19,7 @@ use tuja\data\store\ResponseDao;
 class Review {
 
 	const DEFAULT_QUESTION_FILTER = ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL;
+	const DEFAULT_GROUP_FILTER = FieldGroupSelector::GROUP_KEY_ALL;
 	const RESPONSE_MISSING_ID = 0;
 
 	private $competition;
@@ -26,8 +27,6 @@ class Review {
 
 	const GROUP_FILTER_URL_PARAM = 'tuja_review_group_selector';
 	const QUESTION_FILTER_URL_PARAM = 'tuja_question_filter';
-	const QUESTION_FILTER_ALL = 'all';
-	const QUESTION_FILTER_IMAGES = 'images';
 	private $question_dao;
 	private $question_group_dao;
 	private $field_group_selector;
@@ -52,7 +51,7 @@ class Review {
 		$this->field_group_selector = new FieldGroupSelector( $this->competition );
 		$this->review_component     = new ReviewComponent( $this->competition );
 		$this->selected_filter      = @$_GET[ Review::QUESTION_FILTER_URL_PARAM ] ?: self::DEFAULT_QUESTION_FILTER;
-		$this->selected_groups      = $this->field_group_selector->get_selected_groups( $_GET[ Review::GROUP_FILTER_URL_PARAM ] );
+		$this->selected_groups      = $this->field_group_selector->get_selected_groups( $_GET[ Review::GROUP_FILTER_URL_PARAM ] ?: self::DEFAULT_GROUP_FILTER );
 	}
 
 

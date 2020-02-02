@@ -9,6 +9,7 @@ use tuja\data\store\FormDao;
 use tuja\data\store\MessageDao;
 use tuja\data\store\PersonDao;
 use tuja\data\store\QuestionGroupDao;
+use tuja\frontend\router\FormInitiator;
 use tuja\frontend\router\GroupCheckinInitiator;
 use tuja\frontend\router\GroupEditorInitiator;
 use tuja\frontend\router\GroupSignupInitiator;
@@ -29,6 +30,7 @@ class Group {
 	private $group_dao;
 	private $question_group_dao;
 	private $review_component;
+	private $form_dao;
 
 	public function __construct() {
 		$this->group_dao          = new GroupDao();
@@ -48,6 +50,7 @@ class Group {
 			return;
 		}
 		$this->review_component = new ReviewComponent( $this->competition );
+		$this->form_dao         = new FormDao();
 	}
 
 
@@ -133,7 +136,7 @@ class Group {
 	public function output() {
 		$this->handle_post();
 
-		$messages_manager = new MessagesManager($this->competition);
+		$messages_manager = new MessagesManager( $this->competition );
 		$messages_manager->handle_post();
 
 		$competition      = $this->competition;
@@ -153,7 +156,7 @@ class Group {
 			return $qg->id;
 		}, $question_groups ), $question_groups );
 
-		$group                         = $this->group;
+		$group = $this->group;
 
 		$score_calculator = new ScoreCalculator(
 			$competition->id,
@@ -168,7 +171,7 @@ class Group {
 		$responses                     = $db_response->get_latest_by_group( $group->id );
 		$response_per_question         = array_combine( array_map( function ( $response ) {
 			return $response->form_question_id;
-		}, $responses), array_values($responses));
+		}, $responses ), array_values( $responses ) );
 		$points_overrides              = $db_points->get_by_group( $group->id );
 		$points_overrides_per_question = array_combine( array_map( function ( $points ) {
 			return $points->form_question_id;
@@ -181,9 +184,16 @@ class Group {
 
 		$groups = $db_groups->get_all_in_competition( $competition->id, true );
 
-		$group_signup_link = GroupSignupInitiator::link( $group );
-		$group_editor_link = GroupEditorInitiator::link( $group );
+		$group_signup_link  = GroupSignupInitiator::link( $group );
+		$group_editor_link  = GroupEditorInitiator::link( $group );
 		$group_checkin_link = GroupCheckinInitiator::link( $group );
+
+		$group_form_links = array_map( function ( \tuja\data\model\Form $form ) use ( $group ) {
+			return sprintf( '<p>Länkar för att svara på formulär %s: <a href="%s">%s</a></p>',
+				$form->name,
+				FormInitiator::link( $group, $form->id ),
+				FormInitiator::link( $group, $form->id ) );
+		}, $this->form_dao->get_all_in_competition( $competition->id ) );
 
 		include( 'views/group.php' );
 	}

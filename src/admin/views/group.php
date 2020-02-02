@@ -30,6 +30,7 @@ AdminUtils::printTopMenu( $competition );
         Länk för att anmäla nya till laget:
 		<?= sprintf( '<a href="%s">%s</a>', $group_signup_link, $group_signup_link ) ?>
     </p>
+	<?= join( $group_form_links ) ?>
 
     <h3>Status</h3>
 
@@ -108,24 +109,24 @@ AdminUtils::printTopMenu( $competition );
             <th>Länk för att redigera</th>
         </tr>
         </thead>
-	    <?php if ( ! empty( $people ) ) { ?>
-        <tfoot>
-        <tr>
-            <td colspan="8">
-                Flytta markerade deltagare till detta lag: <br>
-                <select name="tuja_group_move_people_to">
-                    <option value="0">Välj lag</option>
-					<?= join( array_map( function ( $g ) use ( $group ) {
-						return sprintf( '<option value="%s" %s>%s</option>',
-							$g->id,
-							$group->id == $g->id ? 'disabled="disabled"' : '',
-							$g->name );
-					}, $groups ) ) ?>
-                </select>
-                <button class="button" type="submit" name="tuja_points_action" value="move_people">Flytta</button>
-            </td>
-        </tr>
-        </tfoot>
+		<?php if ( ! empty( $people ) ) { ?>
+            <tfoot>
+            <tr>
+                <td colspan="8">
+                    Flytta markerade deltagare till detta lag: <br>
+                    <select name="tuja_group_move_people_to">
+                        <option value="0">Välj lag</option>
+						<?= join( array_map( function ( $g ) use ( $group ) {
+							return sprintf( '<option value="%s" %s>%s</option>',
+								$g->id,
+								$group->id == $g->id ? 'disabled="disabled"' : '',
+								$g->name );
+						}, $groups ) ) ?>
+                    </select>
+                    <button class="button" type="submit" name="tuja_points_action" value="move_people">Flytta</button>
+                </td>
+            </tr>
+            </tfoot>
 		<?php } ?>
         <tbody>
 		<?php
