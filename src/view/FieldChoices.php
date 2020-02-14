@@ -4,8 +4,7 @@ namespace tuja\view;
 
 use tuja\data\model\Group;
 
-class FieldChoices extends Field
-{
+class FieldChoices extends Field {
 	const FIELD_TYPE = 'fieldchoices';
 	private $options;
 	private $is_multichoice;
@@ -29,24 +28,30 @@ class FieldChoices extends Field
 			return [];
 		} else {
 			if ( $this->is_multichoice ) {
-				return $user_answer; // TODO: Why not an array?
+				return $user_answer; // Already array because of [] trick in field name.
 			} else {
 				return [ $user_answer ];
 			}
 		}
 	}
 
-	public function render( $field_name, $answer_object, Group $group = null, $error_message = ''  ) {
+	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' ) {
 		$render_id    = $field_name ?: uniqid();
 		$hint         = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
 		$label        = isset( $this->label ) ? $this->label : '';
 		$labelAndHint = ! empty( $label ) || ! empty( $hint ) ? sprintf( '<label for="%s">%s%s</label>', $render_id, $label, $hint ) : '';
 
+		$name = $field_name;
+		if ( $this->is_multichoice ) {
+			// Use [] to "trick" PHP into storing selected values in an array. Requires that other parts of the code handles both scalars and arrays.
+			$name .= '[]';
+		}
+
 		return sprintf( '<div class="tuja-field">%s%s%s</div>',
 			$labelAndHint,
 			count( $this->options ) < self::SHORT_LIST_LIMIT ?
-				$this->render_short_list( $render_id, $field_name, $answer_object ) :
-				$this->render_long_list( $render_id, $field_name, $answer_object ),
+				$this->render_short_list( $render_id, $name, $answer_object ) :
+				$this->render_long_list( $render_id, $name, $answer_object ),
 			! empty( $error_message ) ? sprintf( '<div class="tuja-message tuja-message-error">%s</div>', $error_message ) : ''
 		);
 	}
@@ -62,24 +67,22 @@ class FieldChoices extends Field
 			$this->read_only ? ' disabled="disabled"' : '',
 			$this->is_multichoice ? 10 : 1,
 			join( array_map( function ( $value ) use ( $field_name, $answer_object ) {
-				return sprintf( '<option value="%s" %s>%s</option>', htmlspecialchars( $value ), $this->is_selected( $field_name, $value, $answer_object ) ? ' selected="selected"' : '', htmlspecialchars( $value ) );
+				return sprintf( '<option value="%s" %s>%s</option>',
+					htmlspecialchars( $value ),
+					$this->is_selected( $field_name, $value, $answer_object ) ? ' selected="selected"' : '',
+					htmlspecialchars( $value ) );
 			}, $this->options ) ) );
 	}
 
 	public function render_short_list( $render_id, $field_name, $answer_object ) {
 		return join( array_map( function ( $index, $value ) use ( $render_id, $field_name, $answer_object ) {
-			$id   = $render_id . '-' . $index;
-			$name = $field_name;
-			if ( $this->is_multichoice ) {
-				// Use [] to "trick" PHP into storing selected values in an array. Requires that other parts of the code handles both scalars and arrays.
-				$name .= '[]';
-			}
+			$id = $render_id . '-' . $index;
 
 			return sprintf( '<div class="tuja-%s-%s"><input type="%s" name="%s" value="%s" class="tuja-%s tuja-%s-shortlist" id="%s" %s %s %s/><label for="%s">%s</label></div>',
 				self::FIELD_TYPE,
 				$this->is_multichoice ? 'checkbox' : 'radiobutton',
 				$this->is_multichoice ? 'checkbox' : 'radio',
-				$name,
+				$field_name,
 				htmlspecialchars( $value ),
 				self::FIELD_TYPE,
 				self::FIELD_TYPE,
