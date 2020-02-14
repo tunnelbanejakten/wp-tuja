@@ -5,7 +5,7 @@ var tujaForms = (function () {
         var schema = JSON.parse(el.dataset.schema)
         if (schema) {
           var editor = new JSONEditor(el, {
-            form_name_root: 'JSONEditor_' + Math.random().toString(36).substr(2, 9),
+            form_name_root: 'JSONEditor_' + el.dataset.fieldId,
             schema: schema,
             no_additional_properties: true,
             prompt_before_delete: false,

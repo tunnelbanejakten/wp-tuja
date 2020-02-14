@@ -22,10 +22,11 @@ class FieldTextMulti extends Field {
 				? $answer_object
 				: [];
 
-		return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label><textarea name="%s" class="tuja-%s" %s>%s</textarea>%s</div>',
+		return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label><textarea name="%s" id="%s" class="tuja-%s" %s>%s</textarea>%s</div>',
 			$render_id,
 			$this->label,
 			$hint,
+			$field_name,
 			$field_name,
 			'fieldtextmulti',
 			$this->read_only ? ' disabled="disabled"' : '',

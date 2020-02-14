@@ -356,14 +356,19 @@ class ReviewComponent {
 						$question_id,
 						$group_id
 					] );
+					$manual_score_field_id  = join( '__', [
+						self::FORM_FIELD_OVERRIDE_PREFIX,
+						$question_id,
+						$group_id
+					] );
 					$manual_score_preset_full = $question->score_max;
 					$manual_score_preset_half = round( $question->score_max / 2 );
 					$manual_score_presets     = [];
-					$manual_score_presets[]   = self::get_set_score_html( $manual_score_field_name, $question->score_max, $manual_score_preset_full );
+					$manual_score_presets[]   = self::get_set_score_html( $manual_score_field_id, $question->score_max, $manual_score_preset_full );
 					if ( $manual_score_preset_full != $manual_score_preset_half ) {
-						$manual_score_presets[] = self::get_set_score_html( $manual_score_field_name, $question->score_max, $manual_score_preset_half );
+						$manual_score_presets[] = self::get_set_score_html( $manual_score_field_id, $question->score_max, $manual_score_preset_half );
 					}
-					$manual_score_presets[] = self::get_set_score_html( $manual_score_field_name, $question->score_max, 0 );
+					$manual_score_presets[] = self::get_set_score_html( $manual_score_field_id, $question->score_max, 0 );
 
 					printf( '' .
 					        '<tr class="tuja-admin-review-response-row">
@@ -379,7 +384,7 @@ class ReviewComponent {
 						$response_html,
 						$auto_score_html,
 						join( ' ', $manual_score_presets ),
-						$manual_score_field_name,
+						$manual_score_field_id,
 						$manual_score_field_name,
 						$score_field_value,
 						$question->score_max ?: 1000 );

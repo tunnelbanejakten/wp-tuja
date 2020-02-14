@@ -50,9 +50,11 @@ AdminUtils::printTopMenu( $competition );
 					'tuja_group' => $team_score['group_id'],
 					'tuja_view'  => 'Group'
 				) );
-				printf( '<tr><td><a href="%s">%s</a></td><td>%d p</td></tr>',
+				printf( '<tr><td><a href="%s">%s</a></td><td><span id="tuja-scoreboard-group-%s-points" data-score="%d"></span>%d p</td></tr>',
 					$group_url,
 					htmlspecialchars( $team_score['group_name'] ),
+					$team_score['group_id'],
+					$team_score['score'],
 					$team_score['score'] );
 			}
 		}

@@ -88,6 +88,10 @@ class PageWrapper {
     return this._page.$(selector)
   }
 
+  async $$ (selector) {
+    return this._page.$$(selector)
+  }
+
   async $eval (selector, func) {
     return this._page.$eval(selector, func)
   }
@@ -109,6 +113,22 @@ class PageWrapper {
 
     await this._page.$eval(selector, (node, date) => node.value = date, dateStr)
   }
+
+  async chooseFiles (files) {
+    const button = await this._page.waitForSelector('div.tuja-image-select.dropzone.dz-clickable')
+    const buttonBoundingBox = await button.boundingBox()
+    const [fileChooser] = await Promise.all([
+      this._page.waitForFileChooser(),
+      // We must manually click the top-left corner of the div.dropzone.dz-clickable element since we cannot use the
+      // "element.click" function since it would click the center of the div.dropzone.dz-clickable element and
+      // under some circumstances the center is actually covered by image thumbnails. Hence, we must click manually.
+      this._page.mouse.click(buttonBoundingBox.x + 1, buttonBoundingBox.y + 1)
+    ])
+    await fileChooser.accept(files)
+
+    // Wait for uploads to complete (successfully or not, but still completed)
+    await Promise.all(files.map(file => this._page.waitForSelector(`div.dz-preview.dz-complete .dz-image img[alt="${file.substr(2)}"]`)))
+  }
 }
 
 const defaultPage = new PageWrapper()
@@ -121,6 +141,7 @@ const $eval = async (selector, func) => defaultPage.$eval(selector, func)
 const $$eval = async (selector, func) => defaultPage.$$eval(selector, func)
 const type = async (selector, value) => defaultPage.type(selector, value)
 const goto = async (url, waitForNetwork = false) => defaultPage.goto(url, waitForNetwork)
+const chooseFiles = async (url, waitForNetwork = false) => defaultPage.chooseFiles(url, waitForNetwork)
 const clickLink = async (selector) => defaultPage.clickLink(selector)
 const expectToContain = async (selector, expected) => defaultPage.expectToContain(selector, expected)
 const expectSuccessMessage = async (expected) => defaultPage.expectSuccessMessage(expected)
@@ -286,6 +307,28 @@ describe('wp-tuja', () => {
     await adminPage.clickLink('#tuja_save_competition_settings_button')
   }
 
+  const createNewForm = async (formName) => {
+    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Competition&tuja_competition=${competitionId}`)
+
+    await adminPage.type('#tuja_form_name', formName)
+    await adminPage.clickLink('#tuja_form_create_button')
+
+    const links = await adminPage.page.$$('form.tuja a')
+    let link = null
+    for (let i = 0; i < links.length; i++) {
+      const el = links[i]
+      const linkText = await el.evaluate(node => node.innerText)
+      const isEqual = linkText === formName
+      if (isEqual) {
+        link = el
+        break
+      }
+    }
+
+    const formId = querystring.parse(await link.evaluate(node => node.href)).tuja_form
+    return formId
+  }
+
   beforeAll(async () => {
 
     jest.setTimeout(300000)
@@ -311,25 +354,7 @@ describe('wp-tuja', () => {
     let groupProps = null
 
     const createForm = async () => {
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Competition&tuja_competition=${competitionId}`)
-
-      const formName = 'The Form'
-      await adminPage.type('#tuja_form_name', formName)
-      await adminPage.clickLink('#tuja_form_create_button')
-
-      const links = await adminPage.page.$$('form.tuja a')
-      let link = null
-      for (let i = 0; i < links.length; i++) {
-        const el = links[i]
-        const linkText = await el.evaluate(node => node.innerText)
-        const isEqual = linkText === formName
-        if (isEqual) {
-          link = el
-          break
-        }
-      }
-
-      const formId = querystring.parse(await link.evaluate(node => node.href)).tuja_form
+      const formId = await createNewForm('The Form')
 
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
 
@@ -396,22 +421,6 @@ describe('wp-tuja', () => {
     })
 
     it('should be possible to answer upload-image questions', async () => {
-      const chooseFiles = async (files) => {
-        const button = await defaultPage.page.waitForSelector('div.tuja-image-select.dropzone.dz-clickable')
-        const buttonBoundingBox = await button.boundingBox()
-        const [fileChooser] = await Promise.all([
-          defaultPage.page.waitForFileChooser(),
-          // We must manually click the top-left corner of the div.dropzone.dz-clickable element since we cannot use the
-          // "element.click" function since it would click the center of the div.dropzone.dz-clickable element and
-          // under some circumstances the center is actually covered by image thumbnails. Hence, we must click manually.
-          defaultPage.page.mouse.click(buttonBoundingBox.x + 1, buttonBoundingBox.y + 1)
-        ])
-        await fileChooser.accept(files)
-
-        // Wait for uploads to complete (successfully or not, but still completed)
-        await Promise.all(files.map(file => defaultPage.page.waitForSelector(`div.dz-preview.dz-complete .dz-image img[alt="${file.substr(2)}"]`)))
-      }
-
       const getFileUploadFieldsData = async () => defaultPage.$$eval(
         'div.tuja-image input[type="hidden"][name^="tuja_formshortcode__response__"][name$="[images][]"][value$=".jpeg"]',
         nodes => nodes.map(node => ({
@@ -644,7 +653,7 @@ describe('wp-tuja', () => {
       stationsProps[3].colour = '#fdbcc0'
       stationsProps[0].password = 'treasure'
       stationsProps[1].password = 'gold'
-      stationsProps[2].password = 'loot'
+      stationsProps[2].password = 'abcåäö'
       stationsProps[3].password = 'winnings'
 
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=StationsTicketing&tuja_competition=${competitionId}`)
@@ -797,7 +806,8 @@ describe('wp-tuja', () => {
       const validPasswords = [
         'TREAsure',
         '  gold',
-        'LOOT  '
+        'abcÅÄÖ  ',
+        'abcåäö  '
       ]
       for (const password of validPasswords) {
         await type('#tuja_ticket_password', password)
@@ -1152,7 +1162,7 @@ describe('wp-tuja', () => {
         await saveAndVerify(false)
       })
 
-      it.only('should be possible to sign up as administrator', async () => {
+      it('should be possible to sign up as administrator', async () => {
         const tempGroupProps = await signUpTeam(true, false)
 
         await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
@@ -1313,25 +1323,7 @@ describe('wp-tuja', () => {
       let stationScoreReportForm = 0
 
       const createForm = async () => {
-        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Competition&tuja_competition=${competitionId}`)
-
-        const formName = 'The Stations'
-        await adminPage.type('#tuja_form_name', formName)
-        await adminPage.clickLink('#tuja_form_create_button')
-
-        const links = await adminPage.page.$$('form.tuja a')
-        let link = null
-        for (let i = 0; i < links.length; i++) {
-          const el = links[i]
-          const linkText = await el.evaluate(node => node.innerText)
-          const isEqual = linkText === formName
-          if (isEqual) {
-            link = el
-            break
-          }
-        }
-
-        const formId = querystring.parse(await link.evaluate(node => node.href)).tuja_form
+        const formId = await createNewForm('The Stations')
 
         await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
 
@@ -1550,6 +1542,260 @@ describe('wp-tuja', () => {
       await expectElementCount('div.entry-content p > a', 0) // No links shown
       await expectElementCount('div.entry-content form', 0) // No forms shown
       await expectElementCount('div.entry-content button', 0) // No buttons shown
+    })
+  })
+
+  describe('Reviewing answers', () => {
+    let formId = null
+    let numberQuestionId = 0
+    let choiceQuestionId = 0
+    let imagesQuestionId = 0
+    let textQuestion1Id = 0
+    let textQuestion2Id = 0
+
+    const createForm = async () => {
+      const formId = await createNewForm('The Form to Review')
+
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
+
+      await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
+      await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
+      await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
+      await adminPage.clickLink('button[name="tuja_action"][value="question_create__choices"]')
+      await adminPage.clickLink('button[name="tuja_action"][value="question_create__images"]')
+      await adminPage.clickLink('button[name="tuja_action"][value="question_create__text"]')
+      await adminPage.clickLink('button[name="tuja_action"][value="question_create__text"]')
+
+      const ids = await adminPage.$$eval('div[data-field-id]', nodes => nodes.map(node => node.dataset.fieldId.substr('tuja-question__'.length)))
+
+      numberQuestionId = ids[0]
+      choiceQuestionId = ids[1]
+      imagesQuestionId = ids[2]
+      textQuestion1Id = ids[3]
+      textQuestion2Id = ids[4]
+
+      await adminPage.page.waitForSelector(`input[name="JSONEditor_tuja-question__${numberQuestionId}[text]"]`)
+      await adminPage.page.waitForSelector(`input[name="JSONEditor_tuja-question__${choiceQuestionId}[text]"]`)
+      await adminPage.page.waitForSelector(`input[name="JSONEditor_tuja-question__${imagesQuestionId}[text]"]`)
+      await adminPage.page.waitForSelector(`input[name="JSONEditor_tuja-question__${textQuestion1Id}[text]"]`)
+      await adminPage.page.waitForSelector(`input[name="JSONEditor_tuja-question__${textQuestion2Id}[text]"]`)
+
+      // How many kilometers long is the equator? (number)
+      await adminPage.$eval(`#tuja-question__${numberQuestionId}`, node => node.value = JSON.stringify({
+        'text': 'How many kilometers long is the equator?',
+        'text_hint': 'A subtle hint or reminder.',
+        'score_max': 10,
+        'sort_order': '0',
+        'correct_answer': 40075
+      }))
+
+      // Which of these actors voiced characters in Shrek? (multiple correct options)
+      await adminPage.$eval(`#tuja-question__${choiceQuestionId}`, node => node.value = JSON.stringify({
+        'text': 'Which of these actors voiced characters in Shrek?',
+        'text_hint': 'A subtle hint or reminder.',
+        'score_max': 10,
+        'sort_order': '0',
+        'possible_answers': [
+          'Mike Myers',
+          'Eddie Murphy',
+          'Cameron Diaz',
+          'Kristen Bell',
+          'Idina Menzel',
+          'Jonathan Groff',
+          'Josh Gad'
+        ],
+        'correct_answers': [
+          'Mike Myers',
+          'Eddie Murphy',
+          'Cameron Diaz'
+        ],
+        'is_single_select': false,
+        'score_type': 'all_of'
+      }))
+
+      // Take a picture of something cute (image, test manual points)
+      await adminPage.$eval(`#tuja-question__${imagesQuestionId}`, node => node.value = JSON.stringify({
+        'text': 'Take a picture of something cute',
+        'text_hint': 'A subtle hint or reminder.',
+        'score_max': 10,
+        'sort_order': '0'
+      }))
+
+      // Who invented the windshield wiper? (freetext, test spelling, test autoscore, test manual points)
+      await adminPage.$eval(`#tuja-question__${textQuestion1Id}`, node => node.value = JSON.stringify({
+        'text': 'Who invented the windshield wiper?',
+        'text_hint': 'A subtle hint or reminder.',
+        'score_max': 10,
+        'sort_order': '0',
+        'correct_answers': ['Mary Anderson'],
+        'incorrect_answers': [],
+        'is_single_answer': true,
+        'score_type': 'one_of'
+      }))
+
+      // Which are the capitals of the nordic countries? (multiple correct freetext, test spelling)
+      await adminPage.$eval(`#tuja-question__${textQuestion2Id}`, node => node.value = JSON.stringify({
+        'text': 'Which are the capitals of the five nordic countries?',
+        'text_hint': 'A subtle hint or reminder.',
+        'score_max': 10,
+        'sort_order': '0',
+        'correct_answers': ['stockholm', 'copenhagen', 'oslo', 'helsinki', 'reykjavik'],
+        'incorrect_answers': [],
+        'is_single_answer': false,
+        'score_type': 'unordered_percent_of'
+      }))
+
+      await adminPage.clickLink('button[name="tuja_action"][value="questions_update"]')
+
+      return formId
+    }
+
+    beforeAll(async () => {
+      formId = await createForm()
+    })
+
+    it('type manual score', async () => {
+      const checkScores = async (...expectations) => {
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Scoreboard&tuja_competition=${competitionId}`)
+        for (const { groupId, expectedScore } of expectations) {
+          expect(await adminPage.$eval(`#tuja-scoreboard-group-${groupId}-points`, node => node.dataset.score)).toEqual(String(expectedScore))
+        }
+      }
+
+      const submitAnswers = async (page,
+                                   groupKey,
+                                   numberQuestionAnswer,
+                                   choiceQuestionAnswer,
+                                   imagesQuestionAnswer,
+                                   textQuestion1Answer,
+                                   textQuestion2Answer) => {
+        await page.goto(`http://localhost:8080/${groupKey}/svara/${formId}`, true)
+
+        if (numberQuestionAnswer != null) {
+          await page.type(`#tuja_formshortcode__response__${numberQuestionId}`, numberQuestionAnswer)
+        }
+        if (choiceQuestionAnswer != null) {
+          await page.page.select(`#tuja_formshortcode__response__${choiceQuestionId}`, ...choiceQuestionAnswer)
+        }
+        if (imagesQuestionAnswer != null) {
+          await page.chooseFiles(imagesQuestionAnswer)
+        }
+        if (textQuestion1Answer != null) {
+          await page.type(`#tuja_formshortcode__response__${textQuestion1Id}`, textQuestion1Answer)
+        }
+        if (textQuestion2Answer != null) {
+          await page.type(`#tuja_formshortcode__response__${textQuestion2Id}`, textQuestion2Answer)
+        }
+
+        await page.clickLink('button[name="tuja_formshortcode__action"][value="update"]')
+      }
+
+      const alicePage = await createNewUserPage()
+      const groupAliceProps = await signUpTeam()
+
+      const bobPage = await createNewUserPage()
+      const groupBobProps = await signUpTeam()
+
+      await submitAnswers(
+        alicePage,
+        groupAliceProps.key,
+        // Correct:
+        '40075',
+        // One missing (-10 p):
+        ['Eddie Murphy', 'Cameron Diaz'],
+        // No images:
+        null,
+        // Correct:
+        'Mary Anderson',
+        // Correct:
+        'stockholm, copenhagen, oslo, helsinki, reykjavik')
+
+      await submitAnswers(
+        bobPage,
+        groupBobProps.key,
+        // One off. No points. (-10 p):
+        '40074',
+        // Entirely correct:
+        ['Mike Myers', 'Eddie Murphy', 'Cameron Diaz'],
+        // No images:
+        ['./pexels-photo-1578484.jpeg'],
+        // Misspelled but still good enough:
+        'Marie Andersson',
+        // 1 out of 5 correct answers is missing (-2 p):
+        'stockholm, copenhagen, oslo, helsinki')
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Scoreboard&tuja_competition=${competitionId}`)
+
+      expect(await adminPage.$eval(`#tuja-scoreboard-group-${groupAliceProps.id}-points`, node => node.dataset.score)).toEqual('30')
+
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Review&tuja_competition=${competitionId}`)
+
+      await adminPage.type(`#tuja_review_points__${choiceQuestionId}__${groupAliceProps.id}`, '5')
+      await adminPage.type(`#tuja_review_points__${imagesQuestionId}__${groupBobProps.id}`, '1')
+
+      await adminPage.clickLink('button[name="tuja_review_action"][value="save"]')
+
+      await checkScores(
+        {
+          groupId: groupAliceProps.id,
+          expectedScore: 35 // 10 + 5 + 0 + 10 + 10
+        },
+        {
+          groupId: groupBobProps.id,
+          expectedScore: 29 // 0 + 10 + 1 + 10 + 8
+        })
+
+      await submitAnswers(
+        alicePage,
+        groupAliceProps.key,
+        null,
+        // Change to correct answer (manual score should be ignored):
+        ['Mike Myers', 'Eddie Murphy', 'Cameron Diaz'],
+        null,
+        null,
+        null)
+      await submitAnswers(
+        bobPage,
+        groupBobProps.key,
+        // Change to correct answer:
+        '40075',
+        null,
+        null,
+        null,
+        null)
+
+      await checkScores(
+        {
+          groupId: groupAliceProps.id,
+          expectedScore: 40 // 10 + 10 + 0 + 10 + 10
+        },
+        {
+          groupId: groupBobProps.id,
+          expectedScore: 39 // 10 + 10 + 1 + 10 + 8
+        })
+
+      await alicePage.close()
+      await bobPage.close()
+    })
+    it.skip('set score for photo', () => {
+
+    })
+    it.skip('click manual score', () => {
+
+    })
+    it.skip('accept automatic score', () => {
+
+    })
+    it.skip('only review answers where auto-correcter is unsure', () => {
+
+    })
+    it.skip('add rejected answer as accepted one', () => {
+
+    })
+    it.skip('click manual score and then clear the field (automatic score should then be used)', () => {
+
+    })
+    it.skip('reviewed answers are only shown once', () => {
+
     })
   })
 })

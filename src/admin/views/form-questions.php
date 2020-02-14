@@ -34,7 +34,7 @@ AdminUtils::printTopMenu( $competition );
             flervalsfråga
         </button>
 		<?php
-		
+
 		foreach ($questions as $question) {
 			echo '<div class="tuja-admin-question">';
 			printf( '<div>%s:</div>', substr( get_class( $question ), strrpos( get_class( $question ), '\\' ) + 1 ) );
@@ -45,14 +45,18 @@ AdminUtils::printTopMenu( $competition );
 
 			$options_schema = $question->json_schema();
 
-			printf( '<div class="tuja-admin-questiongroup-form" data-schema="%s" data-values="%s" data-field-id="%s"></div>', htmlentities( $options_schema ), htmlentities( $json ), htmlentities( $field_name ) );
+			printf( '<div class="tuja-admin-questiongroup-form" data-schema="%s" data-values="%s" data-field-id="%s" id="%s"></div>',
+                htmlentities( $options_schema ),
+				htmlentities( $json ),
+				htmlentities( $field_name ),
+				sprintf('tuja-admin-questiongroup-form-%s', $question->id));
 			printf( '<input type="hidden" name="%s" id="%s" value="" />', $field_name, $field_name );
 
 			echo '</div>';
 			printf('<button type="submit" class="button" name="tuja_action" value="%s%d" onclick="return confirm(\'Är du säker?\');">Ta bort</button>', self::ACTION_NAME_DELETE_PREFIX, $question->id);
 			echo '</div>';
 		}
-		
+
 		ob_end_flush();
 	}
     ?>
