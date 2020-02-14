@@ -25,7 +25,7 @@ class TicketDao extends AbstractDao {
 				return self::to_station( $row );
 			},
 			'SELECT s.* FROM ' . Database::get_table( 'ticket_station_config' ) . ' AS tsc INNER JOIN ' . Database::get_table( 'station' ) . ' AS s ON tsc.station_id = s.id WHERE tsc.on_complete_password = %s AND s.competition_id = %d',
-			$on_complete_password,
+			self::normalize_string($on_complete_password),
 			$competition_id );
 	}
 
@@ -147,7 +147,7 @@ class TicketDao extends AbstractDao {
 					$ticket_design->colour,
 					$ticket_design->word,
 					$ticket_design->symbol,
-					$ticket_design->on_complete_password
+					self::normalize_string($ticket_design->on_complete_password)
 				]
 			) );
 		} );
@@ -162,9 +162,16 @@ class TicketDao extends AbstractDao {
 		$affected_rows = $this->wpdb->query( $this->wpdb->prepare( $reset_query, [
 			$group_id,
 			$station_id,
-			$on_complete_password_used
+			self::normalize_string( $on_complete_password_used )
 		] ) );
 
 		return $affected_rows === 1;
+	}
+
+	public static function normalize_string($str) {
+		if ( $str == null ) {
+			return null;
+		}
+		return trim( strtolower( $str ) );
 	}
 }

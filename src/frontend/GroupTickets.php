@@ -31,7 +31,7 @@ class GroupTickets extends AbstractGroupView {
 		$error_message   = '';
 		$success_message = '';
 
-		$password = trim( @$_POST[ self::FIELD_PASSWORD ] );
+		$password = TicketDao::normalize_string( @$_POST[ self::FIELD_PASSWORD ] );
 		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_VALIDATE_TICKET && ! empty( $password ) ) {
 			try {
 				$ticket_validator = new CouponToTicketTsl2020();
