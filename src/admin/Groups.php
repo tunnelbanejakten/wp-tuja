@@ -175,7 +175,7 @@ class Groups {
 			$group_data['category']         = $group->get_category() ?: $category_unknown;
 			$group_data['count_unreviewed'] = @$unreviewed_answers[ $group->id ] ?: 0;
 
-			if ( ! $group_data['category']->get_rule_set()->is_crew() ) {
+			if ( ! $group_data['category']->get_rule_set()->is_crew() && $group->get_status() !== Group::STATUS_DELETED) {
 				$groups_competing                                     += 1;
 				$people_competing                                     += $group->count_competing;
 				$people_following                                     += $group->count_follower;
