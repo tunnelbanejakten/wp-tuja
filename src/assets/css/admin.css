@@ -347,3 +347,8 @@ div.tuja-admin-questiongroup-form div.je-indented-panel {
 input.tuja-ticket-couponweight {
     width: 4em;
 }
+
+tr.tuja-person-status-deleted td {
+    color: #aaa;
+    text-decoration-line: line-through;
+}

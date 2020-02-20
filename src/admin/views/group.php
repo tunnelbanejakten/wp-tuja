@@ -133,7 +133,7 @@ AdminUtils::printTopMenu( $competition );
 		print join( '', array_map( function ( Person $person ) use ( $group ) {
 			$person_edit_link = PersonEditorInitiator::link( $group, $person );
 
-			return sprintf( '<tr>' .
+			return sprintf( '<tr class="tuja-person-status-%s">' .
 			                '<td><input type="checkbox" name="tuja_group_people[]" value="%d" id="tuja_group_people__person_%d"></td>' .
 			                '<td><label for="tuja_group_people__person_%d">%s</label></td>' .
 			                '<td>%s</td>' .
@@ -146,6 +146,7 @@ AdminUtils::printTopMenu( $competition );
 			                '<td><a href="mailto:%s">%s</a></td>' .
 			                '<td><a href="%s">%s</a></td>' .
 			                '</tr>',
+				$person->get_status(),
 				$person->id,
 				$person->id,
 				$person->id,

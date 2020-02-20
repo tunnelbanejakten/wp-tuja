@@ -201,7 +201,7 @@ class GroupDao extends AbstractDao {
 		$g->note               = $result->note;
 		$g->set_status( $result->status );
 
-		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, true, $date );
+		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, false, $date );
 		$people_competing          = array_filter( $people, function ( Person $person ) {
 			return $person->is_competing();
 		} );
