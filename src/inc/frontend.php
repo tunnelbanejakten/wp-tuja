@@ -70,6 +70,7 @@ class Frontend extends Plugin {
 		wp_register_script( 'tuja-countdown-script', static::get_url() . '/assets/js/countdown.js' );
 
 		wp_enqueue_style( 'tuja-wp-theme', static::get_url() . '/assets/css/wp.css' );
+		wp_enqueue_style( 'dropzone-css', static::get_url() . '/assets/css/dropzone.min.css' );
 	}
 
 	public function group_name_shortcode( $atts ) {

@@ -111,7 +111,8 @@ class AbstractDao {
 					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
-					@$config['score_max'] );
+					@$config['score_max'],
+					@$config['max_files_count'] ?: ImagesQuestion::DEFAULT_FILE_COUNT_LIMIT );
 
 				return $q;
 			case self::QUESTION_TYPE_NUMBER:

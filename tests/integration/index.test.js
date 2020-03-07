@@ -420,7 +420,7 @@ describe('wp-tuja', () => {
       await expectFormValue('input.tuja-fieldtext[type="number"]', '42')
     })
 
-    it('should be possible to answer upload-image questions', async () => {
+    it.only('should be possible to answer upload-image questions', async () => {
       const getFileUploadFieldsData = async () => defaultPage.$$eval(
         'div.tuja-image input[type="hidden"][name^="tuja_formshortcode__response__"][name$="[images][]"][value$=".jpeg"]',
         nodes => nodes.map(node => ({
@@ -610,7 +610,7 @@ describe('wp-tuja', () => {
     })
   })
 
-  describe('Tickets', () => {
+  /*describe('Tickets', () => {
 
     let stationsProps = null
 
@@ -830,8 +830,9 @@ describe('wp-tuja', () => {
       await expectElementCount('input', 0)
       await expectElementCount('select', 0)
     })
-  })
+  })*/
 
+/*
   describe('Signing up as new team', () => {
 
     describe('when teams need to be approved', () => {
@@ -1290,7 +1291,9 @@ describe('wp-tuja', () => {
       })
     })
   })
+*/
 
+/*
   describe('Crew', () => {
 
     let crewGroupProps = null
@@ -1479,8 +1482,9 @@ describe('wp-tuja', () => {
       await expectErrorMessage(expectedErrorMessage)
     })
   })
+*/
 
-  describe('Checking in', () => {
+  /*describe('Checking in', () => {
     it('basic tests', async () => {
       const tempGroupProps = await signUpTeam()
 
@@ -1516,9 +1520,9 @@ describe('wp-tuja', () => {
       await expectElementCount('button', 0)
       await expectElementCount('input', 0)
     })
-  })
+  })*/
 
-  describe('Deleting (unregistering) teams', () => {
+  /*describe('Deleting (unregistering) teams', () => {
 
     let groupProps = null
 
@@ -1543,9 +1547,9 @@ describe('wp-tuja', () => {
       await expectElementCount('div.entry-content form', 0) // No forms shown
       await expectElementCount('div.entry-content button', 0) // No buttons shown
     })
-  })
+  })*/
 
-  describe('Reviewing answers', () => {
+  /*describe('Reviewing answers', () => {
     let formId = null
     let numberQuestionId = 0
     let choiceQuestionId = 0
@@ -1797,5 +1801,5 @@ describe('wp-tuja', () => {
     it.skip('reviewed answers are only shown once', () => {
 
     })
-  })
+  })*/
 })

@@ -36,7 +36,8 @@ class QuestionDao extends AbstractDao {
 			];
 		} elseif ( $question instanceof ImagesQuestion ) {
 			return [
-				'score_max' => $question->score_max
+				'score_max' => $question->score_max,
+				'max_files_count' => $question->max_files_count
 			];
 		} elseif ( $question instanceof NumberQuestion ) {
 			return [

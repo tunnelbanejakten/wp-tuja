@@ -7,13 +7,13 @@ use tuja\data\model\Group;
 use tuja\util\ImageManager;
 
 class FieldImages extends Field {
-	const SHORT_LIST_LIMIT = 5;
-
 	private $image_manager;
+	private $max_files_count;
 
-	function __construct( $label, $hint = null, $read_only = false ) {
+	function __construct( $label, $hint = null, $read_only = false, $max_files_count = 2 ) {
 		parent::__construct( $label, $hint, $read_only );
 		$this->image_manager = new ImageManager();
+		$this->max_files_count = $max_files_count;
 	}
 
 	public function get_posted_answer( $form_field ) {
@@ -33,8 +33,7 @@ class FieldImages extends Field {
 		$hint = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
 
 		return sprintf(
-			'<div class="tuja-field tuja-%s"><label>%s%s</label>%s%s</div>',
-			'fieldimages',
+			'<div class="tuja-field tuja-fieldimages"><label>%s%s</label>%s<div><small class="tuja-question-hint tuja-fieldimages-counter"></small></div>%s</div>',
 			$this->label,
 			$hint,
 			$this->render_image_upload( $field_name, $group->random_id, $answer_object ),
@@ -87,6 +86,7 @@ class FieldImages extends Field {
 		ob_start();
 		?>
         <div class="tuja-image" data-field-name="<?php echo $field_name; ?>[images][]"
+             data-max-files-count="<?php echo $this->max_files_count?>"
              data-preexisting="<?php echo htmlspecialchars( json_encode( $images ) ); ?>">
             <div class="tuja-image-select dropzone"></div>
             <div class="tuja-image-options">

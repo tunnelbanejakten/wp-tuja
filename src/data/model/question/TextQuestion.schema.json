@@ -12,7 +12,7 @@
       "format": "text"
     },
     "score_max": {
-      "title": "Maxpoäng",
+      "title": "Maximal poäng",
       "type": "integer",
       "format": "number"
     },

@@ -12,7 +12,7 @@
       "format": "text"
     },
     "score_max": {
-      "title": "Maxpoäng",
+      "title": "Maximal poäng",
       "type": "integer",
       "format": "number"
     },
@@ -20,6 +20,11 @@
       "title": "Position",
       "type": "string",
       "format": "text"
+    },
+    "max_files_count": {
+      "title": "Maximalt antal bilder",
+      "type": "integer",
+      "format": "number"
     }
   }
 }

@@ -10,6 +10,16 @@ use tuja\view\FieldImages;
 
 class ImagesQuestion extends AbstractQuestion {
 
+	const DEFAULT_FILE_COUNT_LIMIT = 2;
+
+	public $max_files_count;
+
+	public function __construct($text, $text_hint, $id, $question_group_id, $sort_order, $score_max, $max_files_count = self::DEFAULT_FILE_COUNT_LIMIT) {
+		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max );
+		$this->max_files_count = $max_files_count;
+	}
+
+
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */
@@ -33,7 +43,7 @@ class ImagesQuestion extends AbstractQuestion {
 	}
 
 	private function create_field($is_read_only = false): FieldImages {
-		$field = new FieldImages( $this->text, $this->text_hint, $is_read_only );
+		$field = new FieldImages( $this->text, $this->text_hint, $is_read_only, $this->max_files_count );
 
 		return $field;
 	}
