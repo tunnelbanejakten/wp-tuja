@@ -81,7 +81,7 @@ class CompetitionSettings {
 				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
 				'delivery_method'     => MessageTemplate::EMAIL
 			],
-			'group_accepted_by_default.admin.email'   => [
+			'group_accepted_by_default.admin.email'          => [
 				'name'                => 'Ny grupp - Direktanmäld (till Tuko)',
 				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_CREATED, \tuja\data\model\Group::STATUS_ACCEPTED ),
 				'auto_send_recipient' => EventMessageSender::RECIPIENT_ADMIN,
@@ -115,6 +115,18 @@ class CompetitionSettings {
 				'name'                => 'Anmälan behöver kompletteras',
 				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_ACCEPTED, \tuja\data\model\Group::STATUS_INCOMPLETE_DATA ),
 				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
+				'delivery_method'     => MessageTemplate::EMAIL
+			],
+			'person_added.non_crew.email'                   => [
+				'name'                => 'Ny person i tävlande lag',
+				'auto_send_trigger'   => EventMessageSender::new_group_member_event_name( false ),
+				'auto_send_recipient' => EventMessageSender::RECIPIENT_SELF,
+				'delivery_method'     => MessageTemplate::EMAIL
+			],
+			'person_added.crew.email'                   => [
+				'name'                => 'Ny person i funktionärslag',
+				'auto_send_trigger'   => EventMessageSender::new_group_member_event_name( true ),
+				'auto_send_recipient' => EventMessageSender::RECIPIENT_SELF,
 				'delivery_method'     => MessageTemplate::EMAIL
 			]
 		];
