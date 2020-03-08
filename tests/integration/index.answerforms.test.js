@@ -156,15 +156,20 @@ describe('wp-tuja', () => {
         }
       }
 
+      const expectImageCounter = async (msg) => defaultPage.expectToContain('.tuja-question-hint.tuja-fieldimages-counter', msg)
+
       //
       // Upload one image
       //
 
       await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
 
+      await expectImageCounter('Ni kan ladda upp 2 bilder här.')
+
       await chooseFiles(['pexels-photo-1578484.jpeg'])
 
       await expectElementCount('div.tuja-fieldimages div.dz-preview', 1)
+      await expectImageCounter('Ni kan ladda upp ytterligare 1 bild.')
 
       await saveAndVerifyUploads(false)
 
@@ -175,6 +180,7 @@ describe('wp-tuja', () => {
       await removeAllImages()
 
       await expectElementCount('div.tuja-fieldimages div.dz-preview', 0)
+      await expectImageCounter('Ni kan ladda upp 2 bilder här.')
 
       // Save and reload
       await saveAndVerifyUploads(true)
@@ -188,23 +194,27 @@ describe('wp-tuja', () => {
       await chooseFiles(['pexels-photo-1578484.jpeg', 'pexels-photo-2285996.jpeg'])
       await expectElementCount('div.dz-preview.dz-complete .dz-image img[alt="pexels-photo-1578484.jpeg"]', 1)
       await expectElementCount('div.dz-preview.dz-complete .dz-image img[alt="pexels-photo-2285996.jpeg"]', 1)
+      await expectImageCounter('Ni har laddad upp så många bilder som ni får. Vill ni byta ut en bild måste ni först ta bort en.')
 
       // Save (and verify that both images are saved)
       await saveAndVerifyUploads(false)
 
       // Remove all images
       await removeAllImages()
+      await expectImageCounter('Ni kan ladda upp 2 bilder här.')
 
       // Upload one image
       await chooseFiles(['pexels-photo-174667.jpeg'])
       await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 1)
       await expectElementCount('.dz-image img[alt="pexels-photo-174667.jpeg"]', 1)
+      await expectImageCounter('Ni kan ladda upp ytterligare 1 bild.')
 
       // Try to upload two additional images (only one will succeed)
       await chooseFiles(['pexels-photo-1578484.jpeg', 'pexels-photo-2285996.jpeg'])
       await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 2)
       await expectElementCount('.dz-image img[alt="pexels-photo-1578484.jpeg"]', 1)
       await expectElementCount('.dz-image img[alt="pexels-photo-174667.jpeg"]', 1)
+      await expectImageCounter('Ni har laddad upp så många bilder som ni får. Vill ni byta ut en bild måste ni först ta bort en.')
 
       // Save (and verify that only two images are saved)
       await saveAndVerifyUploads(false)
@@ -217,14 +227,17 @@ describe('wp-tuja', () => {
       // Remove all images
       await removeAllImages()
       await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 0)
+      await expectImageCounter('Ni kan ladda upp 2 bilder här.')
 
       // Upload one image
       await chooseFiles(['pexels-photo-1578484.jpeg'])
       await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 1)
+      await expectImageCounter('Ni kan ladda upp ytterligare 1 bild.')
 
       // Upload one image more
       await chooseFiles(['pexels-photo-174667.jpeg'])
       await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 2)
+      await expectImageCounter('Ni har laddad upp så många bilder som ni får. Vill ni byta ut en bild måste ni först ta bort en.')
 
       // Save (and verify that both images are saved)
       await saveAndVerifyUploads(false)
