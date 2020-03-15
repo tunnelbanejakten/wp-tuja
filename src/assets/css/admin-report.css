@@ -33,3 +33,7 @@ td.write-line {
         display: none;
     }
 }
+
+ul {
+    padding-left: 1em;
+}

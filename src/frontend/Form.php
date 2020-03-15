@@ -181,7 +181,7 @@ class Form extends AbstractGroupView {
 					$current_group .= sprintf( '<h2 class="tuja-question-group-title">%s</h2>', $question_group->text );
 				}
 
-				$questions = $this->question_dao->get_all_in_group( $question_group->id );
+				$questions = $question_group->get_filtered_questions( $this->question_dao, $this->group_dao, $group );
 				foreach ( $questions as $question ) {
 					$field_name = self::RESPONSE_FIELD_NAME_PREFIX . $question->id;
 

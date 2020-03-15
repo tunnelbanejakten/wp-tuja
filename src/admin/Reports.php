@@ -53,7 +53,8 @@ class Reports {
 			$this->report_config( ReportFoodPreferences::class, 'Matallergier och preferenser' ),
 			$this->report_config( ReportGroupScore::class, 'Poängformulär' ),
 			$this->report_config( ReportPayments::class, 'Förväntade inbetalningar' ),
-			$this->report_config( ReportNotes::class, 'Meddelanden till tävlingsledningen' )
+			$this->report_config( ReportNotes::class, 'Meddelanden till tävlingsledningen' ),
+			$this->report_config( ReportQuestionFiltering::class, 'get_filtered_questions' )
 		];
 
 		include( 'views/reports.php' );

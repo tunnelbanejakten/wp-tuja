@@ -16,7 +16,8 @@ class QuestionGroupDao extends AbstractDao {
 		return json_encode( array(
 			'score_max' => isset( $question_group->score_max )
 				? floatval( $question_group->score_max )
-				: null
+				: null,
+			'question_filter' => $question_group->question_filter ?: QuestionGroup::QUESTION_FILTER_ALL
 		) );
 	}
 
@@ -26,6 +27,7 @@ class QuestionGroupDao extends AbstractDao {
 		$question_group->score_max = isset( $conf['score_max'] )
 			? $conf['score_max']
 			: null;
+		$question_group->question_filter = $conf['question_filter'] ?: QuestionGroup::QUESTION_FILTER_ALL;
 	}
 
 	function create( QuestionGroup $group ) {

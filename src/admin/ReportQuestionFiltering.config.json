@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "tuja_reports_question_filter": {
+      "title": "Metod för att välja frågor att visa",
+      "type": "string",
+      "format": "radio",
+      "enum": [
+        "all",
+        "one_random_with_even_group_distribution"
+      ]
+    }
+  }
+}
