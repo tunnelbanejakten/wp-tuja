@@ -13,3 +13,6 @@ use tuja\util\Strings;
 <p>
 	<?php printf( '<a href="%s" id="tuja_tickets_link">%s</a>', $tickets_link, Strings::get( 'home.link.tickets' ) ) ?>
 </p>
+<p>
+	<?php printf( '<a href="%s" id="tuja_unregister_team_link">%s</a>', $unregister_team_link, Strings::get( 'home.link.unregister_team' ) ) ?>
+</p>

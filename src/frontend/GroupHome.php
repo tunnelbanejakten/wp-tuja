@@ -3,8 +3,8 @@
 namespace tuja\frontend;
 
 
-use Exception;
 use tuja\data\model\Group;
+use tuja\frontend\router\GroupCancelSignupInitiator;
 use tuja\frontend\router\GroupEditorInitiator;
 use tuja\frontend\router\GroupPeopleEditorInitiator;
 use tuja\frontend\router\GroupStatusInitiator;
@@ -28,9 +28,10 @@ class GroupHome extends AbstractGroupView {
 			);
 		}
 
-		$edit_group_link  = GroupEditorInitiator::link( $group );
-		$edit_people_link = GroupPeopleEditorInitiator::link( $group );
-		$tickets_link     = GroupTicketsInitiator::link( $group );
+		$edit_group_link      = GroupEditorInitiator::link( $group );
+		$edit_people_link     = GroupPeopleEditorInitiator::link( $group );
+		$unregister_team_link = GroupCancelSignupInitiator::link( $group );
+		$tickets_link         = GroupTicketsInitiator::link( $group );
 		include( 'views/group-home.php' );
 	}
 }

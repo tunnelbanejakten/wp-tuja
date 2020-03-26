@@ -535,28 +535,59 @@ describe('wp-tuja', () => {
 
   describe('Deleting (unregistering) teams', () => {
 
-    let groupProps = null
+    describe('as admin', () => {
+      let groupProps = null
 
-    beforeAll(async () => {
-      groupProps = await defaultPage.signUpTeam(adminPage, true)
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${groupProps.id}`)
-      await adminPage.clickLink('button[name="tuja_points_action"][value="transition__deleted"]')
+      beforeAll(async () => {
+        groupProps = await defaultPage.signUpTeam(adminPage, true)
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${groupProps.id}`)
+        await adminPage.clickLink('button[name="tuja_points_action"][value="transition__deleted"]')
+      })
+
+      it.each([
+        '',
+        'andra',
+        'andra-personer',
+        'biljetter',
+        'anmal-mig',
+      ])('should NOT be possible to do anything on team page /%s', async (urlSuffix) => {
+        await goto(`http://localhost:8080/${groupProps.key}/${urlSuffix}`)
+
+        await expectErrorMessage('Laget är avanmält.')
+
+        await expectElementCount('div.entry-content p > a', 0) // No links shown
+        await expectElementCount('div.entry-content form', 0) // No forms shown
+        await expectElementCount('div.entry-content button', 0) // No buttons shown
+      })
     })
 
-    it.each([
-      '',
-      'andra',
-      'andra-personer',
-      'biljetter',
-      'anmal-mig',
-    ])('should NOT be possible to do anything on team page /%s', async (urlSuffix) => {
-      await goto(`http://localhost:8080/${groupProps.key}/${urlSuffix}`)
+    describe('as user', () => {
+      let groupProps = null
 
-      await expectErrorMessage('Laget är avanmält.')
+      beforeAll(async () => {
+        groupProps = await defaultPage.signUpTeam(adminPage, true)
+        await defaultPage.goto(groupProps.portalUrl)
+        await defaultPage.clickLink('#tuja_unregister_team_link')
+        await defaultPage.clickLink('button[name="tuja-action"][value="cancel"]')
+        await expectSuccessMessage('Ni är nu avanmälda')
+      })
 
-      await expectElementCount('div.entry-content p > a', 0) // No links shown
-      await expectElementCount('div.entry-content form', 0) // No forms shown
-      await expectElementCount('div.entry-content button', 0) // No buttons shown
+      it.each([
+        '',
+        'andra',
+        'andra-personer',
+        'biljetter',
+        'anmal-mig',
+      ])('should NOT be possible to do anything on team page /%s', async (urlSuffix) => {
+        await goto(`http://localhost:8080/${groupProps.key}/${urlSuffix}`)
+
+        await expectErrorMessage('Laget är avanmält.')
+
+        await expectElementCount('div.entry-content p > a', 0) // No links shown
+        await expectElementCount('div.entry-content form', 0) // No forms shown
+        await expectElementCount('div.entry-content button', 0) // No buttons shown
+      })
+
     })
   })
 

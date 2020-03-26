@@ -28,6 +28,7 @@ class Controller {
 			new FormInitiator(),
 			new PointsOverrideInitiator(),
 			new GroupStatusInitiator(),
+			new GroupCancelSignupInitiator(),
 			new GroupCheckinInitiator()
 		];
 	}

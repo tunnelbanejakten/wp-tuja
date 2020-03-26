@@ -46,6 +46,6 @@ use tuja\util\Strings;
 	<?= $submit_button ?>
 </form>
 
-<p>
+<p class="tuja-buttons">
 	<?php printf( '<a href="%s">Tillbaka</a>', $home_link ) ?>
 </p>
