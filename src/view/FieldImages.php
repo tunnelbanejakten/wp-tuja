@@ -57,6 +57,7 @@ class FieldImages extends Field {
 
 	private function render_image_upload( $field_name, $group_key, $answer_object ) {
 		wp_enqueue_script( 'jquery' );
+		wp_enqueue_script( 'tuja-exifjs' ); // Including exif-js automatically enables auto-rotation in Dropzone.
 		wp_enqueue_script( 'tuja-dropzone' );
 		wp_enqueue_script( 'tuja-upload-script' );
 
