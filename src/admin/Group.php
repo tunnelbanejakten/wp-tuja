@@ -191,8 +191,8 @@ class Group {
 		$group_form_links = array_map( function ( \tuja\data\model\Form $form ) use ( $group ) {
 			return sprintf( '<p>Länkar för att svara på formulär %s: <a href="%s">%s</a></p>',
 				$form->name,
-				FormInitiator::link( $group, $form->id ),
-				FormInitiator::link( $group, $form->id ) );
+				FormInitiator::link( $group, $form ),
+				FormInitiator::link( $group, $form ) );
 		}, $this->form_dao->get_all_in_competition( $competition->id ) );
 
 		include( 'views/group.php' );

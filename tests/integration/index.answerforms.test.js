@@ -44,8 +44,8 @@ describe('wp-tuja', () => {
       }
     }
 
-    const formId = querystring.parse(await link.evaluate(node => node.href)).tuja_form
-    return formId
+    const formIds = await link.evaluate(node => ({ id: node.dataset.id, key: node.dataset.randomId }))
+    return formIds
   }
 
   beforeAll(async () => {
@@ -62,13 +62,14 @@ describe('wp-tuja', () => {
 
   describe('Answering forms', () => {
 
+    let formKey = 0
     let formId = 0
     let groupProps = null
 
     const createForm = async () => {
-      const formId = await createNewForm('The Form')
+      const {id, key} = await createNewForm('The Form')
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${id}`)
 
       await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
       await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
@@ -77,17 +78,19 @@ describe('wp-tuja', () => {
       await adminPage.clickLink('button[name="tuja_action"][value="question_create__images"]')
       await adminPage.clickLink('button[name="tuja_action"][value="question_create__choices"]')
 
-      return formId
+      return ({id, key})
     }
 
     beforeAll(async () => {
       groupProps = await defaultPage.signUpTeam(adminPage)
 
-      formId = await createForm()
+      const formIds = await createForm()
+      formKey = formIds.key
+      formId = formIds.id
     })
 
     it('should show the correct number of questions', async () => {
-      await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
+      await goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
       await expectElementCount('section.tuja-question-group', 1)
       await expectElementCount('div.tuja-question', 4)
       await expectElementCount('input.tuja-fieldtext[type="text"]', 1)
@@ -98,7 +101,7 @@ describe('wp-tuja', () => {
     })
 
     it('should be possible to answer radio button questions', async () => {
-      await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
+      await goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
       const option = await $('input.tuja-fieldchoices[type="radio"]')
       await option.click()
       const id = await option.evaluate(node => node.id)
@@ -108,7 +111,7 @@ describe('wp-tuja', () => {
     })
 
     it('should be possible to answer free-text questions', async () => {
-      await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
+      await goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
       await type('input.tuja-fieldtext[type="text"]', 'our answer')
 
       await clickLink('button[name="tuja_formshortcode__action"][value="update"]')
@@ -116,7 +119,7 @@ describe('wp-tuja', () => {
     })
 
     it('should be possible to answer number questions', async () => {
-      await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
+      await goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
       await type('input.tuja-fieldtext[type="number"]', '42')
 
       await clickLink('button[name="tuja_formshortcode__action"][value="update"]')
@@ -139,7 +142,7 @@ describe('wp-tuja', () => {
         await expectSuccessMessage('Era svar har sparats')
 
         if (forceReload) {
-          await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`, true)
+          await goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`, true)
         }
 
         for (const data of uploadData) {
@@ -162,7 +165,7 @@ describe('wp-tuja', () => {
       // Upload one image
       //
 
-      await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
+      await goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
 
       await expectImageCounter('Ni kan ladda upp 2 bilder här.')
 
@@ -176,7 +179,7 @@ describe('wp-tuja', () => {
       //
       // Remove uploaded images
       //
-      await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`, true)
+      await goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`, true)
       await removeAllImages()
 
       await expectElementCount('div.tuja-fieldimages div.dz-preview', 0)
@@ -246,7 +249,7 @@ describe('wp-tuja', () => {
     it('should NOT be possible to SEE questions BEFORE form has been OPENED', async () => {
       await adminPage.configureFormDateLimits(competitionId, formId, 10, 20)
 
-      await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
+      await goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
       await expectWarningMessage('Formuläret kan inte visas just nu.')
       await expectElementCount('section.tuja-question-group', 0)
       await expectElementCount('div.tuja-question', 0)
@@ -258,7 +261,7 @@ describe('wp-tuja', () => {
     it('should NOT be possible to update answers AFTER form has been CLOSED', async () => {
       await adminPage.configureFormDateLimits(competitionId, formId, -20, -10)
 
-      await goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
+      await goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
       await expectErrorMessage('Svar får inte skickas in nu.')
       await expectElementCount('button[name="tuja_formshortcode__action"][value="update"]', 0)
 
@@ -269,8 +272,8 @@ describe('wp-tuja', () => {
       const aliceSession = await createNewUserPage()
       const bobSession = await createNewUserPage()
 
-      await aliceSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
-      await bobSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
+      await aliceSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
+      await bobSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
 
       // Alice answers first question only
       await aliceSession.type('input.tuja-fieldtext[type="text"]', 'The updated answer from Alice')
@@ -303,11 +306,11 @@ describe('wp-tuja', () => {
       const bobSession = await createNewUserPage()
 
       // Alice sets the initial answers
-      await aliceSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`)
+      await aliceSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
       await aliceSession.type('input.tuja-fieldtext[type="text"]', 'The answer')
       await aliceSession.clickLink('button[name="tuja_formshortcode__action"][value="update"]')
 
-      await bobSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formId}`) // Load Bob's form to get up-to-date lock value
+      await bobSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`) // Load Bob's form to get up-to-date lock value
 
       // Alice changes the answer to the first question
       await aliceSession.type('input.tuja-fieldtext[type="text"]', 'The new answer')

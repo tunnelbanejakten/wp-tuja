@@ -10,7 +10,7 @@ use tuja\Plugin;
 
 class Database {
 
-	static public function get_table($name) {
+	static public function get_table( $name ) {
 		global $wpdb;
 
 		return $wpdb->prefix . Plugin::TABLE_PREFIX . $name;
@@ -41,6 +41,23 @@ class Database {
 		return true;
 	}
 
+	static public function set_missing_form_keys() {
+		global $wpdb;
+
+		$forms_to_fix = array_map( function ( $row ) {
+			return $row[0];
+		}, $wpdb->get_results( 'SELECT id FROM ' . self::get_table( 'form' ) . ' WHERE random_id IS NULL', ARRAY_N ) );
+		foreach ( $forms_to_fix as $form_id ) {
+			$wpdb->show_errors( true );
+			$affected_rows = $wpdb->query( $wpdb->prepare(
+				'UPDATE ' . self::get_table( 'form' ) . ' SET random_id = %s WHERE id = %d',
+				( new Id() )->random_string(),
+				$form_id ) );
+			if ( $affected_rows != 1 ) {
+				throw new Exception( "Could not set random_id for form $form_id" );
+			}
+		}
+	}
 
 	/**
 	 * Get constraint name which is unique, predictable and not longer than 64 characters
@@ -59,17 +76,17 @@ class Database {
 
 	static public function start_transaction() {
 		global $wpdb;
-		$wpdb->query('START TRANSACTION');
+		$wpdb->query( 'START TRANSACTION' );
 	}
 
 
 	static public function commit() {
 		global $wpdb;
-		$wpdb->query('COMMIT');
+		$wpdb->query( 'COMMIT' );
 	}
 
 	static public function rollback() {
 		global $wpdb;
-		$wpdb->query('ROLLBACK');
+		$wpdb->query( 'ROLLBACK' );
 	}
 }

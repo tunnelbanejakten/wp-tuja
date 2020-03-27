@@ -32,8 +32,8 @@ describe('wp-tuja', () => {
       }
     }
 
-    const formId = querystring.parse(await link.evaluate(node => node.href)).tuja_form
-    return formId
+    const formIds = await link.evaluate(node => ({ id: node.dataset.id, key: node.dataset.randomId }))
+    return formIds
   }
 
   beforeAll(async () => {
@@ -49,7 +49,8 @@ describe('wp-tuja', () => {
   })
 
   describe('Reviewing answers', () => {
-    let formId = null
+    let formKey = 0
+    let formId = 0
     let numberQuestionId = 0
     let choiceQuestionId = 0
     let imagesQuestionId = 0
@@ -57,9 +58,9 @@ describe('wp-tuja', () => {
     let textQuestion2Id = 0
 
     const createForm = async () => {
-      const formId = await createNewForm('The Form to Review')
+      const {id, key} = await createNewForm('The Form to Review')
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${id}`)
 
       await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
       await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
@@ -150,11 +151,13 @@ describe('wp-tuja', () => {
 
       await adminPage.clickLink('button[name="tuja_action"][value="questions_update"]')
 
-      return formId
+      return ({id, key})
     }
 
     beforeAll(async () => {
-      formId = await createForm()
+      const formIds = await createForm()
+      formKey = formIds.key
+      formId = formIds.id
     })
 
     it('type manual score', async () => {
@@ -172,7 +175,7 @@ describe('wp-tuja', () => {
                                    imagesQuestionAnswer,
                                    textQuestion1Answer,
                                    textQuestion2Answer) => {
-        await page.goto(`http://localhost:8080/${groupKey}/svara/${formId}`, true)
+        await page.goto(`http://localhost:8080/${groupKey}/svara/${formKey}`, true)
 
         if (numberQuestionAnswer != null) {
           await page.type(`#tuja_formshortcode__response__${numberQuestionId}`, numberQuestionAnswer)

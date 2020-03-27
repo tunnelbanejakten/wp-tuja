@@ -17,7 +17,12 @@ AdminUtils::printTopMenu( $competition );
 			'tuja_view' => 'Form',
 			'tuja_form' => $form->id
 		) );
-		printf( '<p><a href="%s">%s</a></p>', $url, $form->name );
+		printf(
+			'<p><a href="%s" data-id="%d" data-random-id="%s">%s</a></p>',
+			$url,
+			$form->id,
+			$form->random_id,
+			$form->name );
 	}
 	if ( AdminUtils::is_admin_mode() ) {
 		?>

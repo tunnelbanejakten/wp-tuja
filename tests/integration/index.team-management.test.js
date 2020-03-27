@@ -68,7 +68,7 @@ describe('wp-tuja', () => {
         await adminPage.clickLink('button[name="tuja_points_action"][value="transition__accepted"]')
 
         await goto(toBeAcceptedGroup.portalUrl)
-        await expectElementCount('div.entry-content p > a', 3) // No links shown
+        await expectElementCount('div.entry-content p > a', 4)
         await expectElementCount('div.entry-content p.tuja-message-success', 0)
         await expectElementCount('div.entry-content p.tuja-message-warning', 0)
         await expectElementCount('div.entry-content p.tuja-message-error', 0)

@@ -134,6 +134,7 @@ class AbstractDao {
 	protected static function to_form( $result ): Form {
 		$f                                     = new Form();
 		$f->id                                 = $result->id;
+		$f->random_id                          = $result->random_id;
 		$f->competition_id                     = $result->competition_id;
 		$f->name                               = $result->name;
 		$f->allow_multiple_responses_per_group = $result->allow_multiple_responses_per_team;

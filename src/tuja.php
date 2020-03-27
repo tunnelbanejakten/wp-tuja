@@ -64,7 +64,7 @@ abstract class Plugin {
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'competition' ) . ' (
-				id                                   INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id                                   INTEGER AUTO_INCREMENT NOT NULL,
 				random_id                            VARCHAR(20)    NOT NULL,
 				name                                 VARCHAR(100)   NOT NULL,
 				payment_instructions                 TEXT,
@@ -78,45 +78,47 @@ abstract class Plugin {
 				message_template_new_team_reporter   INTEGER,
 				message_template_new_crew_member     INTEGER,
 				message_template_new_noncrew_member  INTEGER,
-				initial_group_status                 VARCHAR(20)
+				initial_group_status                 VARCHAR(20),
+				PRIMARY KEY (id),
 				UNIQUE KEY idx_competition_token (random_id)
 			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'team' ) . ' (
-				id                 INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id                 INTEGER AUTO_INCREMENT NOT NULL,
 				random_id          VARCHAR(20)  NOT NULL,
 				competition_id     INTEGER      NOT NULL,
 				is_always_editable BOOLEAN      NOT NULL DEFAULT FALSE,
+				PRIMARY KEY (id),
 				UNIQUE KEY idx_team_token (random_id)
 			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'team_properties' ) . ' (
-				id             INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id             INTEGER AUTO_INCREMENT NOT NULL,
 				team_id        INTEGER      NOT NULL,
 				created_at     INTEGER      NOT NULL,
-
 				status         VARCHAR(20)  NOT NULL,
 				name           VARCHAR(100) NOT NULL,
 				category_id    INTEGER,
-				note           TEXT
+				note           TEXT,
+				PRIMARY KEY (id)
 			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'person' ) . ' (
-				id               INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id               INTEGER AUTO_INCREMENT NOT NULL,
 				random_id        VARCHAR(20)  NOT NULL,
+				PRIMARY KEY (id),
 				UNIQUE KEY idx_person_token (random_id)
 			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'person_properties' ) . ' (
-				id                INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id                INTEGER AUTO_INCREMENT NOT NULL,
 				person_id         INTEGER      NOT NULL,
 				created_at        INTEGER      NOT NULL,
 				status            VARCHAR(20)  NOT NULL,
-
 				name              VARCHAR(100) NOT NULL,
 				team_id           INTEGER      NOT NULL,
 				phone             VARCHAR(100),
@@ -128,32 +130,36 @@ abstract class Plugin {
 				is_competing      BOOLEAN      NOT NULL DEFAULT TRUE,
 				is_team_contact   BOOLEAN      NOT NULL DEFAULT FALSE,
 				is_attending      BOOLEAN      NOT NULL DEFAULT TRUE,
-				note              TEXT
+				note              TEXT,
+				PRIMARY KEY (id)
 			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'form' ) . ' (
-				id                                INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id                                INTEGER AUTO_INCREMENT NOT NULL,
+				random_id                         VARCHAR(20),
 				competition_id                    INTEGER      NOT NULL,
 				name                              VARCHAR(100) NOT NULL,
 				allow_multiple_responses_per_team BOOLEAN      NOT NULL,
 				submit_response_start             INTEGER,
-				submit_response_end               INTEGER
+				submit_response_end               INTEGER,
+				PRIMARY KEY (id)
 			) ' . $charset;
 
 		$tables[] = "
 			CREATE TABLE " . Database::get_table( 'form_question_group' ) . " (
-				id         INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id         INTEGER AUTO_INCREMENT NOT NULL,
 				random_id  VARCHAR(20)  NOT NULL,
 				form_id    INTEGER      NOT NULL,
 				text       TEXT,
 				sort_order SMALLINT,
-				config     TEXT
+				config     TEXT,
+				PRIMARY KEY (id)
 			) " . $charset;
 
 		$tables[] = "
 			CREATE TABLE " . Database::get_table( 'form_question' ) . " (
-				id                 INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id                 INTEGER AUTO_INCREMENT NOT NULL,
 				random_id          VARCHAR(20),
 				form_id            INTEGER,
 				question_group_id  INTEGER,
@@ -161,17 +167,19 @@ abstract class Plugin {
 				answer             TEXT,
 				text               TEXT         NOT NULL,
 				sort_order         SMALLINT,
-				text_hint          TEXT
+				text_hint          TEXT,
+				PRIMARY KEY (id)
 			) " . $charset;
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'form_question_response' ) . ' (
-				id               INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id               INTEGER AUTO_INCREMENT NOT NULL,
 				form_question_id INTEGER NOT NULL,
 				team_id          INTEGER NOT NULL,
 				answer           TEXT    NOT NULL,
 				is_reviewed      BOOLEAN NOT NULL DEFAULT FALSE,
-				created_at       INTEGER
+				created_at       INTEGER,
+				PRIMARY KEY (id)
 			) ' . $charset;
 
 		$tables[] = '
@@ -185,7 +193,7 @@ abstract class Plugin {
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'message' ) . ' (
-				id                INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id                INTEGER AUTO_INCREMENT NOT NULL,
 				form_question_id  INTEGER,
 				team_id           INTEGER,
 				text              TEXT,
@@ -193,28 +201,31 @@ abstract class Plugin {
 				source            VARCHAR(10),
 				source_message_id VARCHAR(100),
 				date_received     DATETIME,
-				date_imported     DATETIME DEFAULT CURRENT_TIMESTAMP
+				date_imported     DATETIME DEFAULT CURRENT_TIMESTAMP,
+				PRIMARY KEY (id)
 			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'team_category' ) . ' (
-				id             INTEGER          AUTO_INCREMENT PRIMARY KEY,
+				id             INTEGER          AUTO_INCREMENT NOT NULL,
 				competition_id INTEGER NOT NULL,
 				is_crew        BOOLEAN NOT NULL DEFAULT FALSE,
 				name           VARCHAR(100),
-				rule_set       VARCHAR(100)
+				rule_set       VARCHAR(100),
+				PRIMARY KEY (id)
 			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'message_template' ) . ' (
-				id                      INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id                      INTEGER AUTO_INCREMENT NOT NULL,
 				competition_id          INTEGER NOT NULL,
 				name                    VARCHAR(100),
 				subject                 TEXT,
 				body                    TEXT,
 				auto_send_trigger       VARCHAR(100),
 				auto_send_recipient     VARCHAR(100),
-				delivery_method         VARCHAR(10)
+				delivery_method         VARCHAR(10),
+				PRIMARY KEY (id)
 			) ' . $charset;
 
 		$tables[] = '
@@ -227,13 +238,14 @@ abstract class Plugin {
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'station' ) . ' (
-				id                      INTEGER AUTO_INCREMENT PRIMARY KEY,
+				id                      INTEGER AUTO_INCREMENT NOT NULL,
 				random_id               VARCHAR(20),
 				competition_id          INTEGER NOT NULL,
 				name                    VARCHAR(100),
 				location_gps_coord_lat  DOUBLE,
 				location_gps_coord_long DOUBLE,
 				location_description    TEXT,
+				PRIMARY KEY (id),
 				UNIQUE KEY idx_station_token (random_id)
 			) ' . $charset;
 
@@ -315,6 +327,8 @@ abstract class Plugin {
 			foreach ( $keys as $key ) {
 				Database::add_foreign_key( $key[0], $key[1], $key[2], $key[3] );
 			}
+
+			Database::set_missing_form_keys();
 
 			Database::commit();
 		} catch ( Exception $e ) {

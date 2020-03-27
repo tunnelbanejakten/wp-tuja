@@ -22,7 +22,8 @@ use tuja\view\FieldPno;
 use tuja\view\FieldText;
 
 class Form extends AbstractGroupView {
-	private $form_id;
+	private $form_key;
+	private $form;
 
 	private $question_dao;
 	private $response_dao;
@@ -34,15 +35,29 @@ class Form extends AbstractGroupView {
 	const ACTION_FIELD_NAME = 'tuja_formshortcode__action';
 	const OPTIMISTIC_LOCK_FIELD_NAME = 'tuja_formshortcode__optimistic_lock';
 
-	public function __construct( string $url, string $group_key, int $form_id ) {
+	public function __construct( string $url, string $group_key, string $form_key ) {
 		parent::__construct( $url, $group_key, 'Svara' );
-		$this->form_id            = $form_id;
+		$this->form_key           = $form_key;
 		$this->question_dao       = new QuestionDao();
 		$this->question_group_dao = new QuestionGroupDao();
 		$this->group_dao          = new GroupDao();
 		$this->response_dao       = new ResponseDao();
 		$this->form_dao           = new FormDao();
 		$this->category_dao       = new GroupCategoryDao();
+	}
+
+	protected function get_form(): \tuja\data\model\Form {
+		if ( ! $this->form ) {
+
+			$form = $this->form_dao->get_by_key( $this->form_key );
+			if ( $form == false ) {
+				throw new Exception( 'Oj, vi hittade inte formuläret' );
+			}
+
+			$this->form = $form;
+		}
+
+		return $this->form;
 	}
 
 	function output() {
@@ -55,7 +70,7 @@ class Form extends AbstractGroupView {
 	 * stored in the database.
 	 */
 	public function get_new_answers( $group_id ): array {
-		$questions = $this->question_dao->get_all_in_form( $this->form_id );
+		$questions = $this->question_dao->get_all_in_form( $this->get_form()->id );
 		$responses = $this->response_dao->get_latest_by_group( $group_id );
 
 		$updates = [];
@@ -121,7 +136,7 @@ class Form extends AbstractGroupView {
 	}
 
 	private function is_form_opened(): bool {
-		$form = $this->form_dao->get( $this->form_id );
+		$form = $this->get_form();
 		$now  = new DateTime();
 		if ( $form->submit_response_start != null && $form->submit_response_start > $now ) {
 			return false;
@@ -131,7 +146,7 @@ class Form extends AbstractGroupView {
 	}
 
 	private function is_form_closed(): bool {
-		$form = $this->form_dao->get( $this->form_id );
+		$form = $this->get_form();
 		$now  = new DateTime();
 		if ( $form->submit_response_end != null && $now > $form->submit_response_end ) {
 			return true;
@@ -173,7 +188,7 @@ class Form extends AbstractGroupView {
 			}
 
 			$responses       = $this->response_dao->get_latest_by_group( $group_id );
-			$question_groups = $this->question_group_dao->get_all_in_form( $this->form_id );
+			$question_groups = $this->question_group_dao->get_all_in_form( $this->get_form()->id );
 
 			foreach ( $question_groups as $question_group ) {
 				$current_group = '<section class="tuja-question-group">';
@@ -211,7 +226,7 @@ class Form extends AbstractGroupView {
 			}
 
 			if ( ! $is_read_only ) {
-				$questions             = $this->question_dao->get_all_in_form( $this->form_id );
+				$questions             = $this->question_dao->get_all_in_form( $this->get_form()->id );
 				$question_ids          = array_map( function ( $question ) {
 					return $question->id;
 				}, $questions );

@@ -6,6 +6,7 @@ namespace tuja\data\model;
 class Form
 {
     public $id;
+    public $random_id;
     public $name;
     public $competition_id;
     public $allow_multiple_responses_per_group;
