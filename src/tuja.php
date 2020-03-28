@@ -357,6 +357,7 @@ abstract class Plugin {
 			self::PATH . '/util/rules/' . $classname . '.php',
 			self::PATH . '/util/score/' . $classname . '.php',
 			self::PATH . '/util/ticket/' . $classname . '.php',
+			self::PATH . '/util/fee/' . $classname . '.php',
 			self::PATH . '/util/' . $classname . '.php',
 			self::PATH . '/view/' . $classname . '.php',
 			self::PATH . '/admin/' . $classname . '.php',

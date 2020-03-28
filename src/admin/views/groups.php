@@ -13,6 +13,7 @@ AdminUtils::printTopMenu( $competition );
             <th rowspan="2" valign="top">Ålder</th>
             <th rowspan="2" valign="top">Tävlingsklass</th>
             <th colspan="3" valign="top">Antal</th>
+            <th rowspan="2" valign="top">Avgift</th>
             <th colspan="3" valign="top">Anmälningsstatus</th>
             <th rowspan="2" valign="top">Rättning</th>
         </tr>
@@ -25,57 +26,62 @@ AdminUtils::printTopMenu( $competition );
             <td>Meddelanden</td>
         </tr>
         </thead>
-	    <?php if ( ! empty( $groups_data ) ) { ?>
-        <tfoot>
-        <tr>
-            <td colspan="3" valign="top">&nbsp;&nbsp;&rdsh; För valda grupper:</td>
-            <td>
-				<?php
-				// Print group category selector
-				$category_options = [];
-				foreach ( $group_category_map as $id => $label ) {
-					$category_options[] = sprintf( '<option value="%d">%s</option>',
-						$id,
-						$label );
-				}
-				printf( '<select name="tuja_group_batch__category">%s</select>',
-					join( '', $category_options )
-				);
-				?>
-                <div class="tuja-buttons">
-                    <button type="submit" class="button" name="tuja_action" value="tuja_group_batch__category">Ändra</button>
-                </div>
-            </td>
-            <td colspan="3"></td>
-            <td>
-				<?php
-				$status_options = [];
-				foreach ( array_keys( \tuja\data\model\Group::STATUS_TRANSITIONS ) as $key ) {
-					$status_options[] = sprintf( '<option value="%s">%s</option>',
-						$key,
-						$key );
-				}
-				printf( '<select name="tuja_group_batch__status">%s</select>',
-					join( '', $status_options )
-				);
-				?>
-                <div class="tuja-buttons">
-                    <button type="submit" class="button" name="tuja_action" value="tuja_group_batch__status">Ändra</button>
-                </div>
-            </td>
-            <td>
-                <select name="tuja_group_batch__alwayseditable">
-                    <option value="yes">Ja</option>
-                    <option value="no">Nej</option>
-                </select>
-                <div class="tuja-buttons">
-                    <button type="submit" class="button" name="tuja_action" value="tuja_group_batch__alwayseditable">Ändra</button>
-                </div>
-            </td>
-            <td colspan="4"></td>
-        </tr>
-        </tfoot>
-	    <?php } ?>
+		<?php if ( ! empty( $groups_data ) ) { ?>
+            <tfoot>
+            <tr>
+                <td colspan="3" valign="top">&nbsp;&nbsp;&rdsh; För valda grupper:</td>
+                <td>
+					<?php
+					// Print group category selector
+					$category_options = [];
+					foreach ( $group_category_map as $id => $label ) {
+						$category_options[] = sprintf( '<option value="%d">%s</option>',
+							$id,
+							$label );
+					}
+					printf( '<select name="tuja_group_batch__category">%s</select>',
+						join( '', $category_options )
+					);
+					?>
+                    <div class="tuja-buttons">
+                        <button type="submit" class="button" name="tuja_action" value="tuja_group_batch__category">
+                            Ändra
+                        </button>
+                    </div>
+                </td>
+                <td colspan="4"></td>
+                <td>
+					<?php
+					$status_options = [];
+					foreach ( array_keys( \tuja\data\model\Group::STATUS_TRANSITIONS ) as $key ) {
+						$status_options[] = sprintf( '<option value="%s">%s</option>',
+							$key,
+							$key );
+					}
+					printf( '<select name="tuja_group_batch__status">%s</select>',
+						join( '', $status_options )
+					);
+					?>
+                    <div class="tuja-buttons">
+                        <button type="submit" class="button" name="tuja_action" value="tuja_group_batch__status">Ändra
+                        </button>
+                    </div>
+                </td>
+                <td>
+                    <select name="tuja_group_batch__alwayseditable">
+                        <option value="yes">Ja</option>
+                        <option value="no">Nej</option>
+                    </select>
+                    <div class="tuja-buttons">
+                        <button type="submit" class="button" name="tuja_action"
+                                value="tuja_group_batch__alwayseditable">Ändra
+                        </button>
+                    </div>
+                </td>
+                <td colspan="4"></td>
+            </tr>
+            </tfoot>
+		<?php } ?>
         <tbody>
 		<?php
 		foreach ( $groups_data as $group_data ) {
@@ -118,6 +124,8 @@ AdminUtils::printTopMenu( $competition );
 				$group->count_follower,
 				$group->count_team_contact
 			);
+
+			printf( '<td align="right"><span id="tuja-group-fee-%d" data-fee="%d"></span>%s kr</td>', $group->id, $group_data['fee'], number_format_i18n( $group_data['fee'] ) );
 
 			// Print group status
 			printf( '<td><span class="tuja-admin-groupstatus tuja-admin-groupstatus-%s">%s</span></td>',
@@ -172,21 +180,31 @@ AdminUtils::printTopMenu( $competition );
     <div class="tuja-buttons">
         <button type="submit" class="button" name="tuja_action" value="group_create">Skapa</button>
     </div>
-    <?php if ( AdminUtils::is_admin_mode() ) { ?>
+	<?php if ( AdminUtils::is_admin_mode() ) { ?>
         <h3>Dataskydd</h3>
 
-        <p>Om du inte vill ta bort lagen men ändå vill skydda personuppgifterna så kan du använda verktyget för att anonymisera personuppgifter.</p>
+        <p>Om du inte vill ta bort lagen men ändå vill skydda personuppgifterna så kan du använda verktyget för att
+            anonymisera personuppgifter.</p>
         <p>
-            <input type="radio" name="tuja_anonymizer_filter" value="all" id="tuja_anonymizer_filter_all"><label for="tuja_anonymizer_filter_all">Anonymisera personuppgifter för <em>alla tävlande och funktionärer</em></label><br/>
-            <input type="radio" name="tuja_anonymizer_filter" value="participants" id="tuja_anonymizer_filter_participants"><label for="tuja_anonymizer_filter_participants">Anonymisera personuppgifter för <em>alla tävlande</em></label><br/>
-            <input type="radio" name="tuja_anonymizer_filter" value="non_contacts" id="tuja_anonymizer_filter_non_contacts"><label for="tuja_anonymizer_filter_non_contacts">Anonymisera personuppgifter för <em>alla tävlande som inte är kontaktpersoner</em></label><br/>
+            <input type="radio" name="tuja_anonymizer_filter" value="all" id="tuja_anonymizer_filter_all"><label
+                    for="tuja_anonymizer_filter_all">Anonymisera personuppgifter för <em>alla tävlande och
+                    funktionärer</em></label><br/>
+            <input type="radio" name="tuja_anonymizer_filter" value="participants"
+                   id="tuja_anonymizer_filter_participants"><label for="tuja_anonymizer_filter_participants">Anonymisera
+                personuppgifter för <em>alla tävlande</em></label><br/>
+            <input type="radio" name="tuja_anonymizer_filter" value="non_contacts"
+                   id="tuja_anonymizer_filter_non_contacts"><label for="tuja_anonymizer_filter_non_contacts">Anonymisera
+                personuppgifter för <em>alla tävlande som inte är kontaktpersoner</em></label><br/>
         </p>
-        <p><input type="checkbox" name="tuja_anonymizer_confirm" id="tuja_anonymizer_confirm" value="true"><label for="tuja_anonymizer_confirm">Ja, jag vill verkligen anonymisera personuppgifterna</label></p>
+        <p><input type="checkbox" name="tuja_anonymizer_confirm" id="tuja_anonymizer_confirm" value="true"><label
+                    for="tuja_anonymizer_confirm">Ja, jag vill verkligen anonymisera personuppgifterna</label></p>
 
         <div class="tuja-buttons">
-            <button type="submit" class="button" name="tuja_action" value="anonymize">Anonymisera valda personuppgifter</button>
+            <button type="submit" class="button" name="tuja_action" value="anonymize">Anonymisera valda
+                personuppgifter
+            </button>
         </div>
-    <?php } ?>
+	<?php } ?>
 </form>
 
 <h3>Statistik</h3>

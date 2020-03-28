@@ -16,3 +16,6 @@ use tuja\util\Strings;
 <p>
 	<?php printf( '<a href="%s" id="tuja_unregister_team_link">%s</a>', $unregister_team_link, Strings::get( 'home.link.unregister_team' ) ) ?>
 </p>
+<p>
+	<?php printf( '<a href="%s" id="tuja_payment_link">%s</a>', $payment_link, Strings::get( 'home.link.payment' ) ) ?>
+</p>

@@ -2,6 +2,7 @@
 
 namespace tuja\admin;
 
+use DateTime;
 use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
@@ -148,9 +149,12 @@ class Groups {
 
 		$unreviewed_answers = $this->get_unreviewed_answers_count();
 
+		$fee_calculator = $competition->get_group_fee_calculator();
+
 		foreach ( $groups as $group ) {
 			$group_data          = [];
 			$group_data['model'] = $group;
+			$group_data['fee']   = number_format_i18n( $fee_calculator->calculate_fee( $group, new DateTime() ), 0 );
 
 			$registration_evaluation = $group->evaluate_registration();
 
@@ -175,7 +179,7 @@ class Groups {
 			$group_data['category']         = $group->get_category() ?: $category_unknown;
 			$group_data['count_unreviewed'] = @$unreviewed_answers[ $group->id ] ?: 0;
 
-			if ( ! $group_data['category']->get_rule_set()->is_crew() && $group->get_status() !== Group::STATUS_DELETED) {
+			if ( ! $group_data['category']->get_rule_set()->is_crew() && $group->get_status() !== Group::STATUS_DELETED ) {
 				$groups_competing                                     += 1;
 				$people_competing                                     += $group->count_competing;
 				$people_following                                     += $group->count_follower;
@@ -253,7 +257,7 @@ class Groups {
 				return $category->id;
 			}, $group_categories ),
 			array_map( function ( GroupCategory $category ) {
-				return $category->name . ($category->get_rule_set()->is_crew() ? ' (Funktionär)' : '');
+				return $category->name . ( $category->get_rule_set()->is_crew() ? ' (Funktionär)' : '' );
 			}, $group_categories )
 		);
 	}

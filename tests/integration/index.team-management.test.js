@@ -68,7 +68,7 @@ describe('wp-tuja', () => {
         await adminPage.clickLink('button[name="tuja_points_action"][value="transition__accepted"]')
 
         await goto(toBeAcceptedGroup.portalUrl)
-        await expectElementCount('div.entry-content p > a', 4)
+        await expectElementCount('div.entry-content p > a', 5)
         await expectElementCount('div.entry-content p.tuja-message-success', 0)
         await expectElementCount('div.entry-content p.tuja-message-warning', 0)
         await expectElementCount('div.entry-content p.tuja-message-error', 0)
@@ -305,12 +305,24 @@ describe('wp-tuja', () => {
         await expectElementCount('input#tuja-person__note', 0)
       })
 
-      it('should evaluate registration rules for team size', async () => {
+      it('should evaluate registration rules for team size, and calculate participation fee', async () => {
+
+        const verifyFeePage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
+
         const tempGroupProps = await defaultPage.signUpTeam(adminPage)
 
         await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
 
-        const saveAndVerify = async (isTeamSizeWarningExpected) => {
+        const verifyGroupFee = async (expectedFee) => {
+          await verifyFeePage.goto(`http://localhost:8080/${tempGroupProps.key}/betala`)
+          await verifyFeePage.expectToContain('#tuja-payment-body', String(expectedFee) + ',00 kr')
+
+          await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Groups&tuja_competition=${competitionId}`)
+          const actualFee = await adminPage.$eval(`#tuja-group-fee-${tempGroupProps.id}`, node => node.dataset.fee)
+          expect(actualFee).toBe(String(expectedFee))
+        }
+
+        const saveAndVerify = async (isTeamSizeWarningExpected, fee) => {
           await clickLink('button[name="tuja-action"]')
           await expectSuccessMessage('Ändringarna har sparats.')
 
@@ -331,6 +343,8 @@ describe('wp-tuja', () => {
           }
 
           await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
+
+          await verifyGroupFee(fee)
         }
 
         const addCompetingTeamMember = async (name, birthDate) => {
@@ -342,16 +356,16 @@ describe('wp-tuja', () => {
         // Add two team members (and verify that a warning is shown about TOO FEW competing team members, and that the group sign-up status is INCOMPLETE)
         await addCompetingTeamMember('Bob', '20001010-1234')
         await addCompetingTeamMember('Carol', '20011011-1234')
-        await saveAndVerify(true)
+        await saveAndVerify(true, 300)
 
         // Add one extra contact (and verify that a warning is still shown about too few competing team members, and that the group sign-up status is INCOMPLETE)
         await click('div.tuja-person-role-extra_contact button.tuja-add-person')
         await type('div.tuja-person-role-extra_contact input[name^="tuja-person__email__"]', 'extra-contact@example.com')
-        await saveAndVerify(true)
+        await saveAndVerify(true, 300)
 
         // Add one team member (and verify that a warning is no longer shown, and that the group sign-up status is ACCEPTED)
         await addCompetingTeamMember('Dave', '20021012-1234')
-        await saveAndVerify(false)
+        await saveAndVerify(false, 400)
 
         // Add five team members (and verify that warning about TOO MANY competing team members, and that the group sign-up status is INCOMPLETE)
         await addCompetingTeamMember('Emily', '20031013-1234')
@@ -359,11 +373,13 @@ describe('wp-tuja', () => {
         await addCompetingTeamMember('Grace', '20051015-1234')
         await addCompetingTeamMember('Henry', '20061016-1234')
         await addCompetingTeamMember('Isabella', '20071017-1234')
-        await saveAndVerify(true)
+        await saveAndVerify(true, 900)
 
         // Remove one team member (and verify that a warning is no longer shown, and that the group sign-up status is ACCEPTED)
         await click('div.tuja-person-role-regular_group_member div.tuja-signup-person:last-child button.tuja-delete-person')
-        await saveAndVerify(false)
+        await saveAndVerify(false, 800)
+
+        await verifyFeePage.close()
       })
 
       it('should be possible to sign up as administrator', async () => {

@@ -6,6 +6,7 @@ namespace tuja\frontend;
 use tuja\data\model\Group;
 use tuja\frontend\router\GroupCancelSignupInitiator;
 use tuja\frontend\router\GroupEditorInitiator;
+use tuja\frontend\router\GroupPaymentInitiator;
 use tuja\frontend\router\GroupPeopleEditorInitiator;
 use tuja\frontend\router\GroupStatusInitiator;
 use tuja\frontend\router\GroupTicketsInitiator;
@@ -32,6 +33,7 @@ class GroupHome extends AbstractGroupView {
 		$edit_people_link     = GroupPeopleEditorInitiator::link( $group );
 		$unregister_team_link = GroupCancelSignupInitiator::link( $group );
 		$tickets_link         = GroupTicketsInitiator::link( $group );
+		$payment_link         = GroupPaymentInitiator::link( $group );
 		include( 'views/group-home.php' );
 	}
 }

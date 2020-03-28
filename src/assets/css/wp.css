@@ -291,3 +291,19 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
         margin-bottom: 10px;
     }
 }
+
+div.tuja-swish-qr-code-wrapper {
+    margin: 2em 0;
+}
+@media (min-width: 769px) {
+    div.tuja-swish-qr-code-wrapper {
+        display: flex;
+        justify-content: center;
+        margin: 3em 0;
+    }
+
+    img.tuja-swish-qr-code {
+        max-height: 200px;
+        max-width: 200px;
+    }
+}

@@ -3,6 +3,7 @@
 namespace tuja\admin;
 
 
+use DateTime;
 use tuja\data\model\Person;
 use tuja\data\store\AbstractDao;
 use tuja\data\store\GroupDao;
@@ -19,32 +20,35 @@ class ReportPayments extends AbstractReport {
 
 	function get_rows(): array {
 		$date = isset( $_GET['tuja_reports_date'] ) ? AbstractDao::from_db_date( $_GET['tuja_reports_date'] ) : null;
-		$fee_competing = isset( $_GET['tuja_reports_fee_competing'] ) ? intval($_GET['tuja_reports_fee_competing']) : 0;
 
-		return array_map( function ( Group $group ) use ( $date, $fee_competing ) {
+		$fee_calculator = $this->competition->get_group_fee_calculator();
+
+		$groups = $this->group_dao->get_all_in_competition(
+			$this->competition->id,
+			false,
+			$date
+		);
+
+		return array_reduce( $groups, function ( array $acc, Group $group ) use ( $date, $fee_calculator ) {
 			$people = ( new PersonDao() )->get_all_in_group( $group->id, false, $date );
 
-			$amount = $fee_competing * $group->count_competing;
+			$amount = $fee_calculator->calculate_fee( $group, $date ?: new DateTime() );
+			if ( $amount > 0 ) {
+				$acc[] = [
+					'name'            => $group->name,
+					'reference'       => 'TSL20 ' . $group->name,
+					'count_competing' => $group->count_competing,
+					'count_follower'  => $group->count_follower,
+					'amount'          => $amount,
+					'people'          => array_map( function ( Person $person ) {
+						return $person->name;
+					}, $people )
+				];
+			}
 
-			return [
-				'name'            => $group->name,
-				'reference'       => 'TSL20 ' . $group->name,
-				'count_competing' => $group->count_competing,
-				'count_follower'  => $group->count_follower,
-				'amount'          => number_format( $amount, 2, ',', ' ' ),
-				'people'          => array_map( function ( Person $person ) {
-					return $person->name;
-				}, $people )
-			];
-		}, array_filter(
-			$this->group_dao->get_all_in_competition(
-				$this->competition->id,
-				false,
-				$date
-			),
-			function ( Group $group ) {
-				return ! $group->get_category()->get_rule_set()->is_crew();
-			} ) );
+			return $acc;
+
+		}, [] );
 	}
 
 	function output_html( array $rows ) {

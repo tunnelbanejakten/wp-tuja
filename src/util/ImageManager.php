@@ -9,6 +9,9 @@ use tuja\data\store\ResponseDao;
 class ImageManager {
 	const DEFAULT_THUMBNAIL_PIXEL_COUNT = 200 * 200;
 
+	private $directory;
+	private $public_url_directory;
+
 	public function __construct() {
 		$dir = wp_upload_dir( 'tuja', true, false );
 		if ( ! isset( $dir['path'] ) ) {
@@ -32,8 +35,8 @@ class ImageManager {
 			}
 
 			$ext           = $type == IMG_JPG ? 'jpg' : 'png';
-			$md5           = md5_file( $file_path );
-			$filename      = $md5 . '.' . $ext;
+			$hash          = md5_file( $file_path );
+			$filename      = $hash . '.' . $ext;
 			$sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
 			if ( ! is_dir( $this->directory . $sub_directory ) ) {
 				mkdir( $this->directory . $sub_directory, 0755, true );

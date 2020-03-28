@@ -17,7 +17,7 @@
                 <br>Övriga: <?= $group['count_follower'] ?> pers
             </td>
             <td><?= $group['reference'] ?></td>
-            <td><?= $group['amount'] ?></td>
+            <td><?= number_format( $group['amount'], 2, ',', ' ' ) ?></td>
         </tr>
 
 	<?php } ?>
