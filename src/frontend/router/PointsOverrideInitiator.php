@@ -22,7 +22,11 @@ class PointsOverrideInitiator implements ViewInitiator {
 	}
 
 	function is_handler( $path ): bool {
-		list ( $group_key, $action, $form_id ) = explode( '/', urldecode( $path ) );
+		$parts = explode( '/', urldecode( $path ) );
+		if ( count( $parts ) < 3 ) {
+			return false;
+		}
+		list ( $group_key, $action, $form_id ) = $parts;
 
 		return isset( $group_key ) && isset( $form_id ) && isset( $action )
 		       && $action == self::ACTION

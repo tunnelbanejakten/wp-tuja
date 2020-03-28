@@ -11,7 +11,7 @@ use tuja\util\Id;
 abstract class SimpleViewInitiator implements ViewInitiator {
 	private $view_name;
 
-	public function __construct($view_name) {
+	public function __construct( $view_name ) {
 		$this->view_name = $view_name;
 	}
 
@@ -25,10 +25,14 @@ abstract class SimpleViewInitiator implements ViewInitiator {
 		return $this->create_page_view( $path, $id );
 	}
 
-	abstract function create_page_view( string $path, string $id ) : FrontendView;
+	abstract function create_page_view( string $path, string $id ): FrontendView;
 
 	function is_handler( $path ): bool {
-		list ( $id, $action ) = explode( '/', urldecode( $path ) );
+		$parts = explode( '/', urldecode( $path ) );
+		if ( count( $parts ) < 2 ) {
+			return false;
+		}
+		list ( $id, $action ) = $parts;
 
 		return isset( $id ) && isset( $action )
 		       && $action == $this->view_name

@@ -14,9 +14,11 @@ class Strings {
 
 	public static function init( int $competition_id, bool $force = false ) {
 		if ( self::$default_list == null || $force ) {
-			self::$default_list  = parse_ini_file( __DIR__ . '/strings.ini' );
-			self::$override_list = ( new StringsDao() )->get_all( $competition_id );
-			self::$final_list    = array_merge( self::$default_list, self::$override_list );
+			self::$default_list = parse_ini_file( __DIR__ . '/strings.ini' );
+			if ( $competition_id > 0 ) {
+				self::$override_list = ( new StringsDao() )->get_all( $competition_id );
+			}
+			self::$final_list = array_merge( self::$default_list ?: [], self::$override_list  ?: []);
 			ksort( self::$final_list );
 		}
 	}

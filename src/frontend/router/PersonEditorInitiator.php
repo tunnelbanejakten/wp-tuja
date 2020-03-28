@@ -24,7 +24,11 @@ class PersonEditorInitiator implements ViewInitiator {
 	}
 
 	function is_handler( $path ): bool {
-		list ( $group_key, $person_key, $action ) = explode( '/', urldecode( $path ) );
+		$parts = explode( '/', urldecode( $path ) );
+		if ( count( $parts ) < 3 ) {
+			return false;
+		}
+		list ( $group_key, $person_key, $action ) = $parts;
 
 		return isset( $group_key ) && isset( $person_key ) && isset( $action )
 		       && $action == self::ACTION

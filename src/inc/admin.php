@@ -18,7 +18,7 @@ class Admin extends Plugin {
 
 		add_thickbox();
 
-		Strings::init( intval( $_GET['tuja_competition'] ) );
+		Strings::init( intval( @$_GET['tuja_competition'] ?: 0 ) );
 	}
 
 	function render_report() {
