@@ -307,22 +307,21 @@ img.tuja-swish-qr-code {
     max-width: 200px;
 }
 
-table.tuja-swish-details td,
-table.tuja-swish-details th {
-    border: none;
+div.tuja-swish-details {
+    display: table;
+}
+
+div.tuja-swish-details > div {
+    display: table-row;
+}
+
+div.tuja-swish-details > div > div {
+    display: table-cell;
     padding: 5px 10px 5px 0;
     vertical-align: top;
     text-align: left;
 }
-table.tuja-swish-details th {
-    white-space: nowrap;
-    font-weight: normal;
-}
-table.tuja-swish-details td {
-    font-family: monospace;
-    font-size: 120%;
-}
 
-table.tuja-swish-details tr {
-    border: none;
+div.tuja-swish-details > div > div:first-child {
+    white-space: nowrap;
 }
