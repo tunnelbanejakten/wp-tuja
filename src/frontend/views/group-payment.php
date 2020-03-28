@@ -7,7 +7,7 @@ use tuja\util\Strings;
 	<?php printf( Strings::get( 'groups_payment.to_pay', number_format( $amount, 2, ',', ' ' ) ) ); ?>
 </p>
 <p>
-	<?php printf( Strings::get( 'groups_payment.fee_model', $description, $email_link ) ); ?>
+	<small><?php printf( Strings::get( 'groups_payment.fee_model', $description, $email_link ) ); ?></small>
 </p>
 
 <h2><?= Strings::get( 'groups_payment.swish.header' ) ?></h2>
@@ -20,16 +20,16 @@ if ( ! empty( $swish_qr_code_image_url ) ) {
 <table class="tuja-swish-details">
     <tbody>
     <tr>
-        <td><?= Strings::get('groups_payment.swish.payee') ?></td>
+        <th><?= Strings::get('groups_payment.swish.payee') ?></th>
         <td><?= $swish_payee ?></td>
     </tr>
     <tr>
-        <td><?= Strings::get('groups_payment.swish.message') ?></td>
+        <th><?= Strings::get('groups_payment.swish.message') ?></th>
         <td><?= $swish_message ?></td>
     </tr>
     <tr>
-        <td><?= Strings::get('groups_payment.swish.amount') ?></td>
-        <td><?= number_format( $amount, 2, ',', ' ' ) ?></td>
+        <th><?= Strings::get('groups_payment.swish.amount') ?></th>
+        <td><?= $amount ?></td>
     </tr>
     </tbody>
 </table>

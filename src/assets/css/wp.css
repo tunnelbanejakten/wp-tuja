@@ -295,15 +295,34 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
 div.tuja-swish-qr-code-wrapper {
     margin: 2em 0;
 }
-@media (min-width: 769px) {
-    div.tuja-swish-qr-code-wrapper {
-        display: flex;
-        justify-content: center;
-        margin: 3em 0;
-    }
 
-    img.tuja-swish-qr-code {
-        max-height: 200px;
-        max-width: 200px;
-    }
+div.tuja-swish-qr-code-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 3em 0;
+}
+
+img.tuja-swish-qr-code {
+    max-height: 200px;
+    max-width: 200px;
+}
+
+table.tuja-swish-details td,
+table.tuja-swish-details th {
+    border: none;
+    padding: 5px 10px 5px 0;
+    vertical-align: top;
+    text-align: left;
+}
+table.tuja-swish-details th {
+    white-space: nowrap;
+    font-weight: normal;
+}
+table.tuja-swish-details td {
+    font-family: monospace;
+    font-size: 120%;
+}
+
+table.tuja-swish-details tr {
+    border: none;
 }
