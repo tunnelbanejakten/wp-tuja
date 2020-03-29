@@ -91,6 +91,11 @@ class StationsTicketing {
 		}
 	}
 
+	public function get_scripts(): array {
+		return [
+			'admin-stations-ticketing.js'
+		];
+	}
 
 	public function output() {
 		$this->handle_post();

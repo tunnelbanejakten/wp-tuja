@@ -127,6 +127,12 @@ class Groups {
 		}
 	}
 
+	public function get_scripts(): array {
+		return [
+			'admin-groups.js'
+		];
+	}
+
 	public function output() {
 		$this->handle_post();
 

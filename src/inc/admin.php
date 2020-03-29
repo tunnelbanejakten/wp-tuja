@@ -62,14 +62,9 @@ class Admin extends Plugin {
 		$screen = get_current_screen();
 
 		if ( $screen->id === 'toplevel_page_tuja' || $screen->id === 'tunnelbanejakten_page_tuja_admin' ) {
-			wp_enqueue_script( 'tuja-admin-competition-settings', static::get_url() . '/assets/js/admin-competition-settings.js' );
-			wp_enqueue_script( 'tuja-admin-message-send', static::get_url() . '/assets/js/admin-message-send.js' );
-			wp_enqueue_script( 'tuja-admin-review-component', static::get_url() . '/assets/js/admin-review-component.js' );
-			wp_enqueue_script( 'tuja-admin-reports-jsoneditor', 'https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js' );
-			wp_enqueue_script( 'tuja-admin-reports', static::get_url() . '/assets/js/admin-reports.js' );
-			wp_enqueue_script( 'tuja-admin-forms', static::get_url() . '/assets/js/admin-forms.js' );
-			wp_enqueue_script( 'tuja-admin-groups', static::get_url() . '/assets/js/admin-groups.js' );
-			wp_enqueue_script( 'tuja-admin-stations-ticketing', static::get_url() . '/assets/js/admin-stations-ticketing.js' );
+			foreach ( $this->list_scripts( $_GET['tuja_view'] ) as $script_file_name ) {
+				wp_enqueue_script( 'tuja-script-' . $script_file_name, static::get_url() . '/assets/js/' . $script_file_name );
+			}
 		}
 	}
 
@@ -112,6 +107,19 @@ class Admin extends Plugin {
 				$view->output();
 			}
 		}
+	}
+
+	private function list_scripts( $view_name ) {
+		$view = 'tuja\\admin\\' . sanitize_text_field( $view_name );
+		if ( class_exists( $view ) ) {
+			$view = new $view();
+
+			if ( method_exists( $view, 'get_scripts' ) ) {
+				return $view->get_scripts();
+			}
+		}
+
+		return [];
 	}
 }
 

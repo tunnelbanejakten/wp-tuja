@@ -133,6 +133,12 @@ class MessagesSend {
 		}
 	}
 
+	public function get_scripts(): array {
+		return [
+			'admin-message-send.js'
+		];
+	}
+
 	public function output() {
 		$competition = $this->competition;
 

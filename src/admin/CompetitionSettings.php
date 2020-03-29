@@ -49,6 +49,12 @@ class CompetitionSettings {
 		}
 	}
 
+	public function get_scripts(): array {
+		return [
+			'admin-competition-settings.js',
+			'mermaid.min.js'
+		];
+	}
 
 	public function output() {
 		$this->handle_post();

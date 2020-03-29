@@ -132,6 +132,11 @@ class Group {
 		}
 	}
 
+	public function get_scripts(): array {
+		return [
+			'admin-review-component.js'
+		];
+	}
 
 	public function output() {
 		$this->handle_post();

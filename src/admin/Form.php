@@ -93,6 +93,13 @@ class Form {
 		}
 	}
 
+	public function get_scripts(): array {
+		return [
+			'admin-forms.js',
+			'jsoneditor.min.js'
+		];
+	}
+
 	public function output() {
 		$this->handle_post();
 		

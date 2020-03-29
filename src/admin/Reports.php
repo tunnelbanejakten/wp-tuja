@@ -44,6 +44,13 @@ class Reports {
 		];
 	}
 
+	public function get_scripts(): array {
+		return [
+			'admin-reports.js',
+			'jsoneditor.min.js'
+		];
+	}
+
 	public function output() {
 
 		$competition = $this->competition;
