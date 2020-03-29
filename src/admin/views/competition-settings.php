@@ -89,7 +89,9 @@ AdminUtils::printTopMenu( $competition );
     </div>
     <div class="tuja-tab" id="tuja-tab-groups">
 
-        <h4>Nya grupper</h4>
+        <h4>Livscykel för grupp</h4>
+
+        <div class="tuja-stategraph" data-definition="<?= htmlentities($group_status_transitions_definitions) ?>" data-width-factor="0.60"></div>
 
         <div>
             <label for="tuja_competition_settings_initial_group_status">

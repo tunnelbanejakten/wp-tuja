@@ -45,4 +45,16 @@ class StateMachine {
 		$this->state_changes = [];
 	}
 
+	public static function as_mermaid_chart_definition( array $transitions ): string {
+		return join( "\n",
+			array_merge(
+				[ 'stateDiagram' ],
+				array_reduce( array_keys( $transitions ), function ( array $acc, string $from_state ) use ( $transitions ) {
+					$to_states = $transitions[ $from_state ];
+
+					return array_merge( $acc, array_map( function ( $to_state ) use ( $from_state ) {
+						return "  ${from_state} --> ${to_state}";
+					}, $to_states ) );
+				}, [] ) ) );
+	}
 }

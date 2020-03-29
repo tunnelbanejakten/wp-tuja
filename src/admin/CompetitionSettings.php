@@ -17,6 +17,7 @@ use tuja\util\rules\CrewMembersRuleSet;
 use tuja\util\rules\OlderParticipantsRuleSet;
 use tuja\util\rules\PassthroughRuleSet;
 use tuja\util\rules\YoungParticipantsRuleSet;
+use tuja\util\StateMachine;
 use tuja\util\Strings;
 
 class CompetitionSettings {
@@ -170,6 +171,7 @@ class CompetitionSettings {
 			}
 		}
 
+		$group_status_transitions_definitions = StateMachine::as_mermaid_chart_definition( \tuja\data\model\Group::STATUS_TRANSITIONS );
 
 		include( 'views/competition-settings.php' );
 	}
