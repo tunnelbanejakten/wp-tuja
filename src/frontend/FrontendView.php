@@ -69,6 +69,7 @@ abstract class FrontendView {
 		wp_register_script( 'tuja-upload-script', Frontend::get_url() . '/assets/js/upload.js' );
 		wp_register_script( 'tuja-points-script', Frontend::get_url() . '/assets/js/points.js' );
 		wp_register_script( 'tuja-competitionsignup-script', Frontend::get_url() . '/assets/js/competition-signup.js' );
+		wp_register_script( 'tuja-slideshow-script', Frontend::get_url() . '/assets/js/slideshow.js' );
 		if ( is_null( $this->wp_post ) ) {
 			$post          = array(
 				'ID'             => 0,

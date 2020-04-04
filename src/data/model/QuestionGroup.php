@@ -49,7 +49,6 @@ class QuestionGroup {
 	}
 
 	function set_properties_from_json_string( $json_string ) {
-		var_dump( $json_string );
 		ReflectionUtils::set_properties_from_json_string(
 			$this,
 			$json_string,

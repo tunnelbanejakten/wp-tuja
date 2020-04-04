@@ -325,3 +325,53 @@ div.tuja-swish-details > div > div {
 div.tuja-swish-details > div > div:first-child {
     white-space: nowrap;
 }
+
+#tuja-slideshow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: #000;
+
+    z-index: 100;
+}
+
+#tuja-slideshow-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+
+    color: #555;
+
+    z-index: 101;
+}
+
+#tuja-slideshow > figure {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    padding: 0px;
+    margin: 0px;
+}
+
+#tuja-slideshow > figure > figcaption {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+
+    padding: 5px 10px;
+
+    color: #888;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#tuja-slideshow > figure > img {
+    display: block;
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+}

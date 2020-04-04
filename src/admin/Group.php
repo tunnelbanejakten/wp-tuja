@@ -6,19 +6,19 @@ use Exception;
 use tuja\data\model\QuestionGroup;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
+use tuja\data\store\GroupDao;
 use tuja\data\store\MessageDao;
 use tuja\data\store\PersonDao;
+use tuja\data\store\PointsDao;
+use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
+use tuja\data\store\ResponseDao;
 use tuja\frontend\router\FormInitiator;
 use tuja\frontend\router\GroupCheckinInitiator;
 use tuja\frontend\router\GroupEditorInitiator;
 use tuja\frontend\router\GroupSignupInitiator;
-use tuja\util\rules\RegistrationEvaluator;
-use tuja\data\store\QuestionDao;
-use tuja\data\store\PointsDao;
+use tuja\frontend\router\PointsOverrideInitiator;
 use tuja\util\score\ScoreCalculator;
-use tuja\data\store\ResponseDao;
-use tuja\data\store\GroupDao;
 
 class Group {
 
@@ -194,10 +194,17 @@ class Group {
 		$group_checkin_link = GroupCheckinInitiator::link( $group );
 
 		$group_form_links = array_map( function ( \tuja\data\model\Form $form ) use ( $group ) {
-			return sprintf( '<p>Länkar för att svara på formulär %s: <a href="%s">%s</a></p>',
-				$form->name,
-				FormInitiator::link( $group, $form ),
-				FormInitiator::link( $group, $form ) );
+			if ( $group->get_category()->get_rule_set()->is_crew() ) {
+				return sprintf( '<p>Länkar för att rapportering in poäng för formulär %s: <a href="%s">%s</a></p>',
+					$form->name,
+					PointsOverrideInitiator::link( $group, $form->id ),
+					PointsOverrideInitiator::link( $group, $form->id ) );
+			} else {
+				return sprintf( '<p>Länkar för att svara på formulär %s: <a href="%s">%s</a></p>',
+					$form->name,
+					FormInitiator::link( $group, $form ),
+					FormInitiator::link( $group, $form ) );
+			}
 		}, $this->form_dao->get_all_in_competition( $competition->id ) );
 
 		include( 'views/group.php' );

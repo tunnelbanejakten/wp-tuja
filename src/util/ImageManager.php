@@ -59,6 +59,16 @@ class ImageManager {
 		}
 	}
 
+	public function get_original_image_url( $filename, $group_key = null ) {
+		$sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
+		$dst_path      = $this->directory . $sub_directory . $filename;
+		if ( file_exists( $dst_path ) ) {
+			return $this->public_url_directory . $sub_directory . $filename;
+		}
+
+		return false;
+	}
+
 	public function get_resized_image_url( $filename, $pixels, $group_key = null ) {
 		list ( $file_id, $ext ) = explode( '.', $filename );
 		$dst_filename  = "$file_id-$pixels.$ext";

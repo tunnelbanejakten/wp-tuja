@@ -9,6 +9,7 @@ use tuja\util\Database;
 class ResponseDao extends AbstractDao
 {
 	const QUESTION_FILTER_ALL = 'all';
+	const QUESTION_FILTER_IMAGES = 'images';
 	const QUESTION_FILTER_UNREVIEWED_ALL = 'unreviewed_all';
 	const QUESTION_FILTER_UNREVIEWED_IMAGES = 'unreviewed_images';
 	const QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE = 'low_confidence_auto_score';
@@ -17,6 +18,13 @@ class ResponseDao extends AbstractDao
 		self::QUESTION_FILTER_ALL                       => [
 			'sql_from'  => 'wp_tuja_form_question AS q LEFT JOIN wp_tuja_form_question_response AS r ON q.id = r.form_question_id',
 			'sql_where' => [
+				'(r.id IS NULL OR r.id IN (SELECT MAX(latest.id) FROM wp_tuja_form_question_response AS latest WHERE latest.team_id = r.team_id AND latest.form_question_id = r.form_question_id))'
+			]
+		],
+		self::QUESTION_FILTER_IMAGES                       => [
+			'sql_from'  => 'wp_tuja_form_question AS q LEFT JOIN wp_tuja_form_question_response AS r ON q.id = r.form_question_id',
+			'sql_where' => [
+				'q.type = "' . QuestionDao::QUESTION_TYPE_IMAGES . '"',
 				'(r.id IS NULL OR r.id IN (SELECT MAX(latest.id) FROM wp_tuja_form_question_response AS latest WHERE latest.team_id = r.team_id AND latest.form_question_id = r.form_question_id))'
 			]
 		],

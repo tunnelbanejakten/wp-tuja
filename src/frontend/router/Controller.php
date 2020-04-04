@@ -30,7 +30,8 @@ class Controller {
 			new GroupStatusInitiator(),
 			new GroupCancelSignupInitiator(),
 			new GroupCheckinInitiator(),
-			new GroupPaymentInitiator()
+			new GroupPaymentInitiator(),
+			new SlideshowInitiator()
 		];
 	}
 
