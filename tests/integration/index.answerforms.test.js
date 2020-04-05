@@ -67,7 +67,7 @@ describe('wp-tuja', () => {
     let groupProps = null
 
     const createForm = async () => {
-      const {id, key} = await createNewForm('The Form')
+      const { id, key } = await createNewForm('The Form')
 
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${id}`)
 
@@ -78,7 +78,7 @@ describe('wp-tuja', () => {
       await adminPage.clickLink('button[name="tuja_action"][value="question_create__images"]')
       await adminPage.clickLink('button[name="tuja_action"][value="question_create__choices"]')
 
-      return ({id, key})
+      return ({ id, key })
     }
 
     beforeAll(async () => {
@@ -102,9 +102,12 @@ describe('wp-tuja', () => {
 
     it('should be possible to answer radio button questions', async () => {
       await goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
-      const option = await $('input.tuja-fieldchoices[type="radio"]')
-      await option.click()
-      const id = await option.evaluate(node => node.id)
+
+      const id = await defaultPage.page.evaluate(() => {
+        var radioButton = document.querySelector('input.tuja-fieldchoices[type="radio"]')
+        radioButton.click()
+        return radioButton.id
+      })
 
       await clickLink('button[name="tuja_formshortcode__action"][value="update"]')
       expect(await $eval('#' + id, node => node.checked)).toBeTruthy()
@@ -153,10 +156,12 @@ describe('wp-tuja', () => {
       }
 
       const removeAllImages = async () => {
-        const handles = await defaultPage.page.$$('div.dropzone button.remove-image')
-        for (const handle of handles) {
-          await handle.click()
-        }
+        await defaultPage.page.evaluate(() => {
+          const buttons = document.querySelectorAll('div.dropzone button.remove-image')
+          buttons.forEach((button) => {
+            button.click()
+          })
+        })
       }
 
       const expectImageCounter = async (msg) => defaultPage.expectToContain('.tuja-question-hint.tuja-fieldimages-counter', msg)

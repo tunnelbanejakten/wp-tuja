@@ -1,0 +1,43 @@
+form:not(.tuja-changed) .tuja-message-wrapper {
+    padding: 1em;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    z-index: 100;
+
+    background-color: white;
+}
+
+form:not(.tuja-changed) .tuja-message {
+    margin: 0;
+}
+
+form.tuja-changed .tuja-message {
+    display: none;
+}
+
+.tuja-buttons.tuja-buttons-fixed-footer {
+    padding: 1em;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    background-color: white;
+}
+
+span.tuja-form-change-reminder {
+    padding: 0 0 0 1em;
+    font-style: italic;
+    color: #aaa;
+}
+
+.tuja-buttons span.tuja-form-change-reminder {
+    display: none;
+}
+
+form.tuja-changed .tuja-buttons span.tuja-form-change-reminder {
+    display: inline;
+}

@@ -6,11 +6,15 @@
     var groupId = $('input[name="group"]').attr('value')
 
     $('div.tuja-image-select').each(function (i, el) {
-      var fieldName = $(this).closest('.tuja-image').data('fieldName')
-      var preexistingFiles = $(this).closest('.tuja-image').data('preexisting')
+      var $image = $(this).closest('.tuja-image')
+      var fieldName = $image.data('fieldName')
+      var preexistingFiles = $image.data('preexisting')
+      var uploadUrl = $image.data('uploadUrl')
+      var baseImageUrl = $image.data('baseImageUrl')
+      var maxFilesCount = parseInt($image.data('maxFilesCount')) || 1
+
       var $question = $(this).closest('.tuja-question')
       var $lock = $(this).closest('form').find('input[name="tuja_formshortcode__optimistic_lock"]')
-      var maxFilesCount = parseInt($(this).closest('.tuja-image').data('maxFilesCount')) || 1
       var $fileCounter = $(this).closest('form').find('.tuja-fieldimages-counter')
 
       var getFileCount = function () {
@@ -53,7 +57,7 @@
       }
 
       new Dropzone(el, {
-        url: WPAjax.ajaxUrl,
+        url: uploadUrl,
         resizeWidth: 1000,
         acceptedFiles: 'image/*',
         parallelUploads: maxFilesCount,
@@ -69,6 +73,8 @@
             formData.append('group', groupId)
             formData.append('question', $question.data('id'))
             formData.append('lock', $lock.attr('value'))
+
+            $(self).closest('form').addClass('tuja-changed')
           })
 
           self.on('addedfile', function (file) {
@@ -87,6 +93,8 @@
 
             // Listen to the click event
             $removeButton.click(function (e) {
+              $(file.previewElement).closest('form').addClass('tuja-changed')
+
               // Make sure the button click doesn't submit the form:
               e.preventDefault()
               e.stopPropagation()
@@ -94,6 +102,11 @@
               // Remove the file preview.
               self.removeFile(file)
             })
+
+            if (!file.preexisting) {
+              $(file.previewElement).closest('form').addClass('tuja-changed')
+            }
+
             // Add the button to the file preview element.
             $(file.previewElement)
               .append($('<div class="tuja-item-buttons" />')
@@ -108,8 +121,12 @@
           for (var preexistingFile of preexistingFiles) {
             var filename = preexistingFile.filename
             var resizedImageUrl = preexistingFile.resizedImageUrl
-            var imageUrl = WPAjax.base_image_url + 'group-' + groupId + '/' + (resizedImageUrl || filename)
-            var mockFile = { name: filename, size: 12345 }
+            var imageUrl = baseImageUrl + 'group-' + groupId + '/' + (resizedImageUrl || filename)
+            var mockFile = {
+              name: filename,
+              size: 12345,
+              preexisting: true
+            }
             var mockResponse = {
               image: filename
             }
