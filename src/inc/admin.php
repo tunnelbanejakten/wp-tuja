@@ -79,19 +79,7 @@ class Admin extends Plugin {
 	public function route( $is_admin ) {
 		AdminUtils::set_admin_mode( $is_admin );
 
-		if ( empty( $_GET['tuja_view'] ) ) {
-			$db_competition = new CompetitionDao();
-
-			if ( isset( $_POST['tuja_action'] ) && ( $_POST['tuja_action'] === 'competition_create' ) ) {
-				$props       = new Competition();
-				$props->name = $_POST['tuja_competition_name'];
-				$db_competition->create( $props );
-			}
-
-			include( Plugin::PATH . '/admin/views/index.php' );
-		} else {
-			$this->render_view( $_GET['tuja_view'] );
-		}
+		$this->render_view( $_GET['tuja_view'] ?: 'Competitions' );
 	}
 
 	public function route_report() {

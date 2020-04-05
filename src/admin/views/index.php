@@ -18,7 +18,6 @@
             </button>
 		<?php } ?>
 		<?php
-		$competitions = $db_competition->get_all();
 		foreach ( $competitions as $competition ) {
 			$url = add_query_arg( array(
 				'tuja_view'        => 'Competition',
