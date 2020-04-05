@@ -7,6 +7,7 @@ use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
+use tuja\Frontend;
 use tuja\frontend\router\GroupHomeInitiator;
 use tuja\util\rules\RuleEvaluationException;
 use tuja\util\Strings;
@@ -25,8 +26,8 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 	function output() {
 
-		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( 'tuja-editgroup-script' ); // Needed?
+		Frontend::use_script( 'jquery' );
+		Frontend::use_script( 'tuja-edit-group.js' );
 
 		$group = $this->get_group();
 

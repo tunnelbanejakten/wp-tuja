@@ -14,6 +14,7 @@ use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
+use tuja\Frontend;
 use tuja\util\ImageManager;
 use tuja\util\Strings;
 use tuja\view\FieldChoices;
@@ -83,8 +84,8 @@ class Slideshow extends FrontendView {
 
 	function output() {
 
-		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( 'tuja-slideshow-script' );
+		Frontend::use_script( 'jquery' );
+		Frontend::use_script( 'tuja-slideshow.js' );
 
 		$competition = $this->get_competition();
 

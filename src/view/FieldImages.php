@@ -4,6 +4,7 @@ namespace tuja\view;
 
 
 use tuja\data\model\Group;
+use tuja\Frontend;
 use tuja\util\ImageManager;
 
 class FieldImages extends Field {
@@ -21,8 +22,8 @@ class FieldImages extends Field {
 			$data = sanitize_post( $_POST[ $form_field ] );
 
 			return [
-				'images'  => $data['images'],
-				'comment' => $data['comment']
+				'images'  => @$data['images'],
+				'comment' => @$data['comment']
 			];
 		}
 
@@ -56,12 +57,13 @@ class FieldImages extends Field {
 	}
 
 	private function render_image_upload( $field_name, $group_key, $answer_object ) {
-		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( 'tuja-exifjs' ); // Including exif-js automatically enables auto-rotation in Dropzone.
-		wp_enqueue_script( 'tuja-dropzone' );
-		wp_enqueue_script( 'tuja-upload-script' );
+		Frontend::use_script( 'jquery' );
+		Frontend::use_script( 'tuja-exif-js.min.js' ); // Including exif-js automatically enables auto-rotation in Dropzone.
+		Frontend::use_script( 'tuja-dropzone.min.js' );
+		Frontend::use_script( 'tuja-upload.js' );
+		Frontend::use_stylesheet( 'tuja-dropzone.min.css' );
 
-		if ( is_array( $answer_object ) && ! is_array( $answer_object[0] ) && ! empty( $answer_object[0] ) ) {
+		if ( is_array( $answer_object ) && ! @is_array( $answer_object[0] ) && ! empty( $answer_object[0] ) ) {
 			// Fix legacy format (JSON as string in array)
 			$answer_object = json_decode( $answer_object[0], true );
 		}
@@ -86,9 +88,12 @@ class FieldImages extends Field {
 
 		ob_start();
 		?>
-        <div class="tuja-image" data-field-name="<?php echo $field_name; ?>[images][]"
-             data-max-files-count="<?php echo $this->max_files_count?>"
-             data-preexisting="<?php echo htmlspecialchars( json_encode( $images ) ); ?>">
+        <div class="tuja-image"
+             data-upload-url="<?= admin_url( 'admin-ajax.php' ) ?>"
+             data-base-image-url="<?= wp_get_upload_dir()['baseurl'] . '/tuja/' ?>"
+             data-field-name="<?= $field_name ?>[images][]"
+             data-max-files-count="<?= $this->max_files_count ?>"
+             data-preexisting="<?= htmlspecialchars( json_encode( $images ) ) ?>">
             <div class="tuja-image-select dropzone"></div>
             <div class="tuja-image-options">
 				<?php echo $this->render_comment_field( $field_name, isset( $answer_object ) ? $answer_object['comment'] : '' ); ?>

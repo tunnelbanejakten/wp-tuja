@@ -11,6 +11,7 @@ use tuja\data\model\ValidationException;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PersonDao;
+use tuja\Frontend;
 use tuja\frontend\router\GroupHomeInitiator;
 use tuja\frontend\router\GroupPeopleEditorInitiator;
 use tuja\util\rules\RuleEvaluationException;
@@ -55,8 +56,8 @@ class CompetitionSignup extends FrontendView {
 	function output() {
 		global $wpdb;
 
-		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( 'tuja-competitionsignup-script' );
+		Frontend::use_script( 'jquery' );
+		Frontend::use_script( 'tuja-competition-signup.js' );
 
 		$competition = $this->get_competition();
 		$errors      = [];

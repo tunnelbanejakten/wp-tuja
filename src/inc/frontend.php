@@ -14,6 +14,17 @@ use WP_Query;
 
 class Frontend extends Plugin {
 
+	private static $scripts = [];
+	private static $stylesheets = [];
+
+	public static function use_script( string $value ) {
+		self::$scripts[] = $value;
+	}
+
+	public static function use_stylesheet( string $value ) {
+		self::$stylesheets[] = $value;
+	}
+
 	public function init() {
 		add_shortcode( 'tuja_group_name', array( $this, 'group_name_shortcode' ) );
 		add_shortcode( 'tuja_edit_group', array( $this, 'edit_group_shortcode' ) );
@@ -29,7 +40,7 @@ class Frontend extends Plugin {
 
 		remove_filter( 'the_content', 'wpautop' ); // Don't let Wordpress add <p> tags to our HTML.
 
-		$_POST = filter_var($_POST, \FILTER_CALLBACK, ['options' => 'trim']);
+		$_POST = filter_var( $_POST, \FILTER_CALLBACK, [ 'options' => 'trim' ] );
 
 		$this->init_page_controller();
 	}
@@ -62,15 +73,28 @@ class Frontend extends Plugin {
 	}
 
 	public function assets() {
-		wp_register_script( 'tuja-recaptcha-script', 'https://www.google.com/recaptcha/api.js' );
-		wp_localize_script( 'tuja-upload-script', 'WPAjax', array( 'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
-		                                                           'base_image_url' => wp_get_upload_dir()['baseurl'] . '/tuja/'
-		) );
+		foreach ( self::$scripts as $script ) {
+			if ( strpos( $script, 'http' ) === 0 ) {
+				wp_enqueue_script( 'external-' . $script, $script );
+			} elseif ( strpos( $script, 'tuja-' ) === 0 ) {
+				wp_enqueue_script( 'tuja-' . $script, static::get_url() . 'assets/js/' . substr( $script, 5 ) );
+			} else {
+				wp_enqueue_script( $script );
+			}
+		}
 
+		foreach ( self::$stylesheets as $stylesheet ) {
+			if ( strpos( $stylesheet, 'http' ) === 0 ) {
+				wp_enqueue_style( 'external-' . $stylesheet, $stylesheet );
+			} elseif ( strpos( $stylesheet, 'tuja-' ) === 0 ) {
+				wp_enqueue_style( 'tuja-' . $stylesheet, static::get_url() . 'assets/css/' . substr( $stylesheet, 5 ) );
+			} else {
+				wp_enqueue_style( $stylesheet );
+			}
+		}
+
+		// TODO: What is this doing here?
 		wp_register_script( 'tuja-countdown-script', static::get_url() . '/assets/js/countdown.js' );
-
-		wp_enqueue_style( 'tuja-wp-theme', static::get_url() . '/assets/css/wp.css' );
-		wp_enqueue_style( 'dropzone-css', static::get_url() . '/assets/css/dropzone.min.css' );
 	}
 
 	public function group_name_shortcode( $atts ) {
@@ -83,7 +107,7 @@ class Frontend extends Plugin {
 
 	public function edit_group_shortcode() {
 		global $wp_query;
-		$group_id                        = $wp_query->query_vars['group_id'];
+		$group_id = $wp_query->query_vars['group_id'];
 
 		$component = new EditGroupShortcode( $group_id );
 
@@ -91,7 +115,7 @@ class Frontend extends Plugin {
 	}
 
 	public function create_group_shortcode( $atts ) {
-		$competition_id                  = $atts['competition'];
+		$competition_id = $atts['competition'];
 
 		$component = new CreateGroupShortcode( $competition_id );
 
@@ -100,8 +124,8 @@ class Frontend extends Plugin {
 
 	public function create_person_shortcode( $atts ) {
 		global $wp_query;
-		$group_id           = $atts['group_id'] ?: $wp_query->query_vars['group_id'];
-		$component          = new CreatePersonShortcode( $group_id);
+		$group_id  = $atts['group_id'] ?: $wp_query->query_vars['group_id'];
+		$component = new CreatePersonShortcode( $group_id );
 
 		return $component->render();
 	}

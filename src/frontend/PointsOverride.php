@@ -10,6 +10,7 @@ use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\PointsDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
+use tuja\Frontend;
 use tuja\view\FieldNumber;
 
 class PointsOverride extends AbstractGroupView {
@@ -56,8 +57,8 @@ class PointsOverride extends AbstractGroupView {
 			throw new Exception( 'Bara funktionärer får använda detta formulär.' );
 		}
 
-		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( 'tuja-points-script' );
+		Frontend::use_script( 'jquery' );
+		Frontend::use_script( 'tuja-points.js' );
 
 		$html_sections = [];
 

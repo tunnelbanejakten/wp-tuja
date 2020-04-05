@@ -57,19 +57,14 @@ abstract class FrontendView {
 	function get_content() {
 		ob_start();
 
+		Frontend::use_stylesheet( 'tuja-wp.css' );
+
 		$this->output();
 
 		return ob_get_clean();
 	}
 
 	function as_wp_post() {
-		wp_register_script( 'tuja-editgroup-script', Frontend::get_url() . '/assets/js/edit-group.js' );
-		wp_register_script( 'tuja-exifjs', Frontend::get_url() . '/assets/js/exif-js.min.js' ); // Including exif-js automatically enables auto-rotation in Dropzone.
-		wp_register_script( 'tuja-dropzone', Frontend::get_url() . '/assets/js/dropzone.min.js' );
-		wp_register_script( 'tuja-upload-script', Frontend::get_url() . '/assets/js/upload.js' );
-		wp_register_script( 'tuja-points-script', Frontend::get_url() . '/assets/js/points.js' );
-		wp_register_script( 'tuja-competitionsignup-script', Frontend::get_url() . '/assets/js/competition-signup.js' );
-		wp_register_script( 'tuja-slideshow-script', Frontend::get_url() . '/assets/js/slideshow.js' );
 		if ( is_null( $this->wp_post ) ) {
 			$post          = array(
 				'ID'             => 0,
@@ -156,7 +151,7 @@ abstract class FrontendView {
 	protected function get_recaptcha_html(): bool {
 		$recaptcha_sitekey = $this->get_recaptcha_site_key();
 		if ( ! empty( $recaptcha_sitekey ) ) {
-			wp_enqueue_script( 'tuja-recaptcha-script' );
+			Frontend::use_script( 'https://www.google.com/recaptcha/api.js' );
 
 			return sprintf( '<div class="tuja-robot-check"><div class="g-recaptcha" data-sitekey="%s"></div></div>', $recaptcha_sitekey );
 		} else {
