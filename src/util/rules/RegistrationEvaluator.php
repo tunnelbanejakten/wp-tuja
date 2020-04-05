@@ -9,7 +9,6 @@ use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\store\PersonDao;
 use tuja\util\DateUtils;
-use tuja\view\EditGroupShortcode;
 
 class RegistrationEvaluator {
 	private $person_dao;

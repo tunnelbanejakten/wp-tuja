@@ -5,11 +5,6 @@ namespace tuja;
 use tuja\frontend\FrontendView;
 use tuja\frontend\router\Controller;
 use tuja\view\CountdownShortcode;
-use tuja\view\CreateGroupShortcode;
-use tuja\view\CreatePersonShortcode;
-use tuja\view\EditGroupShortcode;
-use tuja\view\EditPersonShortcode;
-use tuja\view\GroupNameShortcode;
 use WP_Query;
 
 class Frontend extends Plugin {
@@ -26,11 +21,6 @@ class Frontend extends Plugin {
 	}
 
 	public function init() {
-		add_shortcode( 'tuja_group_name', array( $this, 'group_name_shortcode' ) );
-		add_shortcode( 'tuja_edit_group', array( $this, 'edit_group_shortcode' ) );
-		add_shortcode( 'tuja_create_group', array( $this, 'create_group_shortcode' ) );
-		add_shortcode( 'tuja_create_person', array( $this, 'create_person_shortcode' ) );
-		add_shortcode( 'tuja_edit_person', array( $this, 'edit_person_shortcode' ) );
 		add_shortcode( 'tuja_signup_opens_countdown', array( $this, 'signup_opens_countdown_shortcode' ) );
 		add_shortcode( 'tuja_signup_closes_countdown', array( $this, 'signup_closes_countdown_shortcode' ) );
 		add_shortcode( 'tuja_form_opens_countdown', array( $this, 'form_opens_countdown_shortcode' ) );
@@ -95,47 +85,6 @@ class Frontend extends Plugin {
 
 		// TODO: What is this doing here?
 		wp_register_script( 'tuja-countdown-script', static::get_url() . '/assets/js/countdown.js' );
-	}
-
-	public function group_name_shortcode( $atts ) {
-		global $wp_query, $wpdb;
-		$group_id  = $wp_query->query_vars['group_id'];
-		$component = new GroupNameShortcode( $wpdb, $group_id );
-
-		return $component->render();
-	}
-
-	public function edit_group_shortcode() {
-		global $wp_query;
-		$group_id = $wp_query->query_vars['group_id'];
-
-		$component = new EditGroupShortcode( $group_id );
-
-		return $component->render();
-	}
-
-	public function create_group_shortcode( $atts ) {
-		$competition_id = $atts['competition'];
-
-		$component = new CreateGroupShortcode( $competition_id );
-
-		return $component->render();
-	}
-
-	public function create_person_shortcode( $atts ) {
-		global $wp_query;
-		$group_id  = $atts['group_id'] ?: $wp_query->query_vars['group_id'];
-		$component = new CreatePersonShortcode( $group_id );
-
-		return $component->render();
-	}
-
-	public function edit_person_shortcode( $atts ) {
-		global $wp_query;
-		$person_key = $wp_query->query_vars['group_id'];
-		$component  = new EditPersonShortcode( $person_key );
-
-		return $component->render();
 	}
 
 	public function signup_opens_countdown_shortcode( $atts ) {

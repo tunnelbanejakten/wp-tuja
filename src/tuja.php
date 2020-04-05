@@ -11,7 +11,6 @@ namespace tuja;
 
 use Exception;
 use tuja\util\Database;
-use tuja\util\Id;
 
 abstract class Plugin {
 	const VERSION = '1.0.0';
@@ -32,9 +31,6 @@ abstract class Plugin {
 		// Autoload all classes
 		spl_autoload_register( array( $this, 'autoloader' ) );
 
-		add_filter( 'query_vars', array( $this, 'query_vars' ) );
-		add_filter( 'rewrite_rules_array', array( $this, 'rewrite_rules' ) );
-
 		add_action( 'wp_ajax_tuja_upload_images', array( 'tuja\util\ImageManager', 'handle_image_upload' ) );
 		add_action( 'wp_ajax_nopriv_tuja_upload_images', array( 'tuja\util\ImageManager', 'handle_image_upload' ) );
 
@@ -43,18 +39,6 @@ abstract class Plugin {
 
 	public function init() {
 		// Overridden by child classes
-	}
-
-	public function query_vars( $vars ) {
-		$vars[] = 'group_id';
-
-		return $vars;
-	}
-
-	public function rewrite_rules( $rules ) {
-		$rules = array( '([^/]+)/([' . Id::RANDOM_CHARS . ']{' . Id::LENGTH . '})/?$' => 'single.php?pagename=$matches[1]&group_id=$matches[2]' ) + $rules;
-
-		return $rules;
 	}
 
 	public function install() {

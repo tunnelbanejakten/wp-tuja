@@ -3,9 +3,9 @@
 namespace tuja\view;
 
 
+use DateTime;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
-use DateTime;
 
 class CountdownShortcode
 {
@@ -101,8 +101,7 @@ class CountdownShortcode
 
     private static function competition_shortcode($date_function, $atts)
     {
-        global $wpdb;
-        $dao = new CompetitionDao($wpdb);
+        $dao = new CompetitionDao();
         $competition = $dao->get($atts['competition']);
         if ($competition === false) {
             return '[competition not found]';
@@ -114,8 +113,7 @@ class CountdownShortcode
 
     private static function form_shortcode($date_function, $atts)
     {
-        global $wpdb;
-        $dao = new FormDao($wpdb);
+        $dao = new FormDao();
         $form = $dao->get($atts['form']);
         if ($form === false) {
             return '[form not found]';

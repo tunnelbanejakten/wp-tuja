@@ -5,20 +5,12 @@ namespace tuja\frontend;
 
 use Exception;
 use tuja\data\model\Group;
-use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
-use tuja\data\store\GroupCategoryDao;
-use tuja\data\store\GroupDao;
 use tuja\Frontend;
 use tuja\frontend\router\GroupHomeInitiator;
 use tuja\util\rules\RuleEvaluationException;
 use tuja\util\Strings;
-use tuja\util\WarningException;
-use tuja\view\EditGroupShortcode;
 use tuja\view\FieldChoices;
-use tuja\view\FieldEmail;
-use tuja\view\FieldPhone;
-use tuja\view\FieldPno;
 use tuja\view\FieldText;
 
 class GroupEditor extends AbstractGroupView {
