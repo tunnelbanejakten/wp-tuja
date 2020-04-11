@@ -5,6 +5,8 @@ namespace tuja\data\model;
 
 use Exception;
 use tuja\data\store\GroupCategoryDao;
+use tuja\util\Id;
+use tuja\util\Random;
 use tuja\util\rules\RegistrationEvaluator;
 use tuja\util\StateMachine;
 use tuja\util\StateMachineException;
@@ -145,6 +147,57 @@ class Group {
 
 	public function clear_status_changes() {
 		$this->status->clear_status_changes();
+	}
+
+	public static function sample(): Group {
+		$group = new Group();
+
+		$group->random_id = ( new Id() )->random_string();
+		$group->note      = 'Vi gillar ' . Random::string( [
+				'godis',
+				'glass',
+				'scouting',
+				'skattjakter',
+				'spårningar',
+				'läger',
+				'hajk',
+				'tunnelbanejakter',
+				'eld',
+				'lägerbål',
+				'tunnelbanan',
+				'fika'
+			] );
+		$group->name      = Random::string( [
+			'Griffonen',
+			'Kentauren',
+			'Enhörningen',
+			'Faunen',
+			'Gripen',
+			'Sjömannen',
+			'Ekorren',
+			'Älgen',
+			'Vargen',
+			'Bävern',
+			'Björnen',
+			'Järven',
+			'Uttern',
+			'Räven',
+			'Vesslan',
+			'Draken',
+			'Stora',
+			'Ödlan',
+			'Kräftan',
+			'Pegasus',
+			'Tjuren',
+			'Ugglan',
+			'Örnen',
+			'Tjädern',
+			'Tranan',
+			'Korpen',
+			'Talgoxen'
+		] );
+
+		return $group;
 	}
 
 }

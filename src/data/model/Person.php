@@ -3,6 +3,8 @@
 namespace tuja\data\model;
 
 use tuja\util\DateUtils;
+use tuja\util\Id;
+use tuja\util\Random;
 use tuja\util\rules\PassthroughRuleSet;
 use tuja\util\rules\RuleSet;
 use tuja\util\StateMachine;
@@ -200,5 +202,40 @@ class Person {
 
 	public function is_group_leader(): bool {
 		return $this->is_competing && $this->is_attending && $this->is_group_contact;
+	}
+
+	public static function sample(): Person {
+		$person = new Person();
+
+		$person->name      = Random::string( [
+			'Alice',
+			'Lucas',
+			'Olivia',
+			'Liam',
+			'Astrid',
+			'William',
+			'Maja',
+			'Elias',
+			'Vera',
+			'Noah',
+			'Ebba',
+			'Hugo',
+			'Ella',
+			'Oliver',
+			'Wilma',
+			'Oscar',
+			'Alma',
+			'Adam',
+			'Lilly',
+			'Matteo'
+		] );
+		$person->random_id = ( new Id() )->random_string();
+		$person->note      = 'Scouting är ' . Random::string( [ 'kul', 'underbart', 'magiskt', 'fantastiskt' ] );
+		$person->phone     = '070-123 45 67';
+		$person->food      = Random::string( [ 'gluten', 'laktos' ] ) . 'intolerant';
+		$person->email     = strtolower( $person->name ) . '@example.com';
+		$person->pno       = rand( 2000, 2007 ) . rand( 10, 12 ) . rand( 10, 30 ) . '-0000';
+
+		return $person;
 	}
 }

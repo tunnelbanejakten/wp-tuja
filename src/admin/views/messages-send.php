@@ -4,6 +4,7 @@ namespace tuja\admin;
 use tuja\data\model\Group;
 use tuja\data\model\MessageTemplate;
 use tuja\data\model\Person;
+use tuja\util\TemplateEditor;
 
 AdminUtils::printTopMenu( $competition );
 ?>
@@ -56,11 +57,11 @@ AdminUtils::printTopMenu( $competition );
         </div>
 
         <div>
-            <label for="tuja-message-body">Meddelande:</label><br>
-            <textarea name="tuja_messages_body"
-                      id="tuja-message-body"
-                      cols="80"
-                      rows="10"><?= $_POST['tuja_messages_body'] ?></textarea>
+            <label for="tuja_messages_body">Meddelande:</label><br>
+            <?= TemplateEditor::render(
+            	'tuja_messages_body',
+	            $_POST['tuja_messages_body'] ?: '', $this->get_parameters( Person::sample(), Group::sample() )
+            ) ?>
         </div>
     </div>
 
@@ -74,12 +75,6 @@ AdminUtils::printTopMenu( $competition );
 				$template->name
 			);
 		}, $templates ) ) ?>
-        <br>I texten kan du använda följande variabler: <br><?= join( '<br>', array_map( function ( $var ) {
-			return sprintf( '<tt>{{%s}}</tt>', $var );
-		}, array_keys( $this->get_parameters( new Person(), new Group('sample_id') ) ) ) ) ?>
-        <br>Utöver variabler kan du även använda <a
-                href="https://daringfireball.net/projects/markdown/basics">Markdown</a>
-        för att göra fet text, lägga in länkar mm.
     </div>
 
     <div style="clear: both"></div>

@@ -38,6 +38,18 @@ class Template {
 		}
 	}
 
+	public static function params_template_registration_evaluation( array $issues ): array {
+		return [
+			'list_of_messages' => join(
+				"\n",
+				array_map(
+					function ( RuleResult $issue ) {
+						return sprintf( '- %s. %s', $issue->rule_name, $issue->details );
+					},
+					$issues ) )
+		];
+	}
+
 	public function get_variables() {
 		$variables = [];
 		preg_match_all( '/\{\{([a-zA-Z_]+)\}\}/', $this->content, $variables );
@@ -71,11 +83,11 @@ class Template {
 			'group_tickets_link'                     => GroupTicketsInitiator::link( $group ),
 			'group_checkin_link'                     => GroupCheckinInitiator::link( $group ),
 			'group_registration_evaluation_warnings' => self::group_parameter_registration_issues(
-				Strings::get( 'template.registration_evaluation.warnings.label' ),
+				'template.registration_evaluation.warnings.label',
 				$evaluation_result,
 				RuleResult::WARNING ),
 			'group_registration_evaluation_errors'   => self::group_parameter_registration_issues(
-				Strings::get( 'template.registration_evaluation.errors.label' ),
+				'template.registration_evaluation.errors.label',
 				$evaluation_result,
 				RuleResult::BLOCKER )
 		];
@@ -87,7 +99,7 @@ class Template {
 		];
 	}
 
-	private static function group_parameter_registration_issues( $header, array $evaluation_result, $status ) {
+	private static function group_parameter_registration_issues( $template_key, array $evaluation_result, $status ) {
 		$issues = array_filter(
 			$evaluation_result,
 			function ( $issue ) use ( $status ) {
@@ -98,18 +110,12 @@ class Template {
 			return '';
 		}
 
-		return $header . "\n" . join(
-				"\n",
-				array_map(
-					function ( $issue ) {
-						return sprintf( '- %s. %s', $issue->rule_name, $issue->details );
-					},
-					$issues ) );
+		return Strings::get( $template_key, self::params_template_registration_evaluation( $issues ) );
 	}
 
 	public static function site_parameters() {
 		return [
-			'base_url' => get_site_url(),
+			'base_url'    => get_site_url(),
 			'admin_email' => get_option( 'admin_email' )
 		];
 	}

@@ -5,6 +5,7 @@ use tuja\data\model\GroupCategory;
 use tuja\data\model\MessageTemplate;
 use tuja\util\DateUtils;
 use tuja\util\Strings;
+use tuja\util\TemplateEditor;
 
 AdminUtils::printTopMenu( $competition );
 ?>
@@ -91,7 +92,8 @@ AdminUtils::printTopMenu( $competition );
 
         <h4>Livscykel för grupp</h4>
 
-        <div class="tuja-stategraph" data-definition="<?= htmlentities($group_status_transitions_definitions) ?>" data-width-factor="0.60"></div>
+        <div class="tuja-stategraph" data-definition="<?= htmlentities( $group_status_transitions_definitions ) ?>"
+             data-width-factor="0.60"></div>
 
         <div>
             <label for="tuja_competition_settings_initial_group_status">
@@ -157,34 +159,27 @@ AdminUtils::printTopMenu( $competition );
             <tbody>
 			<?php
 			$final_list   = Strings::get_list();
-			$default_list = Strings::get_default_list();
 			$last_header  = null;
 			foreach ( $final_list as $key => $value ) {
 				list ( $header ) = explode( '.', $key );
-				$is_default_value = $default_list[ $key ] == $final_list[ $key ];
-				$value            = $is_default_value ? '' : $value;
-				$placeholder      = $default_list[ $key ];
 				if ( $last_header != $header ) {
 					printf(
 						'<tr><td colspan="2"><h3>%s</h3></td></tr>',
 						$header
 					);
 				}
-				if ( substr( $key, - 10 ) == '.body_text' ) {
+				if ( Strings::is_markdown( $key ) ) {
 					printf(
-						'<tr><td style="width: auto; vertical-align: top">%s</td><td style="width: 100%%"><textarea name="%s" rows="10" style="width: 100%%" placeholder="%s">%s</textarea></td></tr>',
+						'<tr><td style="width: auto; vertical-align: top">%s</td><td style="width: 100%%">%s</td></tr>',
 						$key,
-						CompetitionSettings::string_field_name( $key ),
-						$placeholder,
-						$value
+						TemplateEditor::render( CompetitionSettings::string_field_name( $key ), $value, Strings::get_sample_template_parameters( $key ) )
 					);
 
 				} else {
 					printf(
-						'<tr><td style="width: auto">%s</td><td style="width: 100%%"><input type="text" name="%s" style="width: 100%%" placeholder="%s" value="%s"></td></tr>',
+						'<tr><td style="width: auto">%s</td><td style="width: 100%%"><input type="text" name="%s" style="width: 100%%" value="%s"></td></tr>',
 						$key,
 						CompetitionSettings::string_field_name( $key ),
-						$placeholder,
 						$value
 					);
 				}

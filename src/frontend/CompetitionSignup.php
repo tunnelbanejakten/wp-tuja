@@ -43,6 +43,26 @@ class CompetitionSignup extends FrontendView {
 		$this->group_dao       = new GroupDao();
 	}
 
+	public static function params_accepted( Group $group ): array {
+		$group_home_link  = GroupHomeInitiator::link( $group );
+		$edit_people_link = GroupPeopleEditorInitiator::link( $group );
+
+		return [
+			'edit_people_link' => sprintf( '<a href="%s" id="tuja_edit_people_link">%s</a>', $edit_people_link, $edit_people_link ),
+			'group_home_link'  => sprintf( '<a href="%s" id="tuja_group_home_link" data-group-id="%d" data-group-key="%s">%s</a>', $group_home_link, $group->id, $group->random_id, $group_home_link )
+		];
+	}
+
+	public static function params_awaiting_approval( Group $group ): array {
+		$group_home_link = GroupHomeInitiator::link( $group );
+		$support_email   = get_bloginfo( 'admin_email' );
+
+		return [
+			'support_email'   => sprintf( '<a href="mailto:%s">%s</a>', $support_email, $support_email ),
+			'group_home_link' => sprintf( '<a href="%s" id="tuja_group_home_link" data-group-id="%d" data-group-key="%s">%s</a>', $group_home_link, $group->id, $group->random_id, $group_home_link )
+		];
+	}
+
 	function get_content() {
 		try {
 			Strings::init( $this->get_competition()->id );
@@ -69,24 +89,14 @@ class CompetitionSignup extends FrontendView {
 				// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
 				$new_group = $this->create_group();
 
-				$group_home_link  = GroupHomeInitiator::link( $new_group );
-				$edit_people_link = GroupPeopleEditorInitiator::link( $new_group );
-				$support_email    = get_bloginfo( 'admin_email' );
-
 				$this->group_dao->run_registration_rules( $new_group );
 
 				if ( $new_group->get_status() == Group::STATUS_AWAITING_APPROVAL ) {
 					printf( '<p class="tuja-message tuja-message-warning">%s</p>', Strings::get( 'competition_signup.submitted.awaiting_approval.warning_message' ) );
-					print Template::string( Strings::get( 'competition_signup.submitted.awaiting_approval.body_text' ) )->render( [
-						'support_email'   => sprintf( '<a href="mailto:%s">%s</a>', $support_email, $support_email ),
-						'group_home_link' => sprintf( '<a href="%s" id="tuja_group_home_link" data-group-id="%d" data-group-key="%s">%s</a>', $group_home_link, $new_group->id, $new_group->random_id, $group_home_link )
-					], true );;
+					print Strings::get( 'competition_signup.submitted.awaiting_approval.body_text', self::params_awaiting_approval( $new_group ) );
 				} else {
 					printf( '<p class="tuja-message tuja-message-success">%s</p>', Strings::get( 'competition_signup.submitted.accepted.success_message' ) );
-					print Template::string( Strings::get( 'competition_signup.submitted.accepted.body_text' ) )->render( [
-						'edit_people_link' => sprintf( '<a href="%s" id="tuja_edit_people_link">%s</a>', $edit_people_link, $edit_people_link ),
-						'group_home_link'  => sprintf( '<a href="%s" id="tuja_group_home_link" data-group-id="%d" data-group-key="%s">%s</a>', $group_home_link, $new_group->id, $new_group->random_id, $group_home_link )
-					], true );;
+					print Strings::get( 'competition_signup.submitted.accepted.body_text', self::params_accepted( $new_group ) );
 				}
 
 				return;

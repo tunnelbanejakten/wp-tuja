@@ -3,9 +3,8 @@
 namespace tuja;
 
 use tuja\admin\AdminUtils;
-use tuja\data\store\CompetitionDao;
-use tuja\data\model\Competition;
 use tuja\util\Strings;
+use tuja\util\TemplateEditor;
 
 class Admin extends Plugin {
 
@@ -15,6 +14,7 @@ class Admin extends Plugin {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu_item' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'admin_action_tuja_report', array( $this, 'render_report' ) );
+		add_action( 'admin_action_tuja_markdown', array( $this, 'render_markdown' ) );
 
 		add_thickbox();
 
@@ -32,6 +32,14 @@ class Admin extends Plugin {
 		if ( $_GET['tuja_report_format'] != 'csv' ) {
 			iframe_footer();
 		}
+		exit;
+	}
+
+	function render_markdown() {
+		define( 'IFRAME_REQUEST', true );
+
+		print TemplateEditor::render_preview( $_POST['__template'], $_POST );
+
 		exit;
 	}
 
@@ -56,6 +64,7 @@ class Admin extends Plugin {
 			wp_enqueue_style( 'tuja-admin-report', static::get_url() . '/assets/css/admin-report.css' );
 		} else {
 			wp_enqueue_style( 'tuja-admin-theme', static::get_url() . '/assets/css/admin.css' );
+			wp_enqueue_style( 'tuja-admin-templateeditor', static::get_url() . '/assets/css/admin-templateeditor.css' );
 		}
 
 		// Load scripts based on screen->id

@@ -7,7 +7,9 @@ var tujaForm = (function () {
       const context = this
       const args = arguments
       clearTimeout(inDebounce)
-      inDebounce = setTimeout(() => func.apply(context, args), delay)
+      inDebounce = setTimeout(function () {
+        return func.apply(context, args)
+      }, delay)
     }
   }
 

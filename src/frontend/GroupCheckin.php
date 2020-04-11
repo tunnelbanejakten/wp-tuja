@@ -30,6 +30,13 @@ class GroupCheckin extends AbstractGroupView {
 		parent::__construct( $url, $group_key, 'Incheckning för %s' );
 	}
 
+	public static function params_body_text( Group $group ): array {
+		return array_merge(
+			Template::site_parameters(),
+			Template::group_parameters( $group )
+		);
+	}
+
 	function output() {
 		$group    = $this->get_group();
 		$category = $group->get_category();
@@ -45,16 +52,13 @@ class GroupCheckin extends AbstractGroupView {
 		}
 
 		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
-			$template_parameters = array_merge(
-				Template::site_parameters(),
-				Template::group_parameters( $group )
-			);
+			$template_parameters = self::params_body_text( $group );
 
 			if ( @$_POST[ self::FIELD_ANSWER ] == Strings::get( 'checkin.yes.label' ) ) {
 				$group->set_status( Group::STATUS_CHECKEDIN );
 				if ( $this->group_dao->update( $group ) ) {
 					printf( '<div class="tuja-message tuja-message-success">%s</div>', Strings::get( 'checkin.yes.title' ) );
-					print Template::string( Strings::get( 'checkin.yes.body_text' ) )->render( $template_parameters, true );
+					print Strings::get( 'checkin.yes.body_text', $template_parameters );
 
 					return;
 				} else {
@@ -62,7 +66,7 @@ class GroupCheckin extends AbstractGroupView {
 				}
 			} else {
 				printf( '<div class="tuja-message tuja-message-info">%s</div>', Strings::get( 'checkin.no.title' ) );
-				print Template::string( Strings::get( 'checkin.no.body_text' ) )->render( $template_parameters, true );
+				print Strings::get( 'checkin.no.body_text', $template_parameters );
 
 				return;
 			}

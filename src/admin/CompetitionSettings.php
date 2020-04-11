@@ -4,8 +4,10 @@ namespace tuja\admin;
 
 use Exception;
 use tuja\data\model\Competition;
+use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
 use tuja\data\model\MessageTemplate;
+use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
@@ -19,6 +21,7 @@ use tuja\util\rules\PassthroughRuleSet;
 use tuja\util\rules\YoungParticipantsRuleSet;
 use tuja\util\StateMachine;
 use tuja\util\Strings;
+use tuja\util\TemplateEditor;
 
 class CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
@@ -53,7 +56,8 @@ class CompetitionSettings {
 	public function get_scripts(): array {
 		return [
 			'admin-competition-settings.js',
-			'mermaid.min.js'
+			'mermaid.min.js',
+			'admin-templateeditor.js'
 		];
 	}
 
@@ -124,13 +128,13 @@ class CompetitionSettings {
 				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
 				'delivery_method'     => MessageTemplate::EMAIL
 			],
-			'person_added.non_crew.email'                   => [
+			'person_added.non_crew.email'                    => [
 				'name'                => 'Ny person i tävlande lag',
 				'auto_send_trigger'   => EventMessageSender::new_group_member_event_name( false ),
 				'auto_send_recipient' => EventMessageSender::RECIPIENT_SELF,
 				'delivery_method'     => MessageTemplate::EMAIL
 			],
-			'person_added.crew.email'                   => [
+			'person_added.crew.email'                        => [
 				'name'                => 'Ny person i funktionärslag',
 				'auto_send_trigger'   => EventMessageSender::new_group_member_event_name( true ),
 				'auto_send_recipient' => EventMessageSender::RECIPIENT_SELF,
@@ -225,7 +229,7 @@ class CompetitionSettings {
 						
 						<br>
 						
-						<textarea id="" cols="80" rows="10" placeholder="Meddelande" name="%s" style="width: 100%%">%s</textarea>
+						%s
 						
 						<br>
 						
@@ -249,8 +253,11 @@ class CompetitionSettings {
 			$delivery_method_options,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'subject' ),
 			$message_template->subject,
-			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'body' ),
-			$message_template->body,
+			TemplateEditor::render(
+				$this->list_item_field_name( 'messagetemplate', $message_template->id, 'body' ),
+				$message_template->body ?: '',
+				EventMessageSender::template_parameters( Group::sample(), Person::sample() )
+			),
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_recipient' ),
 			$auto_send_recipient_options,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_trigger' ),
@@ -516,13 +523,15 @@ class CompetitionSettings {
 	}
 
 	private function competition_settings_save_strings( Competition $competition ) {
-		$final_list   = Strings::get_list();
-		$default_list = Strings::get_default_list();
+		$final_list = Strings::get_list();
 
 		$updated_list = [];
 		foreach ( array_keys( $final_list ) as $key ) {
-			$submitted_value = @$_POST[ self::string_field_name( $key ) ];
-			if ( ! empty( $submitted_value ) && $submitted_value != $default_list[ $key ] ) {
+			$submitted_value = str_replace(
+				"\r\n",
+				"\n",
+				@$_POST[ self::string_field_name( $key ) ] ?: '' );
+			if ( ! Strings::is_default_value( $key, $submitted_value ) ) {
 				$updated_list[ $key ] = $submitted_value;
 			}
 		}

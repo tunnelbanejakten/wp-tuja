@@ -135,7 +135,8 @@ class MessagesSend {
 
 	public function get_scripts(): array {
 		return [
-			'admin-message-send.js'
+			'admin-message-send.js',
+			'admin-templateeditor.js'
 		];
 	}
 

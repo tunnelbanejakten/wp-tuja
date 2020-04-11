@@ -6,7 +6,7 @@ var tujaMessageSend = (function () {
     var subject = decodeURIComponent(values[0])
     $('#tuja-message-subject').val(subject)
     var body = decodeURIComponent(values[1])
-    $('#tuja-message-body').val(body)
+    $('#tuja_messages_body').val(body).trigger('change')
     var deliveryMethod = decodeURIComponent(values[2])
     $('#tuja-message-deliverymethod').val(deliveryMethod)
     return false

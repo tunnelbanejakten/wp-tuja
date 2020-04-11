@@ -23,6 +23,14 @@ class EventMessageSender {
 
 	private $group_dao;
 
+	public static function template_parameters( Group $group, Person $contact ): array {
+		return array_merge(
+			Template::site_parameters(),
+			Template::person_parameters( $contact, $group ),
+			Template::group_parameters( $group )
+		);
+	}
+
 	public static function group_status_change_event_name( $old_status, $new_status ) {
 		return join( '.', [ 'group', 'status', $old_status, $new_status ] );
 	}
@@ -100,11 +108,7 @@ class EventMessageSender {
 
 	private function send_messages(MessageTemplate $mt, Group $group, $contacts) {
 		foreach ( $contacts as $contact ) {
-			$template_parameters = array_merge(
-				Template::site_parameters(),
-				Template::person_parameters( $contact, $group ),
-				Template::group_parameters( $group )
-			);
+			$template_parameters = self::template_parameters( $group, $contact );
 
 			$message = $mt->to_message(
 				$contact,
