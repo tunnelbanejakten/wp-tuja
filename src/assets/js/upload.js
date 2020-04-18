@@ -11,11 +11,12 @@
       var preexistingFiles = $image.data('preexisting')
       var uploadUrl = $image.data('uploadUrl')
       var baseImageUrl = $image.data('baseImageUrl')
+      var $addImageButton = $image.find('button.tuja-image-add').first()
       var maxFilesCount = parseInt($image.data('maxFilesCount')) || 1
 
       var $question = $(this).closest('.tuja-question')
       var $lock = $(this).closest('form').find('input[name="tuja_formshortcode__optimistic_lock"]')
-      var $fileCounter = $(this).closest('form').find('.tuja-fieldimages-counter')
+      var $fileCounter = $question.find('.tuja-fieldimages-counter')
 
       var getFileCount = function () {
         return $question.find('.dropzone input[type="hidden"]').length
@@ -37,13 +38,15 @@
       }
 
       var updateFileCounter = function () {
-        if (!isFileCountLimitReacted()) {
+        const isLimitReached = isFileCountLimitReacted()
+        $addImageButton.toggle(!isLimitReached)
+        if (!isLimitReached) {
           var count = getFileCount()
           var pattern = count === 0
             ? ('Ni kan ladda upp COUNT IMAGES här.'
               .replace('COUNT', maxFilesCount)
               .replace('IMAGES', plural(maxFilesCount, 'bilder', 'bild', 'bilder')))
-            : ('Ni kan ladda upp ytterligare COUNT IMAGES.'
+            : ('Ni kan ladda upp COUNT IMAGES till.'
               .replace('COUNT', maxFilesCount - count)
               .replace('IMAGES', plural(maxFilesCount - count, 'bilder', 'bild', 'bilder')))
           $fileCounter.text(pattern)
@@ -64,7 +67,8 @@
         thumbnailMethod: 'contain',
         maxFiles: maxFilesCount,
         uploadMultiple: false,
-        dictDefaultMessage: 'Klicka här för att ladda upp bilder',
+        clickable: $addImageButton.get(),
+        dictDefaultMessage: '',
         init: function () {
           var self = this
 
@@ -109,7 +113,7 @@
 
             // Add the button to the file preview element.
             $(file.previewElement)
-              .append($('<div class="tuja-item-buttons" />')
+              .append($('<div class="tuja-item-buttons tuja-item-buttons-center" />')
                 .append($removeButton))
               .append($('<input/>')
                 .attr('type', 'hidden')

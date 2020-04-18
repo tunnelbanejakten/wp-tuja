@@ -13,7 +13,7 @@ class FieldImages extends Field {
 
 	function __construct( $label, $hint = null, $read_only = false, $max_files_count = 2 ) {
 		parent::__construct( $label, $hint, $read_only );
-		$this->image_manager = new ImageManager();
+		$this->image_manager   = new ImageManager();
 		$this->max_files_count = $max_files_count;
 	}
 
@@ -34,7 +34,7 @@ class FieldImages extends Field {
 		$hint = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
 
 		return sprintf(
-			'<div class="tuja-field tuja-fieldimages"><label>%s%s</label>%s<div><small class="tuja-question-hint tuja-fieldimages-counter"></small></div>%s</div>',
+			'<div class="tuja-field tuja-fieldimages"><label>%s%s</label>%s%s</div>',
 			$this->label,
 			$hint,
 			$this->render_image_upload( $field_name, $group->random_id, $answer_object ),
@@ -94,7 +94,14 @@ class FieldImages extends Field {
              data-field-name="<?= $field_name ?>[images][]"
              data-max-files-count="<?= $this->max_files_count ?>"
              data-preexisting="<?= htmlspecialchars( json_encode( $images ) ) ?>">
-            <div class="tuja-image-select dropzone"></div>
+            <div>
+                <div class="tuja-image-select dropzone"></div>
+
+                <div class="tuja-item-buttons">
+                    <button type="button" class="tuja-image-add">Lägg till bild</button>
+                    <span class="tuja-fieldimages-counter"></span>
+                </div>
+            </div>
             <div class="tuja-image-options">
 				<?php echo $this->render_comment_field( $field_name, isset( $answer_object ) ? $answer_object['comment'] : '' ); ?>
             </div>

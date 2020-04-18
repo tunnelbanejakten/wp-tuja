@@ -25,6 +25,8 @@ form.tuja-changed .tuja-message {
     left: 0;
     right: 0;
 
+    z-index: 50; /* Greater than 20 (used by Dropzone) */
+
     background-color: white;
 }
 
