@@ -4,6 +4,7 @@ namespace tuja\util;
 
 use tuja\data\model\Competition;
 use tuja\frontend\router\CompetitionSignupInitiator;
+use tuja\frontend\router\GroupCancelSignupInitiator;
 use tuja\frontend\router\GroupCheckinInitiator;
 use tuja\frontend\router\GroupEditorInitiator;
 use tuja\frontend\router\GroupHomeInitiator;
@@ -82,6 +83,7 @@ class Template {
 			'group_status_link'                      => GroupStatusInitiator::link( $group ),
 			'group_tickets_link'                     => GroupTicketsInitiator::link( $group ),
 			'group_checkin_link'                     => GroupCheckinInitiator::link( $group ),
+			'group_cancel_signup_link'               => GroupCancelSignupInitiator::link( $group ),
 			'group_registration_evaluation_warnings' => self::group_parameter_registration_issues(
 				'template.registration_evaluation.warnings.label',
 				$evaluation_result,
