@@ -16,6 +16,7 @@ use tuja\data\store\StringsDao;
 use tuja\util\DateUtils;
 use tuja\util\messaging\EventMessageSender;
 use tuja\util\rules\CrewMembersRuleSet;
+use tuja\util\rules\GroupCategoryRules;
 use tuja\util\rules\OlderParticipantsRuleSet;
 use tuja\util\rules\PassthroughRuleSet;
 use tuja\util\rules\YoungParticipantsRuleSet;
@@ -55,6 +56,9 @@ class CompetitionSettings {
 
 	public function get_scripts(): array {
 		return [
+			'admin-forms.js',
+			'jsoneditor.min.js',
+			'admin-forms.js',
 			'admin-competition-settings.js',
 			'mermaid.min.js',
 			'admin-templateeditor.js'
@@ -264,37 +268,36 @@ class CompetitionSettings {
 			$auto_send_trigger_options );
 	}
 
-	public function print_group_category_form( GroupCategory $category ) {
-		$id1                   = uniqid();
-		$id2                   = uniqid();
-		$rule_sets             = self::RULE_SETS;
-		$rule_set_options_html = join( '', array_map(
-			function ( $key, $value ) use ( $category ) {
-				return sprintf( '<option value="%s" %s>%s</option>',
-					htmlspecialchars( $key ),
-					$category->rule_set_class_name == $key ? 'selected="selected"' : '',
-					$value );
-			},
-			array_keys( $rule_sets ),
-			array_values( $rule_sets ) ) );
+	public function print_group_category_form( GroupCategory $category, Competition $competition ) {
+		$rules             = $category->get_rules();
+		$jsoneditor_config = GroupCategoryRules::get_jsoneditor_config();
+		$jsoneditor_values = $rules->get_json_values();
 
-		$pattern = '
-			<div class="tuja-groupcategory-form">
-				<input type="text" placeholder="Mallens namn" size="50" name="%s" value="%s">
-				<select name="%s">%s</select>
+		return sprintf( '
+			<div class="tuja-groupcategory-form tuja-ruleset-column">
+				<input type="hidden" name="%s" id="%s" value="%s">
+				<div class="row">
+					<input type="text" placeholder="Grupptypens namn" name="%s" value="%s">
+				</div>
+				<div class="tuja-admin-groupcategory-form" 
+					data-schema="%s" 
+					data-values="%s" 
+					data-field-id="%s"
+					data-root-name="%s"></div>
 				<button class="button tuja-delete-groupcategory" type="button">
 					Ta bort
 				</button>
-			</div>
-		';
-
-		return sprintf( $pattern,
+			</div>',
+			$this->list_item_field_name( 'groupcategory', $category->id, 'rules' ),
+			$this->list_item_field_name( 'groupcategory', $category->id, 'rules' ),
+			htmlentities( $jsoneditor_values ),
 			$this->list_item_field_name( 'groupcategory', $category->id, 'name' ),
 			$category->name,
-			$this->list_item_field_name( 'groupcategory', $category->id, 'ruleset' ),
-			$rule_set_options_html );
+			htmlentities( $jsoneditor_config ),
+			htmlentities( $jsoneditor_values ),
+			htmlentities( $this->list_item_field_name( 'groupcategory', $category->id, 'rules' ) ),
+			'tuja-admin-' . 'groupcategory' . '-form-' . $category->id );
 	}
-
 
 	public function competition_settings_save_message_templates( Competition $competition ) {
 		$message_template_dao = new MessageTemplateDao();
@@ -420,7 +423,8 @@ class CompetitionSettings {
 			if ( isset( $category_map[ $id ] ) ) {
 				$delete_successful = $category_dao->delete( $id );
 				if ( ! $delete_successful ) {
-					AdminUtils::printError( 'Could not delete category' );
+					global $wpdb;
+					AdminUtils::printError( 'Could not delete category' . $wpdb->last_error );
 				}
 			}
 		}

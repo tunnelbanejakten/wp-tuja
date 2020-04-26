@@ -60,7 +60,7 @@ class Admin extends Plugin {
 	}
 
 	public function assets() {
-		if ( $_REQUEST['action'] === 'tuja_report' ) {
+		if ( @$_REQUEST['action'] === 'tuja_report' ) {
 			wp_enqueue_style( 'tuja-admin-report', static::get_url() . '/assets/css/admin-report.css' );
 		} else {
 			wp_enqueue_style( 'tuja-admin-theme', static::get_url() . '/assets/css/admin.css' );

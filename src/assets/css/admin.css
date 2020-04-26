@@ -1,5 +1,5 @@
 .toplevel_page_tuja #wpcontent {
-	padding: 0 20px;
+    padding: 0 20px;
 }
 
 .tuja ol,
@@ -41,8 +41,8 @@ nav.tuja {
 .tuja-admin-question textarea,
 .tuja-admin-question select {
     display: block;
-	width: 100%;
-	max-width: 70em;
+    width: 100%;
+    max-width: 70em;
 }
 
 .tuja-admin-question-preview {
@@ -67,7 +67,7 @@ nav.tuja {
 }
 
 .tuja-admin-question-properties textarea {
-	margin-bottom: 5px;
+    margin-bottom: 5px;
 }
 
 .tuja-admin-question-property {
@@ -91,6 +91,7 @@ body.wp-admin th {
 .tuja-messagetemplate-template {
     display: none;
 }
+
 .tuja-messagetemplate-form {
     border-bottom: 1px solid #ccc;
     padding: 0 0 10px 0;
@@ -100,26 +101,33 @@ body.wp-admin th {
 div.tuja-messagetemplate-collapsible .tuja-messagetemplate-collapsecontrol > a > span:nth-child(1) {
     display: none;
 }
+
 div.tuja-messagetemplate-collapsible .tuja-messagetemplate-collapsecontrol > a > span:nth-child(2) {
     display: block;
 }
+
 div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messagetemplate-collapsecontrol > a > span:nth-child(1) {
     display: block;
 }
+
 div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messagetemplate-collapsecontrol > a > span:nth-child(2) {
     display: none;
 }
+
 div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messagetemplate-content {
     display: none;
 }
+
 .tuja-message-preview {
     background: #fff;
     border: 1px solid #ccc;
     padding: 5px;
 }
+
 .tuja-message-preview p {
     margin: 5px !important;
 }
+
 .tuja-message-preview.tuja-message-preview-plaintext {
     white-space: pre;
 }
@@ -131,6 +139,7 @@ div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messag
 .tuja-message-preview.tuja-message-preview-html li {
     margin: 0 0 6px 24px;
 }
+
 .tuja-tab {
     border-bottom: 1px solid #ccc;
     border-right: 1px solid #ccc;
@@ -138,12 +147,15 @@ div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messag
     padding: 10px;
     margin: 0 0 10px 0;
 }
+
 table.tuja-admin-review {
     border-collapse: collapse;
 }
+
 table.tuja-admin-review th {
     padding: 0 10px;
 }
+
 table.tuja-admin-review tr.tuja-admin-review-form-row td:nth-child(2),
 table.tuja-admin-review tr.tuja-admin-review-question-row td:nth-child(2) {
     padding: 2em 1em 1em 0;
@@ -161,13 +173,16 @@ tr.tuja-admin-review-response-row td div.spacer {
 tr.tuja-admin-review-correctanswer-row td {
     padding: 0.5em 0;
 }
+
 table.tuja-admin-review th,
 table.tuja-admin-review td {
     padding: 0.3em 1em 0.3em 0;
 }
+
 tr.tuja-admin-review-response-row td {
     border-top: 1px solid #aaa;
 }
+
 tr.tuja-admin-review-question-row td:first-child,
 tr.tuja-admin-review-correctanswer-row td:first-child,
 tr.tuja-admin-review-response-row td:first-child {
@@ -187,8 +202,8 @@ tr.tuja-admin-review-response-row a.tuja-admin-review-group-link {
 }
 
 tr.tuja-admin-review-response-row.question-group td {
-	border: none;
-	font-weight: bold;
+    border: none;
+    font-weight: bold;
 }
 
 span.tuja-admin-review-autoscore, span.tuja-admin-groupstatus {
@@ -199,14 +214,17 @@ span.tuja-admin-review-autoscore, span.tuja-admin-groupstatus {
     padding: 3px 5px;
     white-space: nowrap;
 }
+
 span.tuja-admin-review-autoscore.tuja-admin-review-autoscore-good {
     background-color: #d0e8af;
     border-color: #719158;
 }
+
 span.tuja-admin-review-autoscore.tuja-admin-review-autoscore-poor {
     background-color: #ffafa7;
     border-color: #b96460;
 }
+
 span.tuja-admin-review-autoscore.tuja-admin-review-autoscore-decent {
     background-color: #ffef9c;
     border-color: #b5a556;
@@ -252,10 +270,12 @@ span.tuja-admin-groupstatus.tuja-admin-groupstatus-deleted {
     border-color: #888;
     text-decoration: line-through;
 }
+
 .tuja-admin-messages {
     display: flex;
     flex-direction: column;
 }
+
 .tuja-admin-message {
     display: flex;
     flex: 1;
@@ -263,12 +283,15 @@ span.tuja-admin-groupstatus.tuja-admin-groupstatus-deleted {
     margin-bottom: 0.5em;
     padding: 0.5em;
 }
+
 .tuja-admin-message-preview {
     flex-basis: 250px;
 }
+
 .tuja-admin-message-preview img {
     display: block;
 }
+
 .tuja-admin-message-metadata {
     flex: 1;
 }
@@ -312,22 +335,29 @@ div.tuja-admin-report-config label {
     font-weight: normal !important;
 }
 
+div.tuja-admin-groupcategory-form,
 div.tuja-admin-questiongroup-form {
     width: 100%;
 }
+
+div.tuja-admin-groupcategory-form > div > h3,
 div.tuja-admin-questiongroup-form > div > h3 {
     display: none;
 }
 
+div.tuja-admin-groupcategory-form > div > div,
 div.tuja-admin-questiongroup-form > div > div {
     border: none !important;
     padding: 0 !important;
     margin: 0 !important;
 }
 
+div.tuja-admin-groupcategory-form label,
 div.tuja-admin-questiongroup-form label {
     font-weight: normal !important;
 }
+
+div.tuja-admin-groupcategory-form div.row h3,
 div.tuja-admin-questiongroup-form div.row h3 {
     font-weight: normal !important;
     font-size: inherit;
@@ -335,9 +365,12 @@ div.tuja-admin-questiongroup-form div.row h3 {
     margin: 0;
 }
 
+div.tuja-admin-groupcategory-form table.je-table thead,
 div.tuja-admin-questiongroup-form table.je-table thead {
     display: none;
 }
+
+div.tuja-admin-groupcategory-form div.je-indented-panel,
 div.tuja-admin-questiongroup-form div.je-indented-panel {
     padding-left: 0 !important;
     margin-left: 0 !important;
@@ -351,4 +384,35 @@ input.tuja-ticket-couponweight {
 tr.tuja-person-status-deleted td {
     color: #aaa;
     text-decoration-line: line-through;
+}
+
+div.tuja-ruleset-columns {
+    display: flex
+}
+
+div.tuja-ruleset-column {
+    flex: 0;
+    margin: 0 1em 0 0;
+}
+
+div.tuja-ruleset-column div.form-control select,
+div.tuja-ruleset-column div.form-control input {
+    width: 100%;
+}
+
+div.tuja-ruleset-column div.row {
+    height: 35px;
+    line-height: 35px;
+}
+
+div.tuja-ruleset-column label.je-form-input-label {
+    display: none;
+}
+
+div.tuja-ruleset-column label {
+    color: transparent;
+}
+
+div.tuja-ruleset-column:first-child {
+    white-space: nowrap;
 }

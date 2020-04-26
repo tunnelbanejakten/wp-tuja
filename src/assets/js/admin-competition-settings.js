@@ -40,23 +40,33 @@ var tujaListItemsControls = (function () {
       function onAddClick (event) {
         var button = $(event.target)
         var form = button.closest('form')
-        var container = form.find('div.tuja-' + listName + '-existing')
-        var newForm = form.find('div.tuja-' + listName + '-template > div.tuja-' + listName + '-form').clone()
+        var $container = form.find('div.tuja-' + listName + '-existing')
+        var $newForm = form.find('div#' + event.target.id + '_template > div.tuja-' + listName + '-form').clone()
         var id = new Date().getTime() // Current timestamp is good enough for the purposes of this function: ensuring each click on Add gets an unique id.
-        newForm.find('button.tuja-delete-' + listName).click(onDeleteClick)
-        newForm.find('input, textarea, select').each(function () {
+        $newForm.find('button.tuja-delete-' + listName).click(onDeleteClick)
+        $newForm.find('input, textarea, select').each(function () {
           var input = $(this)
-          var field = input.attr('name').split(/__/)[1]
+          const fieldName = input.attr('name')
+          var field = fieldName ? fieldName.split(/__/)[1] : null
+          if (!field) {
+            return
+          }
 
           var defaultValue = button.data(field)
           if (defaultValue) {
             input.val(defaultValue)
           }
 
-          input.attr('name', input.attr('name') + id)
+          input.attr('name', fieldName + id)
+          input.attr('id', fieldName + id)
         })
-        newForm.appendTo(container)
-        tujaCollapsibleControls.init($, newForm)
+        $newForm.find('div.tuja-admin-' + listName + '-form').each(function (index, element) {
+          this.dataset.fieldId = this.dataset.fieldId + id
+          this.dataset.rootName = 'tuja-admin-' + listName + '-form-' + id
+        })
+        $newForm.appendTo($container)
+        tujaCollapsibleControls.init($, $newForm)
+        tujaForms.init($, $newForm, 'tuja-admin-' + listName + '-form')
         return false
       }
 
@@ -64,6 +74,8 @@ var tujaListItemsControls = (function () {
         $(event.target).closest('div.tuja-' + listName + '-form').remove()
         return false
       }
+
+      tujaForms.init($, $('.tuja-' + listName + '-existing'), 'tuja-admin-' + listName + '-form')
 
       $('button.tuja-add-' + listName).click(onAddClick)
       $('button.tuja-delete-' + listName).click(onDeleteClick)

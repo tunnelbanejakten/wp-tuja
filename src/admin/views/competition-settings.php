@@ -1,9 +1,16 @@
 <?php
 namespace tuja\admin;
 
+use ReflectionClass;
 use tuja\data\model\GroupCategory;
 use tuja\data\model\MessageTemplate;
 use tuja\util\DateUtils;
+use tuja\util\rules\CrewMembersRuleSet;
+use tuja\util\rules\GroupCategoryRules;
+use tuja\util\rules\OlderParticipantsRuleSet;
+use tuja\util\rules\PassthroughRuleSet;
+use tuja\util\rules\RuleSet;
+use tuja\util\rules\YoungParticipantsRuleSet;
 use tuja\util\Strings;
 use tuja\util\TemplateEditor;
 
@@ -114,7 +121,7 @@ AdminUtils::printTopMenu( $competition );
 					$status,
 					$status,
 					$status,
-					$status_descriptions[ $status ]
+					@$status_descriptions[ $status ]
 				);
 			}, \tuja\data\model\Competition::allowed_initial_statuses() ) ) ?>
         </div>
@@ -126,31 +133,44 @@ AdminUtils::printTopMenu( $competition );
             Grypptyper ska inte förväxlas med grupper. En tävling kan ha flera grupper och varje person är med i en
             grupp. Grupptyper är ett sätt att klassificera grupperna utifrån deras roll i tävlingen.
         </p>
-        <table>
-            <tbody>
-			<?php
-			foreach ( $rules_html as $label => $columns ) {
-				printf( '<tr><td><strong>%s</strong></td>%s</tr>',
-					$label,
-					join( array_map( function ( $html ) {
-						return sprintf( '<td>%s</td>', $html );
-					}, $columns ) ) );
-			}
-			?>
-            </tbody>
-        </table>
-        <br>
-        <div class="tuja-groupcategory-existing">
-			<?= join( array_map( function ( GroupCategory $category ) {
-				return $this->print_group_category_form( $category );
-			}, $category_dao->get_all_in_competition( $competition->id ) ) ) ?>
+
+        <div class="tuja-ruleset-columns tuja-groupcategory-existing">
+				<?php
+
+				printf( '<div class="tuja-ruleset-column"><div class="row"></div>%s</div>', join( array_map( function ( string $label ) {
+					return sprintf( '<div class="row">%s</div>', $label );
+				}, GroupCategoryRules::get_properties() ) ) );
+
+				print join( array_map( function ( GroupCategory $category ) use ( $competition ) {
+					return $this->print_group_category_form( $category, $competition );
+				}, $category_dao->get_all_in_competition( $competition->id ) ) );
+				?>
         </div>
-        <div class="tuja-groupcategory-template">
-			<?= $this->print_group_category_form( new GroupCategory() ) ?>
-        </div>
-        <button class="button tuja-add-groupcategory" type="button" id="tuja_add_group_category_button">
-            Ny
-        </button>
+            <?php
+            foreach ( [
+                    null,
+                    new YoungParticipantsRuleSet(),
+                    new OlderParticipantsRuleSet(),
+                    new CrewMembersRuleSet()
+                ] as $rule_set ) {
+                $group_category = new GroupCategory();
+                $group_category->set_rules(
+                        isset($rule_set)
+                            ? GroupCategoryRules::from_rule_set($rule_set, $competition)
+                            : new GroupCategoryRules()
+                );
+	            $template_slug = isset( $rule_set )
+                    ? ( new ReflectionClass( $rule_set ) )->getShortName()
+                    : '';
+	            $id  = 'tuja_add_group_category_button_' . $template_slug;
+	            printf( '
+                <div class="tuja-groupcategory-template" id="%s_template">%s</div>
+                <button class="button tuja-add-groupcategory" type="button" id="%s">
+                Ny %s
+            </button>
+                ', $id, $this->print_group_category_form( $group_category, $competition ), $id, $template_slug );
+            }
+            ?>
 
     </div>
     <div class="tuja-tab" id="tuja-tab-strings">
@@ -158,8 +178,8 @@ AdminUtils::printTopMenu( $competition );
         <table style="width: 100%">
             <tbody>
 			<?php
-			$final_list   = Strings::get_list();
-			$last_header  = null;
+			$final_list  = Strings::get_list();
+			$last_header = null;
 			foreach ( $final_list as $key => $value ) {
 				list ( $header ) = explode( '.', $key );
 				if ( $last_header != $header ) {
