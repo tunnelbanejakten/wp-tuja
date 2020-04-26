@@ -13,20 +13,16 @@ class AdminPageWrapper extends PageWrapper {
     await this.click('#tuja_tab_groups')
 
     const addGroupCategory = async (name, ruleSetName) => {
-      await this.click('#tuja_add_group_category_button')
+      await this.click('#tuja_add_group_category_button_' + ruleSetName)
       const groupCategoryForm = await this.page.$('div.tuja-groupcategory-form:last-of-type')
-      const groupCategoryName = await groupCategoryForm.$('input[type=text]')
-      const groupCategoryNameFieldName = await groupCategoryName.evaluate(node => node.name)
-      const tempGroupCategoryId = groupCategoryNameFieldName.split(/__/)[2]
+      const groupCategoryName = await groupCategoryForm.$('input[type=text][name^="groupcategory__name__"]')
       await groupCategoryName.type(name)
-      const groupCategoryRules = await groupCategoryForm.$('select[name="groupcategory__ruleset__' + tempGroupCategoryId + '"]')
-      await groupCategoryRules.select(ruleSetName)
     }
 
     const crewGroupCategoryName = 'The Crew'
-    await addGroupCategory('Young Participants', 'tuja\\util\\rules\\YoungParticipantsRuleSet')
-    await addGroupCategory('Old Participants', 'tuja\\util\\rules\\OlderParticipantsRuleSet')
-    await addGroupCategory(crewGroupCategoryName, 'tuja\\util\\rules\\CrewMembersRuleSet')
+    await addGroupCategory('Young Participants', 'YoungParticipantsRuleSet')
+    await addGroupCategory('Old Participants', 'OlderParticipantsRuleSet')
+    await addGroupCategory(crewGroupCategoryName, 'CrewMembersRuleSet')
 
     await this.clickLink('#tuja_save_competition_settings_button')
     return await this.$eval('input[type="text"][value="' + crewGroupCategoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
