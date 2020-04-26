@@ -2,11 +2,14 @@
 
 namespace tuja\data\store;
 
-use tuja\data\model\ValidationException;
+use ReflectionClass;
 use tuja\data\model\GroupCategory;
+use tuja\data\model\ValidationException;
 use tuja\util\Database;
 use tuja\util\rules\CrewMembersRuleSet;
+use tuja\util\rules\GroupCategoryRules;
 use tuja\util\rules\PassthroughRuleSet;
+use tuja\util\rules\RuleSet;
 
 class GroupCategoryDao extends AbstractDao {
 	function __construct() {
@@ -23,9 +26,9 @@ class GroupCategoryDao extends AbstractDao {
 
 		$affected_rows = $this->wpdb->insert( $this->table,
 			array(
-				'competition_id' => $category->competition_id,
-				'name'           => $category->name,
-				'rule_set'       => $category->rule_set_class_name
+				'competition_id'      => $category->competition_id,
+				'name'                => $category->name,
+				'rules_configuration' => json_encode( $category->get_rules()->get_values() )
 			),
 			array(
 				'%d',
@@ -46,8 +49,8 @@ class GroupCategoryDao extends AbstractDao {
 
 		return $this->wpdb->update( $this->table,
 			array(
-				'name'     => $category->name,
-				'rule_set' => $category->rule_set_class_name
+				'name'                => $category->name,
+				'rules_configuration' => json_encode( $category->get_rules()->get_values() )
 			),
 			array(
 				'id' => $category->id
@@ -90,16 +93,36 @@ class GroupCategoryDao extends AbstractDao {
 		return $this->wpdb->query( $this->wpdb->prepare( $query_template, $id ) );
 	}
 
+	private static function get_rule_set( $rule_set_class_name ): RuleSet {
+		try {
+			if ( isset( $rule_set_class_name ) && class_exists( $rule_set_class_name ) ) {
+				return ( new ReflectionClass( $rule_set_class_name ) )->newInstance();
+			}
+		} catch ( ReflectionException $e ) {
+		}
+
+		return new PassthroughRuleSet();
+	}
+
+
 	private static function to_group_category( $result ): GroupCategory {
-		$gc                      = new GroupCategory();
-		$gc->id                  = $result->id;
-		$gc->competition_id      = $result->competition_id;
-		$gc->name                = $result->name;
-		$gc->rule_set_class_name = isset( $result->rule_set )
-			? $result->rule_set
-			: ( $result->is_crew != 0
-				? CrewMembersRuleSet::class
-				: PassthroughRuleSet::class );
+		$gc                 = new GroupCategory();
+		$gc->id             = $result->id;
+		$gc->competition_id = $result->competition_id;
+		$gc->name           = $result->name;
+
+		if ( isset( $result->rules_configuration ) ) {
+			$gc->set_rules( new GroupCategoryRules( json_decode( $result->rules_configuration, true ) ) );
+		} else {
+			$competition_dao = new CompetitionDao(); // A bit of a hack but not super-ugly (DAOs should really be created in entity classes)
+			$competition     = $competition_dao->get( $gc->competition_id );
+
+			$gc->set_rules( GroupCategoryRules::from_rule_set( self::get_rule_set( isset( $result->rule_set )
+				? $result->rule_set
+				: ( $result->is_crew != 0
+					? CrewMembersRuleSet::class
+					: PassthroughRuleSet::class ) ), $competition ) );
+		}
 
 		return $gc;
 	}

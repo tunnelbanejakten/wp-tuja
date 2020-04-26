@@ -13,7 +13,11 @@ class GroupCategory
 	public $id;
 	public $competition_id;
 	public $name;
-	public $rule_set_class_name;
+	private $rules;
+
+	public function set_rules( GroupCategoryRules $rules ) {
+		$this->rules = $rules;
+	}
 
 	public function get_rule_set() : RuleSet {
 		try {
