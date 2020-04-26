@@ -117,16 +117,6 @@ Attributes:
 * past_format: Pattern string to use when the time has passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
 * future_format: Pattern string to use when the time has not yet passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
 
-## tuja_signup_opens_countdown and tuja_signup_closes_countdown
-
-Features:
-* Displays the "fuzzy time", e.g. "2 minutes" instead of "132 seconds", until the specified competition begins/stops accepting new group sign-ups.
-
-Attributes:
-* competition: The id of the competition to check.
-* past_format: Pattern string to use when the time has passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
-* future_format: Pattern string to use when the time has not yet passed. Must include the placeholder "$1", which will be replaced by the actual current countdown value.
-
 # Deployment
 
 This repo is configured to auto deploy to tunnelbanejakten.se. This is done with a webhook and deploy key on the github side, and a mu-plugin on the server side.

@@ -70,21 +70,6 @@ class CountdownShortcode
         }
     }
 
-    public static function signup_opens($atts)
-    {
-        return self::competition_shortcode(function ($competition) {
-            return $competition->create_group_start;
-        }, $atts);
-    }
-
-    public static function signup_closes($atts)
-    {
-        return self::competition_shortcode(function ($competition) {
-        	// TODO: Different for different group categories:
-            return $competition->create_group_end;
-        }, $atts);
-    }
-
     public static function submit_form_response_opens($atts)
     {
         return self::form_shortcode(function ($form) {

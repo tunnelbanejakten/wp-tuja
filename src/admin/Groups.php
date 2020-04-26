@@ -12,7 +12,6 @@ use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PersonDao;
 use tuja\data\store\ResponseDao;
-use tuja\util\rules\PassthroughRuleSet;
 use tuja\util\rules\RuleResult;
 
 class Groups {
@@ -178,7 +177,7 @@ class Groups {
 				'tuja_view'                                  => 'Group',
 				\tuja\admin\Group::QUESTION_FILTER_URL_PARAM => ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL
 			) );
-			$group_data['category']         = $group->get_category() ?: $category_unknown;
+			$group_data['category'] = $group->get_category();
 			$group_data['count_unreviewed'] = @$unreviewed_answers[ $group->id ] ?: 0;
 
 			if ( ! $group_data['category']->get_rules()->is_crew() && $group->get_status() !== Group::STATUS_DELETED ) {

@@ -21,8 +21,6 @@ class Frontend extends Plugin {
 	}
 
 	public function init() {
-		add_shortcode( 'tuja_signup_opens_countdown', array( $this, 'signup_opens_countdown_shortcode' ) );
-		add_shortcode( 'tuja_signup_closes_countdown', array( $this, 'signup_closes_countdown_shortcode' ) );
 		add_shortcode( 'tuja_form_opens_countdown', array( $this, 'form_opens_countdown_shortcode' ) );
 		add_shortcode( 'tuja_form_closes_countdown', array( $this, 'form_closes_countdown_shortcode' ) );
 
@@ -85,14 +83,6 @@ class Frontend extends Plugin {
 
 		// TODO: What is this doing here?
 		wp_register_script( 'tuja-countdown-script', static::get_url() . '/assets/js/countdown.js' );
-	}
-
-	public function signup_opens_countdown_shortcode( $atts ) {
-		return CountdownShortcode::signup_opens( $atts );
-	}
-
-	public function signup_closes_countdown_shortcode( $atts ) {
-		return CountdownShortcode::signup_closes( $atts );
 	}
 
 	public function form_opens_countdown_shortcode( $atts ) {
