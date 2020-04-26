@@ -43,42 +43,6 @@ AdminUtils::printTopMenu( $competition );
                 </div>
             </div>
         </div>
-        <div class="tuja-admin-question">
-            <div>När kan lag anmälas?</div>
-            <div class="tuja-admin-question-properties">
-                <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Tidigast</label>
-                    <input type="datetime-local" name="tuja_create_group_start" placeholder="yyyy-mm-dd hh:mm"
-                           value="<?= DateUtils::to_date_local_value( $competition->create_group_start ) ?>"/>
-                </div>
-                <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Senast</label>
-                    <input type="datetime-local" name="tuja_create_group_end" placeholder="yyyy-mm-dd hh:mm"
-                           value="<?= DateUtils::to_date_local_value( $competition->create_group_end ) ?>"/>
-                </div>
-            </div>
-            <div>
-                <small>Reglerna för olika grupptyper kan minska detta tidsintervall.</small>
-            </div>
-        </div>
-        <div class="tuja-admin-question">
-            <div>När kan anmälningar ändras?</div>
-            <div class="tuja-admin-question-properties">
-                <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Tidigast</label>
-                    <input type="datetime-local" name="tuja_edit_group_start" placeholder="yyyy-mm-dd hh:mm"
-                           value="<?= DateUtils::to_date_local_value( $competition->edit_group_start ) ?>"/>
-                </div>
-                <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Senast</label>
-                    <input type="datetime-local" name="tuja_edit_group_end" placeholder="yyyy-mm-dd hh:mm"
-                           value="<?= DateUtils::to_date_local_value( $competition->edit_group_end ) ?>"/>
-                </div>
-            </div>
-            <div>
-                <small>Reglerna för olika grupptyper kan minska detta tidsintervall.</small>
-            </div>
-        </div>
     </div>
     <div class="tuja-tab" id="tuja-tab-messagetemplates">
         <div class="tuja-messagetemplate-existing">

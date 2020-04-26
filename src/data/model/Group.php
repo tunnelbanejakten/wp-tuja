@@ -149,6 +149,19 @@ class Group {
 		$this->status->clear_status_changes();
 	}
 
+	public function is_edit_allowed(): bool {
+		if ( $this->is_always_editable ) {
+			return true;
+		}
+
+		try {
+			return $this->get_category()->get_rules()->is_update_registration_allowed();
+		} catch ( Exception $e ) {
+			return false;
+		}
+	}
+
+
 	public static function sample(): Group {
 		$group = new Group();
 

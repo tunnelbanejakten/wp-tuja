@@ -432,11 +432,6 @@ class CompetitionSettings {
 
 	public function competition_settings_save_other( Competition $competition ) {
 		try {
-			// TODO: Settle on one naming convention for form field names.
-			$competition->create_group_start   = DateUtils::from_date_local_value( $_POST['tuja_create_group_start'] );
-			$competition->create_group_end     = DateUtils::from_date_local_value( $_POST['tuja_create_group_end'] );
-			$competition->edit_group_start     = DateUtils::from_date_local_value( $_POST['tuja_edit_group_start'] );
-			$competition->edit_group_end       = DateUtils::from_date_local_value( $_POST['tuja_edit_group_end'] );
 			$competition->event_start          = DateUtils::from_date_local_value( $_POST['tuja_event_start'] );
 			$competition->event_end            = DateUtils::from_date_local_value( $_POST['tuja_event_end'] );
 			$competition->initial_group_status = $_POST['tuja_competition_settings_initial_group_status'] ?: null;

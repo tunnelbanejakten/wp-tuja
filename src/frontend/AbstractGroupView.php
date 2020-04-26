@@ -74,21 +74,7 @@ abstract class AbstractGroupView extends FrontendView {
 	}
 
 	protected function is_edit_allowed( Group $group ): bool {
-		if ( $group->is_always_editable ) {
-			return true;
-		}
-
-		$competition = $this->competition_dao->get( $group->competition_id );
-		$now         = new DateTime();
-		if ( $competition->edit_group_start != null && $competition->edit_group_start > $now ) {
-			return false;
-		}
-		if ( $competition->edit_group_end != null && $competition->edit_group_end < $now ) {
-			return false;
-		}
-		$category = $group->get_category();
-
-		return ! isset( $category ) || $category->get_rule_set()->is_update_registration_allowed( $competition );
+		return $group->is_edit_allowed();
 	}
 
 	protected function init_posted_person( $id = null ): Person {
@@ -134,11 +120,5 @@ abstract class AbstractGroupView extends FrontendView {
 		if ( ! $is_event_ongoing ) {
 			throw new Exception( 'Tävlingen har inte öppnat än.' );
 		}
-	}
-
-	protected function get_exception_message_html( Throwable $e ) {
-		return sprintf( '<p class="tuja-message %s">%s</p>',
-			$e instanceof WarningException ? 'tuja-message-warning' : 'tuja-message-error',
-			$e->getMessage() );
 	}
 }

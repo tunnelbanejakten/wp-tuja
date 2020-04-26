@@ -6,6 +6,7 @@ namespace tuja\frontend;
 use Exception;
 use tuja\data\model\competition;
 use tuja\data\model\Group;
+use tuja\data\model\GroupCategory;
 use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
 use tuja\data\store\CompetitionDao;
@@ -144,11 +145,13 @@ class CompetitionSignup extends FrontendView {
 		$group_name_question = new FieldText( 'Vad heter laget?', null, false, [] );
 		$html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors[ self::FIELD_GROUP_NAME ] );
 
-		$categories = $this->get_categories( $this->get_competition()->id );
-
-		$group_category_options = array_map( function ( $category ) {
-			return $category->name;
-		}, $categories );
+		$group_category_options =
+			array_map(
+				function ( GroupCategory $category ) {
+					return $category->name;
+				},
+				$this->get_available_group_categories()
+			);
 
 		switch ( count( $group_category_options ) ) {
 			case 0:
@@ -193,6 +196,12 @@ class CompetitionSignup extends FrontendView {
 		$html_sections[] = $this->get_recaptcha_html();
 
 		return join( $html_sections );
+	}
+
+	private function get_available_group_categories(): array {
+		return array_filter( $this->get_categories( $this->get_competition()->id ), function ( GroupCategory $category ) {
+			return $category->get_rules()->is_create_registration_allowed();
+		} );
 	}
 
 	private function get_submit_button_html() {
@@ -262,9 +271,6 @@ class CompetitionSignup extends FrontendView {
 			throw new ValidationException( self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage() );
 		}
 
-		if ( ! $this->is_create_allowed( $this->get_competition(), $category ) ) {
-			throw new RuleEvaluationException( 'Anmälan är tyvärr stängd' );
-		}
 		// SAVE CHANGES
 		$new_group_id = false;
 		try {
@@ -297,5 +303,4 @@ class CompetitionSignup extends FrontendView {
 			throw new Exception( 'Kunde inte anmäla laget.' ); // TODO: Extract to strings.ini
 		}
 	}
-
 }

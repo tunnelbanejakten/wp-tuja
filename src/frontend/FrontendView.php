@@ -3,11 +3,13 @@
 namespace tuja\frontend;
 
 use DateTime;
+use Throwable;
 use tuja\data\model\Competition;
 use tuja\data\model\GroupCategory;
 use tuja\data\store\GroupCategoryDao;
 use tuja\Frontend;
 use tuja\util\Recaptcha;
+use tuja\util\WarningException;
 use tuja\view\Field;
 use WP_Post;
 
@@ -132,18 +134,6 @@ abstract class FrontendView {
 		return $categories;
 	}
 
-	protected function is_create_allowed( Competition $competition, GroupCategory $category ): bool {
-		$now = new DateTime();
-		if ( $competition->create_group_start != null && $competition->create_group_start > $now ) {
-			return false;
-		}
-		if ( $competition->create_group_end != null && $competition->create_group_end < $now ) {
-			return false;
-		}
-
-		return ! isset( $category ) || $category->get_rule_set()->is_create_registration_allowed( $competition );
-	}
-
 	private function get_recaptcha_site_key(): string {
 		return get_option( 'tuja_recaptcha_sitekey' );
 	}
@@ -167,4 +157,9 @@ abstract class FrontendView {
 		}
 	}
 
+	protected function get_exception_message_html( Throwable $e ) {
+		return sprintf( '<p class="tuja-message %s">%s</p>',
+			$e instanceof WarningException ? 'tuja-message-warning' : 'tuja-message-error',
+			$e->getMessage() );
+	}
 }
