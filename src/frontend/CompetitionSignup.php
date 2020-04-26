@@ -25,8 +25,8 @@ use tuja\view\FieldText;
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
 class CompetitionSignup extends FrontendView {
-	const ROLE_LABEL_GROUP_LEADER = 'Jag kommer vara med och tävla';
-	const ROLE_LABEL_EXTRA_CONTACT = 'Jag administrerar bara lagets anmälan';
+	const ROLE_LABEL_GROUP_LEADER = 'Jag kommer vara med och tävla'; // TODO: Extract to strings.ini
+	const ROLE_LABEL_EXTRA_CONTACT = 'Jag administrerar bara lagets anmälan'; // TODO: Extract to strings.ini
 	private $competition_key;
 	private $competition_dao;
 
@@ -108,6 +108,10 @@ class CompetitionSignup extends FrontendView {
 				// TODO: Create helper method for generating field names based on "group or person" and attribute name.
 				$errors = [ '__' => $e->getMessage() ];
 			}
+		} else {
+			if ( empty( $this->get_available_group_categories() ) ) {
+				return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.' ); // TODO: Extract to strings.ini
+			}
 		}
 
 		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
@@ -126,7 +130,7 @@ class CompetitionSignup extends FrontendView {
 	}
 
 	function get_title() {
-		return sprintf( 'Anmäl er till %s', $this->get_competition()->name );
+		return sprintf( 'Anmäl er till %s', $this->get_competition()->name ); // TODO: Extract to strings.ini
 	}
 
 	function get_competition(): Competition {
@@ -136,6 +140,7 @@ class CompetitionSignup extends FrontendView {
 	private function get_form_html( $errors = array() ): string {
 		$html_sections = [];
 
+		// TODO: Extract labels in this function to strings.ini
 		$group_name_question = new FieldText( 'Vad heter laget?', null, false, [] );
 		$html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors[ self::FIELD_GROUP_NAME ] );
 
@@ -219,6 +224,9 @@ class CompetitionSignup extends FrontendView {
 		if ( ! isset( $category ) ) {
 			throw new ValidationException( self::FIELD_GROUP_AGE, 'No category selected.' );
 		}
+		if ( ! $category->get_rules()->is_create_registration_allowed() ) {
+			throw new RuleEvaluationException( 'Anmälan är tyvärr stängd' ); // TODO: Extract to strings.ini
+		}
 		// DETERMINE REQUESTED CHANGES
 		$new_group = new Group();
 		$new_group->set_status( Group::DEFAULT_STATUS );
@@ -249,7 +257,7 @@ class CompetitionSignup extends FrontendView {
 
 		try {
 			// Person is validated before Group is created in order to catch simple input problems, like a missing name or email address.
-			$new_person->validate( $category->get_rule_set() );
+			$new_person->validate( $category->get_rules() );
 		} catch ( ValidationException $e ) {
 			throw new ValidationException( self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage() );
 		}
@@ -280,13 +288,13 @@ class CompetitionSignup extends FrontendView {
 
 					return $group;
 				} else {
-					throw new Exception( 'Ett fel uppstod. Vi vet tyvärr inte riktigt varför.' );
+					throw new Exception( 'Ett fel uppstod. Vi vet tyvärr inte riktigt varför.' ); // TODO: Extract to strings.ini
 				}
 			} catch ( ValidationException $e ) {
 				throw new ValidationException( self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage() );
 			}
 		} else {
-			throw new Exception( 'Kunde inte anmäla laget.' );
+			throw new Exception( 'Kunde inte anmäla laget.' ); // TODO: Extract to strings.ini
 		}
 	}
 

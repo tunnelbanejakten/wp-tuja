@@ -388,13 +388,12 @@ class CompetitionSettings {
 
 		foreach ( $created_ids as $id ) {
 			try {
-				$new_template                      = new GroupCategory();
-				$new_template->competition_id      = $competition->id;
-				$new_template->name                = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
-				$rule_set_class_name               = stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'ruleset' ) ] );
-				$new_template->rule_set_class_name = ! empty( $rule_set_class_name ) && class_exists( $rule_set_class_name ) ? $rule_set_class_name : null;
+				$category                 = new GroupCategory();
+				$category->competition_id = $competition->id;
+				$category->name           = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
+				$category->set_rules( new GroupCategoryRules( json_decode( stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'rules' ) ] ), true ) ) );
 
-				$new_template_id = $category_dao->create( $new_template );
+				$new_category_id = $category_dao->create( $category );
 			} catch ( ValidationException $e ) {
 				AdminUtils::printException( $e );
 			} catch ( Exception $e ) {
@@ -405,9 +404,8 @@ class CompetitionSettings {
 		foreach ( $updated_ids as $id ) {
 			if ( isset( $category_map[ $id ] ) ) {
 				try {
-					$category_map[ $id ]->name                = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
-					$rule_set_class_name                      = stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'ruleset' ) ] );
-					$category_map[ $id ]->rule_set_class_name = ! empty( $rule_set_class_name ) && class_exists( $rule_set_class_name ) ? $rule_set_class_name : null;
+					$category_map[ $id ]->name = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
+					$category_map[ $id ]->set_rules( new GroupCategoryRules( json_decode( stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'rules' ) ] ), true ) ) );
 
 					$affected_rows = $category_dao->update( $category_map[ $id ] );
 				} catch ( ValidationException $e ) {

@@ -4,6 +4,7 @@ namespace tuja\data\store;
 
 use DateTime;
 use Exception;
+use tuja\data\model\Group;
 use tuja\data\model\PersonRole;
 use tuja\util\Anonymizer;
 use tuja\data\model\Person;
@@ -26,7 +27,7 @@ class PersonDao extends AbstractDao {
 	function create( Person $person ) {
 		$person->set_status( Person::DEFAULT_STATUS );
 
-		$person->validate();
+		$person->validate( $this->get_group( $person )->get_category()->get_rules() );
 
 		$affected_rows = $this->wpdb->insert( $this->table,
 			array(
@@ -50,7 +51,7 @@ class PersonDao extends AbstractDao {
 	}
 
 	function update( Person $person ) {
-		$person->validate();
+		$person->validate( $this->get_group( $person )->get_category()->get_rules() );
 
 		$success = $this->add_record( $person, Person::STATUS_CREATED );
 
@@ -308,5 +309,20 @@ class PersonDao extends AbstractDao {
 			$result->is_team_contact != 0 );
 
 		return $p;
+	}
+
+	private function get_group( Person $person ): Group {
+		$group_dao = new GroupDao();
+
+		if ( ! isset( $person->group_id ) ) {
+			throw new Exception( "Group not assigned to person." );
+		}
+
+		$g = $group_dao->get( $person->group_id );
+		if ( $g === false ) {
+			throw new Exception( "Could not find person's group." );
+		}
+
+		return $g;
 	}
 }

@@ -9,6 +9,7 @@ use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
 use tuja\Frontend;
 use tuja\frontend\router\GroupHomeInitiator;
+use tuja\util\rules\GroupCategoryRules;
 use tuja\util\rules\RuleEvaluationException;
 use tuja\util\Strings;
 use tuja\view\FieldEmail;
@@ -50,12 +51,12 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
 
-		$notes_enabled      = $category->get_rule_set()->is_person_note_enabled();
+		$notes_enabled      = $category->get_rules()->is_person_note_enabled();
 		$form_extra_contact = $this->get_form_extra_contact_html( $errors, $notes_enabled );
-		if ( $category->get_rule_set()->is_adult_supervisor_required() ) {
+		if ( $category->get_rules()->is_adult_supervisor_required() ) {
 			$form_adult_supervisor = $this->get_form_adult_supervisor_html( $errors, $notes_enabled );
 		}
-		list ( $group_size_min, $group_size_max ) = $category->get_rule_set()->get_group_size_range();
+		list ( $group_size_min, $group_size_max ) = $category->get_rules()->get_people_count_range(GroupCategoryRules::PERSON_TYPE_LEADER, GroupCategoryRules::PERSON_TYPE_REGULAR);
 		$form_group_contact = $this->get_form_group_contact_html( $errors, $notes_enabled );
 		$form_group_members = $this->get_form_group_members_html( $errors, $notes_enabled );
 		$form_save_button   = $this->get_form_save_button_html();
@@ -306,7 +307,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		}
 		$real_category = $group->get_category();
 		if ( isset( $real_category ) && ! empty( $deleted_ids ) ) {
-			$delete_group_member_allowed = $real_category->get_rule_set()->is_delete_group_member_allowed( $competition );
+			$delete_group_member_allowed = $real_category->get_rules()->is_delete_group_member_allowed();
 			if ( ! $delete_group_member_allowed ) {
 				throw new RuleEvaluationException( 'Det går inte att avanmäla från ' . $real_category->name );
 			}
@@ -319,7 +320,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 				$new_person           = $this->init_posted_person( $id );
 				$new_person->group_id = $group_id;
 
-				$new_person->validate( $category->get_rule_set() );
+				$new_person->validate( $category->get_rules() );
 
 				$new_person_id = $this->person_dao->create( $new_person );
 				$this_success  = $new_person_id !== false;
@@ -369,7 +370,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 					}
 
 					if ( $is_person_property_updated ) {
-						$people_map[ $id ]->validate( $category->get_rule_set() );
+						$people_map[ $id ]->validate( $category->get_rules() );
 						$affected_rows   = $this->person_dao->update( $people_map[ $id ] );
 						$this_success    = $affected_rows !== false;
 						$overall_success = ( $overall_success and $this_success );

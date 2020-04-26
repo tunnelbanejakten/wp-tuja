@@ -114,8 +114,8 @@ class Group {
 		try {
 			$category = $this->get_category();
 			if ( isset( $category ) ) {
-				$rule_set  = $category->get_rule_set();
-				$evaluator = new RegistrationEvaluator( $rule_set );
+				$rules  = $category->get_rules();
+				$evaluator = new RegistrationEvaluator( $rules );
 
 				return $evaluator->evaluate( $this );
 			}

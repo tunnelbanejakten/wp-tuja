@@ -53,7 +53,7 @@ class PointsOverride extends AbstractGroupView {
 
 		// Validate group category
 		$group_category = $crew_group->get_category();
-		if ( isset( $group_category ) && ! $group_category->get_rule_set()->is_crew() ) {
+		if ( isset( $group_category ) && ! $group_category->get_rules()->is_crew() ) {
 			throw new Exception( 'Bara funktionärer får använda detta formulär.' );
 		}
 
@@ -231,7 +231,7 @@ class PointsOverride extends AbstractGroupView {
 			// TODO: DRY... Very similar code in Form.php
 			$categories             = $this->category_dao->get_all_in_competition( $this->competition_id );
 			$participant_categories = array_filter( $categories, function ( $category ) {
-				return ! $category->get_rule_set()->is_crew();
+				return ! $category->get_rules()->is_crew();
 			} );
 			$ids                    = array_map( function ( $category ) {
 				return $category->id;

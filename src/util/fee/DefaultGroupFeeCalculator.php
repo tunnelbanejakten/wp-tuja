@@ -22,7 +22,7 @@ class DefaultGroupFeeCalculator implements GroupFeeCalculator {
 	}
 
 	function calculate_fee( Group $group, DateTime $date ): int {
-		$is_crew = $group->get_category()->get_rule_set()->is_crew();
+		$is_crew = $group->get_category()->get_rules()->is_crew();
 		if ( $is_crew ) {
 			return self::FEE_CREW;
 		} else {

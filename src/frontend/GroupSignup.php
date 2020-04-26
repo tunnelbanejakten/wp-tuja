@@ -33,9 +33,9 @@ class GroupSignup extends AbstractGroupView {
 
 		$real_category = $group->get_category();
 
-		$collect_contact_information = $real_category->get_rule_set()->is_contact_information_required_for_regular_group_member();
-		$collect_ssn                 = $real_category->get_rule_set()->is_ssn_required();
-		$notes_enabled               = $real_category->get_rule_set()->is_person_note_enabled();
+		$collect_contact_information = $real_category->get_rules()->is_contact_information_required_for_regular_group_member();
+		$collect_ssn                 = $real_category->get_rules()->is_ssn_required();
+		$notes_enabled               = $real_category->get_rules()->is_person_note_enabled();
 		try {
 
 			if ( $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
@@ -152,7 +152,7 @@ class GroupSignup extends AbstractGroupView {
 		try {
 
 			$category = $group->get_category();
-			$person->validate( $category->get_rule_set() );
+			$person->validate( $category->get_rules() );
 
 			$new_person_id = $this->person_dao->create( $person );
 			if ( $new_person_id !== false ) {

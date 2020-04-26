@@ -12,11 +12,11 @@ use tuja\util\DateUtils;
 
 class RegistrationEvaluator {
 	private $person_dao;
-	private $rule_set;
+	private $group_rules;
 
-	public function __construct( RuleSet $rule_set ) {
-		$this->person_dao = new PersonDao();
-		$this->rule_set   = $rule_set;
+	public function __construct( GroupCategoryRules $group_rules ) {
+		$this->person_dao  = new PersonDao();
+		$this->group_rules = $group_rules;
 	}
 
 	public function evaluate( Group $group ) {
@@ -69,7 +69,7 @@ class RegistrationEvaluator {
 
 		$count_adults             = count( $adults );
 		$count_adult_participants = count( $adult_participants );
-		if ( $this->rule_set->is_adult_supervisor_required() ) {
+		if ( $this->group_rules->is_adult_supervisor_required() ) {
 			if ( $count_adults == 0 ) {
 				return [ new RuleResult( 'Vuxen som följer med', RuleResult::BLOCKER, 'Laget måste ha med sig en vuxen under dagen.' ) ];
 			} elseif ( $count_adult_participants > 0 ) {
@@ -105,7 +105,7 @@ class RegistrationEvaluator {
 				if ( array_pop( $contacts )->is_competing() ) {
 					return [ new RuleResult( 'Kontaktperson', RuleResult::OK, 'En kontaktperson/lagledare har angivits.' ) ];
 				} else {
-					if ( $this->rule_set->is_adult_supervisor_required() ) {
+					if ( $this->group_rules->is_adult_supervisor_required() ) {
 						return [ new RuleResult( 'Kontaktperson', RuleResult::WARNING, 'Vi rekommenderar att även en av de tävlande är kontaktperson och lagledare.' ) ];
 					} else {
 						return [ new RuleResult( 'Kontaktperson', RuleResult::WARNING, 'Vi rekommenderar att en av de tävlande är kontaktperson och lagledare.' ) ];
@@ -166,7 +166,7 @@ class RegistrationEvaluator {
 		$participants = array_filter( $people, function ( Person $person ) {
 			return $person->is_competing();
 		} );
-		list ( $min, $max ) = $this->rule_set->get_group_size_range();
+		list ( $min, $max ) = $this->group_rules->get_people_count_range(GroupCategoryRules::PERSON_TYPE_LEADER, GroupCategoryRules::PERSON_TYPE_REGULAR);
 		if ( count( $participants ) < $min ) {
 			return [ new RuleResult( 'Antal deltagare', RuleResult::BLOCKER, 'Ett lag måste ha minst ' . $min . ' tävlande. Kontakta ' . get_bloginfo( 'admin_email' ) . ' om detta skapar problem för er.' ) ];
 		} elseif ( count( $participants ) > $max ) {

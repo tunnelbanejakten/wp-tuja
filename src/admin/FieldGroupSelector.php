@@ -20,8 +20,8 @@ class FieldGroupSelector {
 		$group_categories   = $group_category_dao->get_all_in_competition( $competition->id );
 		$crew_category_ids  = array_map( function ( $category ) {
 			return $category->id;
-		}, array_filter( $group_categories, function ( $category ) {
-			return $category->get_rule_set()->is_crew();
+		}, array_filter( $group_categories, function ( GroupCategory $category ) {
+			return $category->get_rules()->is_crew();
 		} ) );
 
 		$group_dao       = new GroupDao();

@@ -194,7 +194,7 @@ class Group {
 		$group_checkin_link = GroupCheckinInitiator::link( $group );
 
 		$group_form_links = array_map( function ( \tuja\data\model\Form $form ) use ( $group ) {
-			if ( $group->get_category()->get_rule_set()->is_crew() ) {
+			if ( $group->get_category()->get_rules()->is_crew() ) {
 				return sprintf( '<p>Länkar för att rapportering in poäng för formulär %s: <a href="%s">%s</a></p>',
 					$form->name,
 					PointsOverrideInitiator::link( $group, $form->id ),

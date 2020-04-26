@@ -52,7 +52,7 @@ class EventMessageSender {
 
 		$group_category = $group->get_category();
 
-		$is_crew_group = isset( $group_category ) && $group_category->get_rule_set()->is_crew();
+		$is_crew_group = isset( $group_category ) && $group_category->get_rules()->is_crew();
 
 		$event_name        = self::new_group_member_event_name( $is_crew_group );
 		$message_templates = $this->message_template_dao->get_for_event( $group->competition_id, $event_name );

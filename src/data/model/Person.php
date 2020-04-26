@@ -2,11 +2,11 @@
 
 namespace tuja\data\model;
 
+use Exception;
 use tuja\util\DateUtils;
 use tuja\util\Id;
 use tuja\util\Random;
-use tuja\util\rules\PassthroughRuleSet;
-use tuja\util\rules\RuleSet;
+use tuja\util\rules\GroupCategoryRules;
 use tuja\util\StateMachine;
 use tuja\util\StateMachineException;
 
@@ -79,15 +79,15 @@ class Person {
 		return preg_match( '/' . self::PHONE_PATTERN . '/', $phone ) === 1;
 	}
 
-	public function validate( RuleSet $rule_set = null ) {
-		if ( $rule_set == null ) {
-			$rule_set = new PassthroughRuleSet();
+	public function validate( GroupCategoryRules $rules ) {
+		if ( $rules == null ) {
+			throw new Exception('Group category rules not specified');
 		}
 		if ( strlen( $this->email ) > 100 ) {
 			throw new ValidationException( 'email', 'E-postadress får bara vara 100 tecken lång.' );
 		}
 		$is_email_required = ! empty( trim( $this->email ) )
-		                     || ( $this->is_regular_group_member() && $rule_set->is_contact_information_required_for_regular_group_member() )
+		                     || ( $this->is_regular_group_member() && $rules->is_contact_information_required_for_regular_group_member() )
 		                     || $this->is_contact()
 		                     || $this->is_adult_supervisor();
 		if ( $is_email_required && ! self::is_valid_email_address( $this->email ) ) {
@@ -98,7 +98,7 @@ class Person {
 		}
 
 		$is_phone_required = ! empty( trim( $this->phone ) )
-		                     || ( $this->is_regular_group_member() && $rule_set->is_contact_information_required_for_regular_group_member() )
+		                     || ( $this->is_regular_group_member() && $rules->is_contact_information_required_for_regular_group_member() )
 		                     || ( $this->is_contact() && $this->is_attending() )
 		                     || $this->is_adult_supervisor();
 		if ( $is_phone_required && ! self::is_valid_phone_number( $this->phone ) ) {
@@ -116,7 +116,7 @@ class Person {
 		if ( strlen( $this->note ) > 65000 ) {
 			throw new ValidationException( 'note', 'För långt meddelande.' );
 		}
-		$is_ssn_required = ! empty( trim( $this->pno ) ) || ( $this->is_competing() && $rule_set->is_ssn_required() );
+		$is_ssn_required = ! empty( trim( $this->pno ) ) || ( $this->is_competing() && $rules->is_ssn_required() );
 		if ( $is_ssn_required ) {
 			try {
 				DateUtils::fix_pno( $this->pno );
