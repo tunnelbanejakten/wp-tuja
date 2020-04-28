@@ -73,9 +73,9 @@ describe('wp-tuja', () => {
 
       await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
       await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
+      await adminPage.clickLink('button[name="tuja_action"][value="question_create__images"]')
       await adminPage.clickLink('button[name="tuja_action"][value="question_create__text"]')
       await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-      await adminPage.clickLink('button[name="tuja_action"][value="question_create__images"]')
       await adminPage.clickLink('button[name="tuja_action"][value="question_create__choices"]')
 
       return ({ id, key })
@@ -164,7 +164,7 @@ describe('wp-tuja', () => {
         })
       }
 
-      const expectImageCounter = async (msg) => defaultPage.expectToContain('.tuja-question-hint.tuja-fieldimages-counter', msg)
+      const expectImageCounter = async (msg) => defaultPage.expectToContain('div.tuja-image span.tuja-fieldimages-counter', msg)
 
       //
       // Upload one image
@@ -177,7 +177,7 @@ describe('wp-tuja', () => {
       await chooseFiles(['pexels-photo-1578484.jpeg'])
 
       await expectElementCount('div.tuja-fieldimages div.dz-preview', 1)
-      await expectImageCounter('Ni kan ladda upp ytterligare 1 bild.')
+      await expectImageCounter('Ni kan ladda upp 1 bild till.')
 
       await saveAndVerifyUploads(false)
 
@@ -215,7 +215,7 @@ describe('wp-tuja', () => {
       await chooseFiles(['pexels-photo-174667.jpeg'])
       await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 1)
       await expectElementCount('.dz-image img[alt="pexels-photo-174667.jpeg"]', 1)
-      await expectImageCounter('Ni kan ladda upp ytterligare 1 bild.')
+      await expectImageCounter('Ni kan ladda upp 1 bild till.')
 
       // Try to upload two additional images (only one will succeed)
       await chooseFiles(['pexels-photo-1578484.jpeg', 'pexels-photo-2285996.jpeg'])
@@ -240,7 +240,7 @@ describe('wp-tuja', () => {
       // Upload one image
       await chooseFiles(['pexels-photo-1578484.jpeg'])
       await expectElementCount('div.dz-preview.dz-complete.dz-success .dz-image img', 1)
-      await expectImageCounter('Ni kan ladda upp ytterligare 1 bild.')
+      await expectImageCounter('Ni kan ladda upp 1 bild till.')
 
       // Upload one image more
       await chooseFiles(['pexels-photo-174667.jpeg'])

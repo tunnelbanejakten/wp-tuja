@@ -117,14 +117,9 @@ class PageWrapper {
   }
 
   async chooseFiles (files) {
-    const button = await this._page.waitForSelector('div.tuja-image-select.dropzone.dz-clickable')
-    const buttonBoundingBox = await button.boundingBox()
     const [fileChooser] = await Promise.all([
       this._page.waitForFileChooser(),
-      // We must manually click the top-left corner of the div.dropzone.dz-clickable element since we cannot use the
-      // "element.click" function since it would click the center of the div.dropzone.dz-clickable element and
-      // under some circumstances the center is actually covered by image thumbnails. Hence, we must click manually.
-      this._page.mouse.click(buttonBoundingBox.x + 1, buttonBoundingBox.y + 1)
+      this._page.click('button.tuja-image-add.dz-clickable')
     ])
     await fileChooser.accept(files.map(file => ASSETS_FOLDER + file))
 
