@@ -66,7 +66,7 @@ var tujaListItemsControls = (function () {
         })
         $newForm.appendTo($container)
         tujaCollapsibleControls.init($, $newForm)
-        tujaForms.init($, $newForm, 'tuja-admin-' + listName + '-form')
+        tujaFormGenerator.init($, $newForm, 'tuja-admin-' + listName + '-form')
         return false
       }
 
@@ -75,7 +75,8 @@ var tujaListItemsControls = (function () {
         return false
       }
 
-      tujaForms.init($, $('.tuja-' + listName + '-existing'), 'tuja-admin-' + listName + '-form')
+      // TODO: tujaForms needs to be made more generic
+      tujaFormGenerator.init($, $('.tuja-' + listName + '-existing'))
 
       $('button.tuja-add-' + listName).click(onAddClick)
       $('button.tuja-delete-' + listName).click(onDeleteClick)

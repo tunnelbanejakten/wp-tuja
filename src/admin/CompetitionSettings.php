@@ -56,9 +56,8 @@ class CompetitionSettings {
 
 	public function get_scripts(): array {
 		return [
-			'admin-forms.js',
+			'admin-formgenerator.js',
 			'jsoneditor.min.js',
-			'admin-forms.js',
 			'admin-competition-settings.js',
 			'mermaid.min.js',
 			'admin-templateeditor.js'
@@ -279,7 +278,7 @@ class CompetitionSettings {
 				<div class="row">
 					<input type="text" placeholder="Grupptypens namn" name="%s" value="%s">
 				</div>
-				<div class="tuja-admin-groupcategory-form" 
+				<div class="tuja-admin-formgenerator-form" 
 					data-schema="%s" 
 					data-values="%s" 
 					data-field-id="%s"
@@ -296,7 +295,7 @@ class CompetitionSettings {
 			htmlentities( $jsoneditor_config ),
 			htmlentities( $jsoneditor_values ),
 			htmlentities( $this->list_item_field_name( 'groupcategory', $category->id, 'rules' ) ),
-			'tuja-admin-' . 'groupcategory' . '-form-' . $category->id );
+			'tuja-admin-formgenerator-form-' . $category->id );
 	}
 
 	public function competition_settings_save_message_templates( Competition $competition ) {

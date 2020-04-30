@@ -335,48 +335,6 @@ div.tuja-admin-report-config label {
     font-weight: normal !important;
 }
 
-div.tuja-admin-groupcategory-form,
-div.tuja-admin-questiongroup-form {
-    width: 100%;
-}
-
-div.tuja-admin-groupcategory-form > div > h3,
-div.tuja-admin-questiongroup-form > div > h3 {
-    display: none;
-}
-
-div.tuja-admin-groupcategory-form > div > div,
-div.tuja-admin-questiongroup-form > div > div {
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-div.tuja-admin-groupcategory-form label,
-div.tuja-admin-questiongroup-form label {
-    font-weight: normal !important;
-}
-
-div.tuja-admin-groupcategory-form div.row h3,
-div.tuja-admin-questiongroup-form div.row h3 {
-    font-weight: normal !important;
-    font-size: inherit;
-    color: inherit;
-    margin: 0;
-}
-
-div.tuja-admin-groupcategory-form table.je-table thead,
-div.tuja-admin-questiongroup-form table.je-table thead {
-    display: none;
-}
-
-div.tuja-admin-groupcategory-form div.je-indented-panel,
-div.tuja-admin-questiongroup-form div.je-indented-panel {
-    padding-left: 0 !important;
-    margin-left: 0 !important;
-    border-left: none !important;
-}
-
 input.tuja-ticket-couponweight {
     width: 4em;
 }

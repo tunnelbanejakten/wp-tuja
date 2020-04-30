@@ -45,7 +45,7 @@ AdminUtils::printTopMenu( $competition );
 
 			$options_schema = $question->json_schema();
 
-			printf( '<div class="tuja-admin-questiongroup-form" data-schema="%s" data-values="%s" data-field-id="%s" id="%s"></div>',
+			printf( '<div class="tuja-admin-formgenerator-form" data-schema="%s" data-values="%s" data-field-id="%s" id="%s"></div>',
                 htmlentities( $options_schema ),
 				htmlentities( $json ),
 				htmlentities( $field_name ),

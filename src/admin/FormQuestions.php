@@ -148,6 +148,7 @@ class FormQuestions {
 
 	public function get_scripts(): array {
 		return [
+			'admin-formgenerator.js',
 			'admin-forms.js',
 			'jsoneditor.min.js'
 		];

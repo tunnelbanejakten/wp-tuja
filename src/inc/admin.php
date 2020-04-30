@@ -65,6 +65,7 @@ class Admin extends Plugin {
 		} else {
 			wp_enqueue_style( 'tuja-admin-theme', static::get_url() . '/assets/css/admin.css' );
 			wp_enqueue_style( 'tuja-admin-templateeditor', static::get_url() . '/assets/css/admin-templateeditor.css' );
+			wp_enqueue_style( 'tuja-admin-jsoneditor', static::get_url() . '/assets/css/admin-jsoneditor.css' );
 		}
 
 		// Load scripts based on screen->id

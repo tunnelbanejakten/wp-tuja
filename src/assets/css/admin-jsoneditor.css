@@ -1,0 +1,34 @@
+div.tuja-admin-formgenerator-form {
+    width: 100%;
+}
+
+div.tuja-admin-formgenerator-form > div > h3 {
+    display: none;
+}
+
+div.tuja-admin-formgenerator-form > div > div {
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+div.tuja-admin-formgenerator-form label {
+    font-weight: normal !important;
+}
+
+div.tuja-admin-formgenerator-form div.row h3 {
+    font-weight: normal !important;
+    font-size: inherit;
+    color: inherit;
+    margin: 0;
+}
+
+div.tuja-admin-formgenerator-form table.je-table thead {
+    display: none;
+}
+
+div.tuja-admin-formgenerator-form div.je-indented-panel {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+    border-left: none !important;
+}
