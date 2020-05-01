@@ -20,9 +20,24 @@ use tuja\view\FieldText;
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix. Throwing exceptions might be preferable.
 class GroupPeopleEditor extends AbstractGroupView {
 	private $read_only;
+	private $person_form;
 
 	public function __construct( $url, $group_key ) {
 		parent::__construct( $url, $group_key, 'Personer i %s' );
+
+	}
+
+	private function get_person_form(): PersonForm {
+		if ( ! isset( $this->person_form ) ) {
+			$this->person_form = new PersonForm(
+				false,
+				false,
+				$this->is_save_request(),
+				$this->get_group()->get_category()->get_rules()
+			);
+		}
+
+		return $this->person_form;
 	}
 
 	function output() {
@@ -37,7 +52,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		$category = $group->get_category();
 		$errors   = [];
 
-		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
+		if ( $this->is_save_request() ) {
 			try {
 				$errors = $this->update_group( $group );
 				if ( empty( $errors ) ) {
@@ -51,14 +66,13 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
 
-		$notes_enabled      = $category->get_rules()->is_person_note_enabled();
-		$form_extra_contact = $this->get_form_extra_contact_html( $errors, $notes_enabled );
+		$form_extra_contact = $this->get_form_extra_contact_html( $errors );
 		if ( $category->get_rules()->is_adult_supervisor_required() ) {
-			$form_adult_supervisor = $this->get_form_adult_supervisor_html( $errors, $notes_enabled );
+			$form_adult_supervisor = $this->get_form_adult_supervisor_html( $errors );
 		}
-		list ( $group_size_min, $group_size_max ) = $category->get_rules()->get_people_count_range(GroupCategoryRules::PERSON_TYPE_LEADER, GroupCategoryRules::PERSON_TYPE_REGULAR);
-		$form_group_contact = $this->get_form_group_contact_html( $errors, $notes_enabled );
-		$form_group_members = $this->get_form_group_members_html( $errors, $notes_enabled );
+		list ( $group_size_min, $group_size_max ) = $category->get_rules()->get_people_count_range( Person::PERSON_TYPE_LEADER, Person::PERSON_TYPE_REGULAR );
+		$form_group_contact = $this->get_form_group_contact_html( $errors );
+		$form_group_members = $this->get_form_group_members_html( $errors );
 		$form_save_button   = $this->get_form_save_button_html();
 		$home_link          = GroupHomeInitiator::link( $group );
 		include( 'views/group-people-editor.php' );
@@ -72,7 +86,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		return $this->read_only;
 	}
 
-	private function get_form_adult_supervisor_html( array $errors, bool $notes_enabled ) {
+	private function get_form_adult_supervisor_html( array $errors ) {
 		$people = array_filter( $this->get_people(), function ( Person $person ) {
 			return $person->is_adult_supervisor();
 		} );
@@ -80,17 +94,11 @@ class GroupPeopleEditor extends AbstractGroupView {
 		return $this->get_form_people_html( $people,
 			$errors,
 			false,
-			true,
-			true,
-			false,
-			false,
-			true,
-			$notes_enabled,
 			self::ROLE_ADULT_SUPERVISOR,
 			'Lägg till vuxen' );
 	}
 
-	private function get_form_group_contact_html( array $errors, bool $notes_enabled ) {
+	private function get_form_group_contact_html( array $errors ) {
 		$people = array_filter( $this->get_people(), function ( Person $person ) {
 			return $person->is_group_leader();
 		} );
@@ -98,16 +106,10 @@ class GroupPeopleEditor extends AbstractGroupView {
 		return $this->get_form_people_html( $people,
 			$errors,
 			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			$notes_enabled,
 			self::ROLE_GROUP_LEADER );
 	}
 
-	private function get_form_group_members_html( array $errors, bool $notes_enabled ) {
+	private function get_form_group_members_html( array $errors ) {
 		$people = array_filter( $this->get_people(), function ( Person $person ) {
 			return $person->is_regular_group_member();
 		} );
@@ -116,17 +118,11 @@ class GroupPeopleEditor extends AbstractGroupView {
 			$people,
 			$errors,
 			false,
-			false,
-			false,
-			true,
-			true,
-			true,
-			$notes_enabled,
 			self::ROLE_REGULAR_GROUP_MEMBER,
 			'Lägg till deltagare' );
 	}
 
-	private function get_form_extra_contact_html( array $errors, bool $notes_enabled ) {
+	private function get_form_extra_contact_html( array $errors ) {
 		$people = array_filter( $this->get_people(), function ( Person $person ) {
 			return $person->is_contact() && ! $person->is_attending();
 		} );
@@ -134,12 +130,6 @@ class GroupPeopleEditor extends AbstractGroupView {
 		return $this->get_form_people_html( $people,
 			$errors,
 			false,
-			true,
-			false,
-			false,
-			false,
-			false,
-			$notes_enabled,
 			self::ROLE_EXTRA_CONTACT,
 			'Lägg till extra kontaktperson' );
 	}
@@ -148,12 +138,6 @@ class GroupPeopleEditor extends AbstractGroupView {
 		array $people,
 		array $errors,
 		bool $is_fixed_list,
-		bool $show_email,
-		bool $show_phone,
-		bool $show_pno,
-		bool $show_name,
-		bool $show_food,
-		bool $show_note,
 		string $role,
 		string $add_button_label = 'Ny person'
 	) {
@@ -161,14 +145,16 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		if ( is_array( $people ) ) {
 			$html_sections[] = sprintf( '<div class="tuja-people-existing">%s</div>',
-				join( array_map( function ( $person ) use ( $errors, $is_fixed_list, $show_email, $show_phone, $show_pno, $show_name, $show_food, $show_note, $role ) {
-					return $this->render_person_form( $person, $show_name, $show_email, $show_phone, $show_pno, $show_food, $show_note, ! $is_fixed_list, $role, $errors );
+				join( array_map( function ( Person $person ) use ( $errors, $is_fixed_list ) {
+					return $this->render_person_form( $person, ! $is_fixed_list );
 				}, $people ) ) );
 		}
 
 		if ( ! $is_fixed_list ) {
 			$html_sections[] = sprintf( '<div class="tuja-item-buttons"><button type="button" value="%s" class="tuja-add-person">%s</button></div>', 'new_person', $add_button_label );
-			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( new Person(), $show_name, $show_email, $show_phone, $show_pno, $show_food, $show_note, ! $is_fixed_list, $role, $errors ) );
+			$person_template = new Person();
+			$person_template->set_type( $role );
+			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( $person_template, ! $is_fixed_list ) );
 		}
 
 		return sprintf( '<div class="tuja-people tuja-person-role-%s">%s</div>', $role, join( $html_sections ) );
@@ -219,58 +205,22 @@ class GroupPeopleEditor extends AbstractGroupView {
 	// Move to AbstractGroupView?
 	private function render_person_form(
 		Person $person,
-		bool $show_name = true,
-		bool $show_email = true,
-		bool $show_phone = true,
-		bool $show_pno = true,
-		bool $show_food = true,
-		bool $show_note = true,
-		bool $show_delete = true,
-		string $role = self::ROLE_REGULAR_GROUP_MEMBER,
-		$errors = array()
+		bool $show_delete = true
 	): string {
 
 		$read_only = $this->is_read_only();
 
-		$html_sections = [];
+		$html_sections = [
+			$this->get_person_form()->render( $person )
+		];
 
 		// TODO: Handle $errors['__']?
 
 		$random_id = $person->random_id ?: '';
 
-		if ( $show_name ) {
-			$person_name_question = new FieldText( 'Namn', null, $read_only, [], true );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME . '__' . $random_id, @$errors[ $random_id . '__name' ], $person->name );
-		}
-
-		if ( $show_pno ) {
-			$person_name_question = new FieldPno( 'Födelsedag och sånt (ååmmddnnnn)', Strings::get( 'person.form.pno.hint' ), $read_only, true );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO . '__' . $random_id, @$errors[ $random_id . '__pno' ], $person->pno );
-		}
-
-		if ( $show_email ) {
-			$person_name_question = new FieldEmail( 'E-postadress', Strings::get( 'person.form.email.hint' ), $read_only, true );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL . '__' . $random_id, @$errors[ $random_id . '__email' ], $person->email );
-		}
-
-		if ( $show_phone ) {
-			$person_name_question = new FieldPhone( 'Telefonnummer', Strings::get( 'person.form.phone.hint' ), $read_only, true );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE . '__' . $random_id, @$errors[ $random_id . '__phone' ], $person->phone );
-		}
-
-		if ( $show_food ) {
-			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', Strings::get( 'person.form.food.hint' ), $read_only, [], true );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD . '__' . $random_id, @$errors[ $random_id . '__food' ], $person->food );
-		}
-
-		if ( $show_note ) {
-			$person_name_question = new FieldText( 'Meddelande till tävlingsledningen', Strings::get( 'person.form.note.hint' ), $read_only, [], true );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NOTE, @$errors['note'], $person->note );
-		}
-
 		$html_sections[] = sprintf( '<div style="display: none;"><input type="hidden" name="%s" value="%s"></div>',
 			self::FIELD_PERSON_ROLE . '__' . $random_id,
-			$role );
+			$person->get_type() );
 
 		if ( $show_delete && ! $read_only ) {
 			$html_sections[] = sprintf( '<div class="tuja-item-buttons tuja-item-buttons-right"><button type="button" class="tuja-delete-person">%s</button></div>',
@@ -353,11 +303,11 @@ class GroupPeopleEditor extends AbstractGroupView {
 			if ( isset( $people_map[ $id ] ) ) {
 				try {
 					$posted_values = [
-						'name'  => $_POST[ self::FIELD_PERSON_NAME . '__' . $id ] ?: $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ],
-						'email' => $_POST[ self::FIELD_PERSON_EMAIL . '__' . $id ],
-						'phone' => $_POST[ self::FIELD_PERSON_PHONE . '__' . $id ],
-						'pno'   => $_POST[ self::FIELD_PERSON_PNO . '__' . $id ],
-						'food'  => $_POST[ self::FIELD_PERSON_FOOD . '__' . $id ]
+						'name'  => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $people_map[ $id ] ) ] ?: $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $people_map[ $id ] ) ],
+						'email' => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $people_map[ $id ] ) ],
+						'phone' => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $people_map[ $id ] ) ],
+						'pno'   => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $people_map[ $id ] ) ],
+						'food'  => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $people_map[ $id ] ) ]
 					];
 
 					$is_person_property_updated = false;
@@ -419,5 +369,9 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 	private function get_current_group_members(): array {
 		return $this->person_dao->get_all_in_group( $this->get_group()->id );
+	}
+
+	private function is_save_request(): bool {
+		return @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE;
 	}
 }

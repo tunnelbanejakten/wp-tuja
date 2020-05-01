@@ -8,23 +8,13 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use tuja\data\model\Competition;
+use tuja\data\model\Person;
 use tuja\util\DateRange;
 
 class GroupCategoryRules {
 
 	private static $config;
 
-	const PERSON_TYPE_LEADER = 'leader';
-	const PERSON_TYPE_REGULAR = 'regular';
-	const PERSON_TYPE_SUPERVISOR = 'supervisor';
-	const PERSON_TYPE_ADMIN = 'admin';
-
-	const PERSON_TYPES = [
-		self::PERSON_TYPE_LEADER,
-		self::PERSON_TYPE_REGULAR,
-		self::PERSON_TYPE_SUPERVISOR,
-		self::PERSON_TYPE_ADMIN
-	];
 	const BOOL_REQUIRED = 'required';
 	const BOOL_OPTIONAL = 'optional';
 	const BOOL_SKIP = 'skip';
@@ -32,34 +22,39 @@ class GroupCategoryRules {
 	const LABELS = [
 		'is_group_note_enabled' => 'Meddelande till tävlingsledning',
 		'is_crew'               => 'Funktionärer',
-		'leader_count_min'      => 'Lagledare, min antal',
-		'leader_count_max'      => 'Lagledare, max antal',
-		'leader_phone'          => 'Lagledare, telefon',
-		'leader_email'          => 'Lagledare, e-post',
-		'leader_name'           => 'Lagledare, namn',
-		'leader_note'           => 'Lagledare, meddelande',
-		'leader_nin'            => 'Lagledare, personnr',
-		'regular_count_min'     => 'Lagmedlem, min antal',
-		'regular_count_max'     => 'Lagmedlem, max antal',
-		'regular_phone'         => 'Lagmedlem, telefon',
-		'regular_email'         => 'Lagmedlem, e-post',
-		'regular_name'          => 'Lagmedlem, namn',
-		'regular_note'          => 'Lagmedlem, meddelande',
-		'regular_nin'           => 'Lagmedlem, personnr',
-		'supervisor_count_min'  => 'Medföljande vuxen, min antal',
-		'supervisor_count_max'  => 'Medföljande vuxen, max antal',
-		'supervisor_phone'      => 'Medföljande vuxen, telefon',
-		'supervisor_email'      => 'Medföljande vuxen, e-post',
-		'supervisor_name'       => 'Medföljande vuxen, namn',
-		'supervisor_note'       => 'Medföljande vuxen, meddelande',
-		'supervisor_nin'        => 'Medföljande vuxen, personnr',
-		'admin_count_min'       => 'Administratör, min antal',
-		'admin_count_max'       => 'Administratör, max antal',
-		'admin_phone'           => 'Administratör, telefon',
-		'admin_email'           => 'Administratör, e-post',
-		'admin_name'            => 'Administratör, namn',
-		'admin_note'            => 'Administratör, meddelande',
-		'admin_nin'             => 'Administratör, personnr',
+
+		Person::PERSON_TYPE_LEADER . '_' . self::PERSON_PROP_COUNT_MIN     => 'Lagledare, min antal',
+		Person::PERSON_TYPE_LEADER . '_' . self::PERSON_PROP_COUNT_MAX     => 'Lagledare, max antal',
+		Person::PERSON_TYPE_LEADER . '_' . self::PERSON_PROP_PHONE         => 'Lagledare, telefon',
+		Person::PERSON_TYPE_LEADER . '_' . self::PERSON_PROP_EMAIL         => 'Lagledare, e-post',
+		Person::PERSON_TYPE_LEADER . '_' . self::PERSON_PROP_NAME          => 'Lagledare, namn',
+		Person::PERSON_TYPE_LEADER . '_' . self::PERSON_PROP_NOTE          => 'Lagledare, meddelande',
+		Person::PERSON_TYPE_LEADER . '_' . self::PERSON_PROP_FOOD          => 'Lagledare, matönskemål',
+		Person::PERSON_TYPE_LEADER . '_' . self::PERSON_PROP_NIN           => 'Lagledare, personnr',
+		Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_COUNT_MIN    => 'Lagmedlem, min antal',
+		Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_COUNT_MAX    => 'Lagmedlem, max antal',
+		Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_PHONE        => 'Lagmedlem, telefon',
+		Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_EMAIL        => 'Lagmedlem, e-post',
+		Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_NAME         => 'Lagmedlem, namn',
+		Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_NOTE         => 'Lagmedlem, meddelande',
+		Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_FOOD         => 'Lagmedlem, matönskemål',
+		Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_NIN          => 'Lagmedlem, personnr',
+		Person::PERSON_TYPE_SUPERVISOR . '_' . self::PERSON_PROP_COUNT_MIN => 'Medföljande vuxen, min antal',
+		Person::PERSON_TYPE_SUPERVISOR . '_' . self::PERSON_PROP_COUNT_MAX => 'Medföljande vuxen, max antal',
+		Person::PERSON_TYPE_SUPERVISOR . '_' . self::PERSON_PROP_PHONE     => 'Medföljande vuxen, telefon',
+		Person::PERSON_TYPE_SUPERVISOR . '_' . self::PERSON_PROP_EMAIL     => 'Medföljande vuxen, e-post',
+		Person::PERSON_TYPE_SUPERVISOR . '_' . self::PERSON_PROP_NAME      => 'Medföljande vuxen, namn',
+		Person::PERSON_TYPE_SUPERVISOR . '_' . self::PERSON_PROP_NOTE      => 'Medföljande vuxen, meddelande',
+		Person::PERSON_TYPE_SUPERVISOR . '_' . self::PERSON_PROP_FOOD      => 'Medföljande vuxen, matönskemål',
+		Person::PERSON_TYPE_SUPERVISOR . '_' . self::PERSON_PROP_NIN       => 'Medföljande vuxen, personnr',
+		Person::PERSON_TYPE_ADMIN . '_' . self::PERSON_PROP_COUNT_MIN      => 'Administratör, min antal',
+		Person::PERSON_TYPE_ADMIN . '_' . self::PERSON_PROP_COUNT_MAX      => 'Administratör, max antal',
+		Person::PERSON_TYPE_ADMIN . '_' . self::PERSON_PROP_PHONE          => 'Administratör, telefon',
+		Person::PERSON_TYPE_ADMIN . '_' . self::PERSON_PROP_EMAIL          => 'Administratör, e-post',
+		Person::PERSON_TYPE_ADMIN . '_' . self::PERSON_PROP_NAME           => 'Administratör, namn',
+		Person::PERSON_TYPE_ADMIN . '_' . self::PERSON_PROP_NOTE           => 'Administratör, meddelande',
+		Person::PERSON_TYPE_ADMIN . '_' . self::PERSON_PROP_FOOD           => 'Administratör, matönskemål',
+		Person::PERSON_TYPE_ADMIN . '_' . self::PERSON_PROP_NIN            => 'Administratör, personnr',
 
 		'create_registration_period_start' => 'Anmäla lag, fr.o.m.',
 		'create_registration_period_end'   => 'Anmäla lag, t.o.m.',
@@ -89,6 +84,15 @@ class GroupCategoryRules {
 		self::BOOL_SKIP     => self::LABELS[ self::BOOL_SKIP ]
 	];
 
+	const PERSON_PROP_COUNT_MIN = 'count_min';
+	const PERSON_PROP_COUNT_MAX = 'count_max';
+	const PERSON_PROP_PHONE = 'phone';
+	const PERSON_PROP_EMAIL = 'email';
+	const PERSON_PROP_NAME = 'name';
+	const PERSON_PROP_NOTE = 'note';
+	const PERSON_PROP_FOOD = 'food';
+	const PERSON_PROP_NIN = 'nin';
+
 	private $values;
 
 	public function __construct( $values ) {
@@ -116,13 +120,14 @@ class GroupCategoryRules {
 
 			$person_types_configs = array_map( function ( string $slug ) use ( $int_config, $enum_config ) {
 				return array_merge(
-					$int_config( "${slug}_count_min", $slug . ', min antal' ),
-					$int_config( "${slug}_count_max", $slug . ', max antal' ),
-					$enum_config( "${slug}_phone", $slug . ', telefon', self::TRISTATE_OPTIONS ),
-					$enum_config( "${slug}_email", $slug . ', e-post', self::TRISTATE_OPTIONS ),
-					$enum_config( "${slug}_name", $slug . ', namn', self::TRISTATE_OPTIONS ),
-					$enum_config( "${slug}_note", $slug . ', meddelande', self::TRISTATE_OPTIONS ),
-					$enum_config( "${slug}_nin", $slug . ', personnr', [
+					$int_config( $slug . '_' . self::PERSON_PROP_COUNT_MIN, $slug . ', min antal' ),
+					$int_config( $slug . '_' . self::PERSON_PROP_COUNT_MAX, $slug . ', max antal' ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_PHONE, $slug . ', telefon', self::TRISTATE_OPTIONS ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_EMAIL, $slug . ', e-post', self::TRISTATE_OPTIONS ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_NAME, $slug . ', namn', self::TRISTATE_OPTIONS ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_NOTE, $slug . ', meddelande', self::TRISTATE_OPTIONS ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_FOOD, $slug . ', mat', self::TRISTATE_OPTIONS ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_NIN, $slug . ', personnr', [
 						'nin_required'         => self::LABELS['nin_required'],
 						'nin_optional'         => self::LABELS['nin_optional'],
 						'nin_or_date_required' => self::LABELS['nin_or_date_required'],
@@ -131,9 +136,9 @@ class GroupCategoryRules {
 						'date_optional'        => self::LABELS['date_optional'],
 						'year_required'        => self::LABELS['year_required'],
 						'year_optional'        => self::LABELS['year_optional'],
-						'skip'                 => self::LABELS['skip']
+						self::BOOL_SKIP        => self::LABELS['skip']
 					] ) );
-			}, self::PERSON_TYPES );
+			}, Person::PERSON_TYPES );
 			self::$config         = array_merge(
 				$bool_config( 'is_group_note_enabled', 'Meddelande till tävlingsledning' ),
 				$bool_config( 'is_crew', 'Funktionärer' ),
@@ -219,10 +224,10 @@ class GroupCategoryRules {
 
 		return [
 			array_sum( array_map( function ( string $person_type ) {
-				return $this->values[ $person_type . '_count_min' ] ?: 0;
+				return $this->values[ $person_type . '_' . self::PERSON_PROP_COUNT_MIN ] ?: 0;
 			}, $person_types ) ),
 			array_sum( array_map( function ( string $person_type ) {
-				return $this->values[ $person_type . '_count_max' ] ?: 0;
+				return $this->values[ $person_type . '_' . self::PERSON_PROP_COUNT_MAX ] ?: 0;
 			}, $person_types ) ),
 		];
 	}
@@ -259,28 +264,38 @@ class GroupCategoryRules {
 	}
 
 	public function is_group_leader_required(): bool {
-		return $this->get_people_count_range( self::PERSON_TYPE_LEADER )[0] > 0;
+		return $this->get_people_count_range( Person::PERSON_TYPE_LEADER )[0] > 0;
 	}
 
 	public function is_contact_information_required_for_regular_group_member(): bool {
-		return $this->values[ self::PERSON_TYPE_REGULAR . '_email' ] === self::BOOL_REQUIRED
-		       || $this->values[ self::PERSON_TYPE_REGULAR . '_phone' ] === self::BOOL_REQUIRED;
+		return $this->values[ Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_EMAIL ] === self::BOOL_REQUIRED
+		       || $this->values[ Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_PHONE ] === self::BOOL_REQUIRED;
 	}
 
 	public function is_adult_supervisor_required(): bool {
-		return $this->get_people_count_range( self::PERSON_TYPE_SUPERVISOR )[0] > 0;
+		return $this->get_people_count_range( Person::PERSON_TYPE_SUPERVISOR )[0] > 0;
 	}
 
 	public function is_ssn_required(): bool {
-		return $this->values[ self::PERSON_TYPE_LEADER . '_nin' ] === 'nin_or_date_required'
-		       || $this->values[ self::PERSON_TYPE_REGULAR . '_nin' ] === 'nin_or_date_required';
+		return $this->values[ Person::PERSON_TYPE_LEADER . '_' . self::PERSON_PROP_NIN ] === 'nin_or_date_required'
+		       || $this->values[ Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_NIN ] === 'nin_or_date_required';
 	}
 
 	public function is_person_note_enabled(): bool {
-		return $this->values[ self::PERSON_TYPE_LEADER . '_note' ] !== self::BOOL_SKIP
-		       || $this->values[ self::PERSON_TYPE_REGULAR . '_note' ] !== self::BOOL_SKIP
-		       || $this->values[ self::PERSON_TYPE_SUPERVISOR . '_note' ] !== self::BOOL_SKIP;
+		return $this->values[ Person::PERSON_TYPE_LEADER . '_' . self::PERSON_PROP_NOTE ] !== self::BOOL_SKIP
+		       || $this->values[ Person::PERSON_TYPE_REGULAR . '_' . self::PERSON_PROP_NOTE ] !== self::BOOL_SKIP
+		       || $this->values[ Person::PERSON_TYPE_SUPERVISOR . '_' . self::PERSON_PROP_NOTE ] !== self::BOOL_SKIP;
 	}
+
+	public function is_person_field_enabled( $person_type, $field ): bool {
+		if ( ! in_array( $person_type, Person::PERSON_TYPES ) ) {
+			throw new Exception( "Unsupported type of person: " . $person_type );
+		}
+		$rule_slug = $person_type . '_' . $field;
+
+		return isset( $this->values[ $rule_slug ] ) ? @$this->values[ $rule_slug ] !== self::BOOL_SKIP : true;
+	}
+
 
 	public function is_group_note_enabled(): bool {
 		return $this->values['is_group_note_enabled'] === true;
@@ -292,37 +307,41 @@ class GroupCategoryRules {
 
 	public static function from_rule_set( RuleSet $rule_set, Competition $competition ): GroupCategoryRules {
 		return new GroupCategoryRules( [
-			self::PERSON_TYPE_LEADER . "_count_min" => $rule_set->is_group_leader_required() ? 1 : 0,
-			self::PERSON_TYPE_LEADER . "_count_max" => $rule_set->is_group_leader_required() ? 1 : 0,
-			self::PERSON_TYPE_LEADER . "_phone"     => self::BOOL_REQUIRED,
-			self::PERSON_TYPE_LEADER . "_email"     => self::BOOL_REQUIRED,
-			self::PERSON_TYPE_LEADER . "_name"      => self::BOOL_REQUIRED,
-			self::PERSON_TYPE_LEADER . "_note"      => $rule_set->is_person_note_enabled() ? self::BOOL_OPTIONAL : self::BOOL_SKIP,
-			self::PERSON_TYPE_LEADER . "_nin"       => $rule_set->is_ssn_required() ? 'nin_or_date_required' : 'skip',
+			Person::PERSON_TYPE_LEADER . "_" . self::PERSON_PROP_COUNT_MIN => $rule_set->is_group_leader_required() ? 1 : 0,
+			Person::PERSON_TYPE_LEADER . "_" . self::PERSON_PROP_COUNT_MAX => $rule_set->is_group_leader_required() ? 1 : 0,
+			Person::PERSON_TYPE_LEADER . "_" . self::PERSON_PROP_PHONE     => self::BOOL_REQUIRED,
+			Person::PERSON_TYPE_LEADER . "_" . self::PERSON_PROP_EMAIL     => self::BOOL_REQUIRED,
+			Person::PERSON_TYPE_LEADER . "_" . self::PERSON_PROP_NAME      => self::BOOL_REQUIRED,
+			Person::PERSON_TYPE_LEADER . "_" . self::PERSON_PROP_NOTE      => $rule_set->is_person_note_enabled() ? self::BOOL_OPTIONAL : self::BOOL_SKIP,
+			Person::PERSON_TYPE_LEADER . "_" . self::PERSON_PROP_FOOD      => self::BOOL_OPTIONAL,
+			Person::PERSON_TYPE_LEADER . "_" . self::PERSON_PROP_NIN       => $rule_set->is_ssn_required() ? 'nin_or_date_required' : 'skip',
 
-			self::PERSON_TYPE_REGULAR . "_count_min" => $rule_set->get_group_size_range()[0] - ( $rule_set->is_group_leader_required() ? 1 : 0 ),
-			self::PERSON_TYPE_REGULAR . "_count_max" => $rule_set->get_group_size_range()[1] - ( $rule_set->is_group_leader_required() ? 1 : 0 ),
-			self::PERSON_TYPE_REGULAR . "_phone"     => $rule_set->is_contact_information_required_for_regular_group_member() ? self::BOOL_REQUIRED : self::BOOL_SKIP,
-			self::PERSON_TYPE_REGULAR . "_email"     => $rule_set->is_contact_information_required_for_regular_group_member() ? self::BOOL_REQUIRED : self::BOOL_SKIP,
-			self::PERSON_TYPE_REGULAR . "_name"      => self::BOOL_REQUIRED,
-			self::PERSON_TYPE_REGULAR . "_note"      => $rule_set->is_person_note_enabled() ? self::BOOL_OPTIONAL : self::BOOL_SKIP,
-			self::PERSON_TYPE_REGULAR . "_nin"       => $rule_set->is_ssn_required() ? 'nin_or_date_required' : 'skip',
+			Person::PERSON_TYPE_REGULAR . "_" . self::PERSON_PROP_COUNT_MIN => $rule_set->get_group_size_range()[0] - ( $rule_set->is_group_leader_required() ? 1 : 0 ),
+			Person::PERSON_TYPE_REGULAR . "_" . self::PERSON_PROP_COUNT_MAX => $rule_set->get_group_size_range()[1] - ( $rule_set->is_group_leader_required() ? 1 : 0 ),
+			Person::PERSON_TYPE_REGULAR . "_" . self::PERSON_PROP_PHONE     => $rule_set->is_contact_information_required_for_regular_group_member() ? self::BOOL_REQUIRED : self::BOOL_SKIP,
+			Person::PERSON_TYPE_REGULAR . "_" . self::PERSON_PROP_EMAIL     => $rule_set->is_contact_information_required_for_regular_group_member() ? self::BOOL_REQUIRED : self::BOOL_SKIP,
+			Person::PERSON_TYPE_REGULAR . "_" . self::PERSON_PROP_NAME      => self::BOOL_REQUIRED,
+			Person::PERSON_TYPE_REGULAR . "_" . self::PERSON_PROP_NOTE      => $rule_set->is_person_note_enabled() ? self::BOOL_OPTIONAL : self::BOOL_SKIP,
+			Person::PERSON_TYPE_REGULAR . "_" . self::PERSON_PROP_FOOD      => self::BOOL_OPTIONAL,
+			Person::PERSON_TYPE_REGULAR . "_" . self::PERSON_PROP_NIN       => $rule_set->is_ssn_required() ? 'nin_or_date_required' : 'skip',
 
-			self::PERSON_TYPE_SUPERVISOR . "_count_min" => $rule_set->is_adult_supervisor_required() ? 1 : 0,
-			self::PERSON_TYPE_SUPERVISOR . "_count_max" => $rule_set->is_adult_supervisor_required() ? 3 : 0,
-			self::PERSON_TYPE_SUPERVISOR . "_phone"     => self::BOOL_REQUIRED,
-			self::PERSON_TYPE_SUPERVISOR . "_email"     => self::BOOL_REQUIRED,
-			self::PERSON_TYPE_SUPERVISOR . "_name"      => self::BOOL_OPTIONAL,
-			self::PERSON_TYPE_SUPERVISOR . "_note"      => $rule_set->is_person_note_enabled() ? self::BOOL_OPTIONAL : self::BOOL_SKIP,
-			self::PERSON_TYPE_SUPERVISOR . "_nin"       => 'skip',
+			Person::PERSON_TYPE_SUPERVISOR . "_" . self::PERSON_PROP_COUNT_MIN => $rule_set->is_adult_supervisor_required() ? 1 : 0,
+			Person::PERSON_TYPE_SUPERVISOR . "_" . self::PERSON_PROP_COUNT_MAX => $rule_set->is_adult_supervisor_required() ? 3 : 0,
+			Person::PERSON_TYPE_SUPERVISOR . "_" . self::PERSON_PROP_PHONE     => self::BOOL_REQUIRED,
+			Person::PERSON_TYPE_SUPERVISOR . "_" . self::PERSON_PROP_EMAIL     => self::BOOL_REQUIRED,
+			Person::PERSON_TYPE_SUPERVISOR . "_" . self::PERSON_PROP_NAME      => self::BOOL_SKIP,
+			Person::PERSON_TYPE_SUPERVISOR . "_" . self::PERSON_PROP_NOTE      => $rule_set->is_person_note_enabled() ? self::BOOL_OPTIONAL : self::BOOL_SKIP,
+			Person::PERSON_TYPE_SUPERVISOR . "_" . self::PERSON_PROP_FOOD      => self::BOOL_OPTIONAL,
+			Person::PERSON_TYPE_SUPERVISOR . "_" . self::PERSON_PROP_NIN       => 'skip',
 
-			self::PERSON_TYPE_ADMIN . "_count_min" => 0,
-			self::PERSON_TYPE_ADMIN . "_count_max" => 1,
-			self::PERSON_TYPE_ADMIN . "_phone"     => self::BOOL_OPTIONAL,
-			self::PERSON_TYPE_ADMIN . "_email"     => self::BOOL_REQUIRED,
-			self::PERSON_TYPE_ADMIN . "_name"      => self::BOOL_SKIP,
-			self::PERSON_TYPE_ADMIN . "_note"      => self::BOOL_SKIP,
-			self::PERSON_TYPE_ADMIN . "_nin"       => 'skip',
+			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_COUNT_MIN => 0,
+			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_COUNT_MAX => 1,
+			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_PHONE     => self::BOOL_SKIP,
+			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_EMAIL     => self::BOOL_REQUIRED,
+			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_NAME      => self::BOOL_SKIP,
+			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_NOTE      => self::BOOL_SKIP,
+			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_FOOD      => self::BOOL_SKIP,
+			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_NIN       => 'skip',
 
 			'is_group_note_enabled' => $rule_set->is_group_note_enabled(),
 			'is_crew'               => $rule_set->is_crew(),

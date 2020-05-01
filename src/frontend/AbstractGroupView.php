@@ -17,10 +17,10 @@ use tuja\util\Strings;
 use tuja\util\WarningException;
 
 abstract class AbstractGroupView extends FrontendView {
-	const ROLE_ADULT_SUPERVISOR = "adult_supervisor";
-	const ROLE_REGULAR_GROUP_MEMBER = "regular_group_member";
-	const ROLE_EXTRA_CONTACT = "extra_contact";
-	const ROLE_GROUP_LEADER = "group_leader";
+	const ROLE_ADULT_SUPERVISOR = Person::PERSON_TYPE_SUPERVISOR;
+	const ROLE_REGULAR_GROUP_MEMBER = Person::PERSON_TYPE_REGULAR;
+	const ROLE_EXTRA_CONTACT = Person::PERSON_TYPE_ADMIN;
+	const ROLE_GROUP_LEADER = Person::PERSON_TYPE_LEADER;
 
 	protected $person_dao;
 	protected $group_dao;
@@ -28,6 +28,7 @@ abstract class AbstractGroupView extends FrontendView {
 	protected $competition_dao;
 	private $message_sender;
 	private $group_key;
+	private $group;
 	private $title_pattern;
 
 	public function __construct( string $url, string $group_key, string $title_pattern ) {
@@ -42,16 +43,20 @@ abstract class AbstractGroupView extends FrontendView {
 	}
 
 	protected function get_group(): Group {
-		$group = $this->group_dao->get_by_key( $this->group_key );
-		if ( $group == false ) {
-			throw new Exception( 'Oj, vi hittade inte laget' );
+		if ( ! isset( $this->group ) ) {
+
+			$group = $this->group_dao->get_by_key( $this->group_key );
+			if ( $group === false ) {
+				throw new Exception( 'Oj, vi hittade inte laget' );
+			}
+			$this->group = $group;
 		}
 
-		if ( $group->get_status() == Group::STATUS_DELETED ) {
+		if ( $this->group->get_status() == Group::STATUS_DELETED ) {
 			throw new Exception( 'Laget är avanmält.' );
 		}
 
-		return $group;
+		return $this->group;
 	}
 
 	function get_content() {
@@ -78,16 +83,17 @@ abstract class AbstractGroupView extends FrontendView {
 	}
 
 	protected function init_posted_person( $id = null ): Person {
-		$suffix        = isset( $id ) ? '__' . $id : '';
 		$person        = new Person();
-		$person->name  = $_POST[ self::FIELD_PERSON_NAME . $suffix ] ?: $_POST[ self::FIELD_PERSON_EMAIL . $suffix ];
-		$person->email = $_POST[ self::FIELD_PERSON_EMAIL . $suffix ];
-		$person->phone = $_POST[ self::FIELD_PERSON_PHONE . $suffix ];
-		$person->pno   = $_POST[ self::FIELD_PERSON_PNO . $suffix ];
-		$person->food  = $_POST[ self::FIELD_PERSON_FOOD . $suffix ];
-		$person->note  = $_POST[ self::FIELD_PERSON_NOTE . $suffix ];
+		$person->id    = $id ?: null;
+		$person->name  = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $person ) ] ?: $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ];
+		$person->email = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ];
+		$person->phone = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $person ) ];
+		$person->pno   = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $person ) ];
+		$person->food  = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $person ) ];
+		$person->note  = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NOTE, $person ) ];
 		$person->set_status( Person::STATUS_CREATED );
 
+		$suffix = isset( $id ) ? '__' . $id : '';
 		switch ( $_POST[ self::FIELD_PERSON_ROLE . $suffix ] ) {
 			case self::ROLE_ADULT_SUPERVISOR:
 				$person->set_as_adult_supervisor();

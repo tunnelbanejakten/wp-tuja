@@ -6,11 +6,6 @@ namespace tuja\frontend;
 use Exception;
 use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
-use tuja\util\Strings;
-use tuja\view\FieldEmail;
-use tuja\view\FieldPhone;
-use tuja\view\FieldPno;
-use tuja\view\FieldText;
 
 class PersonEditor extends AbstractGroupView {
 	private $person_key;
@@ -34,11 +29,9 @@ class PersonEditor extends AbstractGroupView {
 		$is_read_only = ! $this->is_edit_allowed( $group );
 
 		$real_category               = $group->get_category();
-		$collect_contact_information = $real_category->get_rules()->is_contact_information_required_for_regular_group_member();
-		$collect_ssn                 = $real_category->get_rules()->is_ssn_required();
-		$notes_enabled               = $real_category->get_rules()->is_person_note_enabled();
 
-		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
+		$do_update = @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE;
+		if ( $do_update ) {
 			if ( ! $is_read_only ) {
 				$errors = $this->update_person( $person );
 				if ( empty( $errors ) ) {
@@ -54,16 +47,12 @@ class PersonEditor extends AbstractGroupView {
 
 		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
 
-		$form = $this->get_form_html(
-			$person,
-			true,
-			$collect_contact_information,
-			$collect_contact_information,
-			$collect_ssn,
-			true,
-			$notes_enabled,
-			$errors,
-			$is_read_only );
+		$form = ( new PersonForm(
+			false,
+			$is_read_only,
+			$do_update,
+			$real_category->get_rules()
+		) )->render( $person );
 
 		$submit_button = $this->get_submit_button_html( $is_read_only );
 
@@ -79,54 +68,6 @@ class PersonEditor extends AbstractGroupView {
 		return $person;
 	}
 
-	// TODO: Similar function in three classes. Move to AbstractGroupView?
-	private function get_form_html(
-		$person,
-		bool $show_name = true,
-		bool $show_email = true,
-		bool $show_phone = true,
-		bool $show_pno = true,
-		bool $show_food = true,
-		bool $show_note = true,
-		$errors = array(),
-		$read_only = false
-	): string {
-		$html_sections = [];
-
-		// TODO: Handle $read_only in all fields?
-
-		if ( $show_name ) {
-			$person_name_question = new FieldText( 'Namn', null, $read_only );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, @$errors['name'], $person->name );
-		}
-
-		if ( $show_pno ) {
-			$person_name_question = new FieldPno( 'Födelsedag och sånt', Strings::get( 'person.form.pno.hint' ), $read_only );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, @$errors['pno'], $person->pno );
-		}
-
-		if ( $show_email ) {
-			$person_name_question = new FieldEmail( 'E-postadress' );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, @$errors['email'], $person->email );
-		}
-
-		if ( $show_phone ) {
-			$person_name_question = new FieldPhone( 'Telefonnummer' );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE, @$errors['phone'], $person->phone );
-		}
-
-		if ( $show_food ) {
-			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', Strings::get( 'person.form.food.hint' ), $read_only );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, @$errors['food'], $person->food );
-		}
-
-		if ( $show_note ) {
-			$person_name_question = new FieldText( 'Meddelande till tävlingsledningen', Strings::get( 'person.form.note.hint' ), $read_only );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NOTE, @$errors['note'], $person->note );
-		}
-
-		return join( $html_sections );
-	}
 
 	private function get_submit_button_html( $read_only = false ) {
 		if ( ! $read_only ) {
@@ -142,15 +83,14 @@ class PersonEditor extends AbstractGroupView {
 		}
 	}
 
-	private function update_person( $person ) {
+	private function update_person( Person $person ) {
 		$posted_values = [
-			// TODO: DRY?
-			'name'  => $_POST[ self::FIELD_PERSON_NAME ],
-			'email' => $_POST[ self::FIELD_PERSON_EMAIL ],
-			'phone' => $_POST[ self::FIELD_PERSON_PHONE ],
-			'pno'   => $_POST[ self::FIELD_PERSON_PNO ],
-			'food'  => $_POST[ self::FIELD_PERSON_FOOD ],
-			'note'  => $_POST[ self::FIELD_PERSON_NOTE ]
+			'name'  => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $person ) ],
+			'email' => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ],
+			'phone' => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $person ) ],
+			'pno'   => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $person ) ],
+			'food'  => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $person ) ],
+			'note'  => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NOTE, $person ) ]
 		];
 
 		$is_updated = false;

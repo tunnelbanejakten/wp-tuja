@@ -60,6 +60,18 @@ class Person {
 	public $note;
 	private $status;
 
+	// Changing these will affect GroupCategoryRules as well
+	const PERSON_TYPE_LEADER = 'leader';
+	const PERSON_TYPE_REGULAR = 'regular';
+	const PERSON_TYPE_SUPERVISOR = 'supervisor';
+	const PERSON_TYPE_ADMIN = 'admin';
+	const PERSON_TYPES = [
+		self::PERSON_TYPE_LEADER,
+		self::PERSON_TYPE_REGULAR,
+		self::PERSON_TYPE_SUPERVISOR,
+		self::PERSON_TYPE_ADMIN
+	];
+
 	public function __construct() {
 		$this->status = new StateMachine( null, [
 			self::STATUS_CREATED => [
@@ -81,7 +93,7 @@ class Person {
 
 	public function validate( GroupCategoryRules $rules ) {
 		if ( $rules == null ) {
-			throw new Exception('Group category rules not specified');
+			throw new Exception( 'Group category rules not specified' );
 		}
 		if ( strlen( $this->email ) > 100 ) {
 			throw new ValidationException( 'email', 'E-postadress får bara vara 100 tecken lång.' );
@@ -156,28 +168,67 @@ class Person {
 		$this->is_group_contact = $is_group_contact;
 	}
 
+	public function set_type( string $type ) {
+		switch ( $type ) {
+			case self::PERSON_TYPE_LEADER:
+				$this->is_competing     = true;
+				$this->is_attending     = true;
+				$this->is_group_contact = true;
+				break;
+			case self::PERSON_TYPE_REGULAR:
+				$this->is_competing     = true;
+				$this->is_attending     = true;
+				$this->is_group_contact = false;
+				break;
+			case self::PERSON_TYPE_SUPERVISOR:
+				$this->is_competing     = false;
+				$this->is_attending     = true;
+				$this->is_group_contact = true;
+				break;
+			case self::PERSON_TYPE_ADMIN:
+				$this->is_competing     = false;
+				$this->is_attending     = false;
+				$this->is_group_contact = true;
+				break;
+			default:
+				throw new Exception( "Unsupported type of person: " . $type );
+		}
+	}
+
+	public function get_type(): string {
+		$helper = function ( bool $is_competing, bool $is_attending, bool $is_group_contact ) {
+			return $this->is_competing == $is_competing &&
+			       $this->is_attending == $is_attending &&
+			       $this->is_group_contact == $is_group_contact;
+		};
+
+		if ( $helper( true, true, true ) ) {
+			return self::PERSON_TYPE_LEADER;
+		} else if ( $helper( true, true, false ) ) {
+			return self::PERSON_TYPE_REGULAR;
+		} else if ( $helper( false, true, true ) ) {
+			return self::PERSON_TYPE_SUPERVISOR;
+		} else if ( $helper( false, false, true ) ) {
+			return self::PERSON_TYPE_ADMIN;
+		} else {
+			throw new Exception( "Person cannot be mapped to one of the predefined types." );
+		}
+	}
+
 	public function set_as_adult_supervisor() {
-		$this->is_competing     = false;
-		$this->is_attending     = true;
-		$this->is_group_contact = true;
+		$this->set_type( self::PERSON_TYPE_SUPERVISOR );
 	}
 
 	public function set_as_regular_group_member() {
-		$this->is_competing     = true;
-		$this->is_attending     = true;
-		$this->is_group_contact = false;
+		$this->set_type( self::PERSON_TYPE_REGULAR );
 	}
 
 	public function set_as_group_leader() {
-		$this->is_competing     = true;
-		$this->is_attending     = true;
-		$this->is_group_contact = true;
+		$this->set_type( self::PERSON_TYPE_LEADER );
 	}
 
 	public function set_as_extra_contact() {
-		$this->is_competing     = false;
-		$this->is_attending     = false;
-		$this->is_group_contact = true;
+		$this->set_type( self::PERSON_TYPE_ADMIN );
 	}
 
 	public function is_attending(): bool {

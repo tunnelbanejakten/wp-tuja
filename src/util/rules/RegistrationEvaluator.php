@@ -166,7 +166,7 @@ class RegistrationEvaluator {
 		$participants = array_filter( $people, function ( Person $person ) {
 			return $person->is_competing();
 		} );
-		list ( $min, $max ) = $this->group_rules->get_people_count_range(GroupCategoryRules::PERSON_TYPE_LEADER, GroupCategoryRules::PERSON_TYPE_REGULAR);
+		list ( $min, $max ) = $this->group_rules->get_people_count_range(Person::PERSON_TYPE_LEADER, Person::PERSON_TYPE_REGULAR);
 		if ( count( $participants ) < $min ) {
 			return [ new RuleResult( 'Antal deltagare', RuleResult::BLOCKER, 'Ett lag måste ha minst ' . $min . ' tävlande. Kontakta ' . get_bloginfo( 'admin_email' ) . ' om detta skapar problem för er.' ) ];
 		} elseif ( count( $participants ) > $max ) {

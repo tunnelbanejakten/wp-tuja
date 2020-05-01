@@ -211,11 +211,11 @@ describe('wp-tuja', () => {
       // TODO: More positive test cases
       await goto(`http://localhost:8080/${crewGroupProps.key}/anmal-mig`)
 
-      await type('input#tuja-person__name', 'Carol')
-      await type('input#tuja-person__email', 'carol@example.com')
-      await type('input#tuja-person__phone', '070-12345678')
-      await type('input#tuja-person__food', 'Picky about eggs')
-      await type('input#tuja-person__note', 'Need to leave early')
+      await type('input[name^="tuja-person__name"]', 'Carol')
+      await type('input[name^="tuja-person__email"]', 'carol@example.com')
+      await type('input[name^="tuja-person__phone"]', '070-12345678')
+      await type('input[name^="tuja-person__food"]', 'Picky about eggs')
+      await type('input[name^="tuja-person__note"]', 'Need to leave early')
 
       await clickLink('button[name="tuja-action"]')
 
@@ -224,11 +224,11 @@ describe('wp-tuja', () => {
       const editPersonUrl = await $eval('#tuja_signup_success_edit_link', node => node.href)
       await goto(editPersonUrl)
 
-      await expectFormValue('input#tuja-person__name', 'Carol')
-      await expectFormValue('input#tuja-person__email', 'carol@example.com')
-      await expectFormValue('input#tuja-person__phone', '+467012345678')
-      await expectFormValue('input#tuja-person__food', 'Picky about eggs')
-      await expectFormValue('input#tuja-person__note', 'Need to leave early')
+      await expectFormValue('input[name^="tuja-person__name"]', 'Carol')
+      await expectFormValue('input[name^="tuja-person__email"]', 'carol@example.com')
+      await expectFormValue('input[name^="tuja-person__phone"]', '+467012345678')
+      await expectFormValue('input[name^="tuja-person__food"]', 'Picky about eggs')
+      await expectFormValue('input[name^="tuja-person__note"]', 'Need to leave early')
     })
 
     it.each([

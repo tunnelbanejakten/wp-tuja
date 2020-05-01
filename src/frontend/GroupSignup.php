@@ -31,18 +31,13 @@ class GroupSignup extends AbstractGroupView {
 			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.' );
 		}
 
-		$real_category = $group->get_category();
-
-		$collect_contact_information = $real_category->get_rules()->is_contact_information_required_for_regular_group_member();
-		$collect_ssn                 = $real_category->get_rules()->is_ssn_required();
-		$notes_enabled               = $real_category->get_rules()->is_person_note_enabled();
+		$do_save                     = $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE;
 		try {
-
-			if ( $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
+			if ( $do_save ) {
 				$this->validate_recaptcha_html();
 
 				// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an error of error messages.
-				$new_person = $this->create_person( $group );
+				$new_person = $this->create_person();
 
 				$edit_link = PersonEditorInitiator::link( $group, $new_person );
 
@@ -70,72 +65,24 @@ class GroupSignup extends AbstractGroupView {
 			$errors_overall = $this->get_exception_message_html( $e );
 		}
 
-
-		$form = $this->get_form_html(
-			true,
-			$collect_contact_information,
-			$collect_contact_information,
-			$collect_ssn,
-			true,
-			$notes_enabled,
-			self::ROLE_REGULAR_GROUP_MEMBER,
-			$errors );
+		$form = $this->get_form_html( $do_save );
 
 		$submit_button = $this->get_submit_button_html();
 
 		include( 'views/group-signup.php' );
 	}
 
-	// TODO: DRY?
-	private function get_form_html(
-		bool $show_name = true,
-		bool $show_email = true,
-		bool $show_phone = true,
-		bool $show_pno = true,
-		bool $show_food = true,
-		bool $show_note = true,
-		string $role = self::ROLE_REGULAR_GROUP_MEMBER,
-		$errors = array()
-	): string {
-		$html_sections = [];
-
-		// TODO: Handle is_read_only?
-
-		if ( $show_name ) {
-			$person_name_question = new FieldText( 'Vad heter du?' );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, @$errors[ self::FIELD_PERSON_NAME ] );
-		}
-
-		if ( $show_pno ) {
-			$person_name_question = new FieldPno( 'Vad har du för födelsedag?', Strings::get( 'person.form.pno.hint' ) );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, @$errors[ self::FIELD_PERSON_PNO ] );
-		}
-
-		if ( $show_email ) {
-			$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', Strings::get( 'person.form.email.hint' ) );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, @$errors[ self::FIELD_PERSON_EMAIL ] );
-		}
-
-		if ( $show_phone ) {
-			$person_name_question = new FieldPhone( 'Vilket telefonnummer har du?', Strings::get( 'person.form.phone.hint' ) );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PHONE, @$errors[ self::FIELD_PERSON_PHONE ] );
-		}
-
-		if ( $show_food ) {
-			$person_name_question = new FieldText( 'Matallergier och fikaönskemål', Strings::get( 'person.form.food.hint' ) );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_FOOD, @$errors[ self::FIELD_PERSON_FOOD ] );
-		}
-
-		if ( $show_note ) {
-			$person_name_question = new FieldText( 'Meddelande till tävlingsledningen', Strings::get( 'person.form.note.hint' ) );
-			$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NOTE, @$errors[self::FIELD_PERSON_NOTE] );
-		}
+	private function get_form_html( bool $show_validation_errors ): string {
+		$html_sections = [
+			( new PersonForm(
+				false,
+				false, // TODO: Handle is_read_only?
+				$show_validation_errors,
+				$this->get_group()->get_category()->get_rules()
+			) )->render( $this->get_person() )
+		];
 
 		$html_sections[] = $this->get_recaptcha_html();
-
-		$html_sections[] = sprintf( '<div style="display: none;"><input type="hidden" name="%s" value="%s"></div>',
-			self::FIELD_PERSON_ROLE,
-			$role );
 
 		return join( $html_sections );
 	}
@@ -144,14 +91,12 @@ class GroupSignup extends AbstractGroupView {
 		return sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Jag anmäler mig' );
 	}
 
-	private function create_person( Group $group ): Person {
-		$person           = $this->init_posted_person();
-		$person->group_id = $group->id;
-		$person->set_as_regular_group_member();
+	private function create_person( ): Person {
+		$person = $this->get_person();
 
 		try {
 
-			$category = $group->get_category();
+			$category = $this->get_group()->get_category();
 			$person->validate( $category->get_rules() );
 
 			$new_person_id = $this->person_dao->create( $person );
@@ -165,6 +110,14 @@ class GroupSignup extends AbstractGroupView {
 		} catch ( ValidationException $e ) {
 			throw new ValidationException( self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage() );
 		}
+	}
+
+	private function get_person(): Person {
+		$person           = $this->init_posted_person();
+		$person->group_id = $this->get_group()->id;
+		$person->set_as_regular_group_member();
+
+		return $person;
 	}
 
 	private function send_person_welcome_mail( Person $person ) {
