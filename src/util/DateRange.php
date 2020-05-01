@@ -5,7 +5,6 @@ namespace tuja\util;
 
 
 use DateTime;
-use DateTimeImmutable;
 
 class DateRange {
 	private $from;

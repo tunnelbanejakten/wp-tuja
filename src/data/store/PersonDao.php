@@ -5,7 +5,6 @@ namespace tuja\data\store;
 use DateTime;
 use Exception;
 use tuja\data\model\Group;
-use tuja\data\model\PersonRole;
 use tuja\util\Anonymizer;
 use tuja\data\model\Person;
 use tuja\util\DateUtils;

@@ -103,7 +103,7 @@ AdminUtils::printTopMenu( $competition );
 
 				printf( '<div class="tuja-ruleset-column"><div class="row"></div>%s</div>', join( array_map( function ( string $label ) {
 					return sprintf( '<div class="row">%s</div>', $label );
-				}, GroupCategoryRules::get_properties() ) ) );
+				}, GroupCategoryRules::get_props_labels() ) ) );
 
 				print join( array_map( function ( GroupCategory $category ) use ( $competition ) {
 					return $this->print_group_category_form( $category, $competition );
@@ -128,10 +128,12 @@ AdminUtils::printTopMenu( $competition );
                     : '';
 	            $id  = 'tuja_add_group_category_button_' . $template_slug;
 	            printf( '
-                <div class="tuja-groupcategory-template" id="%s_template">%s</div>
-                <button class="button tuja-add-groupcategory" type="button" id="%s">
-                Ny %s
-            </button>
+                    <div class="tuja-groupcategory-template" id="%s_template">
+                        %s
+                    </div>
+                    <button class="button tuja-add-groupcategory" type="button" id="%s">
+                        Ny %s
+                    </button>
                 ', $id, $this->print_group_category_form( $group_category, $competition ), $id, $template_slug );
             }
             ?>

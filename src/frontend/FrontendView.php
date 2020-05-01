@@ -2,9 +2,7 @@
 
 namespace tuja\frontend;
 
-use DateTime;
 use Throwable;
-use tuja\data\model\Competition;
 use tuja\data\model\GroupCategory;
 use tuja\data\store\GroupCategoryDao;
 use tuja\Frontend;

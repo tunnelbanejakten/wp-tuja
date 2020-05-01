@@ -211,7 +211,7 @@ class GroupCategoryRules {
 		return $this->values;
 	}
 
-	public static function get_properties() {
+	public static function get_props_labels() {
 		return array_values( array_map( function ( $props ) {
 			return $props['title'];
 		}, self::get_jsoneditor_props_config() ) );

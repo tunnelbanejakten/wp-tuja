@@ -4,7 +4,6 @@ namespace tuja\data\store;
 
 use tuja\data\model\Competition;
 use tuja\util\Database;
-use tuja\util\DateRange;
 
 class CompetitionDao extends AbstractDao {
 	function __construct() {
