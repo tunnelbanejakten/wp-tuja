@@ -179,19 +179,19 @@ class CompetitionSignup extends FrontendView {
 				self::ROLE_LABEL_EXTRA_CONTACT
 			],
 			false );
-		$html_sections[] = $this->render_field( $reporter_role, self::FIELD_PERSON_ROLE, $errors[ self::FIELD_PERSON_ROLE ], $_POST[ self::FIELD_PERSON_ROLE ] ?: self::ROLE_LABEL_GROUP_LEADER );
+		$html_sections[] = $this->render_field( $reporter_role, self::FIELD_PERSON_ROLE, @$errors[ self::FIELD_PERSON_ROLE ], $_POST[ self::FIELD_PERSON_ROLE ] ?: self::ROLE_LABEL_GROUP_LEADER );
 
 		$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', Strings::get( 'competition_signup.form.email.hint' ), false );
-		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, $errors[ self::FIELD_PERSON_EMAIL ] );
+		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, @$errors[ self::FIELD_PERSON_EMAIL ] );
 
 		$person_name_question = new FieldText( 'Vad heter du?', null, false, [] );
-		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, $errors[ self::FIELD_PERSON_NAME ] );
+		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, @$errors[ self::FIELD_PERSON_NAME ] );
 
 		$person_phone_question = new FieldPhone( 'Vilket telefonnummer har du?', Strings::get( 'competition_signup.form.phone.hint' ), false );
-		$html_sections[]       = $this->render_field( $person_phone_question, self::FIELD_PERSON_PHONE, $errors[ self::FIELD_PERSON_PHONE ] );
+		$html_sections[]       = $this->render_field( $person_phone_question, self::FIELD_PERSON_PHONE, @$errors[ self::FIELD_PERSON_PHONE ] );
 
 		$person_name_question = new FieldPno( 'Vad har du för födelsedag?', Strings::get( 'person.form.pno.hint' ), false );
-		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, $errors[ self::FIELD_PERSON_PNO ] );
+		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, @$errors[ self::FIELD_PERSON_PNO ] );
 
 		$html_sections[] = $this->get_recaptcha_html();
 
@@ -256,12 +256,12 @@ class CompetitionSignup extends FrontendView {
 		$new_person->email = $_POST[ self::FIELD_PERSON_EMAIL ];
 		if ( $_POST[ self::FIELD_PERSON_ROLE ] == self::ROLE_LABEL_EXTRA_CONTACT ) {
 			$new_person->name = $_POST[ self::FIELD_PERSON_EMAIL ];
-			$new_person->set_as_extra_contact();
+			$new_person->set_type(Person::PERSON_TYPE_ADMIN);
 		} else {
 			$new_person->name  = $_POST[ self::FIELD_PERSON_NAME ];
 			$new_person->phone = $_POST[ self::FIELD_PERSON_PHONE ];
 			$new_person->pno   = $_POST[ self::FIELD_PERSON_PNO ];
-			$new_person->set_as_group_leader();
+			$new_person->set_type(Person::PERSON_TYPE_LEADER);
 		}
 
 		try {

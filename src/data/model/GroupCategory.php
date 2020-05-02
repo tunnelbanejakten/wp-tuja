@@ -3,12 +3,8 @@
 namespace tuja\data\model;
 
 
-use ReflectionClass;
-use ReflectionException;
-use tuja\data\store\CompetitionDao;
 use tuja\util\rules\GroupCategoryRules;
-use tuja\util\rules\PassthroughRuleSet;
-use tuja\util\rules\RuleSet;
+use tuja\util\rules\YoungParticipantsRuleSet;
 
 class GroupCategory {
 	public $id;
@@ -35,5 +31,13 @@ class GroupCategory {
 		if ( strlen( $this->name ) > 100 ) {
 			throw new ValidationException( 'name', 'Namnet får inte vara längre än 100 bokstäver.' );
 		}
+	}
+
+	public static function sample(): GroupCategory {
+		$sample       = new GroupCategory();
+		$sample->name = 'Category';
+		$sample->set_rules( GroupCategoryRules::from_rule_set( new YoungParticipantsRuleSet(), new Competition() ) );
+
+		return $sample;
 	}
 }

@@ -115,7 +115,7 @@ class GroupSignup extends AbstractGroupView {
 	private function get_person(): Person {
 		$person           = $this->init_posted_person();
 		$person->group_id = $this->get_group()->id;
-		$person->set_as_regular_group_member();
+		$person->set_type(Person::PERSON_TYPE_REGULAR);
 
 		return $person;
 	}

@@ -95,7 +95,7 @@ class GroupCategoryRules {
 
 	private $values;
 
-	public function __construct( $values ) {
+	public function __construct( $values = [] ) {
 		$this->values = $values; // TODO: Validate input and initialise default values
 	}
 
@@ -335,7 +335,7 @@ class GroupCategoryRules {
 			Person::PERSON_TYPE_SUPERVISOR . "_" . self::PERSON_PROP_NIN       => 'skip',
 
 			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_COUNT_MIN => 0,
-			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_COUNT_MAX => 1,
+			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_COUNT_MAX => $rule_set->is_crew() ? 0 : 1,
 			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_PHONE     => self::BOOL_SKIP,
 			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_EMAIL     => self::BOOL_REQUIRED,
 			Person::PERSON_TYPE_ADMIN . "_" . self::PERSON_PROP_NAME      => self::BOOL_SKIP,

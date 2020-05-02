@@ -5,17 +5,13 @@ namespace tuja\frontend;
 
 use Exception;
 use tuja\data\model\Group;
+use tuja\data\model\GroupCategory;
 use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
 use tuja\Frontend;
 use tuja\frontend\router\GroupHomeInitiator;
-use tuja\util\rules\GroupCategoryRules;
 use tuja\util\rules\RuleEvaluationException;
 use tuja\util\Strings;
-use tuja\view\FieldEmail;
-use tuja\view\FieldPhone;
-use tuja\view\FieldPno;
-use tuja\view\FieldText;
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix. Throwing exceptions might be preferable.
 class GroupPeopleEditor extends AbstractGroupView {
@@ -27,10 +23,28 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 	}
 
+	public static function params_section_description( GroupCategory $group_category ): array {
+		$rules = array_combine(
+			array_map(
+				function ( string $key ) {
+					return $key;
+				},
+				array_keys( $group_category->get_rules()->get_values() ) ),
+			array_map(
+				function ( string $key ) {
+					return $key;
+				},
+				array_values( $group_category->get_rules()->get_values() ) ) );
+
+		return array_merge( [
+			'group_category_name' => $group_category->name
+		], $rules );
+	}
+
 	private function get_person_form(): PersonForm {
 		if ( ! isset( $this->person_form ) ) {
 			$this->person_form = new PersonForm(
-				false,
+				true,
 				false,
 				$this->is_save_request(),
 				$this->get_group()->get_category()->get_rules()
@@ -66,15 +80,33 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
 
-		$form_extra_contact = $this->get_form_extra_contact_html( $errors );
-		if ( $category->get_rules()->is_adult_supervisor_required() ) {
-			$form_adult_supervisor = $this->get_form_adult_supervisor_html( $errors );
+		$forms = [];
+		foreach ( Person::PERSON_TYPES as $type ) {
+			list ( $min, $max ) = $category->get_rules()->get_people_count_range( $type );
+			if ( $max > 0 ) {
+				$people = array_filter( $this->get_people(), function ( Person $person ) use ( $type ) {
+					return $person->get_type() === $type;
+				} );
+
+				$form = $this->get_form_people_html( $people,
+					$errors,
+					$min == $max,
+					$type,
+					Strings::get( 'group_people_editor.' . $type . '.add_button' ) );
+
+				$forms[] = sprintf( '
+					<h2>%s</h2>
+				    <p><small>%s</small></p>
+				    %s
+					',
+					Strings::get( 'group_people_editor.' . $type . '.header' ),
+					Strings::get( 'group_people_editor.' . $type . '.description', self::params_section_description( $category ) ),
+					$form );
+			}
 		}
-		list ( $group_size_min, $group_size_max ) = $category->get_rules()->get_people_count_range( Person::PERSON_TYPE_LEADER, Person::PERSON_TYPE_REGULAR );
-		$form_group_contact = $this->get_form_group_contact_html( $errors );
-		$form_group_members = $this->get_form_group_members_html( $errors );
-		$form_save_button   = $this->get_form_save_button_html();
-		$home_link          = GroupHomeInitiator::link( $group );
+
+		$form_save_button = $this->get_form_save_button_html();
+		$home_link        = GroupHomeInitiator::link( $group );
 		include( 'views/group-people-editor.php' );
 	}
 
@@ -84,54 +116,6 @@ class GroupPeopleEditor extends AbstractGroupView {
 		}
 
 		return $this->read_only;
-	}
-
-	private function get_form_adult_supervisor_html( array $errors ) {
-		$people = array_filter( $this->get_people(), function ( Person $person ) {
-			return $person->is_adult_supervisor();
-		} );
-
-		return $this->get_form_people_html( $people,
-			$errors,
-			false,
-			self::ROLE_ADULT_SUPERVISOR,
-			'Lägg till vuxen' );
-	}
-
-	private function get_form_group_contact_html( array $errors ) {
-		$people = array_filter( $this->get_people(), function ( Person $person ) {
-			return $person->is_group_leader();
-		} );
-
-		return $this->get_form_people_html( $people,
-			$errors,
-			true,
-			self::ROLE_GROUP_LEADER );
-	}
-
-	private function get_form_group_members_html( array $errors ) {
-		$people = array_filter( $this->get_people(), function ( Person $person ) {
-			return $person->is_regular_group_member();
-		} );
-
-		return $this->get_form_people_html(
-			$people,
-			$errors,
-			false,
-			self::ROLE_REGULAR_GROUP_MEMBER,
-			'Lägg till deltagare' );
-	}
-
-	private function get_form_extra_contact_html( array $errors ) {
-		$people = array_filter( $this->get_people(), function ( Person $person ) {
-			return $person->is_contact() && ! $person->is_attending();
-		} );
-
-		return $this->get_form_people_html( $people,
-			$errors,
-			false,
-			self::ROLE_EXTRA_CONTACT,
-			'Lägg till extra kontaktperson' );
 	}
 
 	private function get_form_people_html(
@@ -202,7 +186,6 @@ class GroupPeopleEditor extends AbstractGroupView {
 		return $people;
 	}
 
-	// Move to AbstractGroupView?
 	private function render_person_form(
 		Person $person,
 		bool $show_delete = true

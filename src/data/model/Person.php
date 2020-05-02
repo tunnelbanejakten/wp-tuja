@@ -66,6 +66,7 @@ class Person {
 	const PERSON_TYPE_SUPERVISOR = 'supervisor';
 	const PERSON_TYPE_ADMIN = 'admin';
 	const PERSON_TYPES = [
+		// Order affects presentation in GroupPeopleEditor
 		self::PERSON_TYPE_LEADER,
 		self::PERSON_TYPE_REGULAR,
 		self::PERSON_TYPE_SUPERVISOR,
@@ -157,7 +158,7 @@ class Person {
 		$person        = new Person();
 		$person->name  = substr( $email, 0, strpos( $email, '@' ) );
 		$person->email = $email;
-		$person->set_as_extra_contact();
+		$person->set_type(Person::PERSON_TYPE_ADMIN);
 
 		return $person;
 	}
@@ -213,22 +214,6 @@ class Person {
 		} else {
 			throw new Exception( "Person cannot be mapped to one of the predefined types." );
 		}
-	}
-
-	public function set_as_adult_supervisor() {
-		$this->set_type( self::PERSON_TYPE_SUPERVISOR );
-	}
-
-	public function set_as_regular_group_member() {
-		$this->set_type( self::PERSON_TYPE_REGULAR );
-	}
-
-	public function set_as_group_leader() {
-		$this->set_type( self::PERSON_TYPE_LEADER );
-	}
-
-	public function set_as_extra_contact() {
-		$this->set_type( self::PERSON_TYPE_ADMIN );
 	}
 
 	public function is_attending(): bool {

@@ -17,11 +17,6 @@ use tuja\util\Strings;
 use tuja\util\WarningException;
 
 abstract class AbstractGroupView extends FrontendView {
-	const ROLE_ADULT_SUPERVISOR = Person::PERSON_TYPE_SUPERVISOR;
-	const ROLE_REGULAR_GROUP_MEMBER = Person::PERSON_TYPE_REGULAR;
-	const ROLE_EXTRA_CONTACT = Person::PERSON_TYPE_ADMIN;
-	const ROLE_GROUP_LEADER = Person::PERSON_TYPE_LEADER;
-
 	protected $person_dao;
 	protected $group_dao;
 	protected $message_template_dao;
@@ -85,29 +80,15 @@ abstract class AbstractGroupView extends FrontendView {
 	protected function init_posted_person( $id = null ): Person {
 		$person        = new Person();
 		$person->id    = $id ?: null;
-		$person->name  = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $person ) ] ?: $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ];
-		$person->email = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ];
-		$person->phone = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $person ) ];
-		$person->pno   = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $person ) ];
-		$person->food  = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $person ) ];
-		$person->note  = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NOTE, $person ) ];
+		$person->name  = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $person ) ] ?: @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ];
+		$person->email = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ];
+		$person->phone = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $person ) ];
+		$person->pno   = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $person ) ];
+		$person->food  = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $person ) ];
+		$person->note  = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NOTE, $person ) ];
 		$person->set_status( Person::STATUS_CREATED );
-
-		$suffix = isset( $id ) ? '__' . $id : '';
-		switch ( $_POST[ self::FIELD_PERSON_ROLE . $suffix ] ) {
-			case self::ROLE_ADULT_SUPERVISOR:
-				$person->set_as_adult_supervisor();
-				break;
-			case self::ROLE_EXTRA_CONTACT:
-				$person->set_as_extra_contact();
-				break;
-			case self::ROLE_GROUP_LEADER:
-				$person->set_as_group_leader();
-				break;
-			default:
-				$person->set_as_regular_group_member();
-				break;
-		}
+		$role_posted = @$_POST[ self::FIELD_PERSON_ROLE . ( isset( $id ) ? '__' . $id : '' ) ];
+		$person->set_type( $role_posted ?: Person::PERSON_TYPE_REGULAR );
 
 		return $person;
 	}

@@ -99,7 +99,7 @@ abstract class FrontendView {
 		return $this->wp_template;
 	}
 
-	protected function render_field( Field $field, $field_name, $error_message, $answer_object = null ): string {
+	public static function render_field( Field $field, $field_name, $error_message, $answer_object = null ): string {
 		// TODO: This is a bit of a hack...
 		if ( is_scalar( $answer_object ) ) {
 			$answer_object = [ $answer_object ];

@@ -68,22 +68,22 @@ class PersonForm {
 		try {
 			$html_sections = [];
 			if ( $this->group_category_rules->is_person_field_enabled( $person->get_type(), GroupCategoryRules::PERSON_PROP_NAME ) ) {
-				$html_sections[] = $this->render_field( $this->person_name_question, self::get_field_name( self::FIELD_NAME, $person ), @$errors[ self::FIELD_NAME ], $person->name );
+				$html_sections[] = FrontendView::render_field( $this->person_name_question, self::get_field_name( self::FIELD_NAME, $person ), @$errors[ self::FIELD_NAME ], $person->name );
 			}
 			if ( $this->group_category_rules->is_person_field_enabled( $person->get_type(), GroupCategoryRules::PERSON_PROP_NIN ) ) {
-				$html_sections[] = $this->render_field( $this->person_pno_question, self::get_field_name( self::FIELD_PNO, $person ), @$errors[ self::FIELD_PNO ], $person->pno );
+				$html_sections[] = FrontendView::render_field( $this->person_pno_question, self::get_field_name( self::FIELD_PNO, $person ), @$errors[ self::FIELD_PNO ], $person->pno );
 			}
 			if ( $this->group_category_rules->is_person_field_enabled( $person->get_type(), GroupCategoryRules::PERSON_PROP_EMAIL ) ) {
-				$html_sections[] = $this->render_field( $this->person_email_question, self::get_field_name( self::FIELD_EMAIL, $person ), @$errors[ self::FIELD_EMAIL ], $person->email );
+				$html_sections[] = FrontendView::render_field( $this->person_email_question, self::get_field_name( self::FIELD_EMAIL, $person ), @$errors[ self::FIELD_EMAIL ], $person->email );
 			}
 			if ( $this->group_category_rules->is_person_field_enabled( $person->get_type(), GroupCategoryRules::PERSON_PROP_PHONE ) ) {
-				$html_sections[] = $this->render_field( $this->person_phone_question, self::get_field_name( self::FIELD_PHONE, $person ), @$errors[ self::FIELD_PHONE ], $person->phone );
+				$html_sections[] = FrontendView::render_field( $this->person_phone_question, self::get_field_name( self::FIELD_PHONE, $person ), @$errors[ self::FIELD_PHONE ], $person->phone );
 			}
 			if ( $this->group_category_rules->is_person_field_enabled( $person->get_type(), GroupCategoryRules::PERSON_PROP_FOOD ) ) {
-				$html_sections[] = $this->render_field( $this->person_food_question, self::get_field_name( self::FIELD_FOOD, $person ), @$errors[ self::FIELD_FOOD ], $person->food );
+				$html_sections[] = FrontendView::render_field( $this->person_food_question, self::get_field_name( self::FIELD_FOOD, $person ), @$errors[ self::FIELD_FOOD ], $person->food );
 			}
 			if ( $this->group_category_rules->is_person_field_enabled( $person->get_type(), GroupCategoryRules::PERSON_PROP_NOTE ) ) {
-				$html_sections[] = $this->render_field( $this->person_note_question, self::get_field_name( self::FIELD_NOTE, $person ), @$errors[ self::FIELD_NOTE ], $person->note );
+				$html_sections[] = FrontendView::render_field( $this->person_note_question, self::get_field_name( self::FIELD_NOTE, $person ), @$errors[ self::FIELD_NOTE ], $person->note );
 			}
 
 			return join( $html_sections );
@@ -95,17 +95,5 @@ class PersonForm {
 
 	public static function get_field_name( string $field, Person $person ): string {
 		return FrontendView::FIELD_PREFIX_PERSON . $field . '__' . ( $person->random_id ?: $person->id ?: '' );
-	}
-
-	protected function render_field( Field $field, $field_name, $error_message, $answer_object = null ): string {
-		// TODO: This is a bit of a hack...
-		if ( is_scalar( $answer_object ) ) {
-			$answer_object = [ $answer_object ];
-		}
-		$html = $field->render( $field_name, $answer_object, null, $error_message );
-
-		return sprintf( '<div class="tuja-question %s">%s</div>',
-			! empty( $error_message ) ? 'tuja-field-error' : '',
-			$html );
 	}
 }

@@ -6,9 +6,12 @@ namespace tuja\util;
 
 use Exception;
 use tuja\data\model\Group;
+use tuja\data\model\GroupCategory;
+use tuja\data\model\Person;
 use tuja\data\store\StringsDao;
 use tuja\frontend\CompetitionSignup;
 use tuja\frontend\GroupCheckin;
+use tuja\frontend\GroupPeopleEditor;
 use tuja\util\rules\RuleResult;
 
 class Strings {
@@ -27,7 +30,20 @@ class Strings {
 			self::$final_list = array_merge( self::$default_list ?: [], self::$override_list ?: [] );
 			ksort( self::$final_list );
 
-			self::$custom_settings = [
+			$group_people_editor_strings = array_combine(
+				array_map( function ( string $type ) {
+					return 'group_people_editor.' . $type . '.description';
+				}, Person::PERSON_TYPES ),
+				array_map( function ( string $type ) {
+					return [
+						'is_markdown'    => true,
+						'get_parameters' => function () {
+							return GroupPeopleEditor::params_section_description( GroupCategory::sample() );
+						}
+					];
+				}, Person::PERSON_TYPES ) );
+
+			$other_strings = [
 				'checkin.yes.body_text'                                    => [
 					'is_markdown'    => true,
 					'get_parameters' => function () {
@@ -81,6 +97,8 @@ class Strings {
 					}
 				]
 			];
+
+			self::$custom_settings = array_merge( $other_strings, $group_people_editor_strings );
 		}
 	}
 
