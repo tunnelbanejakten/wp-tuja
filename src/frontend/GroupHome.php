@@ -10,6 +10,7 @@ use tuja\frontend\router\GroupPaymentInitiator;
 use tuja\frontend\router\GroupPeopleEditorInitiator;
 use tuja\frontend\router\GroupStatusInitiator;
 use tuja\frontend\router\GroupTicketsInitiator;
+use tuja\util\Strings;
 
 class GroupHome extends AbstractGroupView {
 	public function __construct( $url, $group_key ) {
@@ -24,8 +25,10 @@ class GroupHome extends AbstractGroupView {
 		if ( $group->get_status() == Group::STATUS_INCOMPLETE_DATA ) {
 			$rule_result        = $group->evaluate_registration();
 			$incomplete_message = sprintf(
-				'<p class="tuja-message tuja-message-warning">Anmälan är inte riktigt komplett. <br><a href="%s">Visa problem med anmälan</a></p>',
-				GroupStatusInitiator::link( $group )
+				'<p class="tuja-message tuja-message-warning">%s<br><a href="%s">%s</a></p>',
+				Strings::get( 'home.incomplete_message.body' ),
+				GroupStatusInitiator::link( $group ),
+				Strings::get( 'home.incomplete_message.link' )
 			);
 		}
 

@@ -52,7 +52,6 @@ class ResponseDao extends AbstractDao
 		]
 	];
 
-	// TODO: Move to ResponseDao...
 	const TABLE_COLUMNS_RESPONSES = [
 		'id',
 		'form_question_id',

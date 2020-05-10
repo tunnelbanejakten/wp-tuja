@@ -109,10 +109,6 @@ class CompetitionSignup extends FrontendView {
 				// TODO: Create helper method for generating field names based on "group or person" and attribute name.
 				$errors = [ '__' => $e->getMessage() ];
 			}
-		} else {
-			if ( empty( $this->get_available_group_categories() ) ) {
-				return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.' ); // TODO: Extract to strings.ini
-			}
 		}
 
 		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
@@ -153,22 +149,18 @@ class CompetitionSignup extends FrontendView {
 				$this->get_available_group_categories()
 			);
 
-		switch ( count( $group_category_options ) ) {
-			case 0:
-				break;
-			case 1:
-				$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::FIELD_GROUP_AGE, htmlentities( $group_category_options[0] ) );
-				break;
-			default:
-				$group_category_question = new FieldChoices(
-					'Vilken klass tävlar ni i?',
-					null,
-					false,
-					$group_category_options,
-					false );
-				$html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors[ self::FIELD_GROUP_AGE ] );
-				break;
+
+		if ( empty( $group_category_options ) ) {
+			throw new Exception( Strings::get('competition_signup.error.no_open_group_categories') );
 		}
+
+		$group_category_question = new FieldChoices(
+			'Vilken klass tävlar ni i?',
+			null,
+			false,
+			$group_category_options,
+			false );
+		$html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors[ self::FIELD_GROUP_AGE ] );
 
 		$reporter_role   = new FieldChoices(
 			'Vem är du?',
@@ -234,7 +226,7 @@ class CompetitionSignup extends FrontendView {
 			throw new ValidationException( self::FIELD_GROUP_AGE, 'No category selected.' );
 		}
 		if ( ! $category->get_rules()->is_create_registration_allowed() ) {
-			throw new RuleEvaluationException( 'Anmälan är tyvärr stängd' ); // TODO: Extract to strings.ini
+			throw new RuleEvaluationException( Strings::get('competition_signup.error.signup_closed') );
 		}
 		// DETERMINE REQUESTED CHANGES
 		$new_group = new Group();
@@ -256,12 +248,12 @@ class CompetitionSignup extends FrontendView {
 		$new_person->email = $_POST[ self::FIELD_PERSON_EMAIL ];
 		if ( $_POST[ self::FIELD_PERSON_ROLE ] == self::ROLE_LABEL_EXTRA_CONTACT ) {
 			$new_person->name = $_POST[ self::FIELD_PERSON_EMAIL ];
-			$new_person->set_type(Person::PERSON_TYPE_ADMIN);
+			$new_person->set_type( Person::PERSON_TYPE_ADMIN );
 		} else {
 			$new_person->name  = $_POST[ self::FIELD_PERSON_NAME ];
 			$new_person->phone = $_POST[ self::FIELD_PERSON_PHONE ];
 			$new_person->pno   = $_POST[ self::FIELD_PERSON_PNO ];
-			$new_person->set_type(Person::PERSON_TYPE_LEADER);
+			$new_person->set_type( Person::PERSON_TYPE_LEADER );
 		}
 
 		try {
@@ -294,13 +286,13 @@ class CompetitionSignup extends FrontendView {
 
 					return $group;
 				} else {
-					throw new Exception( 'Ett fel uppstod. Vi vet tyvärr inte riktigt varför.' ); // TODO: Extract to strings.ini
+					throw new Exception( Strings::get('competition_signup.error.unknown') );
 				}
 			} catch ( ValidationException $e ) {
 				throw new ValidationException( self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage() );
 			}
 		} else {
-			throw new Exception( 'Kunde inte anmäla laget.' ); // TODO: Extract to strings.ini
+			throw new Exception( Strings::get('competition_signup.error.no_group_id') );
 		}
 	}
 }

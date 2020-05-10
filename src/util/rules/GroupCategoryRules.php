@@ -11,6 +11,100 @@ use tuja\data\model\Competition;
 use tuja\data\model\Person;
 use tuja\util\DateRange;
 
+abstract class RuleConfig {
+	protected $slug;
+	protected $label;
+
+	public function __construct( string $slug, string $label ) {
+		$this->slug  = $slug;
+		$this->label = $label;
+	}
+
+	abstract function get_jsoneditor_prop_config();
+
+	public function slug() {
+		return $this->slug;
+	}
+
+	public function label() {
+		return $this->label;
+	}
+}
+
+
+class EnumRule extends RuleConfig {
+
+	private $options;
+
+	public function __construct( string $slug, string $label, array $options ) {
+		parent::__construct( $slug, $label );
+		$this->options = $options;
+	}
+
+	function get_jsoneditor_prop_config() {
+		return [
+			'title'    => $this->label,
+			'required' => true,
+			'type'     => 'string',
+			'enum'     => array_keys( $this->options ),
+			'options'  => [
+				'enum_titles' => array_values( $this->options )
+			]
+		];
+
+	}
+}
+
+class BoolRule extends RuleConfig {
+
+	public function __construct( string $slug, string $label ) {
+		parent::__construct( $slug, $label );
+	}
+
+	function get_jsoneditor_prop_config() {
+		return [
+			'title'    => $this->label,
+			'required' => true,
+			'type'     => 'boolean',
+			'format'   => 'checkbox',
+		];
+
+	}
+}
+
+class DateRule extends RuleConfig {
+
+	public function __construct( string $slug, string $label ) {
+		parent::__construct( $slug, $label );
+	}
+
+	function get_jsoneditor_prop_config() {
+		return
+			[
+				'title'    => $this->label,
+				'required' => true,
+				'type'     => 'integer',
+				'format'   => 'date'
+			];
+	}
+}
+
+class IntRule extends RuleConfig {
+
+	public function __construct( string $slug, string $label ) {
+		parent::__construct( $slug, $label );
+	}
+
+	function get_jsoneditor_prop_config() {
+		return [
+			'title'    => $this->label,
+			'required' => true,
+			'type'     => 'integer',
+			'format'   => 'number'
+		];
+	}
+}
+
 class GroupCategoryRules {
 
 	private static $config;
@@ -96,38 +190,38 @@ class GroupCategoryRules {
 	private $values;
 
 	public function __construct( $values = [] ) {
-		$this->values = $values; // TODO: Validate input and initialise default values
+		$this->values = $values;
 	}
 
 	private static function get_config() {
 		if ( ! isset( self::$config ) ) {
 
 			$enum_config       = function ( string $slug, string $name, array $options ) {
-				return [ [ 'type' => 'enum', 'slug' => $slug, 'name' => $name, 'options' => $options ] ];
+				return [ new EnumRule( $slug, $name, $options ) ];
 			};
 			$bool_config       = function ( string $slug, string $name ) {
-				return [ [ 'type' => 'boolean', 'slug' => $slug, 'name' => $name ] ];
+				return [ new BoolRule( $slug, $name ) ];
 			};
 			$date_range_config = function ( string $slug, string $name ) {
 				return [
-					[ 'type' => 'date', 'slug' => $slug . '_start', 'name' => $name . ', fr.o.m.' ],
-					[ 'type' => 'date', 'slug' => $slug . '_end', 'name' => $name . ', t.o.m.' ]
+					new DateRule( $slug . '_start', $name . ', fr.o.m.' ),
+					new DateRule( $slug . '_end', $name . ', t.o.m.' )
 				];
 			};
 			$int_config        = function ( string $slug, string $name ) {
-				return [ [ 'type' => 'integer', 'slug' => $slug, 'name' => $name ] ];
+				return [ new IntRule( $slug, $name ) ];
 			};
 
 			$person_types_configs = array_map( function ( string $slug ) use ( $int_config, $enum_config ) {
 				return array_merge(
-					$int_config( $slug . '_' . self::PERSON_PROP_COUNT_MIN, $slug . ', min antal' ),
-					$int_config( $slug . '_' . self::PERSON_PROP_COUNT_MAX, $slug . ', max antal' ),
-					$enum_config( $slug . '_' . self::PERSON_PROP_PHONE, $slug . ', telefon', self::TRISTATE_OPTIONS ),
-					$enum_config( $slug . '_' . self::PERSON_PROP_EMAIL, $slug . ', e-post', self::TRISTATE_OPTIONS ),
-					$enum_config( $slug . '_' . self::PERSON_PROP_NAME, $slug . ', namn', self::TRISTATE_OPTIONS ),
-					$enum_config( $slug . '_' . self::PERSON_PROP_NOTE, $slug . ', meddelande', self::TRISTATE_OPTIONS ),
-					$enum_config( $slug . '_' . self::PERSON_PROP_FOOD, $slug . ', mat', self::TRISTATE_OPTIONS ),
-					$enum_config( $slug . '_' . self::PERSON_PROP_NIN, $slug . ', personnr', [
+					$int_config( $slug . '_' . self::PERSON_PROP_COUNT_MIN, self::LABELS[ $slug . '_' . self::PERSON_PROP_COUNT_MIN ] ),
+					$int_config( $slug . '_' . self::PERSON_PROP_COUNT_MAX, self::LABELS[ $slug . '_' . self::PERSON_PROP_COUNT_MAX ] ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_PHONE, self::LABELS[ $slug . '_' . self::PERSON_PROP_PHONE ], self::TRISTATE_OPTIONS ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_EMAIL, self::LABELS[ $slug . '_' . self::PERSON_PROP_EMAIL ], self::TRISTATE_OPTIONS ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_NAME, self::LABELS[ $slug . '_' . self::PERSON_PROP_NAME ], self::TRISTATE_OPTIONS ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_NOTE, self::LABELS[ $slug . '_' . self::PERSON_PROP_NOTE ], self::TRISTATE_OPTIONS ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_FOOD, self::LABELS[ $slug . '_' . self::PERSON_PROP_FOOD ], self::TRISTATE_OPTIONS ),
+					$enum_config( $slug . '_' . self::PERSON_PROP_NIN, self::LABELS[ $slug . '_' . self::PERSON_PROP_NIN ], [
 						'nin_required'         => self::LABELS['nin_required'],
 						'nin_optional'         => self::LABELS['nin_optional'],
 						'nin_or_date_required' => self::LABELS['nin_or_date_required'],
@@ -160,46 +254,10 @@ class GroupCategoryRules {
 	}
 
 	private static function get_jsoneditor_props_config(): array {
-		return array_combine( array_map( function ( $conf ) {
-			return $conf['slug'];
-		}, self::get_config() ), array_map( function ( $conf ) {
-			$slug = $conf['slug'];
-			switch ( $conf['type'] ) {
-				case 'boolean':
-					return [
-						'title'    => self::LABELS[ $slug ] ?: $slug,
-						'required' => true,
-						'type'     => 'boolean',
-						'format'   => 'checkbox',
-					];
-				case 'enum':
-					return [
-						'title'    => self::LABELS[ $slug ] ?: $slug,
-						'required' => true,
-						'type'     => 'string',
-						'enum'     => array_keys( $conf['options'] ),
-						'options'  => [
-							'enum_titles' => array_values( $conf['options'] )
-						]
-					];
-				case 'integer':
-					return [
-						'title'    => self::LABELS[ $slug ] ?: $slug,
-						'required' => true,
-						'type'     => 'integer',
-						'format'   => 'number'
-					];
-				case 'date':
-					return
-						[
-							'title'    => self::LABELS[ $slug ] ?: $slug,
-							'required' => true,
-							'type'     => 'integer',
-							'format'   => 'date'
-						];
-				default:
-					throw new Exception( 'Unsupported type' );
-			}
+		return array_combine( array_map( function ( RuleConfig $conf ) {
+			return $conf->slug();
+		}, self::get_config() ), array_map( function ( RuleConfig $conf ) {
+			return $conf->get_jsoneditor_prop_config();
 		}, self::get_config() ) );
 	}
 
@@ -212,9 +270,9 @@ class GroupCategoryRules {
 	}
 
 	public static function get_props_labels() {
-		return array_values( array_map( function ( $props ) {
-			return $props['title'];
-		}, self::get_jsoneditor_props_config() ) );
+		return array_map( function ( RuleConfig $config ) {
+			return $config->label();
+		}, self::get_config() );
 	}
 
 	public function get_people_count_range( string ...$person_types ): array {

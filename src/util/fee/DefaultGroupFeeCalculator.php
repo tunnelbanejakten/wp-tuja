@@ -8,11 +8,15 @@ use DateTime;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\store\PersonDao;
+use tuja\util\Strings;
 
 class DefaultGroupFeeCalculator implements GroupFeeCalculator {
 
+	// TODO: This needs to be configurable
 	const FEE_ATTENDING_PARTICIPANT = 100;
+	// TODO: This needs to be configurable
 	const FEE_ATTENDING_NONPARTICIPANT = 0;
+	// TODO: This needs to be configurable
 	const FEE_CREW = 0;
 
 	private $person_dao;
@@ -37,8 +41,6 @@ class DefaultGroupFeeCalculator implements GroupFeeCalculator {
 	}
 
 	function description(): string {
-		return sprintf(
-			'%d kr per tävlande och gratis för funktionärer och ledare',
-			self::FEE_ATTENDING_PARTICIPANT );
+		return Strings::get( 'defaultgroupfeecalculator.description', self::FEE_ATTENDING_PARTICIPANT );
 	}
 }
