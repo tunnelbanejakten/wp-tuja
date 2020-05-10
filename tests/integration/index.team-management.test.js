@@ -510,6 +510,24 @@ describe('wp-tuja', () => {
         await expectFormValue('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__name__"]', 'Dave')
         await expectFormValue('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__pno__"]', '19900808-0000')
       })
+
+      it.each([
+        { youngNow: false, oldNow: false },
+        { youngNow: true, oldNow: false },
+        { youngNow: true, oldNow: true },
+      ])('should be possible to sign up for certain types of group based on current date (%j)', async ({ youngNow, oldNow }) => {
+        await adminPage.configureGroupCategoryDateLimits(competitionId, youngNow, oldNow)
+
+        await goto(`http://localhost:8080/${competitionKey}/anmal`)
+
+        const expectSuccess = youngNow || oldNow
+        if (expectSuccess) {
+          await expectElementCount('#tuja_signup_button', 1)
+          await expectElementCount('input[name="tuja-group__age"]', youngNow && oldNow ? 2 : 1)
+        } else {
+          await expectErrorMessage('Tyvärr så går det inte att anmäla sig nu')
+        }
+      })
     })
   })
 

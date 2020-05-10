@@ -75,7 +75,6 @@ var tujaListItemsControls = (function () {
         return false
       }
 
-      // TODO: tujaForms needs to be made more generic
       tujaFormGenerator.init($, $('.tuja-' + listName + '-existing'))
 
       $('button.tuja-add-' + listName).click(onAddClick)

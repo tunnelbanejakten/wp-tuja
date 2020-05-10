@@ -94,12 +94,12 @@ class PageWrapper {
     return this._page.$$(selector)
   }
 
-  async $eval (selector, func) {
-    return this._page.$eval(selector, func)
+  async $eval (selector, func, ...funcArgs) {
+    return this._page.$eval(selector, func, ...funcArgs)
   }
 
-  async $$eval (selector, func) {
-    return this._page.$$eval(selector, func)
+  async $$eval (selector, func, ...funcArgs) {
+    return this._page.$$eval(selector, func, ...funcArgs)
   }
 
   async takeScreenshot () {
@@ -113,7 +113,7 @@ class PageWrapper {
 
     const dateStr = new Date(new Date().getTime() + (secondsFromNow - localTzOffsetSeconds) * 1000).toISOString().substr(0, 16)
 
-    await this._page.$eval(selector, (node, date) => node.value = date, dateStr)
+    await this.$eval(selector, (node, date) => node.value = date, dateStr)
   }
 
   async chooseFiles (files) {

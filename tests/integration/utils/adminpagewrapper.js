@@ -47,6 +47,35 @@ class AdminPageWrapper extends PageWrapper {
     await this.clickLink('#tuja_save_competition_settings_button')
   }
 
+  async configureGroupCategoryDateLimits (competitionId, isYoungParticipantsCategoryOpenNow, isOldParticipantsCategoryOpenNow) {
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+
+    const setGroupCategoryDateRange = async (categoryName, includeNow) => {
+      const categoryId = await this.$eval('input[type="text"][value="' + categoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
+
+      await this.$eval('#groupcategory__rules__' + categoryId, (node, includeNow) => {
+        const nowDate = new Date()
+        const localTzOffsetSeconds = nowDate.getTimezoneOffset() * 60
+        const nowSeconds = Math.round(nowDate.getTime() / 1000) - localTzOffsetSeconds
+        const oneDay = 24 * 60 * 60
+
+        const original = JSON.parse(node.value)
+        node.value = JSON.stringify({
+          ...original,
+          create_registration_period_start: nowSeconds + (includeNow ? -1 : -2) * oneDay,
+          create_registration_period_end: nowSeconds + (includeNow ? 1 : -1) * oneDay
+        })
+      }, includeNow)
+    }
+
+    await this.click('#tuja_tab_groups')
+
+    await setGroupCategoryDateRange('Young Participants', isYoungParticipantsCategoryOpenNow)
+    await setGroupCategoryDateRange('Old Participants', isOldParticipantsCategoryOpenNow)
+
+    await this.clickLink('#tuja_save_competition_settings_button')
+  }
+
   async configureFormDateLimits (competitionId, formId, startMinutes, endMinutes) {
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
 
