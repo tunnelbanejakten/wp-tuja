@@ -28,7 +28,7 @@ class PersonEditor extends AbstractGroupView {
 
 		$is_read_only = ! $this->is_edit_allowed( $group );
 
-		$real_category               = $group->get_category();
+		$real_category = $group->get_category();
 
 		$do_update = @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE;
 		if ( $do_update ) {
@@ -50,6 +50,7 @@ class PersonEditor extends AbstractGroupView {
 		$form = ( new PersonForm(
 			false,
 			$is_read_only,
+			false,
 			$do_update,
 			$real_category->get_rules()
 		) )->render( $person );

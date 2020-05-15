@@ -46,6 +46,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 			$this->person_form = new PersonForm(
 				true,
 				false,
+				false,
 				$this->is_save_request(),
 				$this->get_group()->get_category()->get_rules()
 			);

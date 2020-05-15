@@ -19,9 +19,6 @@ use tuja\util\rules\RuleEvaluationException;
 use tuja\util\Strings;
 use tuja\util\Template;
 use tuja\view\FieldChoices;
-use tuja\view\FieldEmail;
-use tuja\view\FieldPhone;
-use tuja\view\FieldPno;
 use tuja\view\FieldText;
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
@@ -113,7 +110,8 @@ class CompetitionSignup extends FrontendView {
 
 		$errors_overall = isset( $errors['__'] ) ? sprintf( '<p class="tuja-message tuja-message-error">%s</p>', $errors['__'] ) : '';
 
-		$form = $this->get_form_html( $errors );
+		$form         = $this->get_form_html( $errors );
+		$person_forms = $this->get_person_forms_html( $errors );
 
 		$intro = Strings::get( 'competition_signup.intro.body_text' );
 		$intro = ! empty( $intro ) ? Template::string( $intro )->render( [], true ) : '';
@@ -137,8 +135,10 @@ class CompetitionSignup extends FrontendView {
 	private function get_form_html( $errors = array() ): string {
 		$html_sections = [];
 
-		// TODO: Extract labels in this function to strings.ini
-		$group_name_question = new FieldText( 'Vad heter laget?', null, false, [] );
+		$group_name_question = new FieldText(
+			Strings::get( 'competition_signup.form.group_name.label' ),
+			Strings::get( 'competition_signup.form.group_name.hint' ),
+			false, [] );
 		$html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors[ self::FIELD_GROUP_NAME ] );
 
 		$group_category_options =
@@ -151,41 +151,55 @@ class CompetitionSignup extends FrontendView {
 
 
 		if ( empty( $group_category_options ) ) {
-			throw new Exception( Strings::get('competition_signup.error.no_open_group_categories') );
+			throw new Exception( Strings::get( 'competition_signup.error.no_open_group_categories' ) );
 		}
 
 		$group_category_question = new FieldChoices(
-			'Vilken klass tävlar ni i?',
-			null,
+			Strings::get( 'competition_signup.form.group_category.label' ),
+			Strings::get( 'competition_signup.form.group_category.hint' ),
 			false,
 			$group_category_options,
 			false );
 		$html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors[ self::FIELD_GROUP_AGE ] );
 
 		$reporter_role   = new FieldChoices(
-			'Vem är du?',
-			null,
+			Strings::get( 'competition_signup.form.role.label' ),
+			Strings::get( 'competition_signup.form.role.hint' ),
 			false,
 			[
 				self::ROLE_LABEL_GROUP_LEADER,
 				self::ROLE_LABEL_EXTRA_CONTACT
 			],
 			false );
+
 		$html_sections[] = $this->render_field( $reporter_role, self::FIELD_PERSON_ROLE, @$errors[ self::FIELD_PERSON_ROLE ], $_POST[ self::FIELD_PERSON_ROLE ] ?: self::ROLE_LABEL_GROUP_LEADER );
 
-		$person_name_question = new FieldEmail( 'Vilken e-postadress har du?', Strings::get( 'competition_signup.form.email.hint' ), false );
-		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_EMAIL, @$errors[ self::FIELD_PERSON_EMAIL ] );
-
-		$person_name_question = new FieldText( 'Vad heter du?', null, false, [] );
-		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_NAME, @$errors[ self::FIELD_PERSON_NAME ] );
-
-		$person_phone_question = new FieldPhone( 'Vilket telefonnummer har du?', Strings::get( 'competition_signup.form.phone.hint' ), false );
-		$html_sections[]       = $this->render_field( $person_phone_question, self::FIELD_PERSON_PHONE, @$errors[ self::FIELD_PERSON_PHONE ] );
-
-		$person_name_question = new FieldPno( 'Vad har du för födelsedag?', Strings::get( 'person.form.pno.hint' ), false );
-		$html_sections[]      = $this->render_field( $person_name_question, self::FIELD_PERSON_PNO, @$errors[ self::FIELD_PERSON_PNO ] );
-
 		$html_sections[] = $this->get_recaptcha_html();
+
+		return join( $html_sections );
+	}
+
+	// Renders four sub-forms, on for each role-and-category combination.
+	private function get_person_forms_html( $errors = array() ): string {
+		$html_sections = [];
+
+		$forms = join( array_map( function ( GroupCategory $category ) {
+			return join( array_map( function ( string $person_type, string $person_label ) use ( $category ) {
+				$person_form = new PersonForm( false, false, true, @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE, $category->get_rules(), 'competition_signup.form' );
+				$temp_person = $this->get_posted_person();
+				$temp_person->set_type( $person_type );
+
+				return sprintf( '<div class="tuja-competitionsignup-form" data-group-category-name="%s" data-person-type-name="%s">%s</div>',
+					$category->name,
+					$person_label,
+					$person_form->render( $temp_person ) );
+			}, [ Person::PERSON_TYPE_LEADER, Person::PERSON_TYPE_ADMIN ], [
+				self::ROLE_LABEL_GROUP_LEADER,
+				self::ROLE_LABEL_EXTRA_CONTACT
+			] ) );
+		}, $this->get_available_group_categories() ) );
+
+		$html_sections[] = $forms;
 
 		return join( $html_sections );
 	}
@@ -223,10 +237,10 @@ class CompetitionSignup extends FrontendView {
 		// INIT
 		$category = $this->get_posted_category( $this->get_competition()->id );
 		if ( ! isset( $category ) ) {
-			throw new ValidationException( self::FIELD_GROUP_AGE, 'No category selected.' );
+			throw new ValidationException( self::FIELD_GROUP_AGE, Strings::get( 'competition_signup.error.no_category' ) );
 		}
 		if ( ! $category->get_rules()->is_create_registration_allowed() ) {
-			throw new RuleEvaluationException( Strings::get('competition_signup.error.signup_closed') );
+			throw new RuleEvaluationException( Strings::get( 'competition_signup.error.signup_closed' ) );
 		}
 		// DETERMINE REQUESTED CHANGES
 		$new_group = new Group();
@@ -243,18 +257,7 @@ class CompetitionSignup extends FrontendView {
 			throw new ValidationException( self::FIELD_PREFIX_GROUP . $e->getField(), $e->getMessage() );
 		}
 
-		$new_person = new Person();
-		$new_person->set_status( Person::DEFAULT_STATUS );
-		$new_person->email = $_POST[ self::FIELD_PERSON_EMAIL ];
-		if ( $_POST[ self::FIELD_PERSON_ROLE ] == self::ROLE_LABEL_EXTRA_CONTACT ) {
-			$new_person->name = $_POST[ self::FIELD_PERSON_EMAIL ];
-			$new_person->set_type( Person::PERSON_TYPE_ADMIN );
-		} else {
-			$new_person->name  = $_POST[ self::FIELD_PERSON_NAME ];
-			$new_person->phone = $_POST[ self::FIELD_PERSON_PHONE ];
-			$new_person->pno   = $_POST[ self::FIELD_PERSON_PNO ];
-			$new_person->set_type( Person::PERSON_TYPE_LEADER );
-		}
+		$new_person = $this->get_posted_person();
 
 		try {
 			// Person is validated before Group is created in order to catch simple input problems, like a missing name or email address.
@@ -286,13 +289,31 @@ class CompetitionSignup extends FrontendView {
 
 					return $group;
 				} else {
-					throw new Exception( Strings::get('competition_signup.error.unknown') );
+					throw new Exception( Strings::get( 'competition_signup.error.unknown' ) );
 				}
 			} catch ( ValidationException $e ) {
 				throw new ValidationException( self::FIELD_PREFIX_PERSON . $e->getField(), $e->getMessage() );
 			}
 		} else {
-			throw new Exception( Strings::get('competition_signup.error.no_group_id') );
+			throw new Exception( Strings::get( 'competition_signup.error.no_group_id' ) );
 		}
+	}
+
+	private function get_posted_person(): Person {
+		$new_person = new Person();
+		$new_person->set_status( Person::DEFAULT_STATUS );
+		$new_person->email = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $new_person ) ];
+		if ( $_POST[ self::FIELD_PERSON_ROLE ] == self::ROLE_LABEL_EXTRA_CONTACT ) {
+			$new_person->name = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $new_person ) ];
+			$new_person->set_type( Person::PERSON_TYPE_ADMIN );
+		} else {
+			$new_person->name  = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $new_person ) ];
+			$new_person->phone = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $new_person ) ];
+			$new_person->pno   = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $new_person ) ];
+			$new_person->food  = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $new_person ) ];
+			$new_person->set_type( Person::PERSON_TYPE_LEADER );
+		}
+
+		return $new_person;
 	}
 }

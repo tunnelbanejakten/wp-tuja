@@ -31,14 +31,17 @@ class UserPageWrapper extends PageWrapper {
 
     await this.goto(`http://localhost:8080/${this.competitionKey}/anmal`)
     await this.click('#tuja-group__age-0')
-    await this.type('#tuja-group__name', name)
-    await this.type('#tuja-person__email', 'amber@example.com')
     if (isGroupLeader) {
-      await this.type('#tuja-person__name', 'Amber')
-      await this.type('#tuja-person__phone', '070-123456')
-      await this.type('#tuja-person__pno', '19800101-1234')
+      await this.click('#tuja-person__role-0')
     } else {
       await this.click('#tuja-person__role-1')
+    }
+    await this.type('#tuja-group__name', name)
+    await this.type('#tuja-person__email__', 'amber@example.com')
+    if (isGroupLeader) {
+      await this.type('#tuja-person__name__', 'Amber')
+      await this.type('#tuja-person__phone__', '070-123456')
+      await this.type('#tuja-person__pno__', '19800101-1234')
     }
     if (isAutomaticallyAccepted) {
       await this.expectToContain('#tuja_signup_button', 'Anmäl lag')

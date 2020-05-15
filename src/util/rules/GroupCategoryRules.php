@@ -159,17 +159,17 @@ class GroupCategoryRules {
 		'delete_group_member_period_start' => 'Avanmäla person, fr.o.m.',
 		'delete_group_member_period_end'   => 'Avanmäla person, t.o.m.',
 
-		'required'             => 'Obligatoriskt',
-		'optional'             => 'Valfritt',
-		'skip'                 => 'Visa inte',
-		'nin_required'         => 'Personnr obligatoriskt',
-		'nin_optional'         => 'Personnr valfritt',
-		'nin_or_date_required' => 'Personnr el. födelsedag oblig.',
-		'nin_or_date_optional' => 'Personnr el. födelsedag valfritt',
-		'date_required'        => 'Födelsedag obligatoriskt',
-		'date_optional'        => 'Födelsedag valfritt',
-		'year_required'        => 'Födelseår obligatoriskt',
-		'year_optional'        => 'Födelseår valfritt',
+		self::BOOL_REQUIRED                  => 'Obligatoriskt',
+		self::BOOL_OPTIONAL                  => 'Valfritt',
+		self::BOOL_SKIP                      => 'Visa inte',
+		'nin_' . self::BOOL_REQUIRED         => 'Personnr obligatoriskt',
+		'nin_' . self::BOOL_OPTIONAL         => 'Personnr valfritt',
+		'nin_or_date_' . self::BOOL_REQUIRED => 'Personnr el. födelsedag oblig.',
+		'nin_or_date_' . self::BOOL_OPTIONAL => 'Personnr el. födelsedag valfritt',
+		'date_' . self::BOOL_REQUIRED        => 'Födelsedag obligatoriskt',
+		'date_' . self::BOOL_OPTIONAL        => 'Födelsedag valfritt',
+		'year_' . self::BOOL_REQUIRED        => 'Födelseår obligatoriskt',
+		'year_' . self::BOOL_OPTIONAL        => 'Födelseår valfritt',
 	];
 
 	const TRISTATE_OPTIONS = [
@@ -222,15 +222,15 @@ class GroupCategoryRules {
 					$enum_config( $slug . '_' . self::PERSON_PROP_NOTE, self::LABELS[ $slug . '_' . self::PERSON_PROP_NOTE ], self::TRISTATE_OPTIONS ),
 					$enum_config( $slug . '_' . self::PERSON_PROP_FOOD, self::LABELS[ $slug . '_' . self::PERSON_PROP_FOOD ], self::TRISTATE_OPTIONS ),
 					$enum_config( $slug . '_' . self::PERSON_PROP_NIN, self::LABELS[ $slug . '_' . self::PERSON_PROP_NIN ], [
-						'nin_required'         => self::LABELS['nin_required'],
-						'nin_optional'         => self::LABELS['nin_optional'],
-						'nin_or_date_required' => self::LABELS['nin_or_date_required'],
-						'nin_or_date_optional' => self::LABELS['nin_or_date_optional'],
-						'date_required'        => self::LABELS['date_required'],
-						'date_optional'        => self::LABELS['date_optional'],
-						'year_required'        => self::LABELS['year_required'],
-						'year_optional'        => self::LABELS['year_optional'],
-						self::BOOL_SKIP        => self::LABELS['skip']
+						'nin_' . self::BOOL_REQUIRED         => self::LABELS[ 'nin_' . self::BOOL_REQUIRED ],
+						'nin_' . self::BOOL_OPTIONAL         => self::LABELS[ 'nin_' . self::BOOL_OPTIONAL ],
+						'nin_or_date_' . self::BOOL_REQUIRED => self::LABELS[ 'nin_or_date_' . self::BOOL_REQUIRED ],
+						'nin_or_date_' . self::BOOL_OPTIONAL => self::LABELS[ 'nin_or_date_' . self::BOOL_OPTIONAL ],
+						'date_' . self::BOOL_REQUIRED        => self::LABELS[ 'date_' . self::BOOL_REQUIRED ],
+						'date_' . self::BOOL_OPTIONAL        => self::LABELS[ 'date_' . self::BOOL_OPTIONAL ],
+						'year_' . self::BOOL_REQUIRED        => self::LABELS[ 'year_' . self::BOOL_REQUIRED ],
+						'year_' . self::BOOL_OPTIONAL        => self::LABELS[ 'year_' . self::BOOL_OPTIONAL ],
+						self::BOOL_SKIP                      => self::LABELS[ self::BOOL_SKIP ]
 					] ) );
 			}, Person::PERSON_TYPES );
 			self::$config         = array_merge(
@@ -352,6 +352,15 @@ class GroupCategoryRules {
 		$rule_slug = $person_type . '_' . $field;
 
 		return isset( $this->values[ $rule_slug ] ) ? @$this->values[ $rule_slug ] !== self::BOOL_SKIP : true;
+	}
+
+	public function is_person_field_required( $person_type, $field ): bool {
+		if ( ! in_array( $person_type, Person::PERSON_TYPES ) ) {
+			throw new Exception( "Unsupported type of person: " . $person_type );
+		}
+		$rule_slug = $person_type . '_' . $field;
+
+		return isset( $this->values[ $rule_slug ] ) ? strpos( @$this->values[ $rule_slug ], self::BOOL_REQUIRED ) !== false : true;
 	}
 
 

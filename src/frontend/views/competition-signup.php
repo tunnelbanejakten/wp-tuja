@@ -9,6 +9,11 @@ use tuja\frontend\CompetitionSignup;
 
 	<?= $form ?>
 
+    <div id="tuja-competitionsignup-active-form"></div>
+
 	<?= $submit_button ?>
 </form>
+<div id="tuja-competitionsignup-inactive-forms" style="display: none;">
+	<?= $person_forms ?>
+</div>
 <?= $fineprint ?>

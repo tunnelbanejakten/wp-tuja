@@ -50,10 +50,10 @@ class AdminPageWrapper extends PageWrapper {
   async configureGroupCategoryDateLimits (competitionId, isYoungParticipantsCategoryOpenNow, isOldParticipantsCategoryOpenNow) {
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
-    const setGroupCategoryDateRange = async (categoryName, includeNow) => {
+    const setGroupCategoryDateRange = async (categoryName, includeNow, isNinOptional) => {
       const categoryId = await this.$eval('input[type="text"][value="' + categoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
 
-      await this.$eval('#groupcategory__rules__' + categoryId, (node, includeNow) => {
+      await this.$eval('#groupcategory__rules__' + categoryId, (node, includeNow, isNinOptional) => {
         const nowDate = new Date()
         const localTzOffsetSeconds = nowDate.getTimezoneOffset() * 60
         const nowSeconds = Math.round(nowDate.getTime() / 1000) - localTzOffsetSeconds
@@ -63,15 +63,16 @@ class AdminPageWrapper extends PageWrapper {
         node.value = JSON.stringify({
           ...original,
           create_registration_period_start: nowSeconds + (includeNow ? -1 : -2) * oneDay,
-          create_registration_period_end: nowSeconds + (includeNow ? 1 : -1) * oneDay
+          create_registration_period_end: nowSeconds + (includeNow ? 1 : -1) * oneDay,
+          leader_nin: 'nin_or_date_' + (isNinOptional ? 'optional' : 'required')
         })
-      }, includeNow)
+      }, includeNow, isNinOptional)
     }
 
     await this.click('#tuja_tab_groups')
 
-    await setGroupCategoryDateRange('Young Participants', isYoungParticipantsCategoryOpenNow)
-    await setGroupCategoryDateRange('Old Participants', isOldParticipantsCategoryOpenNow)
+    await setGroupCategoryDateRange('Young Participants', isYoungParticipantsCategoryOpenNow, true)
+    await setGroupCategoryDateRange('Old Participants', isOldParticipantsCategoryOpenNow, false)
 
     await this.clickLink('#tuja_save_competition_settings_button')
   }

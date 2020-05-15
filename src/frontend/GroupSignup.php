@@ -77,6 +77,7 @@ class GroupSignup extends AbstractGroupView {
 			( new PersonForm(
 				false,
 				false, // TODO: Handle is_read_only?
+				false,
 				$show_validation_errors,
 				$this->get_group()->get_category()->get_rules()
 			) )->render( $this->get_person() )

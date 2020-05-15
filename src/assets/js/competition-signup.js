@@ -1,22 +1,29 @@
 var tujaCompetitionSignup = (function () {
 
-  function onRoleSelect ($, event) {
-    var $input = $(event.target)
-    var $form = $input.closest('form')
+  function updateForms ($) {
+    var currentRole = $('input[name="tuja-person__role"]:checked').val()
+    var currentGroupCategory = $('input[name="tuja-group__age"]:checked').val()
+    var nextForm = $('#tuja-competitionsignup-inactive-forms div.tuja-competitionsignup-form[data-group-category-name="' + currentGroupCategory + '"][data-person-type-name="' + currentRole + '"]')
+    var prevForm = $('#tuja-competitionsignup-active-form div.tuja-competitionsignup-form')
 
-    var isGroupLeader = $input.val() === $form.data('roleGroupLeaderLabel')
+    // Copy values from form we are about to hide to all the other forms (just to keep all forms in sync so that user
+    // doesn't notice that there are actually four static forms instead of just one dynamic one).
+    prevForm.find('input').each(function () {
+      const $input = $(this)
+      $('div#tuja-competitionsignup-inactive-forms input[id="' + $input.attr('id') + '"]').val($input.val())
+    })
 
-    $('#tuja-person__name').closest('div.tuja-question').toggle(isGroupLeader)
-    $('#tuja-person__phone').closest('div.tuja-question').toggle(isGroupLeader)
-    $('#tuja-person__pno').closest('div.tuja-question').toggle(isGroupLeader)
-
-    return false
+    // Swap old/current form for newly selected form
+    nextForm.appendTo('#tuja-competitionsignup-active-form')
+    prevForm.appendTo('#tuja-competitionsignup-inactive-forms')
   }
 
   return {
     init: function ($) {
-      $('input[name="tuja-person__role"]').change(onRoleSelect.bind(null, $))
-      $('input[name="tuja-person__role"]:checked').change()
+      $('input[name="tuja-group__age"]').change(updateForms.bind(null, $))
+      $('input[name="tuja-person__role"]').change(updateForms.bind(null, $))
+
+      updateForms($) // Keep view in sync with preset radio buttons.
     }
   }
 })()

@@ -529,6 +529,76 @@ describe('wp-tuja', () => {
         }
       })
     })
+
+    describe('dynamic form', () => {
+
+      beforeAll(async () => {
+        await adminPage.configureGroupCategoryDateLimits(competitionId, true, true)
+      })
+
+      it.each([
+        {
+          groupCategorySelector: '#tuja-group__age-0', // Old participants, NIN is required
+          userRoleSelector: '#tuja-person__role-0', // Team leader
+          expectEmail: true,
+          expectPhone: true,
+          expectName: true,
+          expectFood: false,
+          expectNote: false,
+          expectPno: true // Yep, PNO/NIN required for old participant leader
+        },
+        {
+          groupCategorySelector: '#tuja-group__age-2', // Young participants, NIN is optional (so field should be hidden)
+          userRoleSelector: '#tuja-person__role-0', // Team leader
+          expectEmail: true,
+          expectPhone: true,
+          expectName: true,
+          expectFood: false,
+          expectNote: false,
+          expectPno: false // No PNO/NIN for young participant leader
+        },
+        {
+          groupCategorySelector: '#tuja-group__age-0', // Old participants, NIN is required
+          userRoleSelector: '#tuja-person__role-1', // Administrator (extra contact), only e-mail required regardless of age group
+          expectEmail: true,
+          expectPhone: false,
+          expectName: false,
+          expectFood: false,
+          expectNote: false,
+          expectPno: false
+        },
+        {
+          groupCategorySelector: '#tuja-group__age-2',
+          userRoleSelector: '#tuja-person__role-1', // Administrator (extra contact), only e-mail required regardless of age group
+          expectEmail: true,
+          expectPhone: false,
+          expectName: false,
+          expectFood: false,
+          expectNote: false,
+          expectPno: false
+        }
+      ])('should display correct fields (sub-test %#)', async ({
+                                                   groupCategorySelector,
+                                                   userRoleSelector,
+                                                   expectEmail,
+                                                   expectPhone,
+                                                   expectName,
+                                                   expectFood,
+                                                   expectNote,
+                                                   expectPno
+                                                 }) => {
+        await goto(`http://localhost:8080/${competitionKey}/anmal`)
+        await click(groupCategorySelector)
+        await click(userRoleSelector)
+
+        await expectElementCount('form input[name="tuja-person__email__"]', expectEmail ? 1 : 0)
+        await expectElementCount('form input[name="tuja-person__phone__"]', expectPhone ? 1 : 0)
+        await expectElementCount('form input[name="tuja-person__name__"]', expectName ? 1 : 0)
+        await expectElementCount('form input[name="tuja-person__food__"]', expectFood ? 1 : 0)
+        await expectElementCount('form input[name="tuja-person__note__"]', expectNote ? 1 : 0)
+        await expectElementCount('form input[name="tuja-person__pno__"]', expectPno ? 1 : 0)
+      })
+    })
   })
 
   describe('Checking in', () => {
