@@ -54,7 +54,7 @@ class PointsOverride extends AbstractGroupView {
 		// Validate group category
 		$group_category = $crew_group->get_category();
 		if ( isset( $group_category ) && ! $group_category->get_rules()->is_crew() ) {
-			throw new Exception( 'Bara funktionärer får använda detta formulär.' );
+			throw new Exception( 'Bara funktionärer får använda detta formulär.' ); // TODO: Extract to strings.ini
 		}
 
 		Frontend::use_script( 'jquery' );
@@ -66,7 +66,7 @@ class PointsOverride extends AbstractGroupView {
 		if ( isset( $_POST[ self::ACTION_FIELD_NAME ] ) && $_POST[ self::ACTION_FIELD_NAME ] == 'update' ) {
 			$errors = $this->update_points();
 			if ( empty( $errors ) ) {
-				$html_sections[] = sprintf( '<p class="tuja-message tuja-message-success">%s</p>', 'Poängen har sparats.' );
+				$html_sections[] = sprintf( '<p class="tuja-message tuja-message-success">%s</p>', 'Poängen har sparats.' ); // TODO: Extract to strings.ini
 			} else {
 				$html_sections[] = sprintf( '<p class="tuja-message tuja-message-error">%s</p>', join( '. ', $errors ) );
 			}
@@ -105,7 +105,7 @@ class PointsOverride extends AbstractGroupView {
 
 			$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::OPTIMISTIC_LOCK_FIELD_NAME, $optimistic_lock_value );
 
-			$html_sections[] = sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="update">Spara</button></div>', self::ACTION_FIELD_NAME );
+			$html_sections[] = sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="update">Spara</button></div>', self::ACTION_FIELD_NAME ); // TODO: Extract to strings.ini
 		}
 
 		return join( $html_sections );
@@ -114,7 +114,7 @@ class PointsOverride extends AbstractGroupView {
 	private function render_points_field( $text, $max_score, $question_id, $group_id, $current_points ): string {
 		$key        = $question_id . self::FIELD_NAME_PART_SEP . $group_id;
 		$points     = isset( $current_points[ $key ] ) ? $current_points[ $key ]->points : null;
-		$field      = new FieldNumber( $text, sprintf( 'Max %d poäng.', $max_score ) );
+		$field      = new FieldNumber( $text, sprintf( 'Max %d poäng.', $max_score ) ); // TODO: Extract to strings.ini
 		$field_name = self::QUESTION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $question_id . self::FIELD_NAME_PART_SEP . $group_id;
 
 		return $field->render( $field_name, $points );
@@ -145,7 +145,7 @@ class PointsOverride extends AbstractGroupView {
 				$question = $this->question_dao->get( $question_id );
 
 				if ( $question->score_max < $field_value ) {
-					throw new Exception( 'För hög poäng. Max poäng är ' . $question->score_max );
+					throw new Exception( 'För hög poäng. Max poäng är ' . $question->score_max ); // TODO: Extract to strings.ini
 				}
 
 				$this->points_dao->set( $group_id, $question_id, is_numeric( $field_value ) ? intval( $field_value ) : null );
@@ -170,11 +170,11 @@ class PointsOverride extends AbstractGroupView {
 	public function get_filter_field() {
 		$render_id = self::FILTER_DROPDOWN_NAME;
 		// TODO: Show user if the assigned points will actually be counted or if the use has provided a new answer to the question which in effect nullifies the points assigned here.
-		$hint = sprintf( '<small class="tuja-question-hint">%s</small>', 'Kom ihåg att spara innan du byter.' );
+		$hint = sprintf( '<small class="tuja-question-hint">%s</small>', 'Kom ihåg att spara innan du byter.' ); // TODO: Extract to strings.ini
 
 		return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label>%s</div>',
 			$render_id,
-			'Vad vill du rapportera för?',
+			'Vad vill du rapportera för?', // TODO: Extract to strings.ini
 			$hint,
 			$this->render_filter_dropdown()
 		);
@@ -211,6 +211,7 @@ class PointsOverride extends AbstractGroupView {
 		}, $group_option_values, $group_option_labels ) );
 
 		ob_start();
+		// TODO: Extract to strings.ini
 		?>
         <select id="<?= self::FILTER_QUESTIONS; ?>" name="<?= self::FILTER_QUESTIONS; ?>"
                 class="tuja-fieldchoices tuja-fieldchoices-longlist">
@@ -280,6 +281,7 @@ class PointsOverride extends AbstractGroupView {
 		$current_optimistic_lock_value = $this->get_optimistic_lock_value( $keys );
 
 		if ( $current_optimistic_lock_value != $_POST[ self::OPTIMISTIC_LOCK_FIELD_NAME ] ) {
+			// TODO: Extract to strings.ini
 			throw new Exception( '' .
 			                     'Någon annan har hunnit rapportera in andra poäng för dessa frågor/lag sedan du ' .
 			                     'laddade den här sidan. För att undvika att du av misstag skriver över andra ' .

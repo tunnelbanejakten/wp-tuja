@@ -117,6 +117,8 @@ class GroupCategoryDao extends AbstractDao {
 			$competition_dao = new CompetitionDao(); // A bit of a hack but not super-ugly (DAOs should really be created in entity classes)
 			$competition     = $competition_dao->get( $gc->competition_id );
 
+			// Set rules based on (legacy) reference to RuleSet class in rule_set column.
+			// TODO: Remove rule_set from database.
 			$gc->set_rules( GroupCategoryRules::from_rule_set( self::get_rule_set( isset( $result->rule_set )
 				? $result->rule_set
 				: ( $result->is_crew != 0

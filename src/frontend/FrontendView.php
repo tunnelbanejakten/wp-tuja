@@ -23,19 +23,11 @@ abstract class FrontendView {
 	const FIELD_GROUP_NAME = self::FIELD_PREFIX_GROUP . 'name';
 	const FIELD_GROUP_AGE = self::FIELD_PREFIX_GROUP . 'age';
 	const FIELD_GROUP_NOTE = self::FIELD_PREFIX_GROUP . 'note';
-	const FIELD_GROUP_EXTRA_CONTACT = self::FIELD_PREFIX_GROUP . 'extracontact';
 
 	const FIELD_PREFIX_PERSON = 'tuja-person__';
-	const FIELD_PERSON_NAME = self::FIELD_PREFIX_PERSON . 'name';
-	const FIELD_PERSON_EMAIL = self::FIELD_PREFIX_PERSON . 'email';
-	const FIELD_PERSON_PHONE = self::FIELD_PREFIX_PERSON . 'phone';
-	const FIELD_PERSON_PNO = self::FIELD_PREFIX_PERSON . 'pno';
-	const FIELD_PERSON_FOOD = self::FIELD_PREFIX_PERSON . 'food';
 	const FIELD_PERSON_ROLE = self::FIELD_PREFIX_PERSON . 'role';
-	const FIELD_PERSON_NOTE = self::FIELD_PREFIX_PERSON . 'note';
 
 	private $wp_post = null;
-
 	private $url;
 	private $wp_template;
 	private $category_dao;

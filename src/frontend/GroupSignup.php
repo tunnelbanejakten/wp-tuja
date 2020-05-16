@@ -31,7 +31,7 @@ class GroupSignup extends AbstractGroupView {
 			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.' );
 		}
 
-		$do_save                     = $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE;
+		$do_save = $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE;
 		try {
 			if ( $do_save ) {
 				$this->validate_recaptcha_html();
@@ -92,7 +92,7 @@ class GroupSignup extends AbstractGroupView {
 		return sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="%s">%s</button></div>', self::ACTION_BUTTON_NAME, self::ACTION_NAME_SAVE, 'Jag anmäler mig' );
 	}
 
-	private function create_person( ): Person {
+	private function create_person(): Person {
 		$person = $this->get_person();
 
 		try {
@@ -116,7 +116,7 @@ class GroupSignup extends AbstractGroupView {
 	private function get_person(): Person {
 		$person           = $this->init_posted_person();
 		$person->group_id = $this->get_group()->id;
-		$person->set_type(Person::PERSON_TYPE_REGULAR);
+		$person->set_type( Person::PERSON_TYPE_REGULAR );
 
 		return $person;
 	}
