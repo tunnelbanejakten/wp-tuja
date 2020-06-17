@@ -68,7 +68,7 @@ abstract class AbstractQuestion {
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */
-	abstract function score( $answer_object ) : AutoScoreResult;
+	abstract function score( $answer_object ): AutoScoreResult;
 
 	/**
 	 * Returns the HTML used to render this question.
@@ -103,7 +103,9 @@ abstract class AbstractQuestion {
 			if ( $is_ordered ) {
 				// Compare user-supplied answer X to correct answer X:
 				$percent = 0;
-				similar_text( $answer, $correct_input[ $index ], $percent );
+				if ( isset( $correct_input[ $index ] ) ) {
+					similar_text( $answer, $correct_input[ $index ], $percent );
+				}
 
 				return $percent;
 			} else {

@@ -14,6 +14,12 @@ to be able to send e-mail. One such plugin is https://wordpress.org/plugins/wp-m
 
 Remember to change Permalink format to "Post name" (or at least not "Plain").
 
+# Unit Tests
+
+    $ brew install composer
+    $ composer install
+    $ ./vendor/bin/phpunit tests/unit
+
 # Integration Tests
 
 There are a number of integration tests for verifying that the basic use cases are working.
