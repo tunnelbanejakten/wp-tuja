@@ -49,7 +49,7 @@ class Form extends AbstractGroupView {
 
 			$form = $this->form_dao->get_by_key( $this->form_key );
 			if ( $form == false ) {
-				throw new Exception( 'Oj, vi hittade inte formuläret' );
+				throw new Exception( Strings::get('form.not_found') );
 			}
 
 			$this->form = $form;

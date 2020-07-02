@@ -6,6 +6,7 @@ namespace tuja\view;
 use tuja\data\model\Group;
 use tuja\Frontend;
 use tuja\util\ImageManager;
+use tuja\util\Strings;
 
 class FieldImages extends Field {
 	private $image_manager;
@@ -57,6 +58,7 @@ class FieldImages extends Field {
 			'<textarea rows="3" id="%s" name="%s[comment]" placeholder="%s" %s>%s</textarea>',
 			$field_name . '-comment',
 			$field_name,
+			Strings::get('field_images.comment.placeholder'),
 			$this->read_only ? ' disabled="disabled"' : '',
 			$comment
 		);

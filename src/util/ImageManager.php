@@ -218,7 +218,7 @@ class ImageManager {
 			}
 
 			wp_send_json( array(
-				'error' => 'Din bild kunde inte sparas. Ladda om sidan och prova igen eller kontakta kundtjänst.'
+				'error' => Strings::get('image_manager.unknown_error')
 			), 500 );
 			exit;
 		}

@@ -42,13 +42,15 @@ abstract class AbstractGroupView extends FrontendView {
 
 			$group = $this->group_dao->get_by_key( $this->group_key );
 			if ( $group === false ) {
-				throw new Exception( 'Oj, vi hittade inte laget' );
+				throw new Exception( 'Oj, vi hittade inte laget' ); // Cannot be localized since we don't know which competition we're supposed to check for string overrides
 			}
 			$this->group = $group;
+
+			Strings::init($group->competition_id);
 		}
 
 		if ( $this->group->get_status() == Group::STATUS_DELETED ) {
-			throw new Exception( 'Laget är avanmält.' );
+			throw new Exception( Strings::get( 'group.is_deleted' ) );
 		}
 
 		return $this->group;
@@ -56,8 +58,6 @@ abstract class AbstractGroupView extends FrontendView {
 
 	function get_content() {
 		try {
-			Strings::init( $this->get_group()->competition_id );
-
 			return parent::get_content();
 		} catch ( Exception $e ) {
 			return $this->get_exception_message_html( $e );
@@ -95,7 +95,7 @@ abstract class AbstractGroupView extends FrontendView {
 
 	protected function check_group_status( Group $group ) {
 		if ( $group->get_status() === Group::STATUS_AWAITING_APPROVAL ) {
-			throw new WarningException( 'Ert lag står på väntelistan och därför är den här sidan låst just nu.' );
+			throw new WarningException( Strings::get( 'group.is_on_waiting_list' ) );
 		}
 	}
 
@@ -105,7 +105,7 @@ abstract class AbstractGroupView extends FrontendView {
 		$is_event_ongoing = ( $competition->event_start == null || $competition->event_start <= $now )
 		                    && ( $competition->event_end == null || $now <= $competition->event_end );
 		if ( ! $is_event_ongoing ) {
-			throw new Exception( 'Tävlingen har inte öppnat än.' );
+			throw new Exception( Strings::get( 'competition.is_not_open_yet' ) );
 		}
 	}
 }
