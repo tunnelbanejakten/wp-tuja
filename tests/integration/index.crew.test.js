@@ -59,6 +59,11 @@ describe('wp-tuja', () => {
     await adminPage.configureDefaultGroupStatus(competitionId, 'accepted')
   })
 
+  afterAll(async () => {
+    await adminPage.close()
+    await defaultPage.close()
+  })
+
 
   describe('Crew', () => {
 

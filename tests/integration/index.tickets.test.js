@@ -31,6 +31,11 @@ describe('wp-tuja', () => {
     defaultPage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
   })
 
+  afterAll(async () => {
+    await adminPage.close()
+    await defaultPage.close()
+  })
+
   describe('Tickets', () => {
 
     let stationsProps = null

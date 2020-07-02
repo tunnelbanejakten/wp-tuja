@@ -36,6 +36,11 @@ describe('wp-tuja', () => {
     defaultPage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
   })
 
+  afterAll(async () => {
+    await adminPage.close()
+    await defaultPage.close()
+  })
+
   describe('Signing up as new team', () => {
 
     describe('when teams need to be approved', () => {

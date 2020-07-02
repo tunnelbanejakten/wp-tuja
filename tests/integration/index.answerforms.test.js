@@ -60,6 +60,11 @@ describe('wp-tuja', () => {
     defaultPage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
   })
 
+  afterAll(async () => {
+    await adminPage.close()
+    await defaultPage.close()
+  })
+
   describe('Answering forms', () => {
 
     let formKey = 0
@@ -280,54 +285,37 @@ describe('wp-tuja', () => {
       await aliceSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
       await bobSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
 
-      // Alice answers first question only
+      // Alice answers only question 1
       await aliceSession.type('input.tuja-fieldtext[type="text"]', 'The updated answer from Alice')
-      await aliceSession.clickLink('button[name="tuja_formshortcode__action"][value="update"]')
       const expectedNumberAnswer = await aliceSession.$eval('input.tuja-fieldtext[type="number"]', node => node.value)
+      await aliceSession.clickLink('button[name="tuja_formshortcode__action"][value="update"]')
 
       await aliceSession.expectFormValue('input.tuja-fieldtext[type="text"]', 'The updated answer from Alice')
+      await aliceSession.expectFormValue('input.tuja-fieldtext[type="number"]', expectedNumberAnswer)
 
-      // Bob answers first and second question. None of his answers should be kept.
+      // Bob answers question 1 and 2. Only his answer to question 2 should be kept.
       await bobSession.type('input.tuja-fieldtext[type="text"]', 'The answer from Bob')
       await bobSession.type('input.tuja-fieldtext[type="number"]', '1337')
+      await bobSession.takeScreenshot()
       await bobSession.clickLink('button[name="tuja_formshortcode__action"][value="update"]')
 
-      await bobSession.expectErrorMessage('Medan du fyllde i formuläret hann någon annan i ditt lag skicka in andra svar på några av frågorna.')
+      await bobSession.takeScreenshot()
+      await bobSession.expectErrorMessage('Oj, alla dina svar kunde inte sparas. Under varje fråga ser du vad som gick fel.')
 
       // Alice's answer should still be there.
       await bobSession.expectFormValue('input.tuja-fieldtext[type="text"]', 'The updated answer from Alice')
+      await bobSession.expectFormValue('input.tuja-fieldtext[type="number"]', '1337')
 
-      // Answer unchanged by Alice but changed by Bob should still be the original value since the logic does not know
-      // if Alice cared about this value or not (we don't know if Alice wanted it to stay the same of if she's okay
-      // with Bob changing it.)
-      await bobSession.expectFormValue('input.tuja-fieldtext[type="number"]', expectedNumberAnswer)
-
-      await aliceSession.close()
-      await bobSession.close()
-    })
-
-    it('should be possible for two people in the same team to give the same answer concurrently', async () => {
-      const aliceSession = await createNewUserPage()
-      const bobSession = await createNewUserPage()
-
-      // Alice sets the initial answers
-      await aliceSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`)
-      await aliceSession.type('input.tuja-fieldtext[type="text"]', 'The answer')
+      // Alice answers question 2. This should not be possible.
+      await aliceSession.takeScreenshot()
+      await aliceSession.type('input.tuja-fieldtext[type="number"]', expectedNumberAnswer + 1)
+      await aliceSession.takeScreenshot()
       await aliceSession.clickLink('button[name="tuja_formshortcode__action"][value="update"]')
 
-      await bobSession.goto(`http://localhost:8080/${groupProps.key}/svara/${formKey}`) // Load Bob's form to get up-to-date lock value
-
-      // Alice changes the answer to the first question
-      await aliceSession.type('input.tuja-fieldtext[type="text"]', 'The new answer')
-      await aliceSession.clickLink('button[name="tuja_formshortcode__action"][value="update"]')
-
-      // Bob writes the same answer to the first question. Bob's lock value is out-of-date at this point.
-      await bobSession.type('input.tuja-fieldtext[type="text"]', 'The new answer')
-      await bobSession.clickLink('button[name="tuja_formshortcode__action"][value="update"]')
-
-      // Bob gets no error message, even though his lock value is out-of-date, since he doesn't actually change anything compared to the latest answers (i.e. the answer updated by Alice).
-      await bobSession.expectElementCount('.tuja-message-error', 0)
-      await bobSession.expectFormValue('input.tuja-fieldtext[type="text"]', 'The new answer')
+      await aliceSession.takeScreenshot()
+      await aliceSession.expectErrorMessage('Oj, alla dina svar kunde inte sparas. Under varje fråga ser du vad som gick fel.')
+      await aliceSession.expectFormValue('input.tuja-fieldtext[type="text"]', 'The updated answer from Alice')
+      await aliceSession.expectFormValue('input.tuja-fieldtext[type="number"]', '1337')
 
       await aliceSession.close()
       await bobSession.close()
