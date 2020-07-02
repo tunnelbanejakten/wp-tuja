@@ -49,7 +49,7 @@ class Form extends AbstractGroupView {
 
 			$form = $this->form_dao->get_by_key( $this->form_key );
 			if ( $form == false ) {
-				throw new Exception( Strings::get('form.not_found') );
+				throw new Exception( Strings::get( 'form.not_found' ) );
 			}
 
 			$this->form = $form;
@@ -72,10 +72,18 @@ class Form extends AbstractGroupView {
 
 		$updates = $this->get_updated_answers();
 
+		$updated_question_ids = array_keys( $updates );
+
+		// Remove POSTed data associated with questions which the user did NOT updated. This ensured that, when the
+		// form is rendered, we will always show the most recent data (in case other users have submitted new answers
+		// to questions which the current user did not try to update). Without this "hack", the current user would see
+		// old data (since the current user would see the old re-POSTed data instead of the new data in the database).
+		$this->clear_unchanged_post_data( $updated_question_ids );
+
 		if ( count( $updates ) > 0 ) {
 			try {
 				$current_locks_all     = LockValuesList::from_string( $_POST[ self::OPTIMISTIC_LOCK_FIELD_NAME ] );
-				$current_locks_updates = $current_locks_all->subset( array_keys( $updates ) );
+				$current_locks_updates = $current_locks_all->subset( $updated_question_ids );
 
 				$this->get_form_lock_validator()->check_optimistic_lock( $current_locks_updates );
 			} catch ( FormLockException $e ) {
@@ -84,9 +92,13 @@ class Form extends AbstractGroupView {
 				// We do not want to present the previously inputted values in case we notice that another user has already answered the same questions.
 				// Remove what the current user submitted, which will force the form to display the newest response instead of the current user's.
 				foreach ( $rejected_ids as $response_question_id ) {
+					// Remove POSTed data, thus ensuring that the user sees the newer answer in the database (when the form is rendered).
 					unset( $_POST[ self::RESPONSE_FIELD_NAME_PREFIX . $response_question_id ] );
+
+					// Remove answer from list of updates
 					unset( $updates[ $response_question_id ] );
-					$errors[ self::RESPONSE_FIELD_NAME_PREFIX . $response_question_id ] = Strings::get('form.optimistic_lock_error');
+
+					$errors[ self::RESPONSE_FIELD_NAME_PREFIX . $response_question_id ] = Strings::get( 'form.optimistic_lock_error' );
 				}
 			}
 
@@ -100,7 +112,7 @@ class Form extends AbstractGroupView {
 					$affected_rows = $this->response_dao->create( $new_response );
 
 					if ( $affected_rows === false ) {
-						throw new Exception( Strings::get('form.unknown_error') );
+						throw new Exception( Strings::get( 'form.unknown_error' ) );
 					}
 				} catch ( Exception $e ) {
 					$errors[ self::RESPONSE_FIELD_NAME_PREFIX . $question_id ] = $e->getMessage();
@@ -269,5 +281,22 @@ class Form extends AbstractGroupView {
 		$updates = FormUserChanges::get_updated_answer_objects( $_POST[ self::TRACKED_ANSWERS_FIELD_NAME ], $user_answers );
 
 		return $updates;
+	}
+
+	/**
+	 * Removed POSTed data which has NOT been updated.
+	 */
+	private function clear_unchanged_post_data( array $changed_question_ids ) {
+		$updated_question_field_names = array_map( function ( $question_id ) {
+			return self::RESPONSE_FIELD_NAME_PREFIX . $question_id;
+		}, $changed_question_ids );
+
+		foreach ( array_keys( $_POST ) as $field_name ) {
+			$is_form_input_field        = substr( $field_name, 0, strlen( self::RESPONSE_FIELD_NAME_PREFIX ) ) === self::RESPONSE_FIELD_NAME_PREFIX;
+			$is_not_updated_input_field = ! in_array( $field_name, $updated_question_field_names );
+			if ( $is_form_input_field && $is_not_updated_input_field ) {
+				unset( $_POST[ $field_name ] );
+			}
+		}
 	}
 }
