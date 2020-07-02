@@ -5,6 +5,8 @@ namespace tuja\util;
 use Exception;
 use tuja\data\store\GroupDao;
 use tuja\data\store\ResponseDao;
+use tuja\frontend\FormLockValidator;
+use tuja\util\concurrency\LockValuesList;
 
 class ImageManager {
 	const DEFAULT_THUMBNAIL_PIXEL_COUNT = 200 * 200;
@@ -26,12 +28,12 @@ class ImageManager {
 
 			list ( , , $type ) = getimagesize( $file_path );
 			if ( $type != IMG_JPG && $type != IMG_PNG ) {
-				throw new Exception( 'Unsupported image format.' );
+				throw new Exception( 'Unsupported image format.' ); // TODO: i18n
 			}
 
 			$image_editor = wp_get_image_editor( $file_path );
 			if ( is_wp_error( $image_editor ) ) {
-				throw new Exception( 'Not a valid image.' );
+				throw new Exception( 'Not a valid image.' ); // TODO: i18n
 			}
 
 			$ext           = $type == IMG_JPG ? 'jpg' : 'png';
@@ -51,11 +53,11 @@ class ImageManager {
 			if ( $this->move( $file_path, $new_path ) ) {
 				return $filename;
 			} else {
-				throw new Exception( sprintf( 'Could not save uploaded file to %s', $new_path ) );
+				throw new Exception( sprintf( 'Could not save uploaded file to %s', $new_path ) ); // TODO: i18n
 			}
 
 		} else {
-			throw new Exception( sprintf( 'File %s not found', $file_path ) );
+			throw new Exception( sprintf( 'File %s not found', $file_path ) ); // TODO: i18n
 		}
 	}
 
@@ -151,20 +153,22 @@ class ImageManager {
 		if ( ! empty( $_FILES['file'] ) && ! empty( $_POST['group'] ) && ! empty( $_POST['question'] ) ) {
 			$group_dao = new GroupDao();
 			$group     = $group_dao->get_by_key( sanitize_text_field( $_POST['group'] ) );
-			$question  = (int) $_POST['question'];
+			$question  = (int) $_POST['question']; // int or string?
+			Strings::init($group->competition_id);
 
 			$response_dao = new ResponseDao();
 
-			// Check lock. If lock is empty no answers has been sent so just proceed.
-			if ( ( $lock_res = $response_dao->get( $group->id, 0, true ) ) && ! empty( $lock_res->created ) ) {
-				$lock_res = $lock_res->created->getTimestamp();
-				$lock     = (int) $_POST['lock'];
-				if ( $lock === 0 || $lock_res !== $lock ) {
-					wp_send_json( array(
-						'error' => 'Din bild kunde inte laddas upp eftersom någon annan i ditt lag har uppdaterat era svar. Ladda om sidan och prova igen.'
-					), 409 );
-					exit;
-				}
+			try {
+				// Check lock. If lock is empty no answers has been sent so just proceed.
+				$current_locks_all     = LockValuesList::from_string( $_POST['lock'] );
+				$current_locks_updates = $current_locks_all->subset( [ $question ] );
+
+				( new FormLockValidator( $response_dao, $group ) )->check_optimistic_lock( $current_locks_updates );
+			} catch ( Exception $e ) {
+				wp_send_json( array(
+					'error' => Strings::get('image_manager.optimistic_lock_error')
+				), 409 );
+				exit;
 			}
 
 			$upload_dir = '/tuja/group-' . $group->random_id;
@@ -189,7 +193,7 @@ class ImageManager {
 				}
 			);
 
-			// Normalizes file uploads. $_FILES['file'] is an associative array where each elements value can be either a string or an array of 
+			// Normalizes file uploads. $_FILES['file'] is an associative array where each elements value can be either a string or an array of
 			// multiple strings. wp_handle_upload expects each value to be a string and returns an error otherwise, so if the values are
 			// arrays we need to turn them into strings. We know that this function will only be called with one uploaded file at a time
 			// so it is safe to just take the first element in each value array.
@@ -220,7 +224,7 @@ class ImageManager {
 		}
 
 		wp_send_json( array(
-			'error' => 'Datan som skickades är ogiltig.'
+			'error' => Strings::get('image_manager.invalid_data')
 		), 400 );
 		exit;
 	}

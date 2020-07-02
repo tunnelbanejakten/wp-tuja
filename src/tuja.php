@@ -339,6 +339,7 @@ abstract class Plugin {
 			self::PATH . '/util/router/' . $classname . '.php',
 			self::PATH . '/util/markdown/' . $classname . '.php',
 			self::PATH . '/util/messaging/' . $classname . '.php',
+			self::PATH . '/util/concurrency/' . $classname . '.php',
 			self::PATH . '/util/rules/' . $classname . '.php',
 			self::PATH . '/util/score/' . $classname . '.php',
 			self::PATH . '/util/ticket/' . $classname . '.php',

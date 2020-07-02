@@ -15,7 +15,7 @@
       var maxFilesCount = parseInt($image.data('maxFilesCount')) || 1
 
       var $question = $(this).closest('.tuja-question')
-      var $lock = $(this).closest('form').find('input[name="tuja_formshortcode__optimistic_lock"]')
+      var $lock = $(this).closest('form').find('input[name="tuja_formshortcode__optimistic_locks"]') // TODO: Decode JSON in form field and extract lock value for this specific question?
       var $fileCounter = $question.find('.tuja-fieldimages-counter')
 
       var getFileCount = function () {
