@@ -17,17 +17,25 @@ class FieldImages extends Field {
 		$this->max_files_count = $max_files_count;
 	}
 
-	public function get_posted_answer( $form_field ) {
-		if ( isset( $_POST[ $form_field ] ) ) {
-			$data = sanitize_post( $_POST[ $form_field ] );
+	public function get_data( string $field_name, $stored_posted_answer ) {
+		if ( isset( $_POST[ $field_name ] ) ) {
+			$data = sanitize_post( $_POST[ $field_name ] );
 
 			return [
-				'images'  => @$data['images'],
-				'comment' => @$data['comment']
+				'images'  => @$data['images'] ?: [],
+				'comment' => @$data['comment'] ?: ''
 			];
 		}
 
-		return null;
+		if ( is_array( $stored_posted_answer ) && ! @is_array( $stored_posted_answer[0] ) && ! empty( $stored_posted_answer[0] ) ) {
+			// Fix legacy format (JSON as string in array)
+			$stored_posted_answer = json_decode( $stored_posted_answer[0], true );
+		}
+
+		return [
+			'images'  => @$stored_posted_answer['images'] ?: [],
+			'comment' => @$stored_posted_answer['comment'] ?: ''
+		];
 	}
 
 	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' ) {
@@ -37,7 +45,7 @@ class FieldImages extends Field {
 			'<div class="tuja-field tuja-fieldimages"><label>%s%s</label>%s%s</div>',
 			$this->label,
 			$hint,
-			$this->render_image_upload( $field_name, $group->random_id, $answer_object ),
+			$this->render_image_upload( $field_name, $group->random_id, $this->get_data($field_name, $answer_object) ),
 			! empty( $error_message ) ? sprintf( '<div class="tuja-message tuja-message-error">%s</div>', $error_message ) : ''
 		);
 	}
@@ -46,7 +54,7 @@ class FieldImages extends Field {
 	private function render_comment_field( $field_name, $comment ) {
 		ob_start();
 		printf(
-			'<textarea rows="3" id="%s" name="%s[comment]" placeholder="Skriv kommentar här..." %s>%s</textarea>',
+			'<textarea rows="3" id="%s" name="%s[comment]" placeholder="%s" %s>%s</textarea>',
 			$field_name . '-comment',
 			$field_name,
 			$this->read_only ? ' disabled="disabled"' : '',
@@ -56,22 +64,17 @@ class FieldImages extends Field {
 		return ob_get_clean();
 	}
 
-	private function render_image_upload( $field_name, $group_key, $answer_object ) {
+	private function render_image_upload( $field_name, $group_key, $data ) {
 		Frontend::use_script( 'jquery' );
 		Frontend::use_script( 'tuja-exif-js.min.js' ); // Including exif-js automatically enables auto-rotation in Dropzone.
 		Frontend::use_script( 'tuja-dropzone.min.js' );
 		Frontend::use_script( 'tuja-upload.js' );
 		Frontend::use_stylesheet( 'tuja-dropzone.min.css' );
 
-		if ( is_array( $answer_object ) && ! @is_array( $answer_object[0] ) && ! empty( $answer_object[0] ) ) {
-			// Fix legacy format (JSON as string in array)
-			$answer_object = json_decode( $answer_object[0], true );
-		}
-
 		$images = [];
-		if ( isset( $answer_object ) && isset( $answer_object['images'] ) ) {
-			if ( ! empty( $answer_object['images'] ) ) {
-				foreach ( $answer_object['images'] as $filename ) {
+		if ( isset( $data ) && isset( $data['images'] ) ) {
+			if ( ! empty( $data['images'] ) ) {
+				foreach ( $data['images'] as $filename ) {
 
 					$resized_image_url = $this->image_manager->get_resized_image_url(
 						$filename,
@@ -103,7 +106,7 @@ class FieldImages extends Field {
                 </div>
             </div>
             <div class="tuja-image-options">
-				<?php echo $this->render_comment_field( $field_name, isset( $answer_object ) ? $answer_object['comment'] : '' ); ?>
+				<?php echo $this->render_comment_field( $field_name, isset( $data ) ? $data['comment'] : '' ); ?>
             </div>
         </div>
 		<?php

@@ -79,7 +79,7 @@ abstract class AbstractQuestion {
 	 * Gathers data from $_POST about the current question. The response from this function
 	 * can be sent to score(...) and can be stored in the database.
 	 */
-	abstract function get_answer_object( $field_name );
+	abstract function get_answer_object( string $field_name, $stored_posted_answer );
 
 	abstract function get_correct_answer_html();
 

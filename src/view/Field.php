@@ -17,5 +17,13 @@ abstract class Field {
 
 	abstract function render( $field_name, $answer_object, Group $group = null, $error_message = '' );
 
-	abstract function get_posted_answer( $form_field );
+	/**
+	 * Returns the data used to render the component.
+	 *
+	 * @param string $field_name The name of the field in $_POST
+	 * @param mixed $stored_posted_answer Data to be used if no data is found in $_POST
+	 *
+	 * @return mixed
+	 */
+	abstract function get_data( string $field_name, $stored_posted_answer );
 }
