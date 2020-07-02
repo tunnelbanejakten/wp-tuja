@@ -249,6 +249,7 @@ class PointsOverride extends AbstractGroupView {
 		return $this->participant_groups;
 	}
 
+	// TODO: Use LockValuesList to prevent concurrent edits
 	private function get_optimistic_lock_value( array $keys ) {
 		$current_points = $this->points_dao->get_by_competition( $this->competition_id );
 		$points_by_key  = array_combine(
