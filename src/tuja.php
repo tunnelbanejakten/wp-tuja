@@ -52,6 +52,7 @@ abstract class Plugin {
 				random_id                            VARCHAR(20)    NOT NULL,
 				name                                 VARCHAR(100)   NOT NULL,
 				payment_instructions                 TEXT,
+				payment_model                        TEXT,
 				create_group_start                   INTEGER,
 				create_group_end                     INTEGER,
 				edit_group_start                     INTEGER,

@@ -3,7 +3,7 @@
 namespace tuja\data\model;
 
 
-use tuja\util\fee\DefaultGroupFeeCalculator;
+use tuja\util\fee\CompetingParticipantFeeCalculator;
 use tuja\util\fee\GroupFeeCalculator;
 
 class Competition {
