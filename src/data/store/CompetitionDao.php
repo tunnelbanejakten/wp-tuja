@@ -2,8 +2,10 @@
 
 namespace tuja\data\store;
 
+use ReflectionClass;
 use tuja\data\model\Competition;
 use tuja\util\Database;
+use tuja\util\paymentoption\PaymentOption;
 
 class CompetitionDao extends AbstractDao {
 	function __construct() {
@@ -20,9 +22,10 @@ class CompetitionDao extends AbstractDao {
 //				'create_group_end'                    => self::to_db_date($competition->create_group_end),
 //				'edit_group_start'                    => self::to_db_date($competition->edit_group_start),
 //				'edit_group_end'                      => self::to_db_date($competition->edit_group_end),
-				'event_start'                         => self::to_db_date( $competition->event_start ),
-				'event_end'                           => self::to_db_date( $competition->event_end ),
-				'initial_group_status' => $competition->initial_group_status
+				'event_start'          => self::to_db_date( $competition->event_start ),
+				'event_end'            => self::to_db_date( $competition->event_end ),
+				'initial_group_status' => $competition->initial_group_status,
+				'payment_instructions' => json_encode( self::to_payment_instructions( $competition->fee_calculator, $competition->payment_options ) )
 			),
 			array(
 				'%s',
@@ -33,6 +36,7 @@ class CompetitionDao extends AbstractDao {
 //				'%d',
 				'%d',
 				'%d',
+				'%s',
 				'%s'
 			) );
 		$success       = $affected_rows !== false && $affected_rows === 1;
@@ -50,16 +54,17 @@ class CompetitionDao extends AbstractDao {
 //				'create_group_end'                    => self::to_db_date($competition->create_group_end),
 //				'edit_group_start'                    => self::to_db_date($competition->edit_group_start),
 //				'edit_group_end'                      => self::to_db_date($competition->edit_group_end),
-				'event_start'                         => self::to_db_date( $competition->event_start ),
-				'event_end'                           => self::to_db_date( $competition->event_end ),
-				'initial_group_status' => $competition->initial_group_status
+				'event_start'          => self::to_db_date( $competition->event_start ),
+				'event_end'            => self::to_db_date( $competition->event_end ),
+				'initial_group_status' => $competition->initial_group_status,
+				'payment_instructions' => json_encode( self::to_payment_instructions( $competition->fee_calculator, $competition->payment_options ) )
 			),
 			array(
 				'id' => $competition->id
 			) );
 	}
 
-	function get( $id ) {
+	function get( $id ): Competition {
 		return $this->get_object(
 			function ( $row ) {
 				return self::to_competition( $row );
@@ -85,11 +90,46 @@ class CompetitionDao extends AbstractDao {
 //		$c->create_group_end                       = self::from_db_date($result->create_group_end);
 //		$c->edit_group_start                       = self::from_db_date($result->edit_group_start);
 //		$c->edit_group_end                         = self::from_db_date($result->edit_group_end);
-		$c->event_start                            = self::from_db_date( $result->event_start );
-		$c->event_end                              = self::from_db_date( $result->event_end );
+		$c->event_start = self::from_db_date( $result->event_start );
+		$c->event_end   = self::from_db_date( $result->event_end );
+
+		$payment_details = json_decode( $result->payment_instructions, true );
+
+		if ( @$payment_details['fee_calculator']['class_name'] ) {
+			try {
+				$fee_calculator_class = new ReflectionClass( $payment_details['fee_calculator']['class_name'] );
+				$c->fee_calculator    = $fee_calculator_class->newInstance();
+				$c->fee_calculator->configure( $payment_details['fee_calculator']['config'] );
+			} catch ( \Exception $e ) {
+			}
+		}
+
+		$c->payment_options = array_map( function ( $cfg ) {
+			$payment_option_class = new ReflectionClass( $cfg['class_name'] );
+			$payment_option       = $payment_option_class->newInstance();
+			$payment_option->configure( $cfg['config'] );
+
+			return $payment_option;
+		}, @$payment_details['payment_options'] ?: [] );
+
 		$c->initial_group_status = $result->initial_group_status;
 
 		return $c;
+	}
+
+	private static function to_payment_instructions( $fee_calculator, array $payment_options ) {
+		return [
+			'fee_calculator'  => $fee_calculator ? [
+				'class_name' => ( new ReflectionClass( $fee_calculator ) )->getName(),
+				'config'     => $fee_calculator->get_config()
+			] : null,
+			'payment_options' => array_map( function ( PaymentOption $payment_option ) {
+				return [
+					'class_name' => ( new ReflectionClass( $payment_option ) )->getName(),
+					'config'     => $payment_option->get_config()
+				];
+			}, $payment_options )
+		];
 	}
 
 	public function get_by_key( $competition_key ) {

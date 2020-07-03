@@ -12,6 +12,8 @@ class Competition {
 	public $name;
 	public $event_start;
 	public $event_end;
+	public $fee_calculator;
+	public $payment_options = [];
 
 	public $initial_group_status;
 
@@ -35,6 +37,6 @@ class Competition {
 	}
 
 	public function get_group_fee_calculator(): GroupFeeCalculator {
-		return new DefaultGroupFeeCalculator();
+		return $this->fee_calculator ?: new CompetingParticipantFeeCalculator();
 	}
 }
