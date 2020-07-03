@@ -119,5 +119,6 @@ jQuery(document).ready(function ($) {
   tujaCollapsibleControls.init($, $('#wpbody-content'))
   tujaTabs.init($)
   tujaStateGraph.init($)
+  tujaFormGenerator.init($, $('#tuja-tab-payment'))
 })
 

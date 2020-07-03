@@ -22,6 +22,7 @@ AdminUtils::printTopMenu( $competition );
         <a class="nav-tab nav-tab-active" data-tab-id="tuja-tab-dates" id="tuja_tab_dates">Datum och tider</a>
         <a class="nav-tab" data-tab-id="tuja-tab-messagetemplates" id="tuja_tab_messagetemplates">Meddelandemallar</a>
         <a class="nav-tab" data-tab-id="tuja-tab-groups" id="tuja_tab_groups">Grupper</a>
+        <a class="nav-tab" data-tab-id="tuja-tab-payment" id="tuja_tab_payment">Avgifter</a>
         <a class="nav-tab" data-tab-id="tuja-tab-strings" id="tuja_tab_strings">Texter</a>
     </div>
 
@@ -137,6 +138,19 @@ AdminUtils::printTopMenu( $competition );
                 ', $id, $this->print_group_category_form( $group_category, $competition ), $id, $template_slug );
             }
             ?>
+
+    </div>
+    <div class="tuja-tab" id="tuja-tab-payment">
+
+        <h4>Anmälningsavgift</h4>
+
+        <?= $this->print_group_fee_configuration_form($competition); ?>
+        <input type="hidden" name="tuja_competition_settings_fee_calculator" id="tuja_competition_settings_fee_calculator"/>
+
+        <h4>Betalningsmetoder</h4>
+
+        <?= $this->print_payment_options_configuration_form($competition); ?>
+        <input type="hidden" name="tuja_competition_settings_payment_options" id="tuja_competition_settings_payment_options"/>
 
     </div>
     <div class="tuja-tab" id="tuja-tab-strings">

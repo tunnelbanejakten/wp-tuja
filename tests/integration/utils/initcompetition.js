@@ -50,6 +50,8 @@ module.exports = async (browser) => {
 
   const competitionData = await createCompetition(adminPage)
 
+  await adminPage.configurePaymentDetails(competitionData.id)
+
   await adminPage.configureDefaultGroupStatus(competitionData.id, 'accepted')
 
   const crewGroupCategoryId = await adminPage.configureGroupCategories(competitionData.id)

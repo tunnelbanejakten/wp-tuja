@@ -14,6 +14,12 @@ use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\MessageTemplateDao;
 use tuja\data\store\StringsDao;
 use tuja\util\DateUtils;
+use tuja\util\fee\CompetingParticipantFeeCalculator;
+use tuja\util\fee\PersonTypeFeeCalculator;
+use tuja\util\fee\FixedFeeCalculator;
+use tuja\util\paymentoption\OtherPaymentOption;
+use tuja\util\paymentoption\PaymentOption;
+use tuja\util\paymentoption\SwishPaymentOption;
 use tuja\util\messaging\EventMessageSender;
 use tuja\util\rules\CrewMembersRuleSet;
 use tuja\util\rules\GroupCategoryRules;
@@ -298,6 +304,192 @@ class CompetitionSettings {
 			'tuja-admin-formgenerator-form-' . $category->id );
 	}
 
+	public function print_group_fee_configuration_form( Competition $competition ) {
+		$fee_calculators = [
+			CompetingParticipantFeeCalculator::class => "Betala per tävlande",
+			PersonTypeFeeCalculator::class => "Betala beroende på roll",
+			FixedFeeCalculator::class => "Fast avgift"
+		];
+		$fee_calculator_classes = array_keys($fee_calculators);
+
+		/**
+		 * $jsoneditor_config will look something like this:
+		 *
+		 *  {
+		 *    "type": "object",
+		 *      "properties": {
+		 *        "type": {
+		 *          "title": "Avgiftsmodell",
+		 *          "type": "string",
+		 *          "default": "PersonTypeFeeCalculator",
+		 *          "enum": [
+		 *            "PersonTypeFeeCalculator",
+		 *            "FixedFeeCalculator"
+		 *          ]
+		 *        },
+		 *        ...
+		 *        "config_FixedFeeCalculator": {
+		 *          "type": "object",
+		 *          "title": "Inst\u00e4llningar f\u00f6r FixedFeeCalculator",
+		 *          "options": {
+		 *            "dependencies": {
+		 *              "type": "FixedFeeCalculator"
+		 *            }
+		 *          },
+		 *          "properties": {
+		 *            "fee": {
+		 *              "title": "Avgift",
+		 *              "type": "integer",
+		 *              "format": "number"
+		 *            }
+		 *            ...
+		 *          }
+		 *        }
+		 *      }
+		 *    }
+		 *  }
+		 *
+		 */
+		$jsoneditor_config = [
+			"type"       => "object",
+			"properties" => array_merge(
+				[
+					"type" => [
+						"title"   => "Avgiftsmodell",
+						"type"    => "string",
+						"default" => $fee_calculator_classes[0],
+						"enum"    => $fee_calculator_classes,
+						"options" => [
+							"enum_titles" => array_values($fee_calculators)
+						]
+					]
+				],
+				array_combine( array_map( function ( $class_name ) {
+					return "config_" . $class_name;
+				}, $fee_calculator_classes ), array_map( function ( $class_name ) {
+					return array_merge(
+						[
+							"type"    => "object",
+							"title"   => 'Inställningar för ' . ( new \ReflectionClass( $class_name ) )->getShortName(),
+							"options" => [
+								"dependencies" => [
+									"type" => $class_name
+								]
+							]
+						],
+						( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_config_json_schema()
+					);
+				}, $fee_calculator_classes ) ) )
+		];
+
+
+		/**
+		 * $default_values will look something like this:
+		 *
+		 *  {
+		 *    "type": "PersonTypeFeeCalculator",
+		 *    "config_PersonTypeFeeCalculator": {
+		 *      "fee_leader": 0,
+		 *      "fee_regular": 0,
+		 *      "fee_supervisor": 0,
+		 *      "fee_admin": 0
+		 *    },
+		 *    "config_FixedFeeCalculator": {
+		 *      "fee": 0
+		 *    }
+		 *  }
+		 *
+		 */
+		$default_values = array_merge(
+			[
+				"type" => ( new \ReflectionClass( $competition->get_group_fee_calculator() ) )->getName()
+			],
+			array_combine(
+				array_map( function ( $class_name ) {
+					return "config_" . $class_name;
+				}, $fee_calculator_classes ),
+				array_map( function ( $class_name ) {
+					return ( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_default_config();
+				}, $fee_calculator_classes ) ) );
+
+		$stored_values     = [
+			"config_" . ( new \ReflectionClass( $competition->get_group_fee_calculator() ) )->getName() => $competition->get_group_fee_calculator()->get_config()
+		];
+
+		$jsoneditor_values = array_merge(
+			$default_values,
+			$stored_values // Overrides any default values, including which fee calculator is actually used.
+		);
+
+		return sprintf( '
+				<div class="tuja-admin-formgenerator-form" 
+					data-schema="%s" 
+					data-values="%s" 
+					data-field-id="tuja_competition_settings_fee_calculator"
+					data-root-name="tuja_competition_settings_fee_calculator"></div>',
+			htmlentities( json_encode( $jsoneditor_config ) ),
+			htmlentities( json_encode( $jsoneditor_values ) ) );
+	}
+
+	public function print_payment_options_configuration_form( Competition $competition ) {
+
+		$payment_option_classes = [ SwishPaymentOption::class, OtherPaymentOption::class ];
+
+		$jsoneditor_config = [
+			"type"       => "object",
+			"properties" =>
+				array_combine(
+					$payment_option_classes,
+					array_map( function ( $class_name ) {
+						return
+							[
+								"type"       => "object",
+								"title"      => 'Inställningar för ' . ( new \ReflectionClass( $class_name ) )->getShortName(),
+								"properties" => array_merge(
+									[
+										"enabled" => [
+											"title"  => "Aktiv",
+											"type"   => "boolean",
+											"format" => "checkbox"
+										]
+									],
+									( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_config_json_schema()
+								)
+							];
+					}, $payment_option_classes ) )
+		];
+
+
+		$default_values =
+			array_combine(
+				$payment_option_classes,
+				array_map( function ( $class_name ) {
+					return array_merge( [ "enabled" => false ], ( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_default_config() );
+				}, $payment_option_classes ) );
+
+		$stored_values     = array_combine(
+			array_map( function ( PaymentOption $payment_option ) {
+				return ( new \ReflectionClass( $payment_option ) )->getName();
+			}, $competition->payment_options ),
+			array_map( function ( PaymentOption $payment_option ) {
+				return array_merge( [ "enabled" => true ], $payment_option->get_config() );
+			}, $competition->payment_options ) );
+
+		$jsoneditor_values = array_merge(
+			$default_values,
+			$stored_values // Overrides any default values, including which fee calculator is actually used.
+		);
+
+		return sprintf( '
+				<div class="tuja-admin-formgenerator-form" 
+					data-schema="%s" 
+					data-values="%s" 
+					data-field-id="tuja_competition_settings_payment_options"
+					data-root-name="tuja_competition_settings_payment_options"></div>',
+			htmlentities( json_encode( $jsoneditor_config ) ),
+			htmlentities( json_encode( $jsoneditor_values ) ) );
+	}
+
 	public function competition_settings_save_message_templates( Competition $competition ) {
 		$message_template_dao = new MessageTemplateDao();
 
@@ -434,6 +626,25 @@ class CompetitionSettings {
 			$competition->event_start          = DateUtils::from_date_local_value( $_POST['tuja_event_start'] );
 			$competition->event_end            = DateUtils::from_date_local_value( $_POST['tuja_event_end'] );
 			$competition->initial_group_status = $_POST['tuja_competition_settings_initial_group_status'] ?: null;
+
+			// Fee calculator
+			$fee_calculator_cfg = json_decode( stripslashes( $_POST['tuja_competition_settings_fee_calculator'] ), true );
+			$fee_calculator     = ( new \ReflectionClass( $fee_calculator_cfg['type'] ) )->newInstance();
+			$fee_calculator->configure( $fee_calculator_cfg[ 'config_' . $fee_calculator_cfg['type'] ] );
+			$competition->fee_calculator = $fee_calculator;
+
+			// Payment methods
+			$payment_options_cfg          = json_decode( stripslashes( $_POST['tuja_competition_settings_payment_options'] ), true );
+			$enabled_payment_options_cfg  = array_filter( $payment_options_cfg, function ( $cfg ) {
+				return $cfg['enabled'] === true;
+			} );
+			$competition->payment_options = array_map( function ( string $key, $config ) {
+				$payment_option = ( new \ReflectionClass( $key ) )->newInstance();
+				unset( $config['enabled'] );
+				$payment_option->configure( $config );
+
+				return $payment_option;
+			}, array_keys( $enabled_payment_options_cfg ), array_values( $enabled_payment_options_cfg ) );
 
 			$dao = new CompetitionDao();
 			$dao->update( $competition );

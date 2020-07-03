@@ -28,6 +28,17 @@ class AdminPageWrapper extends PageWrapper {
     return await this.$eval('input[type="text"][value="' + crewGroupCategoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
   }
 
+  async configurePaymentDetails (competitionId) {
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+
+    await this.click('#tuja_tab_payment')
+
+    await this.type('input[name*=fee]', '100') // The "change" event will not be triggered...
+    await this.click('#tuja_tab_payment') // ...until we click on something, anything, else.
+
+    await this.clickLink('#tuja_save_competition_settings_button')
+  }
+
   async configureDefaultGroupStatus (competitionId, status) {
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
