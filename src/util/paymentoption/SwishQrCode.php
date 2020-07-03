@@ -1,7 +1,7 @@
 <?php
 
 
-namespace tuja\util;
+namespace tuja\util\paymentoption;
 
 
 use Exception;
@@ -19,7 +19,7 @@ class SwishQrCode {
 		$this->public_url_directory = trailingslashit( $dir['url'] );
 	}
 
-	public function swish_qr_code_image_url( string $payee, int $amount, string $message ): string {
+	public function swish_qr_code_image_url( string $payee, int $amount, string $message, bool $amount_editable = false, bool $message_editable = false ): string {
 		$http_request_payload = json_encode( array(
 			'format'      => 'png',
 			'payee'       => array(
@@ -27,11 +27,11 @@ class SwishQrCode {
 				'value'    => $payee
 			),
 			'amount'      => array(
-				'editable' => false,
+				'editable' => $amount_editable,
 				'value'    => $amount
 			),
 			'message'     => array(
-				'editable' => false,
+				'editable' => $message_editable,
 				'value'    => $message
 			),
 			'size'        => 300,
