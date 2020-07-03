@@ -118,7 +118,8 @@ class Template {
 	public static function site_parameters() {
 		return [
 			'base_url'    => get_site_url(),
-			'admin_email' => get_option( 'admin_email' )
+			'admin_email' => get_option( 'admin_email' ),
+			'admin_email_link' => sprintf( '<a href="mailto:%s">%s</a>', get_bloginfo( 'admin_email' ), get_bloginfo( 'admin_email' ) )
 		];
 	}
 
