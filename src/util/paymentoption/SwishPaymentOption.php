@@ -76,21 +76,21 @@ class SwishPaymentOption implements PaymentOption {
 					"type"  => "string"
 				],
 				"message_template" => [
-					"title" => 'Mall för meddelandetext',
+					"title" => 'Mall för meddelande',
 					"type"  => "string"
 				],
+				"generate_qr_code" => [
+					"title"  => 'Visa QR-kod för lagen',
+					"type"   => "boolean",
+					"format" => "checkbox"
+				],
 				"message_readonly" => [
-					"title"  => 'Meddelande är låst',
+					"title"  => 'Meddelande är låst (om QR-kod skannas)',
 					"type"   => "boolean",
 					"format" => "checkbox"
 				],
 				"amount_readonly"  => [
-					"title"  => 'Belopp är låst',
-					"type"   => "boolean",
-					"format" => "checkbox"
-				],
-				"generate_qr_code" => [
-					"title"  => 'Visa QR-kod',
+					"title"  => 'Belopp är låst (om QR-kod skannas)',
 					"type"   => "boolean",
 					"format" => "checkbox"
 				]

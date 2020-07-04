@@ -353,6 +353,20 @@ div.tuja-ruleset-column {
     margin: 0 1em 0 0;
 }
 
+div#tuja-tab-payment label.je-form-input-label {
+    display: inline-block;
+    width: 15em;
+}
+
+div#tuja-tab-payment div.form-control select,
+div#tuja-tab-payment div.form-control input {
+    width: 30em;
+}
+
+div#tuja-tab-payment div.je-indented-panel div.row {
+    line-height: 25px;
+}
+
 div.tuja-ruleset-column div.form-control select,
 div.tuja-ruleset-column div.form-control input {
     width: 100%;

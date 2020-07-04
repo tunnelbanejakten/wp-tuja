@@ -305,12 +305,12 @@ class CompetitionSettings {
 	}
 
 	public function print_group_fee_configuration_form( Competition $competition ) {
-		$fee_calculators = [
+		$fee_calculators        = [
 			CompetingParticipantFeeCalculator::class => "Betala per tävlande",
-			PersonTypeFeeCalculator::class => "Betala beroende på roll",
-			FixedFeeCalculator::class => "Fast avgift"
+			PersonTypeFeeCalculator::class           => "Betala beroende på roll",
+			FixedFeeCalculator::class                => "Fast avgift"
 		];
-		$fee_calculator_classes = array_keys($fee_calculators);
+		$fee_calculator_classes = array_keys( $fee_calculators );
 
 		/**
 		 * $jsoneditor_config will look something like this:
@@ -360,17 +360,17 @@ class CompetitionSettings {
 						"default" => $fee_calculator_classes[0],
 						"enum"    => $fee_calculator_classes,
 						"options" => [
-							"enum_titles" => array_values($fee_calculators)
+							"enum_titles" => array_values( $fee_calculators )
 						]
 					]
 				],
 				array_combine( array_map( function ( $class_name ) {
 					return "config_" . $class_name;
-				}, $fee_calculator_classes ), array_map( function ( $class_name ) {
+				}, $fee_calculator_classes ), array_map( function ( $class_name ) use ( $fee_calculators ) {
 					return array_merge(
 						[
 							"type"    => "object",
-							"title"   => 'Inställningar för ' . ( new \ReflectionClass( $class_name ) )->getShortName(),
+							"title"   => 'Inställningar för ' . $fee_calculators[ $class_name ],
 							"options" => [
 								"dependencies" => [
 									"type" => $class_name
@@ -412,7 +412,7 @@ class CompetitionSettings {
 					return ( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_default_config();
 				}, $fee_calculator_classes ) ) );
 
-		$stored_values     = [
+		$stored_values = [
 			"config_" . ( new \ReflectionClass( $competition->get_group_fee_calculator() ) )->getName() => $competition->get_group_fee_calculator()->get_config()
 		];
 
@@ -444,11 +444,11 @@ class CompetitionSettings {
 						return
 							[
 								"type"       => "object",
-								"title"      => 'Inställningar för ' . ( new \ReflectionClass( $class_name ) )->getShortName(),
+								"title"      => Strings::get( 'groups_payment.' . strtolower( ( new \ReflectionClass( $class_name ) )->getShortName() ) . '.header' ),
 								"properties" => array_merge(
 									[
 										"enabled" => [
-											"title"  => "Aktiv",
+											"title"  => "Visa detta betalningsalternativ för lagen",
 											"type"   => "boolean",
 											"format" => "checkbox"
 										]
@@ -467,7 +467,7 @@ class CompetitionSettings {
 					return array_merge( [ "enabled" => false ], ( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_default_config() );
 				}, $payment_option_classes ) );
 
-		$stored_values     = array_combine(
+		$stored_values = array_combine(
 			array_map( function ( PaymentOption $payment_option ) {
 				return ( new \ReflectionClass( $payment_option ) )->getName();
 			}, $competition->payment_options ),
