@@ -1,5 +1,10 @@
 {
-  "name": "wp-tuja",
+  "name": "tunnelbanejakten/wp-tuja",
+	"type": "project",
+	"license": "proprietary",
+	"config": {
+		"vendor-dir": "src/vendor"
+	},
   "autoload": {
     "classmap": [
       "src/"
@@ -7,5 +12,8 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^9"
+  },
+  "require": {
+    "firebase/php-jwt": "^5.3"
   }
 }

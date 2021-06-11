@@ -7,3 +7,4 @@
 github.log
 /tests/integration/node_modules/
 /vendor/
+src/vendor

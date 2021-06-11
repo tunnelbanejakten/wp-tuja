@@ -31,6 +31,11 @@ abstract class Plugin {
 		// Autoload all classes
 		spl_autoload_register( array( $this, 'autoloader' ) );
 
+		// Composer
+		if(!@include_once(self::PATH . '/vendor/autoload.php')) {
+			die('Composer is not initialized.');
+		}
+
 		add_action( 'wp_ajax_tuja_upload_images', array( 'tuja\util\ImageManager', 'handle_image_upload' ) );
 		add_action( 'wp_ajax_nopriv_tuja_upload_images', array( 'tuja\util\ImageManager', 'handle_image_upload' ) );
 
@@ -350,6 +355,7 @@ abstract class Plugin {
 			self::PATH . '/admin/' . $classname . '.php',
 			self::PATH . '/frontend/' . $classname . '.php',
 			self::PATH . '/frontend/router/' . $classname . '.php',
+			self::PATH . '/api/' . $classname . '.php',
 			self::PATH . '/inc/' . $classname . '.php',
 		);
 
@@ -368,3 +374,5 @@ if ( is_admin() ) {
 } else {
 	require_once( Plugin::PATH . '/inc/frontend.php' );
 }
+
+require_once( Plugin::PATH . '/inc/api.php' );
