@@ -71,6 +71,9 @@ class GroupEditor extends AbstractGroupView {
 		$group_name_question = new FieldText( 'Vad heter ert lag?', null, $this->is_read_only() );
 		$html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, @$errors['name'], $group->name );
 
+		$group_city_question = new FieldText( 'Vilken ort kommer ni från?', null, $this->is_read_only() );
+		$html_sections[]     = $this->render_field( $group_city_question, self::FIELD_GROUP_CITY, @$errors['city'], $group->city );
+
 		if ( $this->enable_group_category_selection ) {
 			$categories = $this->get_categories( $group->competition_id );
 
@@ -140,6 +143,7 @@ class GroupEditor extends AbstractGroupView {
 		// DETERMINE REQUESTED CHANGES
 		$posted_values         = [];
 		$posted_values['name'] = $_POST[ self::FIELD_GROUP_NAME ];
+		$posted_values['city'] = $_POST[ self::FIELD_GROUP_CITY ];
 		$posted_values['note'] = $_POST[ self::FIELD_GROUP_NOTE ];
 		if ( isset( $category ) ) {
 			$posted_values['category_id'] = $category->id;

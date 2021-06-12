@@ -50,7 +50,7 @@ describe('wp-tuja', () => {
       beforeAll(async () => {
         await adminPage.configureDefaultGroupStatus(competitionId, 'awaiting_approval')
 
-        groupProps = await defaultPage.signUpTeam(adminPage, false)
+        groupProps = await defaultPage.signUpTeam(adminPage, false, true, false)
 
         await adminPage.configureEventDateLimits(competitionId, 7 * 24 * 60, 7 * 24 * 60 + 60)
       })
@@ -100,7 +100,7 @@ describe('wp-tuja', () => {
       let groupProps = null
 
       beforeAll(async () => {
-        groupProps = await defaultPage.signUpTeam(adminPage)
+        groupProps = await defaultPage.signUpTeam(adminPage, true, true, true)
 
         await adminPage.configureEventDateLimits(competitionId, 7 * 24 * 60, 7 * 24 * 60 + 60)
       })
@@ -111,13 +111,17 @@ describe('wp-tuja', () => {
         await expectPageTitle(`Hej ${groupProps.name}`)
       })
 
-      it('should be possible to change name and to change category and to set team note', async () => {
+      it('should be possible to change name, category, city and note', async () => {
         const newName = `New and improved ${groupProps.name}`
+        const newCity = `New ${groupProps.city}`
 
         await goto(groupProps.portalUrl)
         await clickLink('#tuja_edit_group_link')
+        await expectFormValue('#tuja-group__name', groupProps.name)
+        await expectFormValue('#tuja-group__city', groupProps.city)
         await click('input[name="tuja-group__age"]')
         await type('#tuja-group__name', newName)
+        await type('#tuja-group__city', newCity)
         await type('#tuja-group__note', 'We will arrive a bit late.')
         await clickLink('#tuja_save_button')
         await expectSuccessMessage('Ändringarna har sparats.')
@@ -128,6 +132,7 @@ describe('wp-tuja', () => {
         await goto(`http://localhost:8080/${groupProps.key}/andra`)
         expect(await $eval('input[name="tuja-group__age"]', node => node.checked)).toBeTruthy()
         await expectFormValue('#tuja-group__name', newName)
+        await expectFormValue('#tuja-group__city', newCity)
         await expectFormValue('#tuja-group__note', 'We will arrive a bit late.')
       })
 

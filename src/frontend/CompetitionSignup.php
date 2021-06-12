@@ -30,6 +30,7 @@ class CompetitionSignup extends FrontendView {
 
 	const FIELD_PREFIX_PERSON = 'tuja-person__';
 	const FIELD_PREFIX_GROUP = 'tuja-group__';
+
 	private $person_dao;
 	private $group_dao;
 
@@ -141,6 +142,12 @@ class CompetitionSignup extends FrontendView {
 			false, [] );
 		$html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors[ self::FIELD_GROUP_NAME ] );
 
+		$group_city_question = new FieldText(
+			Strings::get( 'competition_signup.form.group_city.label' ),
+			Strings::get( 'competition_signup.form.group_city.hint' ),
+			false, [] );
+		$html_sections[]     = $this->render_field( $group_city_question, self::FIELD_GROUP_CITY, $errors[ self::FIELD_GROUP_CITY ] );
+
 		$group_category_options =
 			array_map(
 				function ( GroupCategory $category ) {
@@ -246,6 +253,7 @@ class CompetitionSignup extends FrontendView {
 		$new_group = new Group();
 		$new_group->set_status( Group::DEFAULT_STATUS );
 		$new_group->name           = $_POST[ self::FIELD_GROUP_NAME ];
+		$new_group->city           = $_POST[ self::FIELD_GROUP_CITY ];
 		$new_group->competition_id = $this->get_competition()->id;
 		if ( isset( $category ) ) {
 			$new_group->category_id = $category->id;

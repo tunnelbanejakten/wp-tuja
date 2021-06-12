@@ -105,6 +105,7 @@ class GroupDao extends AbstractDao {
 
 				'status'      => $group->get_status(),
 				'name'        => $group->name,
+				'city'        => $group->city,
 				'category_id' => $group->category_id,
 				'note'        => $group->note
 			),
@@ -112,6 +113,7 @@ class GroupDao extends AbstractDao {
 				'%d',
 				'%d',
 
+				'%s',
 				'%s',
 				'%s',
 				'%d',
@@ -195,6 +197,7 @@ class GroupDao extends AbstractDao {
 		$g->id                 = $result->team_id;
 		$g->random_id          = $result->random_id;
 		$g->name               = $result->name;
+		$g->city               = $result->city;
 		$g->category_id        = $result->category_id;
 		$g->competition_id     = $result->competition_id;
 		$g->is_always_editable = $result->is_always_editable;
@@ -262,9 +265,12 @@ class GroupDao extends AbstractDao {
 			return $row[0];
 		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT name FROM ' . $this->table . ' WHERE ' . $where ), ARRAY_N ) );
 		foreach ( $current_names as $current_name ) {
+			$new_city = $anonymizer->neighborhood();
+			$new_name = $anonymizer->animal() . ' från ' . $neighborhood;
 			$this->wpdb->query( $this->wpdb->prepare(
-				'UPDATE ' . $this->table . ' SET name = %s WHERE name = %s AND ' . $where,
-				$anonymizer->animal() . ' från ' . $anonymizer->neighborhood(),
+				'UPDATE ' . $this->table . ' SET name = %s, city = %s WHERE name = %s AND ' . $where,
+				$new_city,
+				$new_city,
 				$current_name ) );
 		}
 	}

@@ -84,6 +84,7 @@ abstract class Plugin {
 				created_at     INTEGER      NOT NULL,
 				status         VARCHAR(20)  NOT NULL,
 				name           VARCHAR(100) NOT NULL,
+				city           VARCHAR(30)  NOT NULL,
 				category_id    INTEGER,
 				note           TEXT,
 				PRIMARY KEY (id)

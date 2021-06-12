@@ -1,6 +1,10 @@
 const PageWrapper = require('./pagewrapper')
 const puppeteer = require('puppeteer')
 
+const CITIES = ['Norrmalm', 'Gothenburg', 'Nacka', 'Kungsholmen', 'Solna', 'Farsta']
+const ADJECTIVES = ['Adventurous', 'Awesome', 'Five', 'Chill', 'Grumpy', 'Sly']
+const ANIMALS = ['Moose', 'Wolves', 'Bears', 'Lynx', 'Foxes', 'Wolverines', 'Boars', 'Otters', 'Lemmings']
+
 class UserPageWrapper extends PageWrapper {
   // competitionId
   // competitionKey
@@ -20,15 +24,14 @@ class UserPageWrapper extends PageWrapper {
     return this
   }
 
-  async signUpTeam (adminPage, isAutomaticallyAccepted = true, isGroupLeader = true) {
+  async signUpTeam (adminPage, isAutomaticallyAccepted = true, isGroupLeader = true, isCitySpecified = false) {
     await adminPage.configureEventDateLimits(this.competitionId, 7 * 24 * 60, 7 * 24 * 60 + 60)
     const name = [
-      ['The', 'Awesome', 'Five', 'Chill'],
-      ['Moose', 'Wolves', 'Bears', 'Lynx', 'Foxes', 'Wolverines', 'Boars', 'Otters', 'Lemmings'],
-      ['of', 'from'],
-      ['Norrmalm', 'Gothenburg', 'Nacka', 'Kungsholmen', 'Solna', 'Farsta']
+      ADJECTIVES,
+      ANIMALS,
     ].map(options => options[Math.floor(Math.random() * options.length)]).join(' ')
-
+    const city = CITIES[Math.floor(Math.random() * CITIES.length)]
+    
     await this.goto(`http://localhost:8080/${this.competitionKey}/anmal`)
     await this.click('#tuja-group__age-0')
     if (isGroupLeader) {
@@ -37,6 +40,9 @@ class UserPageWrapper extends PageWrapper {
       await this.click('#tuja-person__role-1')
     }
     await this.type('#tuja-group__name', name)
+    if (isCitySpecified) {
+      await this.type('#tuja-group__city', city)
+    }
     await this.type('#tuja-person__email__', 'amber@example.com')
     if (isGroupLeader) {
       await this.type('#tuja-person__name__', 'Amber')
@@ -59,7 +65,7 @@ class UserPageWrapper extends PageWrapper {
     const portalUrl = await groupPortalLinkNode.evaluate(node => node.href)
     const key = await groupPortalLinkNode.evaluate(node => node.dataset.groupKey)
     const id = await groupPortalLinkNode.evaluate(node => node.dataset.groupId)
-    return { key, id, portalUrl, name }
+    return { key, id, portalUrl, name, city }
   }
 
 }

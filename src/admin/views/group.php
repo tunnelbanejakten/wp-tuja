@@ -18,6 +18,11 @@ AdminUtils::printTopMenu( $competition );
 		printf( '<p>Meddelande från laget: <em>%s</em></p>', $group->note );
 	}
 	?>
+	<?php
+	if ( ! empty( $group->city ) ) {
+		printf( '<p>Ort: <em>%s</em></p>', $group->city );
+	}
+	?>
     <p>
         Länk till lagportal:
 		<?= sprintf( '<a href="%s">%s</a>', $group_editor_link, $group_editor_link ) ?>

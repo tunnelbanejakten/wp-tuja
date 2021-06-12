@@ -90,6 +90,9 @@ class Group {
 		if ( strlen( $this->name ) > 100 ) {
 			throw new ValidationException( 'name', 'Namnet får inte vara längre än 100 bokstäver.' );
 		}
+		if ( strlen( $this->city ) > 30 ) {
+			throw new ValidationException( 'name', 'Ortsnamnet får inte vara längre än 30 bokstäver.' );
+		}
 		if ( $this->get_status() == null ) {
 			throw new ValidationException( 'status', 'Status måste vara satt.' );
 		}
