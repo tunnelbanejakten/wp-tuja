@@ -17,7 +17,9 @@ const expectFormValue = async (selector, expected) => defaultPage.expectFormValu
 const expectPageTitle = async (expected) => defaultPage.expectPageTitle(expected)
 const expectElementCount = async (selector, expectedCount) => defaultPage.expectElementCount(selector, expectedCount)
 
-describe('wp-tuja', () => {
+jest.setTimeout(300000)
+
+describe('Team Management', () => {
 
   let competitionId = null
   let competitionKey = null
@@ -25,9 +27,6 @@ describe('wp-tuja', () => {
   let crewGroupCategoryId = null
 
   beforeAll(async () => {
-
-    jest.setTimeout(300000)
-
     competitionId = global.competitionId
     competitionKey = global.competitionKey
     competitionName = global.competitionName
@@ -181,7 +180,7 @@ describe('wp-tuja', () => {
         await type('input[name^="tuja-person__pno"]', input)
         if (isClientSideFailure) {
           await click('button[name="tuja-action"]')
-          await page.waitFor(500)
+          await page.waitForTimeout(500)
           const isInvalid = await $eval('input[name^="tuja-person__pno"]', el => el.matches(`:invalid`))
           expect(isInvalid).toBeTruthy()
         } else {

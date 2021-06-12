@@ -5,7 +5,9 @@ const UserPageWrapper = require('./utils/userpagewrapper')
 let defaultPage = null
 let adminPage = null
 
-describe('wp-tuja', () => {
+jest.setTimeout(300000)
+
+describe('Review Answers', () => {
 
   let competitionId = null
   let competitionKey = null
@@ -37,9 +39,6 @@ describe('wp-tuja', () => {
   }
 
   beforeAll(async () => {
-
-    jest.setTimeout(300000)
-
     competitionId = global.competitionId
     competitionKey = global.competitionKey
     competitionName = global.competitionName
