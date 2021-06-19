@@ -11,11 +11,21 @@ class API extends Plugin {
 	public function init() {
 		add_action('rest_api_init', [$this, 'setup_rest_routes']);
 		add_filter('rest_pre_dispatch', [$this, 'auth'], 10, 3);
+
+		remove_filter( 'rest_pre_serve_request', 'rest_send_cors_headers' );
+		add_filter( 'rest_pre_serve_request', function( $value ) {
+			header( 'Access-Control-Allow-Origin: *' );
+			header( 'Access-Control-Allow-Methods: OPTIONS, GET, POST, PUT' );
+			header( 'Access-Control-Allow-Credentials: true' );
+			header( 'Access-Control-Expose-Headers: Link', false );
+	
+			return $value;
+		} );
 	}
 
 
 	public function auth($res, $server, $request) {
-		if($request->get_route() === '/tuja/v1/auth' || strpos($request->get_route(), '/tuja/v1') !== 0) {
+		if($request->get_route() === '/tuja/v1/auth' || $request->get_route() === '/tuja/v1/update' || $request->get_route() === '/tuja/v1' || strpos($request->get_route(), '/tuja/v1') !== 0) {
 			return $res;
 		}
 
