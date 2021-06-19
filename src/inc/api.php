@@ -46,7 +46,8 @@ class API extends Plugin {
 	public function setup_rest_routes() {
 		register_rest_route('tuja/v1', '/ping/', [
 			'method' => 'GET',
-			'callback' => $this->callback('Ping', 'get_ping')
+			'callback' => $this->callback('Ping', 'get_ping'),
+			'permission_callback' => '__return_true'
 		]);
 	}
 
