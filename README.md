@@ -177,3 +177,4 @@ This repo is configured to auto deploy to tunnelbanejakten.se. This is done with
     * ?
 0. Use Case _Crew Opens or Closes Competition_:
     * ?
+
