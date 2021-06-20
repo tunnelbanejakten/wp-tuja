@@ -24,7 +24,6 @@ class PageWrapper {
   }
 
   async goto (url, waitForNetwork = false) {
-    console.log('➡️ Navigating to ', url)
     await Promise.all([
         this._page.waitForNavigation({ waitUntil: waitForNetwork ? 'networkidle2' : 'domcontentloaded', timeout: 10000 }),
         this._page.goto(url)
@@ -103,8 +102,9 @@ class PageWrapper {
   }
 
   async takeScreenshot () {
-    const path = `screenshot-${new Date().getTime()}.png`
-    console.log('📷', path)
+    const label = expect.getState().currentTestName.toLowerCase().replace(/[^a-z0-9]/g, '-').substr(0, 70)
+    const timestamp = new Date().getTime()
+    const path = `screenshot-${timestamp}-${label}.png`
     await this._page.screenshot({ path: path, fullPage: true })
   }
 

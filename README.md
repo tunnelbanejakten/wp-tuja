@@ -44,6 +44,7 @@ You can alternatively run `yarn test` if you don't want to see the browser windo
 Open shell to Wordpress installation:
 
     $ docker-compose exec wordpress bash
+    bash# tail -f /var/www/html/wp-content/debug.log 
 
 # Short Codes
 

@@ -17,7 +17,9 @@ const expectErrorMessage = async (expected) => defaultPage.expectErrorMessage(ex
 const expectFormValue = async (selector, expected) => defaultPage.expectFormValue(selector, expected)
 const expectElementCount = async (selector, expectedCount) => defaultPage.expectElementCount(selector, expectedCount)
 
-describe('wp-tuja', () => {
+jest.setTimeout(300000)
+
+describe('Answer Forms', () => {
 
   let competitionId = null
   let competitionKey = null
@@ -49,9 +51,6 @@ describe('wp-tuja', () => {
   }
 
   beforeAll(async () => {
-
-    jest.setTimeout(300000)
-
     competitionId = global.competitionId
     competitionKey = global.competitionKey
     competitionName = global.competitionName

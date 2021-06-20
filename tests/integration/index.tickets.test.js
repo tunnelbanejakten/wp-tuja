@@ -12,7 +12,9 @@ const expectSuccessMessage = async (expected) => defaultPage.expectSuccessMessag
 const expectErrorMessage = async (expected) => defaultPage.expectErrorMessage(expected)
 const expectElementCount = async (selector, expectedCount) => defaultPage.expectElementCount(selector, expectedCount)
 
-describe('wp-tuja', () => {
+jest.setTimeout(300000)
+
+describe('Tickets', () => {
 
   let competitionId = null
   let competitionKey = null
@@ -20,9 +22,6 @@ describe('wp-tuja', () => {
   let crewGroupCategoryId = null
 
   beforeAll(async () => {
-
-    jest.setTimeout(300000)
-
     competitionId = global.competitionId
     competitionKey = global.competitionKey
     competitionName = global.competitionName
