@@ -11,6 +11,16 @@ class API extends Plugin {
 	public function init() {
 		add_action('rest_api_init', [$this, 'setup_rest_routes']);
 		add_filter('rest_pre_dispatch', [$this, 'auth'], 10, 3);
+
+		remove_filter( 'rest_pre_serve_request', 'rest_send_cors_headers' );
+		add_filter( 'rest_pre_serve_request', function( $value ) {
+			header( 'Access-Control-Allow-Origin: *' );
+			header( 'Access-Control-Allow-Methods: OPTIONS, GET, POST, PUT' );
+			header( 'Access-Control-Allow-Credentials: true' );
+			header( 'Access-Control-Expose-Headers: Link', false );
+
+			return $value;
+		} );
 	}
 
 	public function auth($res, $server, $request) {

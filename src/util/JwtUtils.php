@@ -23,7 +23,7 @@ class JwtUtils {
 	public static function create_token($group_id) {
 		$jwt_secret = self::jwt_secret();
 		$payload = array(
-			"sub" => $group_id
+			"group_id" => $group_id
 		);
 		return JWT::encode($payload, $jwt_secret, 'HS256');
 	}
