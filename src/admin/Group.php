@@ -19,6 +19,7 @@ use tuja\frontend\router\GroupEditorInitiator;
 use tuja\frontend\router\GroupSignupInitiator;
 use tuja\frontend\router\PointsOverrideInitiator;
 use tuja\util\score\ScoreCalculator;
+use tuja\util\JwtUtils;
 
 class Group {
 
@@ -206,6 +207,8 @@ class Group {
 					FormInitiator::link( $group, $form ) );
 			}
 		}, $this->form_dao->get_all_in_competition( $competition->id ) );
+
+		$token = JwtUtils::create_token( $group->id );
 
 		include( 'views/group.php' );
 	}
