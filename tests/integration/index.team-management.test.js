@@ -16,6 +16,7 @@ const expectErrorMessage = async (expected) => defaultPage.expectErrorMessage(ex
 const expectFormValue = async (selector, expected) => defaultPage.expectFormValue(selector, expected)
 const expectPageTitle = async (expected) => defaultPage.expectPageTitle(expected)
 const expectElementCount = async (selector, expectedCount) => defaultPage.expectElementCount(selector, expectedCount)
+const takeScreenshot = async () => defaultPage.takeScreenshot()
 
 jest.setTimeout(300000)
 
@@ -393,7 +394,7 @@ describe('Team Management', () => {
         await verifyFeePage.close()
       })
 
-      it('should be possible to sign up as administrator', async () => {
+      it('should be possible to sign up as administrator and later add team leader', async () => {
         const tempGroupProps = await defaultPage.signUpTeam(adminPage, true, false)
 
         await goto(`http://localhost:8080/${tempGroupProps.key}/andra-personer`)
@@ -403,6 +404,18 @@ describe('Team Management', () => {
         await expectElementCount('div.tuja-person-role-supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
         await expectElementCount('div.tuja-person-role-admin > div.tuja-people-existing > div.tuja-signup-person', 1)
         await expectFormValue('div.tuja-person-role-admin > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', 'amber@example.com')
+
+        const addLeaderTeamMember = async (name, birthDate, phone, email) => {
+          await click('div.tuja-person-role-leader button.tuja-add-person')
+          await type('div.tuja-person-role-leader div.tuja-signup-person:last-child input[name^="tuja-person__name__"]', name)
+          await type('div.tuja-person-role-leader div.tuja-signup-person:last-child input[name^="tuja-person__pno__"]', birthDate)
+          await type('div.tuja-person-role-leader div.tuja-signup-person:last-child input[name^="tuja-person__phone__"]', phone)
+          await type('div.tuja-person-role-leader div.tuja-signup-person:last-child input[name^="tuja-person__email__"]', email)
+        }
+        await addLeaderTeamMember('Bob', '20001010-1234', '+4670123456', 'bob@example.com')
+
+        await clickLink('button[name="tuja-action"]')
+        await expectSuccessMessage('Ändringarna har sparats.')
       })
 
       it('should be possible to edit team members', async () => {
