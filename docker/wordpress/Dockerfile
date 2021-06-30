@@ -1,5 +1,5 @@
-FROM wordpress:php7.0
-RUN apt-get update && apt-get install zlib1g-dev
+FROM wordpress:php7.3
+RUN apt-get update && apt-get install -y libzip-dev zip
 RUN pecl install xdebug
 RUN docker-php-ext-enable xdebug
 RUN docker-php-ext-install zip
