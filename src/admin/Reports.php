@@ -35,7 +35,8 @@ class Reports {
 
 	private function report_config( $class_name, $name ) {
 		$short_name     = substr( $class_name, strrpos( $class_name, '\\' ) + 1 );
-		$options_schema = file_get_contents( __DIR__ . '/' . $short_name . '.config.json' );
+		$config_file = __DIR__ . '/' . $short_name . '.config.json';
+		$options_schema = file_exists( $config_file ) ? file_get_contents( $config_file ) : null;
 		return [
 			'name'           => $name,
 			'csv_url'        => $this->get_report_url( $short_name, 'csv' ),

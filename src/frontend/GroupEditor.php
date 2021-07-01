@@ -79,7 +79,7 @@ class GroupEditor extends AbstractGroupView {
 
 			$group_category = $group->get_category();
 
-			$current_group_category_name = reset( array_filter( $categories, function ( $category ) use ( $group_category ) {
+			$current_group_category_name = current( array_filter( $categories, function ( $category ) use ( $group_category ) {
 				return isset( $group_category ) && $group_category->id == $category->id;
 			} ) )->name;
 

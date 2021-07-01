@@ -22,6 +22,7 @@ class GroupHome extends AbstractGroupView {
 
 		$this->check_group_status( $group );
 
+		$incomplete_message = '';
 		if ( $group->get_status() == Group::STATUS_INCOMPLETE_DATA ) {
 			$rule_result        = $group->evaluate_registration();
 			$incomplete_message = sprintf(

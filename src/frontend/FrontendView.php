@@ -111,7 +111,7 @@ abstract class FrontendView {
 			return $category->name == $selected_category;
 		} );
 		if ( count( $found_category ) == 1 ) {
-			return reset( $found_category );
+			return current( $found_category );
 		}
 
 		return null;

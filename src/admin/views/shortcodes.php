@@ -7,7 +7,7 @@ use tuja\frontend\router\SlideshowInitiator;
 
 ?>
 
-<form method="post" action="<?= add_query_arg() ?>" class="tuja">
+<form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
     <p>
         Anmäl lag:
 		<?php

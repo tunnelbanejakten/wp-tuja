@@ -12,7 +12,7 @@ use tuja\util\score\ScoreCalculator;
 AdminUtils::printTopMenu( $competition );
 ?>
 
-<form method="post" action="<?= add_query_arg() ?>" class="tuja">
+<form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
     <h3>Biljetternas utseende</h3>
     <p>Här fyller du i hur biljetterns ska se ut för respektive station.</p>
     <table>

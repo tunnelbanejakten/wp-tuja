@@ -26,7 +26,7 @@ class GroupCancelSignup extends AbstractGroupView {
 			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att avanmäla er nu.' );
 		}
 
-		if ( $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_CANCEL ) {
+		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_CANCEL ) {
 			try {
 				$group->set_status( Group::STATUS_DELETED );
 

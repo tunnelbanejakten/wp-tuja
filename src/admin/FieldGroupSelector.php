@@ -95,7 +95,7 @@ class FieldGroupSelector {
 	}
 
 	public function get_selected_groups( $field_value ) {
-		$selector = reset( array_map(
+		$selector = current( array_map(
 			function ( $selector ) {
 				return $selector['selector'];
 			},

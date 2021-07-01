@@ -51,7 +51,7 @@ class Review {
 		$this->field_group_selector = new FieldGroupSelector( $this->competition );
 		$this->review_component     = new ReviewComponent( $this->competition );
 		$this->selected_filter      = @$_GET[ Review::QUESTION_FILTER_URL_PARAM ] ?: self::DEFAULT_QUESTION_FILTER;
-		$this->selected_groups      = $this->field_group_selector->get_selected_groups( $_GET[ Review::GROUP_FILTER_URL_PARAM ] ?: self::DEFAULT_GROUP_FILTER );
+		$this->selected_groups      = $this->field_group_selector->get_selected_groups( @$_GET[ Review::GROUP_FILTER_URL_PARAM ] ?: self::DEFAULT_GROUP_FILTER );
 	}
 
 

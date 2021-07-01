@@ -147,7 +147,7 @@ class QuestionDao extends AbstractDao {
 			',
 			$question_id );
 
-		return reset( $objects );
+		return current( $objects );
 	}
 
 	function get_all_in_form( $form_id ) {

@@ -10,7 +10,7 @@ use tuja\util\score\ScoreCalculator;
 AdminUtils::printTopMenu( $competition );
 ?>
 
-<form method="post" action="<?= add_query_arg() ?>" class="tuja">
+<form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
 	<?php
 	foreach ( $forms as $form ) {
 		$url = add_query_arg( array(

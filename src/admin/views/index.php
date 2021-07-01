@@ -1,7 +1,7 @@
 <?php namespace tuja\admin; ?>
 
 <div class="tuja tuja-view-index">
-    <form method="post" action="<?= add_query_arg() ?>" class="tuja">
+    <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
 		<?php
 		if ( AdminUtils::is_admin_mode() ) {
 			$url = add_query_arg( array(

@@ -4,7 +4,7 @@ AdminUtils::printTopMenu( $competition );
 
 ?>
 <p>Filter: <?= $filters ?>.</p>
-<form method="post" action="<?= add_query_arg() ?>" class="tuja">
+<form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
     <table id="tuja_groups_list">
         <thead>
         <tr>
@@ -92,7 +92,7 @@ AdminUtils::printTopMenu( $competition );
 			printf( '<td data-group-key="%s"><input type="checkbox" name="tuja_group__selection[]" value="%d" class="tuja-group-checkbox" %s></td>',
 				$group->random_id,
 				$group->id,
-				in_array( $group->id, $_POST['tuja_group__selection'] ) ? 'checked="checked"' : ''
+				@in_array( $group->id, $_POST['tuja_group__selection'] ) ? 'checked="checked"' : ''
 			);
 
 			// Print name and age range

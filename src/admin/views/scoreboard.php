@@ -11,7 +11,7 @@ use tuja\util\score\ScoreCalculator;
 AdminUtils::printTopMenu( $competition );
 ?>
 
-<form method="post" action="<?= add_query_arg() ?>" class="tuja">
+<form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
     <table>
         <tbody>
 		<?php
@@ -31,7 +31,7 @@ AdminUtils::printTopMenu( $competition );
 			$group_found     = array_filter( $groups, function ( $group ) use ( $obj ) {
 				return $group->id == $obj['group_id'];
 			} );
-			$group           = reset( $group_found );
+			$group           = current( $group_found );
 			$obj['category'] = $group->get_category();
 
 			return $obj;

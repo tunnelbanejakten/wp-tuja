@@ -80,7 +80,7 @@ class MessagesSend {
 				$variables = array_merge( $body_template->get_variables(), $subject_template->get_variables() );
 
 				$recipients_data = array_map( function ( $person ) use ( $delivery_method, $variables, $selected_groups, $subject_template, $body_template, $is_send, $message_template ) {
-					$group               = reset( array_filter( $selected_groups, function ( $grp ) use ( $person ) {
+					$group               = current( array_filter( $selected_groups, function ( $grp ) use ( $person ) {
 						return $grp->id == $person->group_id;
 					} ) );
 					$template_parameters = $this->get_parameters( $person, $group );

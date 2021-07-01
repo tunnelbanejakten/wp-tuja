@@ -14,7 +14,7 @@ $question_filters = [
 
 ?>
 
-<form method="get" action="<?= add_query_arg() ?>" class="tuja">
+<form method="get" action="<?= add_query_arg( [] ) ?>" class="tuja">
     <?= join(array_map(function($key, $value) {
 	    return sprintf( '<input type="hidden" name="%s" value="%s">', $key, $value );
     }, array_keys($_GET), array_values($_GET))) ?>
@@ -35,13 +35,13 @@ $question_filters = [
 					array_keys( $question_filters ),
 					array_values( $question_filters ) ) ) );
 		print ' för ';
-        $field_group_selector->render( Review::GROUP_FILTER_URL_PARAM, $_GET[Review::GROUP_FILTER_URL_PARAM] );
+        $field_group_selector->render( Review::GROUP_FILTER_URL_PARAM, @$_GET[Review::GROUP_FILTER_URL_PARAM] );
 
 		?>
         <button type="submit" class="button">Visa</button>
     </div>
 </form>
-<form method="post" action="<?= add_query_arg() ?>" class="tuja">
+<form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
 
         <p>
             Du ser vilken poäng som kommer delas ut om du inte gör något. Om du fyller i poäng för ett svar är det din

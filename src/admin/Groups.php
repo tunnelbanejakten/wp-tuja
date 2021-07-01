@@ -184,7 +184,7 @@ class Groups {
 				$groups_competing                                     += 1;
 				$people_competing                                     += $group->count_competing;
 				$people_following                                     += $group->count_follower;
-				$groups_per_category[ $group_data['category']->name ] += 1;
+				@$groups_per_category[ $group_data['category']->name ] += 1;
 			}
 
 			$groups_data[] = $group_data;
@@ -228,7 +228,7 @@ class Groups {
 				}
 			]
 		];
-		$filter_index   = intval( $_GET['tuja_group_filter'] ) ?: 0;
+		$filter_index   = intval( @$_GET['tuja_group_filter'] ) ?: 0;
 		$groups_data    = array_filter( $groups_data, $filter_configs[ $filter_index ][1] );
 		$filters        = join( ', ',
 			array_map(

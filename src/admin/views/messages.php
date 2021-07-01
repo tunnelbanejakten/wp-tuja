@@ -6,7 +6,7 @@ use tuja\view\FieldImages;
 
 AdminUtils::printTopMenu( $competition );
 ?>
-<form method="post" action="<?= add_query_arg() ?>" class="tuja">
+<form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
 
 	<?php
 	if ( AdminUtils::is_admin_mode() ) {

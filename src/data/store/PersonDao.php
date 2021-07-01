@@ -152,7 +152,7 @@ class PersonDao extends AbstractDao {
 				return Phone::fix_phone_number( $person->phone ) == $phone;
 			} );
 		if ( count( $matches ) == 1 ) {
-			return reset( $matches );
+			return current( $matches );
 		}
 
 		return null;
