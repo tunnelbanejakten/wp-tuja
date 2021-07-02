@@ -23,8 +23,8 @@ class API extends Plugin {
 		} );
 	}
 
-	public function auth($res, $server, $request) {
-		if($request->get_route() === '/tuja/v1/auth' || $request->get_route() === '/tuja/v1/update' || $request->get_route() === '/tuja/v1' || strpos($request->get_route(), '/tuja/v1') !== 0) {
+	public function auth( $res, $server, $request ) {
+		if ( $request->get_route() === '/tuja/v1/tokens' ||  $request->get_route() === '/tuja/v1/auth' || $request->get_route() === '/tuja/v1/update' || $request->get_route() === '/tuja/v1' || strpos( $request->get_route(), '/tuja/v1' ) !== 0 ) {
 			return $res;
 		}
 
@@ -48,11 +48,25 @@ class API extends Plugin {
 	}
 
 	public function setup_rest_routes() {
-		register_rest_route('tuja/v1', '/ping/', [
-			'method' => 'GET',
-			'callback' => $this->callback('Ping', 'get_ping'),
-			'permission_callback' => '__return_true'
-		]);
+		register_rest_route(
+			'tuja/v1',
+			'/ping/',
+			array(
+				'methods'             => 'GET',
+				'callback'            => $this->callback( 'Ping', 'get_ping' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			'tuja/v1',
+			'/tokens/',
+			array(
+				'methods'             => 'POST',
+				'callback'            => $this->callback( 'Auth', 'post_tokens' ),
+				'permission_callback' => '__return_true',
+			)
+		);
 	}
 
 	public function callback($controller, $method) {
