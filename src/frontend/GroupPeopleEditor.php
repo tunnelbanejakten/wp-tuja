@@ -89,9 +89,15 @@ class GroupPeopleEditor extends AbstractGroupView {
 					return $person->get_type() === $type;
 				} );
 
+				$are_more_people_allowed = true; // count($people) < $max;
+				$are_fewer_people_allowed = true; // count($people) > $min;
+
 				$form = $this->get_form_people_html( $people,
 					$errors,
-					$min == $max,
+					// Enable button to add more people if we haven't reached the upper limit yet
+					$are_more_people_allowed,
+					// Enable button to remove people only there is already enough people added
+					$are_fewer_people_allowed,
 					$type,
 					Strings::get( 'group_people_editor.' . $type . '.add_button' ) );
 
@@ -122,7 +128,8 @@ class GroupPeopleEditor extends AbstractGroupView {
 	private function get_form_people_html(
 		array $people,
 		array $errors,
-		bool $is_fixed_list,
+		bool $is_add_enabled,
+		bool $is_remove_enabled,
 		string $role,
 		string $add_button_label = 'Ny person'
 	) {
@@ -130,16 +137,16 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		if ( is_array( $people ) ) {
 			$html_sections[] = sprintf( '<div class="tuja-people-existing">%s</div>',
-				join( array_map( function ( Person $person ) use ( $errors, $is_fixed_list ) {
-					return $this->render_person_form( $person, ! $is_fixed_list );
+				join( array_map( function ( Person $person ) use ( $errors, $is_remove_enabled ) {
+					return $this->render_person_form( $person, $is_remove_enabled );
 				}, $people ) ) );
 		}
 
-		if ( ! $is_fixed_list ) {
+		if ( $is_add_enabled ) {
 			$html_sections[] = sprintf( '<div class="tuja-item-buttons"><button type="button" value="%s" class="tuja-add-person">%s</button></div>', 'new_person', $add_button_label );
 			$person_template = new Person();
 			$person_template->set_type( $role );
-			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( $person_template, ! $is_fixed_list ) );
+			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( $person_template, $is_remove_enabled ) );
 		}
 
 		return sprintf( '<div class="tuja-people tuja-person-role-%s">%s</div>', $role, join( $html_sections ) );
