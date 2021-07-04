@@ -6,30 +6,33 @@ use Firebase\JWT\JWT;
 
 
 class JwtUtils {
-	private static function jwt_secret() {
-		$jwt_secret = defined('JWT_SECRET')
-			? JWT_SECRET // Use constant from wp-settings.php by default
-			: (isset($_ENV['JWT_SECRET'])
-				? $_ENV['JWT_SECRET'] // Use environment variable if constant not defined
-				: null);
+	const ALGORITHM = 'HS256';
 
-		if (!isset($jwt_secret)) {
-			return new WP_Error('missing_jwt_secret', 'JWT secret is missing.', ['status' => 500]);
+	private static function jwt_secret() {
+		$jwt_secret = defined( 'JWT_SECRET' )
+			? JWT_SECRET // Use constant from wp-settings.php by default
+			: ( isset( $_ENV['JWT_SECRET'] )
+				? $_ENV['JWT_SECRET'] // Use environment variable if constant not defined
+				: null );
+
+		if ( ! isset( $jwt_secret ) ) {
+			return new WP_Error( 'missing_jwt_secret', 'JWT secret is missing.', array( 'status' => 500 ) );
 		}
 
 		return $jwt_secret;
 	}
 
-	public static function create_token($group_id) {
+	public static function create_token( int $competition_id, int $group_id ) {
 		$jwt_secret = self::jwt_secret();
-		$payload = array(
-			"group_id" => $group_id
+		$payload    = array(
+			'group_id'       => $group_id,
+			'competition_id' => $competition_id,
 		);
-		return JWT::encode($payload, $jwt_secret, 'HS256');
+		return JWT::encode( $payload, $jwt_secret, self::ALGORITHM );
 	}
 
-	public static function decode($token) {
+	public static function decode( $token ) {
 		$jwt_secret = self::jwt_secret();
-		return JWT::decode($token, $jwt_secret, ['HS256']);
+		return JWT::decode( $token, $jwt_secret, array( self::ALGORITHM ) );
 	}
 }

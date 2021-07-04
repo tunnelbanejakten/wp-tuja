@@ -14,6 +14,22 @@ to be able to send e-mail. One such plugin is https://wordpress.org/plugins/wp-m
 
 Remember to change Permalink format to "Post name" (or at least not "Plain").
 
+# REST API
+
+Set the secret used to sign authenticaton tokens:
+
+    $ echo "JWT_SECRET=secret" >> .env
+
+Get a token for group with "key" `snpbvx6hde` and then test the `ping` endpoint:
+
+    $ TOKEN=$(curl --silent "http://localhost:8080/wp-json/tuja/v1/tokens" -H "Content-Type: application/json" -d '{"id":"snpbvx6hde"}' | jq -r '.token')
+
+    $ curl -v "http://localhost:8080/wp-json/tuja/v1/ping?token=$TOKEN"
+
+Expected output from the `ping` endpoint:
+
+    {"status":"ok"}
+
 # Unit Tests
 
     $ brew install composer
