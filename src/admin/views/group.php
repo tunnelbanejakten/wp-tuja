@@ -35,11 +35,12 @@ AdminUtils::printTopMenu( $competition );
         Länk för att anmäla nya till laget:
 		<?= sprintf( '<a href="%s">%s</a>', $group_signup_link, $group_signup_link ) ?>
     </p>
+	<?= join( $group_form_links ) ?>
+
     <p>
         Inloggningstoken:
-		<?= $token ?>
+		<code><?= $token ?></code>
     </p>
-	<?= join( $group_form_links ) ?>
 
     <h3>Status</h3>
 

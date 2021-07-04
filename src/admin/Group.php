@@ -208,7 +208,7 @@ class Group {
 			}
 		}, $this->form_dao->get_all_in_competition( $competition->id ) );
 
-		$token = JwtUtils::create_token( $group->id );
+		$token = JwtUtils::create_token( $competition->id, $group->id );
 
 		include( 'views/group.php' );
 	}
