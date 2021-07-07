@@ -14,6 +14,7 @@ use tuja\data\model\question\OptionsQuestion;
 use tuja\data\model\question\TextQuestion;
 use tuja\data\model\Station;
 use tuja\data\model\TicketDesign;
+use tuja\data\model\Map;
 use tuja\util\Id;
 
 class AbstractDao {
@@ -167,4 +168,14 @@ class AbstractDao {
 
 		return $td;
 	}
+
+	protected static function to_map( $result ): Map {
+		$map                 = new Map();
+		$map->id             = $result->id;
+		$map->random_id      = $result->random_id;
+		$map->competition_id = $result->competition_id;
+		$map->name           = $result->name;
+
+		return $map;
+}
 }

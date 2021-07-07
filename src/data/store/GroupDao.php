@@ -30,10 +30,12 @@ class GroupDao extends AbstractDao {
 			array(
 				'random_id'          => $this->id->random_string(),
 				'competition_id'     => $group->competition_id,
+				'map_id'             => $group->map_id,
 				'is_always_editable' => $group->is_always_editable
 			),
 			array(
 				'%s',
+				'%d',
 				'%d',
 				'%d',
 			) );
@@ -56,7 +58,8 @@ class GroupDao extends AbstractDao {
 
 		$success = $this->wpdb->update( $this->table,
 			array(
-				'is_always_editable' => $group->is_always_editable
+				'is_always_editable' => $group->is_always_editable,
+				'map_id'             => $group->map_id
 			),
 			array(
 				'id' => $group->id
@@ -194,12 +197,13 @@ class GroupDao extends AbstractDao {
 
 	private static function to_group( $result, $date ): Group {
 		$g                     = new Group();
-		$g->id                 = $result->team_id;
+		$g->id                 = isset($result->team_id) ? intval($result->team_id) : null;
 		$g->random_id          = $result->random_id;
 		$g->name               = $result->name;
 		$g->city               = $result->city;
-		$g->category_id        = $result->category_id;
-		$g->competition_id     = $result->competition_id;
+		$g->category_id        = isset($result->category_id) ? intval($result->category_id) : null;
+		$g->competition_id     = isset($result->competition_id) ? intval($result->competition_id) : null;
+		$g->map_id             = isset($result->map_id) ? intval($result->map_id) : null;
 		$g->is_always_editable = $result->is_always_editable;
 		$g->note               = $result->note;
 		$g->set_status( $result->status );
