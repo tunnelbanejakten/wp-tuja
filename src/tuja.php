@@ -159,7 +159,33 @@ abstract class Plugin {
 				sort_order         SMALLINT,
 				text_hint          TEXT,
 				PRIMARY KEY (id)
-			) " . $charset;
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'map' ) . ' (
+				id                 INTEGER AUTO_INCREMENT NOT NULL,
+				random_id          VARCHAR(20)  NOT NULL,
+				competition_id     INTEGER      NOT NULL,
+				name               VARCHAR(100),
+				PRIMARY KEY (id),
+				UNIQUE KEY idx_map_token (random_id)
+				) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'marker' ) . ' (
+				id                     INTEGER AUTO_INCREMENT NOT NULL,
+				random_id              VARCHAR(20) NOT NULL,
+				map_id                 INTEGER NOT NULL,
+				gps_coord_lat          DOUBLE NOT NULL,
+				gps_coord_long         DOUBLE NOT NULL,
+				type                   VARCHAR(100) NOT NULL,
+				name                   VARCHAR(100),
+				description            TEXT,
+				link_form_id           INTEGER,
+				link_form_question_id  INTEGER,
+				link_question_group_id INTEGER,
+				link_station_id        INTEGER,
+				PRIMARY KEY (id),
+				UNIQUE KEY idx_marker_token (random_id)
+			) ' . $charset;
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'form_question_response' ) . ' (
@@ -300,7 +326,15 @@ abstract class Plugin {
 
 			[ 'string', 'competition_id', 'competition', 'CASCADE' ],
 
-			[ 'station', 'competition_id', 'competition', 'CASCADE' ],
+			array( 'station', 'competition_id', 'competition', 'CASCADE' ),
+
+			array( 'map', 'competition_id', 'competition', 'CASCADE' ),
+
+			array( 'marker', 'map_id', 'map', 'CASCADE' ),
+			array( 'marker', 'link_form_id', 'form', 'CASCADE' ),
+			array( 'marker', 'link_form_question_id', 'form_question', 'CASCADE' ),
+			array( 'marker', 'link_question_group_id', 'form_question_group', 'CASCADE' ),
+			array( 'marker', 'link_station_id', 'station', 'CASCADE' ),
 
 			[ 'ticket', 'team_id', 'team', 'CASCADE' ],
 			[ 'ticket', 'station_id', 'station', 'CASCADE' ],
