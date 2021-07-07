@@ -52,6 +52,11 @@
         "ordered_percent_of",
         "all_of"
       ]
+    },
+    "max_time_minutes": {
+      "title": "Tidsgräns för att svara",
+      "type": "integer",
+      "format": "number"
     }
   }
 }

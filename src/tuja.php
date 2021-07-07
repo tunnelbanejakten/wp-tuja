@@ -158,6 +158,7 @@ abstract class Plugin {
 				answer             TEXT,
 				text               TEXT         NOT NULL,
 				sort_order         SMALLINT,
+				limit_time         SMALLINT,
 				text_hint          TEXT,
 				PRIMARY KEY (id)
 			) ' . $charset;
@@ -295,6 +296,22 @@ abstract class Plugin {
 				PRIMARY KEY (from_station_id, to_station_id)
 			) ' . $charset;
 
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'event' ) . ' (
+				id                    INTEGER AUTO_INCREMENT NOT NULL,
+				competition_id        INTEGER NOT NULL,
+				created_at            INTEGER NOT NULL,
+				event_name            VARCHAR(50) NOT NULL,
+				event_data            TEXT,
+				team_id               INTEGER,
+				person_id             INTEGER,
+				affected_object_type  VARCHAR(50),
+				affected_object_id    INTEGER,
+				PRIMARY KEY (id),
+				INDEX idx_events_event (event_name)
+				INDEX idx_events_object (affected_object_type, affected_object_id)
+			) ' . $charset;
+
 		$keys = array(
 			[ 'competition', 'message_template_new_team_admin', 'message_template', 'RESTRICT' ], // No longer used
 			[ 'competition', 'message_template_new_team_reporter', 'message_template', 'RESTRICT' ], // No longer used
@@ -328,7 +345,9 @@ abstract class Plugin {
 
 			[ 'message_template', 'competition_id', 'competition', 'CASCADE' ],
 
-			[ 'string', 'competition_id', 'competition', 'CASCADE' ],
+			array( 'event', 'competition_id', 'competition', 'CASCADE' ),
+			array( 'event', 'person_id', 'person', 'CASCADE' ),
+			array( 'event', 'team_id', 'team', 'CASCADE' ),
 
 			array( 'station', 'competition_id', 'competition', 'CASCADE' ),
 
