@@ -12,6 +12,7 @@ AdminUtils::printTopMenu( $competition );
             <th rowspan="2" valign="top">Namn</th>
             <th rowspan="2" valign="top">Ålder</th>
             <th rowspan="2" valign="top">Tävlingsklass</th>
+            <th rowspan="2" valign="top">Karta</th>
             <th colspan="3" valign="top">Antal</th>
             <th rowspan="2" valign="top">Avgift</th>
             <th colspan="3" valign="top">Anmälningsstatus</th>
@@ -45,6 +46,25 @@ AdminUtils::printTopMenu( $competition );
 					?>
                     <div class="tuja-buttons">
                         <button type="submit" class="button" name="tuja_action" value="tuja_group_batch__category">
+                            Ändra
+                        </button>
+                    </div>
+                </td>
+                <td>
+					<?php
+					// Print map selector
+					$map_options = [];
+					foreach ( $map_map as $id => $label ) {
+						$map_options[] = sprintf( '<option value="%d">%s</option>',
+							$id,
+							$label );
+					}
+					printf( '<select name="tuja_group_batch__map">%s</select>',
+						join( '', $map_options )
+					);
+					?>
+                    <div class="tuja-buttons">
+                        <button type="submit" class="button" name="tuja_action" value="tuja_group_batch__map">
                             Ändra
                         </button>
                     </div>
@@ -115,6 +135,8 @@ AdminUtils::printTopMenu( $competition );
 					$label );
 			}
 			printf( '<td>%s</td>', $group_data['category'] ? $group_data['category']->name : '' );
+
+			printf( '<td>%s</td>', isset($group->map_id) ? $map_map[ $group->map_id ] : '' );
 
 			// Print summary of group members
 			printf( '<td>%d st</td>' .
