@@ -49,6 +49,7 @@ class AdminUtils {
 			$menu_config = array_merge( $menu_config, [
 				'Competition'         => 'Formulär',
 				'Stations'            => 'Stationer',
+				'Maps'                => 'Kartor',
 				'CompetitionSettings' => 'Inställningar',
 				'Shortcodes'          => 'Shortcodes'
 			] );

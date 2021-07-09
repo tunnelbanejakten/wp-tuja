@@ -75,6 +75,7 @@ class Group {
 	public $count_competing;
 	public $count_follower;
 	public $count_team_contact;
+	public $map_id;
 	public $is_always_editable = false;
 	public $note;
 

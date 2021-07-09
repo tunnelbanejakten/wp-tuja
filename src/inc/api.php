@@ -27,6 +27,7 @@ class API extends Plugin {
 			function( $value ) {
 				header( 'Access-Control-Allow-Origin: *' );
 				header( 'Access-Control-Allow-Methods: OPTIONS, GET, POST, PUT' );
+				header( 'Access-Control-Allow-Headers: Accept-Language' );
 				header( 'Access-Control-Allow-Credentials: true' );
 				header( 'Access-Control-Expose-Headers: Link', false );
 
@@ -83,6 +84,16 @@ class API extends Plugin {
 			array(
 				'methods'             => 'GET',
 				'callback'            => $this->callback( 'Profile', 'get_profile' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			'tuja/v1',
+			'/map/markers',
+			array(
+				'methods'             => 'GET',
+				'callback'            => $this->callback( 'Map', 'get_markers' ),
 				'permission_callback' => '__return_true',
 			)
 		);
