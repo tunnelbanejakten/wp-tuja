@@ -102,6 +102,16 @@ class TextQuestion extends AbstractQuestion {
 		}
 	}
 
+	public function get_public_properties() {
+		return array_merge(
+			parent::get_public_properties(),
+			array(
+				'score_type'       => $this->score_type,
+				'is_single_answer' => $this->is_single_answer,
+			)
+		);
+	}
+
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */

@@ -13,16 +13,12 @@ abstract class AbstractQuestion {
 	const RESPONSE_MISSING_HTML = '<span class="tuja-admin-noresponse">Inget svar</span>';
 
 	// TODO: Do these properties need to be public?
-	public $id = - 1;
+	public $id                = - 1;
 	public $question_group_id = - 1;
-
-	public $text_hint = 'A subtle hint';
-
-	public $text = 'Who? What? When?';
-
-	public $sort_order = 0;
-
-	public $score_max = 0;
+	public $text_hint         = 'A subtle hint';
+	public $text              = 'Who? What? When?';
+	public $sort_order        = 0;
+	public $score_max         = 0;
 
 	/**
 	 * AbstractQuestion constructor.
@@ -62,7 +58,8 @@ abstract class AbstractQuestion {
 		ReflectionUtils::set_properties_from_json_string(
 			$this,
 			$json_string,
-			$this->json_schema() );
+			$this->json_schema()
+		);
 	}
 
 	/**
@@ -74,6 +71,18 @@ abstract class AbstractQuestion {
 	 * Returns the HTML used to render this question.
 	 */
 	abstract function get_html( $field_name, $is_read_only, $answer_object );
+
+	/**
+	 * Returns an JSON object used to render this question by external clients.
+	 */
+	public function get_public_properties() {
+		return array(
+			'text_hint'  => $this->text_hint,
+			'text'       => $this->text,
+			'sort_order' => $this->sort_order,
+			'score_max'  => $this->score_max,
+		);
+	}
 
 	/**
 	 * Gathers data from $_POST about the current question. The response from this function

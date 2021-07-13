@@ -97,6 +97,16 @@ class API extends Plugin {
 				'permission_callback' => '__return_true',
 			)
 		);
+
+		register_rest_route(
+			'tuja/v1',
+			'/questions/(?P<id>[a-z0-9]{1,10})',
+			array(
+				'methods'             => 'GET',
+				'callback'            => $this->callback( 'Questions', 'get_question' ),
+				'permission_callback' => '__return_true',
+			)
+		);
 	}
 
 	public function callback( $controller, $method ) {

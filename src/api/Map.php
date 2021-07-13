@@ -29,10 +29,14 @@ class Map extends AbstractRestEndpoint {
 		return array_map(
 			function ( Marker $marker ) {
 				return array(
-					'latitude'  => $marker->gps_coord_lat,
-					'longitude' => $marker->gps_coord_long,
-					'radius'    => 25,
-					'name'      => $marker->name,
+					'latitude'               => $marker->gps_coord_lat,
+					'longitude'              => $marker->gps_coord_long,
+					'radius'                 => 25,
+					'name'                   => $marker->name,
+					'link_form_id'           => isset( $marker->link_form_id ) ? intval( $marker->link_form_id ) : null,
+					'link_form_question_id'  => isset( $marker->link_form_question_id ) ? intval( $marker->link_form_question_id ) : null,
+					'link_question_group_id' => isset( $marker->link_question_group_id ) ? intval( $marker->link_question_group_id ) : null,
+					'link_station_id'        => isset( $marker->link_station_id ) ? intval( $marker->link_station_id ) : null,
 				);
 			},
 			$markers

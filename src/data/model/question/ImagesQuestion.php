@@ -19,6 +19,14 @@ class ImagesQuestion extends AbstractQuestion {
 		$this->max_files_count = $max_files_count;
 	}
 
+	public function get_public_properties() {
+		return array_merge(
+			parent::get_public_properties(),
+			array(
+				'max_files_count' => $this->max_files_count,
+			)
+		);
+	}
 
 	/**
 	 * Grades an answer and returns the score for the answer.

@@ -71,6 +71,17 @@ class OptionsQuestion extends AbstractQuestion {
 		}
 	}
 
+	public function get_public_properties() {
+		return array_merge(
+			parent::get_public_properties(),
+			array(
+				'score_type'       => $this->score_type,
+				'is_single_select' => $this->is_single_select,
+				'possible_answers' => $this->possible_answers,
+			)
+		);
+	}
+
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */

@@ -1,0 +1,46 @@
+<?php
+
+namespace tuja;
+
+use Reflection;
+use tuja\data\store\GroupDao;
+use tuja\data\store\QuestionDao;
+use tuja\data\store\ResponseDao;
+use tuja\util\JwtUtils;
+use tuja\util\ReflectionUtils;
+use WP_REST_Request;
+use WP_REST_Response;
+
+class Questions extends AbstractRestEndpoint {
+
+	public static function get_question( WP_REST_Request $request ) {
+		$token_decoded = $request->get_param( 'token_decoded' );
+
+		$group_id = $token_decoded->group_id;
+
+		$group_dao = new GroupDao();
+		$group     = $group_dao->get( $group_id );
+		if ( $group === false ) {
+			return self::create_response( 404 );
+		}
+
+		$question_id = $request->get_param( 'id' );
+		$question_dao = new QuestionDao();
+		$question     = $question_dao->get( $question_id );
+		if ( $question === false ) {
+			return self::create_response( 404 );
+		}
+
+		$response_dao  = new ResponseDao();
+		$responses     = $response_dao->get_latest_by_group( $group_id );
+		$answer_object = @$responses[ $question->id ]->submitted_answer ?: null;
+
+		return array(
+			'type'             => ( new \ReflectionClass( $question ) )->getShortName(),
+			'config'           => $question->get_public_properties(),
+			'field_name'       => null,
+			'is_read_only'     => null,
+			'submitted_answer' => $answer_object,
+		);
+	}
+}
