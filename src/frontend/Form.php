@@ -243,7 +243,7 @@ class Form extends AbstractGroupView {
 		}
 
 		if ( ! $is_read_only ) {
-			$optimistic_lock_value = $this->get_optimistic_lock_value();
+			$optimistic_lock_value = $this->get_optimistic_lock_value( $displayed_question_ids );
 
 			$tracked_answers_value = $form_user_changes->get_tracked_answers_string();
 
