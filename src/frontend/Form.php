@@ -2,7 +2,6 @@
 
 namespace tuja\frontend;
 
-
 use DateTime;
 use Exception;
 use tuja\data\model\question\AbstractQuestion;
@@ -28,10 +27,10 @@ class Form extends AbstractGroupView {
 	private $form_dao;
 
 	const RESPONSE_FIELD_NAME_PREFIX = 'tuja_formshortcode__response__';
-	const ACTION_FIELD_NAME = 'tuja_formshortcode__action';
+	const ACTION_FIELD_NAME          = 'tuja_formshortcode__action';
 	const OPTIMISTIC_LOCK_FIELD_NAME = 'tuja_formshortcode__optimistic_locks';
 	const TRACKED_ANSWERS_FIELD_NAME = 'tuja_formshortcode__tracked_answers';
-	const SCROLL_FIELD_NAME = 'tuja_formshortcode__scroll';
+	const SCROLL_FIELD_NAME          = 'tuja_formshortcode__scroll';
 
 	public function __construct( string $url, string $group_key, string $form_key ) {
 		parent::__construct( $url, $group_key, 'Svara' );
@@ -42,6 +41,10 @@ class Form extends AbstractGroupView {
 		$this->response_dao       = new ResponseDao();
 		$this->form_dao           = new FormDao();
 		$this->category_dao       = new GroupCategoryDao();
+	}
+
+	public static function get_response_field( $question_id ) {
+		return self::RESPONSE_FIELD_NAME_PREFIX . $question_id;
 	}
 
 	protected function get_form(): \tuja\data\model\Form {
@@ -64,7 +67,7 @@ class Form extends AbstractGroupView {
 		Frontend::use_stylesheet( 'tuja-wp-form.css' );
 
 		$form = $this->get_form_html();
-		include( 'views/form.php' );
+		include 'views/form.php';
 	}
 
 	public function update_answers( $group_id ): array {
@@ -93,12 +96,12 @@ class Form extends AbstractGroupView {
 				// Remove what the current user submitted, which will force the form to display the newest response instead of the current user's.
 				foreach ( $rejected_ids as $response_question_id ) {
 					// Remove POSTed data, thus ensuring that the user sees the newer answer in the database (when the form is rendered).
-					unset( $_POST[ self::RESPONSE_FIELD_NAME_PREFIX . $response_question_id ] );
+					unset( $_POST[ self::get_response_field( $response_question_id ) ] );
 
 					// Remove answer from list of updates
 					unset( $updates[ $response_question_id ] );
 
-					$errors[ self::RESPONSE_FIELD_NAME_PREFIX . $response_question_id ] = Strings::get( 'form.optimistic_lock_error' );
+					$errors[ self::get_response_field( $response_question_id ) ] = Strings::get( 'form.optimistic_lock_error' );
 				}
 			}
 
@@ -115,7 +118,7 @@ class Form extends AbstractGroupView {
 						throw new Exception( Strings::get( 'form.unknown_error' ) );
 					}
 				} catch ( Exception $e ) {
-					$errors[ self::RESPONSE_FIELD_NAME_PREFIX . $question_id ] = $e->getMessage();
+					$errors[ self::get_response_field( $question_id ) ] = $e->getMessage();
 				}
 			}
 		}
@@ -147,25 +150,33 @@ class Form extends AbstractGroupView {
 		return false;
 	}
 
+	public function get_optimistic_lock_value( array $displayed_question_ids ) {
+		return $this->get_form_lock_validator()
+										  ->get_optimistic_lock_value( $displayed_question_ids )
+										  ->to_string();
+	}
+
 	public function get_form_html(): string {
-		$html_sections = [];
+		$html_sections = array();
 		$group         = $this->get_group();
 
 		$group_id = $group->id;
 
 		if ( ! $this->is_form_opened() ) {
-			return sprintf( '
+			return sprintf(
+				'
 				<div class="tuja-message-wrapper">
 					<p class="tuja-message tuja-message-warning">%s</p>
 				</div>',
-				Strings::get( 'form.not_opened' ) );
+				Strings::get( 'form.not_opened' )
+			);
 		}
 
 		$is_read_only = ! $this->is_submit_allowed();
 
 		$message_success = null;
 		$message_error   = null;
-		$errors          = [];
+		$errors          = array();
 		$is_update       = isset( $_POST[ self::ACTION_FIELD_NAME ] ) && $_POST[ self::ACTION_FIELD_NAME ] === 'update';
 
 		if ( $is_update ) {
@@ -186,7 +197,7 @@ class Form extends AbstractGroupView {
 
 		$responses              = $this->response_dao->get_latest_by_group( $group_id );
 		$question_groups        = $this->question_group_dao->get_all_in_form( $this->get_form()->id );
-		$displayed_question_ids = [];
+		$displayed_question_ids = array();
 		$form_user_changes      = new FormUserChanges();
 
 		foreach ( $question_groups as $question_group ) {
@@ -197,7 +208,7 @@ class Form extends AbstractGroupView {
 
 			$questions = $question_group->get_filtered_questions( $this->question_dao, $this->group_dao, $group );
 			foreach ( $questions as $question ) {
-				$field_name = self::RESPONSE_FIELD_NAME_PREFIX . $question->id;
+				$field_name = self::get_response_field( $question->id );
 
 				// We do not want to present the previously inputted values in case the user changed from one group to another.
 				// The responses inputted for the previously selected group are not relevant anymore (they are, in fact, probably incorrect).
@@ -213,9 +224,11 @@ class Form extends AbstractGroupView {
 					$field_name,
 					$is_read_only,
 					$answer_object,
-					$group );
+					$group
+				);
 
-				$current_group .= sprintf( '<div class="tuja-question %s" data-id="%d">%s%s</div>',
+				$current_group .= sprintf(
+					'<div class="tuja-question %s" data-id="%d">%s%s</div>',
 					isset( $errors[ $field_name ] ) ? 'tuja-field-error' : '',
 					$question->id,
 					$html_field,
@@ -225,21 +238,20 @@ class Form extends AbstractGroupView {
 				$displayed_question_ids[] = $question->id;
 			}
 
-			$current_group   .= '</section>';
+			$current_group  .= '</section>';
 			$html_sections[] = $current_group;
 		}
 
 		if ( ! $is_read_only ) {
-			$optimistic_lock_value = $this->get_form_lock_validator()
-			                              ->get_optimistic_lock_value( $displayed_question_ids )
-			                              ->to_string();
+			$optimistic_lock_value = $this->get_optimistic_lock_value();
 
 			$tracked_answers_value = $form_user_changes->get_tracked_answers_string();
 
 			$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::TRACKED_ANSWERS_FIELD_NAME, $tracked_answers_value );
 			$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', self::OPTIMISTIC_LOCK_FIELD_NAME, $optimistic_lock_value );
 
-			$html_sections[] = sprintf( '
+			$html_sections[] = sprintf(
+				'
 					<div class="tuja-buttons tuja-buttons-fixed-footer">
 						<button type="submit" name="%s" value="update">%s</button>
 						<span class="tuja-form-change-reminder">%s</span>
@@ -251,7 +263,8 @@ class Form extends AbstractGroupView {
 		} else {
 			$html_sections[] = sprintf(
 				'<p class="tuja-message tuja-message-error">%s</p>',
-				Strings::get( 'form.read_only' ) );
+				Strings::get( 'form.read_only' )
+			);
 		}
 
 		$html_sections[] = sprintf( '<input type="hidden" name="%s" id="%s" value="%s">', self::SCROLL_FIELD_NAME, self::SCROLL_FIELD_NAME, $_POST[ self::SCROLL_FIELD_NAME ] ?: '' );
@@ -269,14 +282,21 @@ class Form extends AbstractGroupView {
 		$responses = $this->response_dao->get_latest_by_group( $this->get_group()->id );
 
 		$user_answers = array_combine(
-			array_map( function ( AbstractQuestion $question ) {
-				return $question->id;
-			}, $questions ),
-			array_map( function ( AbstractQuestion $question ) use ( $responses ) {
-				$answer_object = @$responses[ $question->id ]->submitted_answer ?: null;
+			array_map(
+				function ( AbstractQuestion $question ) {
+					return $question->id;
+				},
+				$questions
+			),
+			array_map(
+				function ( AbstractQuestion $question ) use ( $responses ) {
+					$answer_object = @$responses[ $question->id ]->submitted_answer ?: null;
 
-				return $question->get_answer_object( self::RESPONSE_FIELD_NAME_PREFIX . $question->id, $answer_object );
-			}, $questions ) );
+					return $question->get_answer_object( self::get_response_field( $question->id ), $answer_object );
+				},
+				$questions
+			)
+		);
 
 		$updates = FormUserChanges::get_updated_answer_objects( $_POST[ self::TRACKED_ANSWERS_FIELD_NAME ], $user_answers );
 
@@ -287,9 +307,12 @@ class Form extends AbstractGroupView {
 	 * Removed POSTed data which has NOT been updated.
 	 */
 	private function clear_unchanged_post_data( array $changed_question_ids ) {
-		$updated_question_field_names = array_map( function ( $question_id ) {
-			return self::RESPONSE_FIELD_NAME_PREFIX . $question_id;
-		}, $changed_question_ids );
+		$updated_question_field_names = array_map(
+			function ( $question_id ) {
+				return self::get_response_field( $question_id );
+			},
+			$changed_question_ids
+		);
 
 		foreach ( array_keys( $_POST ) as $field_name ) {
 			$is_form_input_field        = substr( $field_name, 0, strlen( self::RESPONSE_FIELD_NAME_PREFIX ) ) === self::RESPONSE_FIELD_NAME_PREFIX;
