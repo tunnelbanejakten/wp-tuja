@@ -125,7 +125,7 @@ class Groups {
 				try {
 					$db_groups = new GroupDao();
 					$db_groups->create( $props );
-				} catch ( ValidationException $e ) {
+				} catch ( Exception $e ) {
 					AdminUtils::printException( $e );
 				}
 				break;

@@ -29,6 +29,7 @@ class GroupDao extends AbstractDao {
 		$affected_rows = $this->wpdb->insert( $this->table,
 			array(
 				'random_id'          => $this->id->random_string(),
+				'name'               => $group->name,
 				'competition_id'     => $group->competition_id,
 				'map_id'             => $group->map_id,
 				'is_always_editable' => $group->is_always_editable
@@ -40,10 +41,10 @@ class GroupDao extends AbstractDao {
 				'%d',
 			) );
 
-		$success = $affected_rows !== false && $affected_rows === 1;
+		$success = $affected_rows === 1;
 
 		if ( ! $success ) {
-			return false;
+			throw new Exception($this->wpdb->last_error);
 		}
 
 		$group->id = $this->wpdb->insert_id;
@@ -206,6 +207,7 @@ class GroupDao extends AbstractDao {
 		$g->map_id             = isset($result->map_id) ? intval($result->map_id) : null;
 		$g->is_always_editable = $result->is_always_editable;
 		$g->note               = $result->note;
+		$g->age_competing_avg  = null;
 		$g->set_status( $result->status );
 
 		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, false, $date );
@@ -215,33 +217,23 @@ class GroupDao extends AbstractDao {
 		$people_competing_with_age = array_filter( $people, function ( Person $person ) {
 			return $person->is_competing() && $person->age > 0;
 		} );
-		$g->age_competing_avg      = count( $people_competing_with_age ) > 0 ? array_sum(
-			                                                                       array_map(
-				                                                                       function ( Person $person ) {
-					                                                                       return $person->age;
-				                                                                       },
-				                                                                       $people_competing_with_age ) )
-		                                                                       / count( $people_competing_with_age ) : null;
-		$g->age_competing_min      = array_reduce(
-			array_map(
-				function ( Person $person ) {
-					return $person->age;
-				},
-				$people_competing_with_age ),
-			function ( $min, $age ) {
-				return $min === null || $age < $min ? $age : $min;
-			},
-			null );
-		$g->age_competing_max      = array_reduce(
-			array_map(
-				function ( Person $person ) {
-					return $person->age;
-				},
-				$people_competing_with_age ),
-			function ( $max, $age ) {
-				return $max === null || $max < $age ? $age : $max;
-			},
-			null );
+
+		$ages = array_map(function ( Person $person ) { return $person->age; }, $people_competing_with_age );
+
+		if(count( $people_competing_with_age ) > 0) {
+			$g->age_competing_avg = array_sum( $ages ) / count( $people_competing_with_age );
+		}
+
+		$g->age_competing_min = array_reduce(
+			$ages,
+			function ( $min, $age ) { return $min === null || $age < $min ? $age : $min; },
+			null
+		);
+		$g->age_competing_max = array_reduce(
+			$ages,
+			function ( $max, $age ) { return $max === null || $max < $age ? $age : $max; },
+			null
+		);
 
 		$g->count_competing    = count( $people_competing );
 		$g->count_follower     = count(
@@ -263,19 +255,24 @@ class GroupDao extends AbstractDao {
 			throw new Exception( 'Must specify groups to anonymize.' );
 		}
 
-		$where = 'id IN (' . join( ', ', $group_ids ) . ')';
+		$table = $this->table;	
+		$group_ids = join( ', ', $group_ids );
 
-		$current_names = array_map( function ( $row ) {
-			return $row[0];
-		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT name FROM ' . $this->table . ' WHERE ' . $where ), ARRAY_N ) );
+		$get_names_query = "SELECT DISTINCT name FROM $table WHERE id IN ($group_ids)";
+		$update_names_query = "UPDATE $table SET name = %s, city = %s WHERE name = %s AND id IN ($group_ids)";
+		
+		$current_names = $this->wpdb->get_col( $this->wpdb->prepare( $get_names_query ), ARRAY_N );
+
 		foreach ( $current_names as $current_name ) {
 			$new_city = $anonymizer->neighborhood();
-			$new_name = $anonymizer->animal() . ' från ' . $neighborhood;
+			$new_name = $anonymizer->animal() . ' från ' . $new_city;
+
 			$this->wpdb->query( $this->wpdb->prepare(
-				'UPDATE ' . $this->table . ' SET name = %s, city = %s WHERE name = %s AND ' . $where,
+				$update_names_query,
+				$new_name,
 				$new_city,
-				$new_city,
-				$current_name ) );
+				$current_name
+			) );
 		}
 	}
 }
