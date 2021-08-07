@@ -2,7 +2,7 @@
 
 namespace tuja\admin;
 
-use tuja\data\model\Competition;
+use Exception;
 use tuja\data\model\Map;
 use tuja\data\model\Marker;
 use tuja\data\store\MapDao;
@@ -72,7 +72,12 @@ class Maps {
 							$marker->gps_coord_lat  = $gps_coord_lat;
 							$marker->gps_coord_long = $gps_coord_long;
 							$marker->name           = $name;
-							$marker_dao->update( $marker );
+
+							try {
+								$marker_dao->update( $marker );
+							} catch(Exception $e) {
+								AdminUtils::printException($e);
+							}
 						} else {
 							$marker                        = new Marker();
 							$marker->map_id                = $map->id;
@@ -81,12 +86,22 @@ class Maps {
 							$marker->type                  = Marker::MARKER_TYPE_TASK;
 							$marker->name                  = $name;
 							$marker->link_form_question_id = $question->id;
-							$marker_dao->create( $marker );
+							
+							try {
+								$marker_dao->create( $marker );
+							} catch(Exception $e) {
+								AdminUtils::printException($e);
+							}
 						}
 					} else {
 						if ( isset( $markers[ $key ] ) ) {
 							$marker = $markers[ $key ];
-							$marker_dao->delete( $marker->id );
+
+							try {
+								$marker_dao->delete( $marker->id );
+							} catch(Exception $e) {
+								AdminUtils::printException($e);
+							}
 						}
 					}
 				}
