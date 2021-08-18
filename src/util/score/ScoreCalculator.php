@@ -11,6 +11,8 @@ use tuja\data\store\ResponseDao;
 
 class ScoreCalculator
 {
+	const VIEW_EVENT_ERROR_MARGIN_SECONDS = 5;
+
 	private $competition_id;
 	private $response_dao;
 	private $group_dao;

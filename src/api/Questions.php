@@ -2,7 +2,10 @@
 
 namespace tuja;
 
+use DateTime;
 use Reflection;
+use tuja\data\model\Event;
+use tuja\data\store\EventDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionDao;
@@ -12,6 +15,7 @@ use tuja\frontend\Form;
 use tuja\util\JwtUtils;
 use tuja\util\ReflectionUtils;
 use tuja\frontend\FormUserChanges;
+use tuja\util\score\ScoreCalculator;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -51,9 +55,10 @@ class Questions extends AbstractRestEndpoint {
 		$form_user_changes->track_answer( $question, $question->get_answer_object( $response_field, $answer_object ) );
 		$tracked_answers_value = $form_user_changes->get_tracked_answers_string();
 
-		return array(
+		$event_dao = new EventDao();
+
+		$response               = array(
 			'type'            => ( new \ReflectionClass( $question ) )->getShortName(),
-			'config'          => $question->get_public_properties(),
 			'is_read_only'    => null,
 			'response'        => array(
 				'field_name'    => $response_field,
@@ -68,6 +73,35 @@ class Questions extends AbstractRestEndpoint {
 				'current_value' => $tracked_answers_value,
 			),
 		);
+		$is_view_event_required = $question->limit_time > 0;
+		$response['view_event'] = array( 'is_required' => $is_view_event_required );
+		if ( $is_view_event_required ) {
+			$all_events = $event_dao->get_by_group( $group->competition_id, $group->id );
+			$events     = array_filter(
+				$all_events,
+				function ( Event $event ) use ( $question ) {
+					return $event->event_name === Event::EVENT_VIEW &&
+						$event->object_type === Event::OBJECT_TYPE_QUESTION &&
+						$event->object_id === $question->id;
+				}
+			);
+
+			$is_view_event_found                = count( $events ) > 0;
+			$response['view_event']['is_found'] = $is_view_event_found;
+			$response['limit_time_max']         = $question->limit_time;
+			if ( $is_view_event_found ) {
+				$view_event                       = current( $events );
+				$time_passed                      = ( new DateTime( 'now' ) )->getTimestamp() - $view_event->created_at->getTimestamp();
+				$response['limit_time_remaining'] = max( 0, $question->limit_time - $time_passed + ScoreCalculator::VIEW_EVENT_ERROR_MARGIN_SECONDS );
+				$response['config']               = $question->get_public_properties();
+			} else {
+				$response['config'] = null;
+			}
+		} else {
+			$response['config'] = $question->get_public_properties();
+		}
+
+		return $response;
 	}
 
 	public static function post_answer( WP_REST_Request $request ) {
@@ -103,5 +137,42 @@ class Questions extends AbstractRestEndpoint {
 		} else {
 			return self::create_response( 400 );
 		}
+	}
+
+	public static function post_view_event( WP_REST_Request $request ) {
+		$token_decoded = $request->get_param( 'token_decoded' );
+
+		$group_id = $token_decoded->group_id;
+
+		$group_dao = new GroupDao();
+		$group     = $group_dao->get( $group_id );
+		if ( $group === false ) {
+			return self::create_response( 404 );
+		}
+
+		$question_id  = $request->get_param( 'id' );
+		$question_dao = new QuestionDao();
+		$question     = $question_dao->get( $question_id );
+		if ( $question === false ) {
+			return self::create_response( 404 );
+		}
+
+		$event_dao = new EventDao();
+
+		$event                 = new Event();
+		$event->competition_id = $group->competition_id;
+		$event->event_name     = Event::EVENT_VIEW;
+		$event->event_data     = null;
+		$event->group_id       = $group->id;
+		$event->person_id      = null;
+		$event->object_type    = Event::OBJECT_TYPE_QUESTION;
+		$event->object_id      = $question->id;
+
+		$result = $event_dao->create( $event );
+		if ( $result === false ) {
+			return self::create_response( 500 );
+		}
+
+		return self::create_response( 201 );
 	}
 }
