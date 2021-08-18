@@ -42,6 +42,28 @@ AdminUtils::printTopMenu( $competition );
 		<code><?= $token ?></code>
     </p>
 
+    <h3>Tidsbegränsade frågor som visats</h3>
+
+	<?php
+	if ( count($view_question_events) > 0 ) {
+		foreach($view_question_events as $event) {
+			printf(
+				'
+				<p>
+				Visade fråga %s kl. %s
+				<button class="button" type="submit" name="tuja_points_action" value="delete_event__%s">%s</button>
+				</p>
+				', 
+				$event->object_id, 
+				$event->created_at->format('H:i P'),
+				$event->id, 
+				'Ta bort'
+			);
+		}
+	} else {
+		print('<p>Inga.</p>');
+	}
+	?>
     <h3>Status</h3>
 
     <p>

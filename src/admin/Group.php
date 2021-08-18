@@ -3,8 +3,10 @@
 namespace tuja\admin;
 
 use Exception;
+use tuja\data\model\Event;
 use tuja\data\model\QuestionGroup;
 use tuja\data\store\CompetitionDao;
+use tuja\data\store\EventDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\MessageDao;
@@ -23,7 +25,7 @@ use tuja\util\JwtUtils;
 
 class Group {
 
-	const DEFAULT_QUESTION_FILTER = ResponseDao::QUESTION_FILTER_ALL;
+	const DEFAULT_QUESTION_FILTER   = ResponseDao::QUESTION_FILTER_ALL;
 	const QUESTION_FILTER_URL_PARAM = 'tuja_group_question_filter';
 
 	private $group;
@@ -78,7 +80,6 @@ class Group {
 					'Svar på %d frågor har markerats som kontrollerade.',
 					count( $result['marked_as_reviewed'] ) ) );
 			}
-
 		} elseif ( $action === 'transition' ) {
 
 			$this->group->set_status( $parameter );
@@ -128,6 +129,20 @@ class Group {
 					}
 				} catch ( Exception $e ) {
 					AdminUtils::printException( $e );
+				}
+			}
+		} elseif ( $action === 'delete_event' ) {
+			$event_dao     = new EventDao();
+			$affected_rows = $event_dao->delete( $parameter );
+
+			$success = $affected_rows !== false && $affected_rows === 1;
+
+			if ( $success ) {
+				AdminUtils::printSuccess( 'Händelsen att frågan har visats har tagits bort' );
+			} else {
+				AdminUtils::printError( 'Kunde inte ta bort händelsen.' );
+				if ( $error = $wpdb->last_error ) {
+					AdminUtils::printError( $error );
 				}
 			}
 		}
@@ -210,6 +225,14 @@ class Group {
 
 		$token = JwtUtils::create_token( $competition->id, $group->id );
 
-		include( 'views/group.php' );
+		$event_dao            = new EventDao();
+		$view_question_events = array_filter(
+			$event_dao->get_by_group( $competition->id, $group->id ),
+			function ( Event $event ) {
+				return $event->event_name === Event::EVENT_VIEW && $event->object_type === Event::OBJECT_TYPE_QUESTION;
+			}
+		);
+
+		include 'views/group.php';
 	}
 }
