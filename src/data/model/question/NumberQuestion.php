@@ -11,8 +11,8 @@ class NumberQuestion extends AbstractQuestion {
 
 	public $correct_answer = 0;
 
-	public function __construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max, $correct_answer ) {
-		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max );
+	public function __construct( $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max, $correct_answer ) {
+		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max );
 		$this->correct_answer = $correct_answer;
 	}
 

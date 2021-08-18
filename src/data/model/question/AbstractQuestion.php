@@ -18,6 +18,7 @@ abstract class AbstractQuestion {
 	public $text_hint         = 'A subtle hint';
 	public $text              = 'Who? What? When?';
 	public $sort_order        = 0;
+	public $limit_time        = 0;
 	public $score_max         = 0;
 
 	/**
@@ -28,14 +29,16 @@ abstract class AbstractQuestion {
 	 * @param $id
 	 * @param $question_group_id
 	 * @param $sort_order
+	 * @param $limit_time
 	 * @param $score_max
 	 */
-	public function __construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max ) {
+	public function __construct( $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max ) {
 		$this->id                = $id;
 		$this->question_group_id = $question_group_id;
 		$this->text_hint         = $text_hint;
 		$this->text              = $text;
 		$this->sort_order        = $sort_order;
+		$this->limit_time        = $limit_time;
 		$this->score_max         = $score_max;
 	}
 
@@ -80,6 +83,7 @@ abstract class AbstractQuestion {
 			'text_hint'  => $this->text_hint,
 			'text'       => $this->text,
 			'sort_order' => $this->sort_order,
+			'limit_time' => $this->limit_time,
 			'score_max'  => $this->score_max,
 		);
 	}

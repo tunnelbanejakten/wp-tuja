@@ -305,11 +305,11 @@ abstract class Plugin {
 				event_data            TEXT,
 				team_id               INTEGER,
 				person_id             INTEGER,
-				affected_object_type  VARCHAR(50),
-				affected_object_id    INTEGER,
+				object_type           VARCHAR(50),
+				object_id             INTEGER,
 				PRIMARY KEY (id),
-				INDEX idx_events_event (event_name)
-				INDEX idx_events_object (affected_object_type, affected_object_id)
+				INDEX idx_event_event (event_name),
+				INDEX idx_event_object (object_type, object_id)
 			) ' . $charset;
 
 		$keys = array(

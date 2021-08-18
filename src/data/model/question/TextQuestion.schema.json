@@ -53,8 +53,8 @@
         "all_of"
       ]
     },
-    "max_time_minutes": {
-      "title": "Tidsgräns för att svara",
+    "limit_time": {
+      "title": "Tidsgräns för att svara (sekunder)",
       "type": "integer",
       "format": "number"
     }

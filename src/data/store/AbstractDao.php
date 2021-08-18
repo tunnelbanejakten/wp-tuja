@@ -18,11 +18,11 @@ use tuja\data\model\Map;
 use tuja\util\Id;
 
 class AbstractDao {
-	const QUESTION_TYPE_TEXT = 'text';
-	const QUESTION_TYPE_NUMBER = 'number';
-	const QUESTION_TYPE_PICK_ONE = 'pick_one';
+	const QUESTION_TYPE_TEXT       = 'text';
+	const QUESTION_TYPE_NUMBER     = 'number';
+	const QUESTION_TYPE_PICK_ONE   = 'pick_one';
 	const QUESTION_TYPE_PICK_MULTI = 'pick_multi';
-	const QUESTION_TYPE_IMAGES = 'images';
+	const QUESTION_TYPE_IMAGES     = 'images';
 	const QUESTION_TYPE_TEXT_MULTI = 'text_multi';
 
 	protected $id;
@@ -46,7 +46,7 @@ class AbstractDao {
 
 	protected function get_objects( $mapper, $query, ...$arguments ) {
 		$db_results = $this->wpdb->get_results( $this->wpdb->prepare( $query, $arguments ), OBJECT );
-		$results    = [];
+		$results    = array();
 		foreach ( $db_results as $result ) {
 			$results[] = $mapper( $result );
 		}
@@ -82,11 +82,13 @@ class AbstractDao {
 					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
+					$result->limit_time !== null ? intval( $result->limit_time ) : null,
 					@$config['score_max'],
 					@$config['score_type'],
 					$result->type == self::QUESTION_TYPE_TEXT,
-					@$config['values'] ?: [],
-					@$config['invalid_values'] ?: [] );
+					@$config['values'] ?: array(),
+					@$config['invalid_values'] ?: array()
+				);
 
 				return $q;
 			case self::QUESTION_TYPE_PICK_ONE:
@@ -97,12 +99,14 @@ class AbstractDao {
 					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
+					$result->limit_time !== null ? intval( $result->limit_time ) : null,
 					@$config['score_max'],
 					@$config['score_type'],
 					$result->type == self::QUESTION_TYPE_PICK_ONE,
 					@$config['values'],
 					@$config['options'],
-					false );
+					false
+				);
 
 				return $q;
 			case self::QUESTION_TYPE_IMAGES:
@@ -112,8 +116,10 @@ class AbstractDao {
 					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
+					$result->limit_time !== null ? intval( $result->limit_time ) : null,
 					@$config['score_max'],
-					@$config['max_files_count'] ?: ImagesQuestion::DEFAULT_FILE_COUNT_LIMIT );
+					@$config['max_files_count'] ?: ImagesQuestion::DEFAULT_FILE_COUNT_LIMIT
+				);
 
 				return $q;
 			case self::QUESTION_TYPE_NUMBER:
@@ -123,8 +129,10 @@ class AbstractDao {
 					$result->id,
 					$result->question_group_id,
 					$result->sort_order,
+					$result->limit_time !== null ? intval( $result->limit_time ) : null,
 					@$config['score_max'],
-					@$config['value'] );
+					@$config['value']
+				);
 
 				return $q;
 			default:
@@ -177,5 +185,5 @@ class AbstractDao {
 		$map->name           = $result->name;
 
 		return $map;
-}
+	}
 }
