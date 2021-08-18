@@ -25,6 +25,11 @@
       "title": "Maximalt antal bilder",
       "type": "integer",
       "format": "number"
+    },
+    "limit_time": {
+      "title": "Tidsgräns för att svara (sekunder)",
+      "type": "integer",
+      "format": "number"
     }
   }
 }

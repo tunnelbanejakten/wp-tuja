@@ -3,8 +3,10 @@
 namespace tuja\admin;
 
 use Exception;
+use tuja\data\model\Event;
 use tuja\data\model\QuestionGroup;
 use tuja\data\store\CompetitionDao;
+use tuja\data\store\EventDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\MessageDao;
@@ -23,7 +25,7 @@ use tuja\util\JwtUtils;
 
 class Group {
 
-	const DEFAULT_QUESTION_FILTER = ResponseDao::QUESTION_FILTER_ALL;
+	const DEFAULT_QUESTION_FILTER   = ResponseDao::QUESTION_FILTER_ALL;
 	const QUESTION_FILTER_URL_PARAM = 'tuja_group_question_filter';
 
 	private $group;
@@ -78,7 +80,6 @@ class Group {
 					'Svar på %d frågor har markerats som kontrollerade.',
 					count( $result['marked_as_reviewed'] ) ) );
 			}
-
 		} elseif ( $action === 'transition' ) {
 
 			$this->group->set_status( $parameter );
@@ -130,6 +131,20 @@ class Group {
 					AdminUtils::printException( $e );
 				}
 			}
+		} elseif ( $action === 'delete_event' ) {
+			$db_event      = new EventDao();
+			$affected_rows = $db_event->delete( $parameter );
+
+			$success = $affected_rows !== false && $affected_rows === 1;
+
+			if ( $success ) {
+				AdminUtils::printSuccess( 'Händelsen att frågan har visats har tagits bort' );
+			} else {
+				AdminUtils::printError( 'Kunde inte ta bort händelsen.' );
+				if ( $error = $wpdb->last_error ) {
+					AdminUtils::printError( $error );
+				}
+			}
 		}
 	}
 
@@ -156,6 +171,7 @@ class Group {
 		$db_groups         = new GroupDao();
 		$db_points         = new PointsDao();
 		$db_message        = new MessageDao();
+		$db_event          = new EventDao();
 
 		$question_groups = $this->question_group_dao->get_all_in_competition( $competition->id );
 		$question_groups = array_combine( array_map( function ( QuestionGroup $qg ) {
@@ -170,7 +186,8 @@ class Group {
 			$db_question_group,
 			$db_response,
 			$db_groups,
-			$db_points
+			$db_points,
+			$db_event
 		);
 		$score_result     = $score_calculator->score( $group->id );
 
@@ -210,6 +227,13 @@ class Group {
 
 		$token = JwtUtils::create_token( $competition->id, $group->id );
 
-		include( 'views/group.php' );
+		$view_question_events = array_filter(
+			$db_event->get_by_group( $group->id ),
+			function ( Event $event ) {
+				return $event->event_name === Event::EVENT_VIEW && $event->object_type === Event::OBJECT_TYPE_QUESTION;
+			}
+		);
+
+		include 'views/group.php';
 	}
 }

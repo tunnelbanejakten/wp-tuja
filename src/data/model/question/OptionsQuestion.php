@@ -48,6 +48,7 @@ class OptionsQuestion extends AbstractQuestion {
 	 * @param int $id
 	 * @param int $question_group_id
 	 * @param int $sort_order
+	 * @param int $limit_time
 	 * @param int $score_max
 	 * @param string $score_type
 	 * @param bool $is_single_select
@@ -55,8 +56,8 @@ class OptionsQuestion extends AbstractQuestion {
 	 * @param array $possible_answers
 	 * @param bool $submit_on_change
 	 */
-	public function __construct( $text, $text_hint = null, $id = 0, $question_group_id = 0, $sort_order = 0, $score_max = 0, $score_type = self::GRADING_TYPE_ONE_OF, $is_single_select = true, $correct_answers = [], $possible_answers = [], $submit_on_change = true ) {
-		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max );
+	public function __construct( $text, $text_hint = null, $id = 0, $question_group_id = 0, $sort_order = 0, $limit_time = -1, $score_max = 0, $score_type = self::GRADING_TYPE_ONE_OF, $is_single_select = true, $correct_answers = [], $possible_answers = [], $submit_on_change = true ) {
+		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max );
 		$this->is_single_select = $is_single_select;
 		$this->possible_answers = $possible_answers;
 		$this->submit_on_change = $submit_on_change;

@@ -14,8 +14,8 @@ class ImagesQuestion extends AbstractQuestion {
 
 	public $max_files_count;
 
-	public function __construct($text, $text_hint, $id, $question_group_id, $sort_order, $score_max, $max_files_count = self::DEFAULT_FILE_COUNT_LIMIT) {
-		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $score_max );
+	public function __construct($text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max, $max_files_count = self::DEFAULT_FILE_COUNT_LIMIT) {
+		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max );
 		$this->max_files_count = $max_files_count;
 	}
 

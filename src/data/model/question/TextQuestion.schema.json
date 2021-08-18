@@ -52,6 +52,11 @@
         "ordered_percent_of",
         "all_of"
       ]
+    },
+    "limit_time": {
+      "title": "Tidsgräns för att svara (sekunder)",
+      "type": "integer",
+      "format": "number"
     }
   }
 }

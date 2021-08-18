@@ -7,6 +7,7 @@ use DateTime;
 use Exception;
 use ReflectionClass;
 use tuja\data\model\Points;
+use tuja\data\model\Event;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\QuestionGroup;
 use tuja\data\model\Group;
@@ -18,6 +19,7 @@ use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
 use tuja\data\model\Competition;
+use tuja\data\store\EventDao;
 use tuja\util\score\ScoreCalculator;
 
 
@@ -36,6 +38,7 @@ class ReviewComponent {
 	private $question_dao;
 	private $question_group_dao;
 	private $group_dao;
+	private $event_dao;
 
 	private $competition;
 
@@ -45,6 +48,7 @@ class ReviewComponent {
 		$this->question_dao       = new QuestionDao();
 		$this->question_group_dao = new QuestionGroupDao();
 		$this->group_dao          = new GroupDao();
+		$this->event_dao          = new EventDao();
 
 		$this->competition = $competition;
 	}
@@ -239,6 +243,33 @@ class ReviewComponent {
 			array_values( $current_points )
 		);
 
+		$events_for_all_groups = array_reduce(
+			$selected_groups,
+			function ( $res, Group $selected_group ) {
+				$events_of_interest = array_filter(
+					$this->event_dao->get_by_group( $selected_group->id ),
+					function ( Event $event ) {
+						return $event->event_name === Event::EVENT_VIEW &&
+							$event->object_type === Event::OBJECT_TYPE_QUESTION;
+					}
+				);
+				return array_merge( $res, $events_of_interest );
+			},
+			array()
+		);
+
+		$view_question_events = array_reduce(
+			$events_for_all_groups,
+			function ( $res, Event $event ) {
+				$key = $event->object_id . '__' . $event->group_id;
+				if ( ! isset( $res[ $key ] ) ) {
+					$res[ $key ] = $event;
+				}
+				return $res;
+			},
+			array()
+		);
+
 		$data = $this->get_data( $selected_filter, $selected_groups );
 
 		if ( empty( $data ) ) {
@@ -314,7 +345,8 @@ class ReviewComponent {
 
 					$points                = @$current_points[ $question_id . '__' . $group_id ] ?: null;
 					$response              = isset( $response_entry ) ? $response_entry['response'] : null;
-					$score_question_result = ScoreCalculator::score_combined( $response, $question, $points );
+					$first_view_event      = @$view_question_events[ $question_id . '__' . $group_id ];
+					$score_question_result = ScoreCalculator::score_combined( $response, $question, $points, $first_view_event );
 					if ( isset( $response ) ) {
 						$response_ids[] = $response->id;
 						$response_html  = $question->get_submitted_answer_html( $response->submitted_answer, $groups_map[ $response->group_id ] );

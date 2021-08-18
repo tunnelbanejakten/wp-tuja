@@ -79,6 +79,7 @@ class QuestionDao extends AbstractDao {
                 answer,
                 text,
                 sort_order,
+                limit_time,
                 text_hint
             ) VALUES (
                 %s,
@@ -86,6 +87,7 @@ class QuestionDao extends AbstractDao {
                 %s,
                 %s,
                 %s,
+                %d,
                 %d,
                 %s 
 			)';
@@ -96,6 +98,7 @@ class QuestionDao extends AbstractDao {
 			$answer_config,
 			$question->text,
 			$question->sort_order,
+			$question->limit_time > 0 ? $question->limit_time : null,
 			$question->text_hint
 		);
 
@@ -121,6 +124,7 @@ class QuestionDao extends AbstractDao {
                 answer = %s,
                 text = %s,
                 sort_order = %d,
+                limit_time = %d,
                 text_hint = %s
                 WHERE 
                 id = %d';
@@ -130,6 +134,7 @@ class QuestionDao extends AbstractDao {
 			$answer_config,
 			$question->text,
 			$question->sort_order,
+			$question->limit_time > 0 ? $question->limit_time : null,
 			$question->text_hint,
 			$question->id ) );
 	}
@@ -146,6 +151,22 @@ class QuestionDao extends AbstractDao {
 				ORDER BY q.sort_order, q.id
 			',
 			$question_id );
+
+		return current( $objects );
+	}
+
+	public function get_by_key( string $question_key ) {
+		$objects = $this->get_objects(
+			function ( $row ) {
+				return self::to_form_question( $row );
+			},
+			'
+				SELECT q.* 
+                FROM ' . $this->table . ' AS q
+                WHERE q.random_id = %s
+				ORDER BY q.sort_order, q.id
+			',
+			$question_key );
 
 		return current( $objects );
 	}

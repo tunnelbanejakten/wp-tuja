@@ -1,5 +1,6 @@
 <?php namespace tuja\admin;
 
+use tuja\data\store\EventDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
@@ -21,7 +22,9 @@ AdminUtils::printTopMenu( $competition );
 			new QuestionGroupDao(),
 			new ResponseDao(),
 			new GroupDao(),
-			new PointsDao() );
+			new PointsDao(),
+			new EventDao()
+		);
 		$score_board = $calculator->score_board();
 		usort( $score_board, function ( $a, $b ) {
 			return $b['score'] - $a['score'];

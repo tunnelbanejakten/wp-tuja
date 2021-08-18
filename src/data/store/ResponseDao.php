@@ -77,6 +77,7 @@ class ResponseDao extends AbstractDao
 		'answer',
 		'text',
 		'sort_order',
+		'limit_time',
 		'text_hint',
 		'random_id',
 		'question_group_id'
