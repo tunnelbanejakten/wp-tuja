@@ -132,8 +132,8 @@ class Group {
 				}
 			}
 		} elseif ( $action === 'delete_event' ) {
-			$event_dao     = new EventDao();
-			$affected_rows = $event_dao->delete( $parameter );
+			$db_event      = new EventDao();
+			$affected_rows = $db_event->delete( $parameter );
 
 			$success = $affected_rows !== false && $affected_rows === 1;
 
@@ -171,6 +171,7 @@ class Group {
 		$db_groups         = new GroupDao();
 		$db_points         = new PointsDao();
 		$db_message        = new MessageDao();
+		$db_event          = new EventDao();
 
 		$question_groups = $this->question_group_dao->get_all_in_competition( $competition->id );
 		$question_groups = array_combine( array_map( function ( QuestionGroup $qg ) {
@@ -185,7 +186,8 @@ class Group {
 			$db_question_group,
 			$db_response,
 			$db_groups,
-			$db_points
+			$db_points,
+			$db_event
 		);
 		$score_result     = $score_calculator->score( $group->id );
 
@@ -225,9 +227,8 @@ class Group {
 
 		$token = JwtUtils::create_token( $competition->id, $group->id );
 
-		$event_dao            = new EventDao();
 		$view_question_events = array_filter(
-			$event_dao->get_by_group( $competition->id, $group->id ),
+			$db_event->get_by_group( $group->id ),
 			function ( Event $event ) {
 				return $event->event_name === Event::EVENT_VIEW && $event->object_type === Event::OBJECT_TYPE_QUESTION;
 			}

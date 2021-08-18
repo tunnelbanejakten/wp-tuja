@@ -3,20 +3,23 @@
 namespace tuja\util\score;
 
 use tuja\data\model\question\AbstractQuestion;
+use tuja\data\model\Event;
+use tuja\data\store\EventDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
 
-class ScoreCalculator
-{
-	const VIEW_EVENT_ERROR_MARGIN_SECONDS = 5;
+class ScoreCalculator {
+
+	const VIEW_EVENT_ERROR_MARGIN_SECONDS = 4;
 
 	private $competition_id;
 	private $response_dao;
 	private $group_dao;
 	private $points_dao;
+	private $event_dao;
 	private $question_groups;
 	private $questions;
 
@@ -26,17 +29,19 @@ class ScoreCalculator
 		QuestionGroupDao $question_group_dao,
 		ResponseDao $response_dao,
 		GroupDao $group_dao,
-		PointsDao $points_dao
+		PointsDao $points_dao,
+		EventDao $event_dao
 	) {
 		$this->competition_id  = $competition_id;
 		$this->response_dao    = $response_dao;
 		$this->group_dao       = $group_dao;
 		$this->points_dao      = $points_dao;
+		$this->event_dao       = $event_dao;
 		$this->question_groups = $question_group_dao->get_all_in_competition( $competition_id );
 		$this->questions       = $question_dao->get_all_in_competition( $competition_id );
 	}
 
-	public static function score_combined( $response, AbstractQuestion $question, $override ): ScoreQuestionResult {
+	public static function score_combined( $response, AbstractQuestion $question, $override, ?Event $first_view_event ): ScoreQuestionResult {
 		$question_result = new ScoreQuestionResult();
 		$response_exists = isset( $response );
 		if ( $response_exists ) {
@@ -46,7 +51,19 @@ class ScoreCalculator
 				$auto_score_result                = $question->score( $submitted_answer );
 				$question_result->auto            = $auto_score_result->score;
 				$question_result->auto_confidence = $auto_score_result->confidence;
-				$question_result->final           = $question_result->auto ?: 0;
+
+				if ( $question->limit_time > 0 && isset( $first_view_event ) ) {
+					$view_event_time = $first_view_event->created_at->getTimestamp();
+					$submit_time     = $response->created->getTimestamp();
+
+					$answer_time     = $submit_time - $view_event_time;
+					$max_answer_time = $question->limit_time + self::VIEW_EVENT_ERROR_MARGIN_SECONDS;
+					if ( $answer_time > $max_answer_time ) {
+						$question_result->auto            = 0;
+						$question_result->auto_confidence = 1.0;
+					}
+				}
+				$question_result->final = $question_result->auto ?: 0;
 			}
 		}
 		$override_exists                    = isset( $override );
@@ -112,21 +129,52 @@ class ScoreCalculator
 		return $sum;
 	}
 
+	private function get_view_question_events_by_question( $group_id ) {
+		$all_view_question_events = array_filter(
+			$this->event_dao->get_by_group( $group_id ),
+			function ( Event $event ) use ( $question ) {
+				return $event->event_name === Event::EVENT_VIEW &&
+					$event->object_type === Event::OBJECT_TYPE_QUESTION;
+			}
+		);
+		$first_event_per_question = array_reduce(
+			$all_view_question_events,
+			function ( $res, Event $event ) {
+				if ( ! isset( $res[ $event->object_id ] ) ) {
+					$res[ $event->object_id ] = $event;
+				}
+				return $res;
+			},
+			array()
+		);
+		return $first_event_per_question;
+	}
+
 	private function score_per_question( $group_id ) {
-		$points           = $this->points_dao->get_by_group( $group_id );
-		$points_overrides = array_combine( array_map( function ( $points ) {
-			return $points->form_question_id;
-		}, $points ), $points );
-		$scores    = [];
-		$responses = $this->response_dao->get_latest_by_group( $group_id );
+		$points               = $this->points_dao->get_by_group( $group_id );
+		$points_overrides     = array_combine(
+			array_map(
+				function ( $points ) {
+					return $points->form_question_id;
+				},
+				$points
+			),
+			$points
+		);
+		$scores               = array();
+		$responses            = $this->response_dao->get_latest_by_group( $group_id );
+		$view_question_events = $this->get_view_question_events_by_question( $group_id );
 
 		foreach ( $this->questions as $question ) {
 			$response                = @$responses[ $question->id ];
 			$override                = @$points_overrides[ $question->id ];
+			$first_view_event        = @$view_question_events[ $question->id ];
 			$scores[ $question->id ] = self::score_combined(
 				$response,
 				$question,
-				$override );
+				$override,
+				$first_view_event
+			);
 		}
 
 		return $scores;

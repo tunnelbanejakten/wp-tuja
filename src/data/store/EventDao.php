@@ -50,13 +50,12 @@ class EventDao extends AbstractDao {
 		return $this->wpdb->query( $this->wpdb->prepare( $query_template, $id ) );
 	}
 
-	function get_by_group( $competition_id, $group_id ) {
+	function get_by_group( $group_id ) {
 		return $this->get_objects(
 			function ( $row ) {
 				return self::to_event( $row );
 			},
-			'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d AND team_id = %d ORDER BY id ASC',
-			$competition_id,
+			'SELECT * FROM ' . $this->table . ' WHERE team_id = %d ORDER BY id ASC',
 			$group_id
 		);
 	}

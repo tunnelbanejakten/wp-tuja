@@ -76,7 +76,7 @@ class Questions extends AbstractRestEndpoint {
 		$is_view_event_required = $question->limit_time > 0;
 		$response['view_event'] = array( 'is_required' => $is_view_event_required );
 		if ( $is_view_event_required ) {
-			$all_events = $event_dao->get_by_group( $group->competition_id, $group->id );
+			$all_events = $event_dao->get_by_group( $group->id );
 			$events     = array_filter(
 				$all_events,
 				function ( Event $event ) use ( $question ) {
@@ -92,7 +92,9 @@ class Questions extends AbstractRestEndpoint {
 			if ( $is_view_event_found ) {
 				$view_event                       = current( $events );
 				$time_passed                      = ( new DateTime( 'now' ) )->getTimestamp() - $view_event->created_at->getTimestamp();
-				$response['limit_time_remaining'] = max( 0, $question->limit_time - $time_passed + ScoreCalculator::VIEW_EVENT_ERROR_MARGIN_SECONDS );
+				$time_remaining_error_margin      = ScoreCalculator::VIEW_EVENT_ERROR_MARGIN_SECONDS / 2; // To account for network delays and such.
+				$time_remaining                   = $question->limit_time - $time_passed + $time_remaining_error_margin;
+				$response['limit_time_remaining'] = max( 0, $time_remaining ); // No point in returing negative values.
 				$response['config']               = $question->get_public_properties();
 			} else {
 				$response['config'] = null;
