@@ -3,6 +3,7 @@
 namespace tuja\util;
 
 use Exception;
+use tuja\data\model\Group;
 use tuja\data\store\GroupDao;
 use tuja\data\store\ResponseDao;
 use tuja\frontend\FormLockValidator;
@@ -55,7 +56,6 @@ class ImageManager {
 			} else {
 				throw new Exception( sprintf( 'Could not save uploaded file to %s', $new_path ) ); // TODO: i18n
 			}
-
 		} else {
 			throw new Exception( sprintf( 'File %s not found', $file_path ) ); // TODO: i18n
 		}
@@ -73,9 +73,9 @@ class ImageManager {
 
 	public function get_resized_image_url( $filename, $pixels, $group_key = null ) {
 		list ( $file_id, $ext ) = explode( '.', $filename );
-		$dst_filename  = "$file_id-$pixels.$ext";
-		$sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
-		$dst_path      = $this->directory . $sub_directory . $dst_filename;
+		$dst_filename           = "$file_id-$pixels.$ext";
+		$sub_directory          = isset( $group_key ) ? "group-$group_key/" : '';
+		$dst_path               = $this->directory . $sub_directory . $dst_filename;
 		if ( file_exists( $dst_path ) ) {
 			return $this->public_url_directory . $sub_directory . $dst_filename;
 		}
@@ -129,9 +129,12 @@ class ImageManager {
 		list ( $file_id, $ext ) = explode( '.', $source_filename );
 
 		// Get all files, including thumbnails, matching the given $source_filename
-		$filenames = array_filter( scandir( $old_dir ), function ( $filename ) use ( $file_id ) {
-			return strpos( $filename, $file_id ) !== false;
-		} );
+		$filenames = array_filter(
+			scandir( $old_dir ),
+			function ( $filename ) use ( $file_id ) {
+				return strpos( $filename, $file_id ) !== false;
+			}
+		);
 
 		foreach ( $filenames as $filename ) {
 			$move_result = rename( $old_dir . $filename, $new_dir . $filename );
@@ -150,29 +153,68 @@ class ImageManager {
 	 * Handles image uploads from FromShortcode via AJAX.
 	 */
 	public static function handle_image_upload() {
-		if ( ! empty( $_FILES['file'] ) && ! empty( $_POST['group'] ) && ! empty( $_POST['question'] ) ) {
-			$group_dao = new GroupDao();
-			$group     = $group_dao->get_by_key( sanitize_text_field( $_POST['group'] ) );
-			$question  = (int) $_POST['question']; // int or string?
-			Strings::init($group->competition_id);
+		if ( ! empty( $_FILES['file'] ) && ( ! empty( $_POST['group'] ) || ! empty( $_POST['token'] ) ) && ! empty( $_POST['question'] ) ) {
 
-			$response_dao = new ResponseDao();
+			$group = self::get_group( $_POST['group'], $_POST['token'] );
+			if ( ! empty( $group ) && isset( $group ) ) {
+				$result = self::save_uploaded_file( $_FILES['file'], $group, $_POST['question'], $_POST['lock'] );
 
-			try {
-				// Check lock. If lock is empty no answers has been sent so just proceed.
-				$current_locks_all     = LockValuesList::from_string( $_POST['lock'] );
-				$current_locks_updates = $current_locks_all->subset( [ $question ] );
-
-				( new FormLockValidator( $response_dao, $group ) )->check_optimistic_lock( $current_locks_updates );
-			} catch ( Exception $e ) {
-				wp_send_json( array(
-					'error' => Strings::get('image_manager.optimistic_lock_error')
-				), 409 );
+				wp_send_json( $result, $result['http_status'] );
 				exit;
 			}
+		}
 
-			$upload_dir = '/tuja/group-' . $group->random_id;
-			add_filter( 'upload_dir', function ( $dirs ) use ( $upload_dir ) {
+		wp_send_json(
+			array(
+				'error' => Strings::get( 'image_manager.invalid_data' ),
+			),
+			400
+		);
+		exit;
+	}
+
+	/**
+	 * Get the team/group based on EITHER a group key OR a client token.
+	 */
+	private static function get_group( $group_key, $token ) {
+		$group_dao = new GroupDao();
+
+		if ( ! empty( $group_key ) ) {
+			return $group_dao->get_by_key( sanitize_text_field( $group_key ) );
+		} elseif ( ! empty( $token ) ) {
+			try {
+				$decoded = JwtUtils::decode( $token );
+
+				return $group_dao->get( (int) $decoded->group_id );
+			} catch ( Exception $e ) {
+				return false;
+			}
+		}
+	}
+
+	private static function save_uploaded_file( $file_upload_object, Group $group, string $question_id, string $lock_value ) {
+		$question = (int) $question_id;
+		Strings::init( $group->competition_id );
+
+		$response_dao = new ResponseDao();
+
+		try {
+			// Check lock. If lock is empty no answers has been sent so just proceed.
+			$current_locks_all     = LockValuesList::from_string( $lock_value );
+			$current_locks_updates = $current_locks_all->subset( array( $question ) );
+
+			( new FormLockValidator( $response_dao, $group ) )->check_optimistic_lock( $current_locks_updates );
+		} catch ( Exception $e ) {
+			return array(
+				'error'       => Strings::get( 'image_manager.optimistic_lock_error' ),
+				'http_status' => 409,
+			);
+		}
+
+		$upload_dir = '/tuja/group-' . $group->random_id;
+		add_filter(
+			'upload_dir',
+			function ( $dirs ) use ( $upload_dir ) {
 				$dirs['subdir'] = $upload_dir;
 				$dirs['path']   = $dirs['basedir'] . $upload_dir;
 				$dirs['url']    = $dirs['baseurl'] . $upload_dir;
@@ -182,50 +224,54 @@ class ImageManager {
 				}
 
 				return $dirs;
-			} );
+			}
+		);
 
-			$upload_overrides = array(
-				'test_form'                => false,
-				'unique_filename_callback' => function ( $dir, $name, $ext ) use ( $question ) {
-					$name = md5( $name . $question );
-
-					return $name . $ext;
-				}
-			);
-
-			// Normalizes file uploads. $_FILES['file'] is an associative array where each elements value can be either a string or an array of
-			// multiple strings. wp_handle_upload expects each value to be a string and returns an error otherwise, so if the values are
-			// arrays we need to turn them into strings. We know that this function will only be called with one uploaded file at a time
-			// so it is safe to just take the first element in each value array.
-			$file = $_FILES['file'];
-			if ( isset( $file['error'][0] ) ) {
-				$file = array_map( function ( $e ) {
+		// Normalizes file uploads. $file_upload_object is an associative array where each elements value can be either a string or an array of
+		// multiple strings. wp_handle_upload expects each value to be a string and returns an error otherwise, so if the values are
+		// arrays we need to turn them into strings. We know that this function will only be called with one uploaded file at a time
+		// so it is safe to just take the first element in each value array.
+		$file = $file_upload_object;
+		if ( isset( $file['error'][0] ) ) {
+			$file = array_map(
+				function ( $e ) {
 					return $e[0];
-				}, $file );
-			}
-
-			$movefile = wp_handle_upload( $file, $upload_overrides );
-
-			if ( $movefile && ! isset( $movefile['error'] ) ) {
-				$filename = explode( '/', $movefile['file'] );
-				$filename = array_pop( $filename );
-
-				wp_send_json( array(
-					'error' => false,
-					'image' => $filename
-				) );
-				exit;
-			}
-
-			wp_send_json( array(
-				'error' => Strings::get('image_manager.unknown_error')
-			), 500 );
-			exit;
+				},
+				$file
+			);
 		}
 
-		wp_send_json( array(
-			'error' => Strings::get('image_manager.invalid_data')
-		), 400 );
-		exit;
+		$hash             = md5_file( $file['tmp_name'] );
+		$upload_overrides = array(
+			'test_form'                => false,
+			'unique_filename_callback' => function ( $dir, $name, $ext ) use ( $hash ) {
+				return $hash . $ext;
+			},
+		);
+
+		$movefile = wp_handle_upload( $file, $upload_overrides );
+
+		if ( $movefile && ! isset( $movefile['error'] ) ) {
+			$filename = explode( '/', $movefile['file'] );
+			$filename = array_pop( $filename );
+
+			$resized_image_url = ( new ImageManager() )->get_resized_image_url(
+				$filename,
+				self::DEFAULT_THUMBNAIL_PIXEL_COUNT,
+				$group->random_id
+			);
+
+			return array(
+				'error'         => false,
+				'image'         => $filename,
+				'thumbnail_url' => $resized_image_url,
+				'http_status'   => 200,
+			);
+		}
+
+		return array(
+			'error'       => Strings::get( 'image_manager.unknown_error' ),
+			'http_status' => 500,
+		);
 	}
 }
