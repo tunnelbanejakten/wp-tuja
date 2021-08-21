@@ -39,7 +39,16 @@ abstract class Plugin {
 		add_action( 'wp_ajax_tuja_upload_images', array( 'tuja\util\ImageManager', 'handle_image_upload' ) );
 		add_action( 'wp_ajax_nopriv_tuja_upload_images', array( 'tuja\util\ImageManager', 'handle_image_upload' ) );
 
+		add_filter( 'allowed_http_origins', array( $this, 'add_allowed_origins' ) );
+
 		$this->init();
+	}
+
+	function add_allowed_origins( $origins ) {
+		$origins[] = 'https://tunnelbanejakten.se';
+		$origins[] = 'https://app.tunnelbanejakten.se';
+		$origins[] = 'http://localhost:8081';
+		return $origins;
 	}
 
 	public function init() {
