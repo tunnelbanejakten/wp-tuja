@@ -5,6 +5,7 @@ namespace tuja;
 use DateTime;
 use Reflection;
 use tuja\data\model\Event;
+use tuja\data\model\question\ImagesQuestion;
 use tuja\data\store\EventDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
@@ -15,6 +16,7 @@ use tuja\frontend\Form;
 use tuja\util\JwtUtils;
 use tuja\util\ReflectionUtils;
 use tuja\frontend\FormUserChanges;
+use tuja\util\ImageManager;
 use tuja\util\score\ScoreCalculator;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -57,7 +59,7 @@ class Questions extends AbstractRestEndpoint {
 
 		$event_dao = new EventDao();
 
-		$response               = array(
+		$response = array(
 			'type'            => ( new \ReflectionClass( $question ) )->getShortName(),
 			'is_read_only'    => null,
 			'response'        => array(
@@ -73,6 +75,19 @@ class Questions extends AbstractRestEndpoint {
 				'current_value' => $tracked_answers_value,
 			),
 		);
+
+		if ( $question instanceof ImagesQuestion ) {
+			// Enrich data about images with thumbnail URLs (thumbnails will be generated if missing).
+			$images        = @$response['response']['current_value']['images'];
+			$image_manager = new ImageManager();
+			foreach ( $images as $index => $image_id ) {
+				$url = $image_manager->get_resized_image_url( $image_id, 40000, $group->random_id );
+				if ( $url !== false ) {
+					$response['response']['current_value']['thumbnails'][ $index ] = $url;
+				}
+			}
+		}
+
 		$is_view_event_required = $question->limit_time > 0;
 		$response['view_event'] = array( 'is_required' => $is_view_event_required );
 		if ( $is_view_event_required ) {
