@@ -76,48 +76,58 @@ class FormQuestions {
 				switch ( $_POST['tuja_action'] ) {
 					case self::ACTION_NAME_CREATE_CHOICES:
 						$props = new OptionsQuestion(
-							'Items to choose from',
-							'A subtle hint or reminder.',
-							0,
-							$this->question_group->id,
-							0,
-							10,
-							OptionsQuestion::GRADING_TYPE_ONE_OF,
-							true,
-							[ 'Alice', 'Bob' ],
-							[ 'Alice', 'Bob', 'Trudy' ],
-							false );
+							'Items to choose from',               // text.
+							'A subtle hint or reminder.',         // text_hint.
+							0,                                    // id.
+							$this->question_group->id,            // question_group_id.
+							0,                                    // sort_order.
+							0,                                    // limit_time.
+							10,                                   // score_max.
+							OptionsQuestion::GRADING_TYPE_ONE_OF, // score_type.
+							true,                                 // is_single_select.
+							array( 'Alice', 'Bob' ),              // correct_answers.
+							array( 'Alice', 'Bob', 'Trudy' ),     // possible_answers.
+							false                                 // submit_on_change.
+						);
 						break;
 					case self::ACTION_NAME_CREATE_IMAGES:
 						$props = new ImagesQuestion(
-							'Upload an image',
-							'A subtle hint or reminder.',
-							0,
-							$this->question_group->id,
-							0,
-							10 );
+							'Upload an image',                       // text.
+							'A subtle hint or reminder.',            // text_hint.
+							0,                                       // id.
+							$this->question_group->id,               // question_group_id.
+							0,                                       // sort_order.
+							0,                                       // limit_time.
+							10,                                      // score_max.
+							ImagesQuestion::DEFAULT_FILE_COUNT_LIMIT // max_files_count.
+						);
 						break;
 					case self::ACTION_NAME_CREATE_TEXT:
 						$props = new TextQuestion(
-							'What? Who? When?',
-							'A subtle hint or reminder.',
-							0,
-							$this->question_group->id,
-							0,
-							10,
-							TextQuestion::GRADING_TYPE_ONE_OF,
-							true,
-							[ 'Alice', 'Alicia' ] );
+							'What? Who? When?',                // text.
+							'A subtle hint or reminder.',      // text_hint.
+							0,                                 // id.
+							$this->question_group->id,         // question_group_id.
+							0,                                 // sort_order.
+							0,                                 // limit_time.
+							10,                                // score_max.
+							TextQuestion::GRADING_TYPE_ONE_OF, // score_type.
+							true,                              // is_single_answer.
+							array( 'Alice', 'Alicia' ),        // correct_answers.
+							array()                            // incorrect_answers.
+						);
 						break;
 					case self::ACTION_NAME_CREATE_NUMBER:
 						$props = new NumberQuestion(
-							'How few, many, heavy, light...?',
-							'A subtle hint or reminder.',
-							0,
-							$this->question_group->id,
-							0,
-							10,
-							42);
+							'How few, many, heavy, light...?', // text.
+							'A subtle hint or reminder.',      // text_hint.
+							0,                                 // id.
+							$this->question_group->id,         // question_group_id.
+							0,                                 // sort_order.
+							0,                                 // limit_time.
+							10,                                // score_max.
+							42                                 // correct_answer.
+						);
 						break;
 					default:
 						throw new Exception( 'Unsupported action' );
