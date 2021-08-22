@@ -2,7 +2,6 @@
 
 namespace tuja\data\model\question;
 
-
 use tuja\admin\AdminUtils;
 use tuja\data\model\Group;
 use tuja\util\score\AutoScoreResult;
@@ -14,8 +13,25 @@ class ImagesQuestion extends AbstractQuestion {
 
 	public $max_files_count;
 
-	public function __construct($text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max, $max_files_count = self::DEFAULT_FILE_COUNT_LIMIT) {
-		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max );
+	public function __construct(
+		$text,
+		$text_hint,
+		$id,
+		$question_group_id,
+		$sort_order,
+		$limit_time,
+		$score_max,
+		$max_files_count = self::DEFAULT_FILE_COUNT_LIMIT
+	) {
+		parent::__construct(
+			$text,
+			$text_hint,
+			$id,
+			$question_group_id,
+			$sort_order,
+			$limit_time,
+			$score_max
+		);
 		$this->max_files_count = $max_files_count;
 	}
 
@@ -32,14 +48,14 @@ class ImagesQuestion extends AbstractQuestion {
 	 * Grades an answer and returns the score for the answer.
 	 */
 	function score( $answer_object ) : AutoScoreResult {
-		return new AutoScoreResult(0, 1.0);
+		return new AutoScoreResult( 0, 1.0 );
 	}
 
 	/**
 	 * Returns the HTML used to render this question.
 	 */
 	function get_html( $field_name, $is_read_only, $answer_object, Group $group = null ) {
-		return $this->create_field($is_read_only)->render( $field_name, $answer_object, $group );
+		return $this->create_field( $is_read_only )->render( $field_name, $answer_object, $group );
 	}
 
 	/**
@@ -50,7 +66,7 @@ class ImagesQuestion extends AbstractQuestion {
 		return $this->create_field()->get_data( $field_name, $stored_posted_answer );
 	}
 
-	private function create_field($is_read_only = false): FieldImages {
+	private function create_field( $is_read_only = false ): FieldImages {
 		$field = new FieldImages( $this->text, $this->text_hint, $is_read_only, $this->max_files_count );
 
 		return $field;

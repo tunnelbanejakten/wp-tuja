@@ -2,7 +2,6 @@
 
 namespace tuja\data\model\question;
 
-
 use Exception;
 use tuja\data\model\Group;
 use tuja\util\score\AutoScoreResult;
@@ -14,19 +13,19 @@ class OptionsQuestion extends AbstractQuestion {
 	 * Full points is awarded if supplied answer matches ONE of the valid answers.
 	 * No points is awarded otherwise.
 	 */
-	const GRADING_TYPE_ONE_OF = "one_of";
+	const GRADING_TYPE_ONE_OF = 'one_of';
 
 	/**
 	 * Full points is awarded if supplied answer matches ALL of the valid answers.
 	 * No points is awarded otherwise.
 	 */
 
-	const GRADING_TYPE_ALL_OF = "all_of";
+	const GRADING_TYPE_ALL_OF = 'all_of';
 
-	const SCORING_METHODS = [
+	const SCORING_METHODS = array(
 		self::GRADING_TYPE_ALL_OF,
-		self::GRADING_TYPE_ONE_OF
-	];
+		self::GRADING_TYPE_ONE_OF,
+	);
 
 	// TODO: Properties should not have to be public
 
@@ -44,20 +43,41 @@ class OptionsQuestion extends AbstractQuestion {
 	 * OptionsQuestion constructor.
 	 *
 	 * @param $text
-	 * @param null $text_hint
-	 * @param int $id
-	 * @param int $question_group_id
-	 * @param int $sort_order
-	 * @param int $limit_time
-	 * @param int $score_max
+	 * @param null   $text_hint
+	 * @param int    $id
+	 * @param int    $question_group_id
+	 * @param int    $sort_order
+	 * @param int    $limit_time
+	 * @param int    $score_max
 	 * @param string $score_type
-	 * @param bool $is_single_select
-	 * @param array $correct_answers
-	 * @param array $possible_answers
-	 * @param bool $submit_on_change
+	 * @param bool   $is_single_select
+	 * @param array  $correct_answers
+	 * @param array  $possible_answers
+	 * @param bool   $submit_on_change
 	 */
-	public function __construct( $text, $text_hint = null, $id = 0, $question_group_id = 0, $sort_order = 0, $limit_time = -1, $score_max = 0, $score_type = self::GRADING_TYPE_ONE_OF, $is_single_select = true, $correct_answers = [], $possible_answers = [], $submit_on_change = true ) {
-		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max );
+	public function __construct(
+		$text,
+		$text_hint = null,
+		$id = 0,
+		$question_group_id = 0,
+		$sort_order = 0,
+		$limit_time = -1,
+		$score_max = 0,
+		$score_type = self::GRADING_TYPE_ONE_OF,
+		$is_single_select = true,
+		$correct_answers = array(),
+		$possible_answers = array(),
+		$submit_on_change = true
+	) {
+		parent::__construct(
+			$text,
+			$text_hint,
+			$id,
+			$question_group_id,
+			$sort_order,
+			$limit_time,
+			$score_max
+		);
 		$this->is_single_select = $is_single_select;
 		$this->possible_answers = $possible_answers;
 		$this->submit_on_change = $submit_on_change;
@@ -96,27 +116,31 @@ class OptionsQuestion extends AbstractQuestion {
 
 		$correctness_percents = $this->calculate_correctness( $answers, $correct_answers, false );
 
-		$count_correct_values = count( array_filter( $correctness_percents,
-			function ( $percent ) {
-				return $percent == 100;
-			} ) );
+		$count_correct_values = count(
+			array_filter(
+				$correctness_percents,
+				function ( $percent ) {
+					return $percent == 100;
+				}
+			)
+		);
 
 		if ( $this->is_single_select && count( $answer_object ) > 1 ) {
-			return new AutoScoreResult(0, 1.0);
+			return new AutoScoreResult( 0, 1.0 );
 		}
 
 		switch ( $this->score_type ) {
 			case self::GRADING_TYPE_ONE_OF:
 				return $count_correct_values > 0
-					? new AutoScoreResult($this->score_max, 1.0)
-					: new AutoScoreResult(0, 1.0);
+					? new AutoScoreResult( $this->score_max, 1.0 )
+					: new AutoScoreResult( 0, 1.0 );
 			case self::GRADING_TYPE_ALL_OF:
 				return count( $answers ) == count( $correct_answers )
-				       && $count_correct_values == count( $correct_answers )
-					? new AutoScoreResult($this->score_max, 1.0)
-					: new AutoScoreResult(0, 1.0);
+					   && $count_correct_values == count( $correct_answers )
+					? new AutoScoreResult( $this->score_max, 1.0 )
+					: new AutoScoreResult( 0, 1.0 );
 			default:
-				return new AutoScoreResult(0, 1.0);
+				return new AutoScoreResult( 0, 1.0 );
 		}
 	}
 
@@ -142,7 +166,8 @@ class OptionsQuestion extends AbstractQuestion {
 			false,
 			$this->possible_answers,
 			! $this->is_single_select,
-			$this->submit_on_change );
+			$this->submit_on_change
+		);
 
 		return $field;
 	}

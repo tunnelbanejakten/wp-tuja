@@ -2,7 +2,6 @@
 
 namespace tuja\data\model\question;
 
-
 use tuja\data\model\Group;
 use tuja\util\score\AutoScoreResult;
 use tuja\view\FieldNumber;
@@ -11,8 +10,25 @@ class NumberQuestion extends AbstractQuestion {
 
 	public $correct_answer = 0;
 
-	public function __construct( $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max, $correct_answer ) {
-		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max );
+	public function __construct(
+		$text,
+		$text_hint,
+		$id,
+		$question_group_id,
+		$sort_order,
+		$limit_time,
+		$score_max,
+		$correct_answer
+	) {
+		parent::__construct(
+			$text,
+			$text_hint,
+			$id,
+			$question_group_id,
+			$sort_order,
+			$limit_time,
+			$score_max
+		);
 		$this->correct_answer = $correct_answer;
 	}
 
@@ -34,7 +50,7 @@ class NumberQuestion extends AbstractQuestion {
 		if ( $diff == 0 ) {
 			// Exactly correct
 			return new AutoScoreResult( $this->score_max, 1.0 );
-		} else if ( $diff < $diff_max ) {
+		} elseif ( $diff < $diff_max ) {
 			// Almost correct
 			$confidence = 1.0 - ( ( $diff_max - $diff ) / $diff_max );
 
@@ -67,7 +83,8 @@ class NumberQuestion extends AbstractQuestion {
 		return new FieldNumber(
 			$this->text,
 			$this->text_hint,
-			$is_read_only );
+			$is_read_only
+		);
 	}
 
 	function get_correct_answer_html() {

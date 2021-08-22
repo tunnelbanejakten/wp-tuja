@@ -2,7 +2,6 @@
 
 namespace tuja\data\model\question;
 
-
 use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\ValidationException;
@@ -24,9 +23,9 @@ class TextQuestion extends AbstractQuestion {
 	// TODO: Properties should not have to be public
 	public $score_type = self::GRADING_TYPE_ONE_OF;
 
-	public $correct_answers = [];
+	public $correct_answers = array();
 
-	public $incorrect_answers = [];
+	public $incorrect_answers = array();
 
 	public $is_single_answer = true;
 
@@ -34,7 +33,7 @@ class TextQuestion extends AbstractQuestion {
 	 * Full points is awarded if supplied answer matches ONE of the valid answers.
 	 * No points is awarded otherwise.
 	 */
-	const GRADING_TYPE_ONE_OF = "one_of";
+	const GRADING_TYPE_ONE_OF = 'one_of';
 
 	/**
 	 * Points is awarded based on how many of the valid answers the user supplied.
@@ -46,7 +45,7 @@ class TextQuestion extends AbstractQuestion {
 	 * - Full points is award if user specifies ['bob', 'alice'] and valid answers are ['alice', 'bob'] (wrong order but that's okay).
 	 * - Half points is award if user specifies ['alice', ''] and valid answers are ['alice', 'bob'].
 	 */
-	const GRADING_TYPE_UNORDERED_PERCENT_OF = "unordered_percent_of";
+	const GRADING_TYPE_UNORDERED_PERCENT_OF = 'unordered_percent_of';
 
 	/**
 	 * Points is awarded based on how many of the valid answers the user supplied.
@@ -57,39 +56,59 @@ class TextQuestion extends AbstractQuestion {
 	 * - No points is award if user specifies ['bob', 'alice'] and valid answers are ['alice', 'bob'] (wrong order).
 	 * - Half points is award if user specifies ['alice', ''] and valid answers are ['alice', 'bob'].
 	 */
-	const GRADING_TYPE_ORDERED_PERCENT_OF = "ordered_percent_of";
+	const GRADING_TYPE_ORDERED_PERCENT_OF = 'ordered_percent_of';
 
 	/**
 	 * Full points is awarded if supplied answer matches ALL of the valid answers.
 	 * No points is awarded otherwise.
 	 */
 
-	const GRADING_TYPE_ALL_OF = "all_of";
+	const GRADING_TYPE_ALL_OF = 'all_of';
 
-	const SCORING_METHODS = [
+	const SCORING_METHODS = array(
 		self::GRADING_TYPE_ALL_OF,
 		self::GRADING_TYPE_UNORDERED_PERCENT_OF,
 		self::GRADING_TYPE_ORDERED_PERCENT_OF,
-		self::GRADING_TYPE_ONE_OF
-	];
+		self::GRADING_TYPE_ONE_OF,
+	);
 
 	/**
 	 * TextQuestion constructor.
 	 *
 	 * @param $text
 	 * @param $text_hint
-	 * @param int $id
-	 * @param int $question_group_id
-	 * @param int $sort_order
-	 * @param int $limit_time
-	 * @param int $score_max
-	 * @param string $score_type
-	 * @param bool $is_single_answer
-	 * @param array $correct_answers
-	 * @param array $incorrect_answers
+	 * @param int       $id
+	 * @param int       $question_group_id
+	 * @param int       $sort_order
+	 * @param int       $limit_time
+	 * @param int       $score_max
+	 * @param string    $score_type
+	 * @param bool      $is_single_answer
+	 * @param array     $correct_answers
+	 * @param array     $incorrect_answers
 	 */
-	public function __construct( $text, $text_hint = null, $id = 0, $question_group_id = 0, $sort_order = 0, $limit_time = -1, $score_max = 0, $score_type = self::GRADING_TYPE_ONE_OF, $is_single_answer = true, $correct_answers = [], $incorrect_answers = [] ) {
-		parent::__construct( $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max );
+	public function __construct(
+		$text,
+		$text_hint = null,
+		$id = 0,
+		$question_group_id = 0,
+		$sort_order = 0,
+		$limit_time = -1,
+		$score_max = 0,
+		$score_type = self::GRADING_TYPE_ONE_OF,
+		$is_single_answer = true,
+		$correct_answers = array(),
+		$incorrect_answers = array()
+		) {
+		parent::__construct(
+			$text,
+			$text_hint,
+			$id,
+			$question_group_id,
+			$sort_order,
+			$limit_time,
+			$score_max
+		);
 		$this->is_single_answer  = $is_single_answer;
 		$this->score_type        = $score_type;
 		$this->correct_answers   = $correct_answers;
@@ -141,18 +160,28 @@ class TextQuestion extends AbstractQuestion {
 				}
 			},
 			$this->calculate_correctness( $answers, $correct_answers, $is_ordered ),
-			$this->calculate_correctness( $answers, $incorrect_answers, $is_ordered ) );
+			$this->calculate_correctness( $answers, $incorrect_answers, $is_ordered )
+		);
 
-		$count_correct_values = count( array_filter( $correctness_percents,
-			function ( $percent ) {
-				return $percent > self::THRESHOLD;
-			} ) );
+		$count_correct_values = count(
+			array_filter(
+				$correctness_percents,
+				function ( $percent ) {
+					return $percent > self::THRESHOLD;
+				}
+			)
+		);
 
 		switch ( $this->score_type ) {
 			case self::GRADING_TYPE_ORDERED_PERCENT_OF:
-				$confidence = array_sum( array_map( function ( $percent ) {
-						return $percent > self::THRESHOLD ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
-					}, $correctness_percents ) ) / count( $answers );
+				$confidence = array_sum(
+					array_map(
+						function ( $percent ) {
+							return $percent > self::THRESHOLD ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
+						},
+						$correctness_percents
+					)
+				) / count( $answers );
 
 				return new AutoScoreResult( round( $this->score_max / count( $this->correct_answers ) * $count_correct_values ), $confidence );
 			case self::GRADING_TYPE_UNORDERED_PERCENT_OF:
@@ -162,23 +191,34 @@ class TextQuestion extends AbstractQuestion {
 			case self::GRADING_TYPE_ONE_OF:
 				// TODO: Should multiple answers be allowed?
 				// TODO: Should we really use the average confidence here?
-				$confidence = array_sum( array_map( function ( $percent ) {
-						return $percent > self::THRESHOLD ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
-					}, $correctness_percents ) ) / count( $answers );
+				$confidence = array_sum(
+					array_map(
+						function ( $percent ) {
+							return $percent > self::THRESHOLD ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
+						},
+						$correctness_percents
+					)
+				) / count( $answers );
 
 				return $count_correct_values > 0
 					? new AutoScoreResult( $this->score_max, $confidence )
 					: new AutoScoreResult( 0, $confidence );
 			case self::GRADING_TYPE_ALL_OF:
 				if ( count( $answers ) == count( $correct_answers ) ) {
-					$confidence = array_sum( array_map( function ( $percent ) {
-							return $percent > self::THRESHOLD ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
-						}, $correctness_percents ) ) / count( $answers );
-					$correct = $count_correct_values == count( $correct_answers );
+					$confidence = array_sum(
+						array_map(
+							function ( $percent ) {
+								return $percent > self::THRESHOLD ? 0.01 * $percent : 1.0 - ( 0.01 * $percent );
+							},
+							$correctness_percents
+						)
+					) / count( $answers );
+					$correct    = $count_correct_values == count( $correct_answers );
 
 					return new AutoScoreResult(
 						$correct ? $this->score_max : 0,
-						$confidence );
+						$confidence
+					);
 				} else {
 					return new AutoScoreResult( 0, 1.0 );
 				}
@@ -225,6 +265,9 @@ class TextQuestion extends AbstractQuestion {
 					function ( $value ) {
 						return sprintf( '<del>%s</del>', $value );
 					},
-					$this->incorrect_answers ) ) );
+					$this->incorrect_answers
+				)
+			)
+		);
 	}
 }
