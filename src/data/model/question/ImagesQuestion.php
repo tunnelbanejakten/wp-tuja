@@ -40,6 +40,7 @@ class ImagesQuestion extends AbstractQuestion {
 			parent::get_public_properties(),
 			array(
 				'max_files_count' => $this->max_files_count,
+				'max_file_size'   => wp_max_upload_size(),
 			)
 		);
 	}
