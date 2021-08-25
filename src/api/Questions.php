@@ -5,10 +5,14 @@ namespace tuja;
 use DateTime;
 use Reflection;
 use tuja\data\model\Event;
+use tuja\data\model\Group;
+use tuja\data\model\Marker;
+use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\question\ImagesQuestion;
 use tuja\data\store\EventDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
+use tuja\data\store\MarkerDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
@@ -41,23 +45,40 @@ class Questions extends AbstractRestEndpoint {
 			return self::create_response( 404 );
 		}
 
+		$response_dao = new ResponseDao();
+		$responses    = $response_dao->get_latest_by_group( $group_id );
+
+		$event_dao = new EventDao();
+		$events    = $event_dao->get_by_group( $group->id );
+
+		return self::get_question_response(
+			$question,
+			$group,
+			$events,
+			$responses
+		);
+	}
+
+	private static function get_question_response(
+		AbstractQuestion $question,
+		Group $group,
+		array $all_group_events,
+		array $all_responses
+	) {
+
 		$form_key     = 'N/A';
 		$form_handler = new Form( 'url', $group->random_id, $form_key );
 
-		$response_dao   = new ResponseDao();
-		$responses      = $response_dao->get_latest_by_group( $group_id );
-		$response_field = $form_handler->get_response_field( $question->id );
-		$answer_object  = @$responses[ $question->id ]->submitted_answer ?: null;
-
 		$optimistic_lock_field = Form::OPTIMISTIC_LOCK_FIELD_NAME;
 		$optimistic_lock_value = $form_handler->get_optimistic_lock_value( array( $question->id ) );
+
+		$response_field = $form_handler->get_response_field( $question->id );
+		$answer_object  = @$all_responses[ $question->id ]->submitted_answer ?: null;
 
 		$tracked_answers_field = Form::TRACKED_ANSWERS_FIELD_NAME;
 		$form_user_changes     = new FormUserChanges();
 		$form_user_changes->track_answer( $question, $question->get_answer_object( $response_field, $answer_object ) );
 		$tracked_answers_value = $form_user_changes->get_tracked_answers_string();
-
-		$event_dao = new EventDao();
 
 		$response = array(
 			'type'            => ( new \ReflectionClass( $question ) )->getShortName(),
@@ -91,7 +112,7 @@ class Questions extends AbstractRestEndpoint {
 		$is_view_event_required = $question->limit_time > 0;
 		$response['view_event'] = array( 'is_required' => $is_view_event_required );
 		if ( $is_view_event_required ) {
-			$all_events = $event_dao->get_by_group( $group->id );
+			$all_events = $all_group_events;
 			$events     = array_filter(
 				$all_events,
 				function ( Event $event ) use ( $question ) {
@@ -119,6 +140,62 @@ class Questions extends AbstractRestEndpoint {
 		}
 
 		return $response;
+	}
+
+	public static function get_all_questions( WP_REST_Request $request ) {
+		$token_decoded = $request->get_param( 'token_decoded' );
+
+		$group_id = $token_decoded->group_id;
+
+		$group_dao = new GroupDao();
+		$group     = $group_dao->get( $group_id );
+		if ( $group === false ) {
+			return self::create_response( 404 );
+		}
+
+		// Get all questions.
+
+		$question_dao  = new QuestionDao();
+		$all_questions = $question_dao->get_all_in_competition( $group->competition_id );
+
+		// Remove questions with GPS coordinates.
+		$marker_dao = new MarkerDao();
+		$markers    = $marker_dao->get_all_in_competition( $group->competition_id );
+
+		$selected_questions = array_values(
+			array_filter(
+				$all_questions,
+				function ( AbstractQuestion $question ) use ( $markers ) {
+					$matching_markers = array_filter(
+						$markers,
+						function ( Marker $marker ) use ( $question ) {
+							return $marker->link_form_question_id === $question->id ||
+							$marker->link_question_group_id === $question->question_group_id;
+						}
+					);
+					return empty( $matching_markers );
+				}
+			)
+		);
+
+		// Enrich with "time limit" properties.
+		$response_dao = new ResponseDao();
+		$responses    = $response_dao->get_latest_by_group( $group_id );
+
+		$event_dao = new EventDao();
+		$events    = $event_dao->get_by_group( $group->id );
+
+		return array_values(
+			array_map(
+				function ( AbstractQuestion $question ) use ( $group, $events, $responses ) {
+					return array_merge(
+						self::get_question_response( $question, $group, $events, $responses ),
+						array( 'id' => intval( $question->id ) )
+					);
+				},
+				$selected_questions
+			)
+		);
 	}
 
 	public static function post_answer( WP_REST_Request $request ) {
