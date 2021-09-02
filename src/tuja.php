@@ -410,6 +410,7 @@ abstract class Plugin {
 			self::PATH . '/data/model/question/' . $classname . '.php',
 			self::PATH . '/util/router/' . $classname . '.php',
 			self::PATH . '/util/markdown/' . $classname . '.php',
+			self::PATH . '/util/formattedtext/' . $classname . '.php',
 			self::PATH . '/util/messaging/' . $classname . '.php',
 			self::PATH . '/util/concurrency/' . $classname . '.php',
 			self::PATH . '/util/rules/' . $classname . '.php',
