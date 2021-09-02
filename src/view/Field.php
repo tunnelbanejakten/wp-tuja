@@ -2,6 +2,7 @@
 
 namespace tuja\view;
 
+use tuja\util\Template;
 use tuja\data\model\Group;
 
 abstract class Field {
@@ -10,7 +11,8 @@ abstract class Field {
 	protected $read_only;
 
 	public function __construct( $label, $hint = null, $read_only = false ) {
-		$this->label     = $label;
+		$formatted_label = Template::string( $label )->render( array(), true );
+		$this->label     = $formatted_label;
 		$this->hint      = $hint;
 		$this->read_only = $read_only;
 	}
@@ -21,7 +23,7 @@ abstract class Field {
 	 * Returns the data used to render the component.
 	 *
 	 * @param string $field_name The name of the field in $_POST
-	 * @param mixed $stored_posted_answer Data to be used if no data is found in $_POST
+	 * @param mixed  $stored_posted_answer Data to be used if no data is found in $_POST
 	 *
 	 * @return mixed
 	 */

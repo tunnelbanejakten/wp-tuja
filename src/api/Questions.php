@@ -17,6 +17,7 @@ use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
 use tuja\frontend\Form;
+use tuja\util\Template;
 use tuja\util\JwtUtils;
 use tuja\util\ReflectionUtils;
 use tuja\frontend\FormUserChanges;
@@ -137,6 +138,11 @@ class Questions extends AbstractRestEndpoint {
 			}
 		} else {
 			$response['config'] = $question->get_public_properties();
+		}
+
+		if ( isset( $response['config']['text'] ) ) {
+			// Parse Markdown texts into HTML.
+			$response['config']['text'] = Template::string( $response['config']['text'] )->render( array(), true );
 		}
 
 		return $response;

@@ -4,7 +4,7 @@
     "text": {
       "title": "Fråga",
       "type": "string",
-      "format": "text"
+      "format": "textarea"
     },
     "text_hint": {
       "title": "Hjälptext",

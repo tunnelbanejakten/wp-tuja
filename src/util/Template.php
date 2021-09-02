@@ -13,7 +13,7 @@ use tuja\frontend\router\GroupSignupInitiator;
 use tuja\frontend\router\GroupStatusInitiator;
 use tuja\frontend\router\GroupTicketsInitiator;
 use tuja\frontend\router\PersonEditorInitiator;
-use tuja\util\markdown\Parsedown;
+use tuja\util\formattedtext\FormattedText;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\util\rules\RuleResult;
@@ -31,7 +31,7 @@ class Template {
 			$rendered_content = str_replace( '{{' . $name . '}}', $value, $rendered_content );
 		}
 		if ( $is_markdown ) {
-			$markdown_parser = new Parsedown();
+			$markdown_parser = new FormattedText();
 
 			return $markdown_parser->parse( $rendered_content );
 		} else {
