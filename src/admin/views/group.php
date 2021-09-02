@@ -38,8 +38,8 @@ AdminUtils::printTopMenu( $competition );
 	<?= join( $group_form_links ) ?>
 
     <p>
-        Inloggningstoken:
-		<code><?= $token ?></code>
+        Länk för att logga in i appen:
+		<?= sprintf( '<a href="%s">%s</a>', $app_link, $app_link ) ?>
     </p>
 
     <h3>Tidsbegränsade frågor som visats</h3>
