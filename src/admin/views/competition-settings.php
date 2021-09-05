@@ -23,6 +23,7 @@ AdminUtils::printTopMenu( $competition );
         <a class="nav-tab" data-tab-id="tuja-tab-messagetemplates" id="tuja_tab_messagetemplates">Meddelandemallar</a>
         <a class="nav-tab" data-tab-id="tuja-tab-groups" id="tuja_tab_groups">Grupper</a>
         <a class="nav-tab" data-tab-id="tuja-tab-payment" id="tuja_tab_payment">Avgifter</a>
+        <a class="nav-tab" data-tab-id="tuja-tab-appconfig" id="tuja_tab_appconfig">Appen</a>
         <a class="nav-tab" data-tab-id="tuja-tab-strings" id="tuja_tab_strings">Texter</a>
     </div>
 
@@ -152,6 +153,9 @@ AdminUtils::printTopMenu( $competition );
         <?= $this->print_payment_options_configuration_form($competition); ?>
         <input type="hidden" name="tuja_competition_settings_payment_options" id="tuja_competition_settings_payment_options"/>
 
+    </div>
+    <div class="tuja-tab" id="tuja-tab-appconfig">
+        <?= $this->print_app_config_form( $competition ); ?>
     </div>
     <div class="tuja-tab" id="tuja-tab-strings">
 

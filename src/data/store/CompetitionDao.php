@@ -25,6 +25,7 @@ class CompetitionDao extends AbstractDao {
 				'event_start'          => self::to_db_date( $competition->event_start ),
 				'event_end'            => self::to_db_date( $competition->event_end ),
 				'initial_group_status' => $competition->initial_group_status,
+				'app_config'           => json_encode( $competition->app_config ),
 				'payment_instructions' => json_encode( self::to_payment_instructions( $competition->fee_calculator, $competition->payment_options ) )
 			),
 			array(
@@ -36,6 +37,7 @@ class CompetitionDao extends AbstractDao {
 //				'%d',
 				'%d',
 				'%d',
+				'%s',
 				'%s',
 				'%s'
 			) );
@@ -57,6 +59,7 @@ class CompetitionDao extends AbstractDao {
 				'event_start'          => self::to_db_date( $competition->event_start ),
 				'event_end'            => self::to_db_date( $competition->event_end ),
 				'initial_group_status' => $competition->initial_group_status,
+				'app_config'           => json_encode( $competition->app_config ),
 				'payment_instructions' => json_encode( self::to_payment_instructions( $competition->fee_calculator, $competition->payment_options ) )
 			),
 			array(
@@ -92,6 +95,11 @@ class CompetitionDao extends AbstractDao {
 //		$c->edit_group_end                         = self::from_db_date($result->edit_group_end);
 		$c->event_start = self::from_db_date( $result->event_start );
 		$c->event_end   = self::from_db_date( $result->event_end );
+
+		$default_app_config   = json_decode( file_get_contents( __DIR__ . '/CompetitionAppConfig.default.json' ), true );
+		$stored_app_config    = json_decode( $result->app_config ?? '{}', true );
+		$combined_app_config  = array_replace_recursive( $default_app_config, $stored_app_config );
+		$c->app_config        = $combined_app_config;
 
 		$payment_details = json_decode( $result->payment_instructions, true );
 

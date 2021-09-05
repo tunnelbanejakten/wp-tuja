@@ -1,0 +1,21 @@
+{
+    "positioning": {
+        "high_accuracy_threshold": 100,
+        "high_accuracy_timeout": 30
+    },
+    "uploads": {
+        "max_file_size": 5
+    },
+    "updates": {
+        "config_poll_interval": 60
+    },
+    "messages": {
+        "info_page_content": "Info till lagen..."
+    },
+    "views": {
+        "answer": true,
+        "map": true,
+        "device_test": true,
+        "info": true
+    }
+}

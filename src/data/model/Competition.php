@@ -2,7 +2,6 @@
 
 namespace tuja\data\model;
 
-
 use tuja\util\fee\CompetingParticipantFeeCalculator;
 use tuja\util\fee\GroupFeeCalculator;
 
@@ -13,7 +12,8 @@ class Competition {
 	public $event_start;
 	public $event_end;
 	public $fee_calculator;
-	public $payment_options = [];
+	public $payment_options = array();
+	public $app_config      = array();
 
 	public $initial_group_status;
 
@@ -33,7 +33,7 @@ class Competition {
 	}
 
 	public static function allowed_initial_statuses() {
-		return array_merge( [ Group::DEFAULT_STATUS ], Group::STATUS_TRANSITIONS[ Group::DEFAULT_STATUS ] );
+		return array_merge( array( Group::DEFAULT_STATUS ), Group::STATUS_TRANSITIONS[ Group::DEFAULT_STATUS ] );
 	}
 
 	public function get_group_fee_calculator(): GroupFeeCalculator {
