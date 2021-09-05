@@ -26,7 +26,7 @@ class FieldTextMulti extends Field {
 
 		return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label><textarea name="%s" id="%s" class="tuja-%s" %s>%s</textarea>%s</div>',
 			$render_id,
-			$this->label,
+			$this->is_formatted_label ? $this->formatted_label : $this->label,
 			$hint,
 			$field_name,
 			$field_name,

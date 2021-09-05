@@ -43,13 +43,15 @@ class FieldChoices extends Field {
 	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' ) {
 		$render_id    = $field_name ?: uniqid();
 		$hint         = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
-		$label        = isset( $this->label ) ? $this->label : '';
-		$labelAndHint = ! empty( $label ) || ! empty( $hint ) ? sprintf( '<label for="%s">%s%s</label>', $render_id, $label, $hint ) : '';
+		$label        = isset( $this->label )
+				? ( $this->is_formatted_label ? $this->formatted_label : $this->label )
+				: '';
+		$label_and_hint = ! empty( $label ) || ! empty( $hint ) ? sprintf( '<label for="%s">%s%s</label>', $render_id, $label, $hint ) : '';
 
 		$data = $this->get_data( $field_name, $answer_object );
 
 		return sprintf( '<div class="tuja-field">%s%s%s</div>',
-			$labelAndHint,
+			$label_and_hint,
 			count( $this->options ) < self::SHORT_LIST_LIMIT ?
 				$this->render_short_list( $render_id, $field_name, $data ) :
 				$this->render_long_list( $render_id, $field_name, $data ),

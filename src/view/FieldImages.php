@@ -44,7 +44,7 @@ class FieldImages extends Field {
 
 		return sprintf(
 			'<div class="tuja-field tuja-fieldimages"><label>%s%s</label>%s%s</div>',
-			$this->label,
+			$this->is_formatted_label ? $this->formatted_label : $this->label,
 			$hint,
 			$this->render_image_upload( $field_name, $group->random_id, $this->get_data($field_name, $answer_object) ),
 			! empty( $error_message ) ? sprintf( '<div class="tuja-message tuja-message-error">%s</div>', $error_message ) : ''

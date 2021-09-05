@@ -44,7 +44,7 @@ class FieldText extends Field {
 			return sprintf( '%s="%s"', $prop, htmlentities( $value ) );
 		}, array_keys( $this->html_props ), array_values( $this->html_props ) ) );
 
-		if ( $this->compact ) {
+		if ( $this->compact && ! $this->is_formatted_label ) {
 			return sprintf( '<div class="tuja-field"><input placeholder="%s" %s id="%s" name="%s" value="%s" class="tuja-%s" %s/>%s%s</div>',
 				$this->label,
 				$additional_html_props,
@@ -59,7 +59,7 @@ class FieldText extends Field {
 		} else {
 			return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label><input %s id="%s" name="%s" value="%s" class="tuja-%s" %s/>%s</div>',
 				$render_id,
-				$this->label,
+				$this->is_formatted_label ? $this->formatted_label : $this->label,
 				$hint,
 				$additional_html_props,
 				$render_id,
