@@ -304,6 +304,32 @@ class CompetitionSettings {
 			'tuja-admin-formgenerator-form-' . $category->id );
 	}
 
+	public function print_app_config_form( Competition $competition ) {
+		$config_file       = __DIR__ . '/../data/store/CompetitionAppConfig.schema.json';
+		$jsoneditor_config = file_get_contents( $config_file );
+		$jsoneditor_values = json_encode( $competition->app_config );
+
+		$field_name = 'tuja_competition_settings_appconfig';
+
+		return sprintf( '
+			<div class="tuja-appconfig-form">
+				<input type="hidden" name="%s" id="%s" value="%s">
+				<div class="tuja-admin-formgenerator-form" 
+					data-schema="%s" 
+					data-values="%s" 
+					data-field-id="%s"
+					data-root-name="%s"></div>
+			</div>',
+			$field_name,
+			$field_name,
+			htmlentities( $jsoneditor_values ),
+			htmlentities( $jsoneditor_config ),
+			htmlentities( $jsoneditor_values ),
+			htmlentities( $field_name ),
+			'tuja-admin-formgenerator-form-appconfig'
+		);
+	}
+
 	public function print_group_fee_configuration_form( Competition $competition ) {
 		$fee_calculators        = [
 			CompetingParticipantFeeCalculator::class => "Betala per tävlande",
@@ -626,6 +652,7 @@ class CompetitionSettings {
 			$competition->event_start          = DateUtils::from_date_local_value( $_POST['tuja_event_start'] );
 			$competition->event_end            = DateUtils::from_date_local_value( $_POST['tuja_event_end'] );
 			$competition->initial_group_status = $_POST['tuja_competition_settings_initial_group_status'] ?: null;
+			$competition->app_config           = json_decode(stripslashes($_POST['tuja_competition_settings_appconfig']));
 
 			// Fee calculator
 			$fee_calculator_cfg = json_decode( stripslashes( $_POST['tuja_competition_settings_fee_calculator'] ), true );

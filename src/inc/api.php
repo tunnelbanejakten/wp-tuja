@@ -90,6 +90,16 @@ class API extends Plugin {
 
 		register_rest_route(
 			'tuja/v1',
+			'/configuration/',
+			array(
+				'methods'             => 'GET',
+				'callback'            => $this->callback( 'Configuration', 'get_configuration' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			'tuja/v1',
 			'/map/markers',
 			array(
 				'methods'             => 'GET',

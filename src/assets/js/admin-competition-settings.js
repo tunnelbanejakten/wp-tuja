@@ -158,5 +158,6 @@ jQuery(document).ready(function ($) {
   tujaTabs.init($)
   tujaStateGraph.init($)
   tujaFormGenerator.init($, $('#tuja-tab-payment'))
+  tujaFormGenerator.init($, $('#tuja-tab-appconfig'))
 })
 

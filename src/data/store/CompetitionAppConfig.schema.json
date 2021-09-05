@@ -1,0 +1,80 @@
+{
+  "type": "object",
+  "properties": {
+    "positioning": {
+      "type": "object",
+      "title": "Positionering",
+      "properties": {
+        "high_accuracy_threshold": {
+          "title": "Önskad noggrannhet (meter)",
+          "type": "integer",
+          "format": "number"
+        },
+        "high_accuracy_timeout": {
+          "title": "Väntetid för önskad nog. (s)",
+          "type": "integer",
+          "format": "number"
+        }
+      }
+    },
+    "uploads": {
+      "type": "object",
+      "title": "Uppladdningar",
+      "properties": {
+        "max_file_size": {
+          "title": "Maximal filstorlek (MB)",
+          "type": "integer",
+          "format": "number"
+        }
+      }
+    },
+    "updates": {
+      "type": "object",
+      "title": "Uppdateringar",
+      "properties": {
+        "config_poll_interval": {
+          "title": "Uppdat.intervall för konf. (s)",
+          "type": "integer",
+          "format": "number"
+        }
+      }
+    },
+    "messages": {
+      "type": "object",
+      "title": "Meddelanden",
+      "properties": {
+        "info_page_content": {
+          "title": "Text på info-sidan (Markdown)",
+          "type": "string",
+          "format": "textarea"
+        }
+      }
+    },
+    "views": {
+      "type": "object",
+      "title": "Sidor",
+      "properties": {
+        "answer": {
+          "title": "Svara",
+          "type": "boolean",
+          "format": "checkbox"
+        },
+        "map": {
+          "title": "Karta",
+          "type": "boolean",
+          "format": "checkbox"
+        },
+        "device_test": {
+          "title": "Mobiltest",
+          "type": "boolean",
+          "format": "checkbox"
+        },
+        "info": {
+          "title": "Info",
+          "type": "boolean",
+          "format": "checkbox"
+        }
+      }
+    }
+  }
+}
