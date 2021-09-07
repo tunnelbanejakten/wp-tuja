@@ -5,6 +5,8 @@ namespace tuja\admin;
 use Exception;
 use tuja\data\model\Map;
 use tuja\data\model\Marker;
+use tuja\data\model\question\AbstractQuestion;
+use tuja\data\model\question\TextQuestion;
 use tuja\data\store\MapDao;
 use tuja\data\store\CompetitionDao;
 use tuja\data\model\ValidationException;
@@ -12,6 +14,7 @@ use tuja\data\store\MarkerDao;
 use tuja\data\store\QuestionDao;
 
 class Maps {
+	const MAGIC_NUMBER_MAP_HOME_MARKER = -42;
 
 	private $competition;
 
@@ -48,8 +51,7 @@ class Maps {
 			$map_dao = new MapDao();
 			$maps    = $map_dao->get_all_in_competition( $this->competition->id );
 
-			$question_dao = new QuestionDao();
-			$questions    = $question_dao->get_all_in_competition( $this->competition->id );
+			$questions = $this->get_marker_questions();
 
 			foreach ( $questions as $question ) {
 				foreach ( $maps as $map ) {
@@ -58,10 +60,10 @@ class Maps {
 						// Marker exists:
 							// Update marker
 						// Marker DOES NOT exist:
-							// Create marker
+							// Create marker.
 					// Value NOT specified:
 						// Marker exists:
-							// Delete marker
+							// Delete marker.
 						// Marker DOES NOT exist:
 							// Do nothing.
 					$user_value = @$_POST[ 'tuja_marker_raw__' . $key ];
@@ -75,22 +77,22 @@ class Maps {
 
 							try {
 								$marker_dao->update( $marker );
-							} catch(Exception $e) {
-								AdminUtils::printException($e);
+							} catch ( Exception $e ) {
+								AdminUtils::printException( $e );
 							}
 						} else {
 							$marker                        = new Marker();
 							$marker->map_id                = $map->id;
 							$marker->gps_coord_lat         = floatval( $gps_coord_lat );
 							$marker->gps_coord_long        = floatval( $gps_coord_long );
-							$marker->type                  = Marker::MARKER_TYPE_TASK;
+							$marker->type                  = $question->id === self::MAGIC_NUMBER_MAP_HOME_MARKER ? Marker::MARKER_TYPE_START : Marker::MARKER_TYPE_TASK;
 							$marker->name                  = $name;
-							$marker->link_form_question_id = $question->id;
-							
+							$marker->link_form_question_id = $question->id === self::MAGIC_NUMBER_MAP_HOME_MARKER ? null : $question->id;
+
 							try {
 								$marker_dao->create( $marker );
-							} catch(Exception $e) {
-								AdminUtils::printException($e);
+							} catch ( Exception $e ) {
+								AdminUtils::printException( $e );
 							}
 						}
 					} else {
@@ -99,8 +101,8 @@ class Maps {
 
 							try {
 								$marker_dao->delete( $marker->id );
-							} catch(Exception $e) {
-								AdminUtils::printException($e);
+							} catch ( Exception $e ) {
+								AdminUtils::printException( $e );
 							}
 						}
 					}
@@ -113,11 +115,26 @@ class Maps {
 		return array_reduce(
 			( new MarkerDao() )->get_all_in_competition( $this->competition->id ),
 			function ( $res, Marker $marker ) {
-				$key         = sprintf( '%s__%s', $marker->map_id, $marker->link_form_question_id );
+				$key         = sprintf(
+					'%s__%s',
+					$marker->map_id,
+					$marker->type === Marker::MARKER_TYPE_START
+						? self::MAGIC_NUMBER_MAP_HOME_MARKER
+					: $marker->link_form_question_id
+				);
 				$res[ $key ] = $marker;
 				return $res;
 			}
 		);
+	}
+
+	private function get_marker_questions() {
+		$question_dao = new QuestionDao();
+		$questions    = $question_dao->get_all_in_competition( $this->competition->id );
+
+		$pseudo_question_start_position = new TextQuestion( 'Startplats', null, self::MAGIC_NUMBER_MAP_HOME_MARKER );
+
+		return array_merge( array( $pseudo_question_start_position ), $questions );
 	}
 
 
@@ -131,8 +148,7 @@ class Maps {
 
 		$markers = $this->get_markers();
 
-		$question_dao = new QuestionDao();
-		$questions    = $question_dao->get_all_in_competition( $competition->id );
+		$questions = $this->get_marker_questions();
 
 		include 'views/maps.php';
 	}

@@ -33,6 +33,7 @@ class Map extends AbstractRestEndpoint {
 		return array_map(
 			function ( Marker $marker ) use ( $responses ) {
 				return array(
+					'type'                   => $marker->type,
 					'latitude'               => $marker->gps_coord_lat,
 					'longitude'              => $marker->gps_coord_long,
 					'radius'                 => 25,

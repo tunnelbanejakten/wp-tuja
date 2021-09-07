@@ -4,7 +4,8 @@
 namespace tuja\data\model;
 
 class Marker {
-	const MARKER_TYPE_TASK = 'TASK';
+	const MARKER_TYPE_TASK  = 'TASK';
+	const MARKER_TYPE_START = 'START';
 
 	public $id;
 	public $random_id;
