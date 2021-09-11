@@ -45,6 +45,7 @@ class FormUtils {
 	private $response_dao;
 	private $marker_dao;
 	private $event_dao;
+	private $competition_markers;
 
 	function __construct( Group $group ) {
 		$this->question_dao       = new QuestionDao();
@@ -114,9 +115,11 @@ class FormUtils {
 	}
 
 	private function is_marker_set( $object_type_marker_field, $object_id ) {
-		$markers = $this->marker_dao->get_all_in_competition( $this->group->competition_id ); // TODO: Cache response.
+		if ( ! isset( $this->competition_markers ) ) {
+			$this->competition_markers = $this->marker_dao->get_all_in_competition( $this->group->competition_id );
+		}
 		$matches = array_filter(
-			$markers,
+			$this->competition_markers,
 			function ( Marker $marker ) use ( $object_type_marker_field, $object_id ) {
 				return $marker->{$object_type_marker_field} === $object_id;
 			}
