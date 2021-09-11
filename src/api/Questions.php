@@ -70,7 +70,7 @@ class Questions extends AbstractRestEndpoint {
 		return array_values(
 			array_map(
 				function ( ModelForm $form ) use ( $form_utils ) {
-					return $form_utils->get_form_view( $form, true, true, false );
+					return $form_utils->get_form_view( $form, FormUtils::RETURN_API_QUESTION_OBJECT, true );
 				},
 				$available_forms
 			)

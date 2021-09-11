@@ -21,6 +21,11 @@ class AvailableFormObjects {
 
 class Map extends AbstractRestEndpoint {
 
+	/**
+	 * Return the identifiers for the forms, question groups and questions which the current group can see at this point in time.
+	 *
+	 * @param Group $group The group requesting the data.
+	 */
 	private static function get_available_form_object_ids( Group $group ): AvailableFormObjects {
 		$objects  = new AvailableFormObjects();
 		$form_dao = new FormDao();
@@ -37,7 +42,7 @@ class Map extends AbstractRestEndpoint {
 
 		$available_form_views = array_map(
 			function ( ModelForm $form ) use ( $form_utils ) {
-				return $form_utils->get_form_view( $form, false, false, false );
+				return $form_utils->get_form_view( $form, FormUtils::RETURN_NO_QUESTION_OBJECT, false );
 			},
 			$available_forms
 		);
@@ -64,27 +69,19 @@ class Map extends AbstractRestEndpoint {
 		return $objects;
 	}
 
-	public static function get_markers( WP_REST_Request $request ) {
-		$token_decoded = $request->get_param( 'token_decoded' );
-
-		$group_id = $token_decoded->group_id;
-
-		$group_dao = new GroupDao();
-		$group     = $group_dao->get( $group_id );
-		if ( $group === false ) {
-			return self::create_response( 404 );
-		}
-
-		$marker_dao = new MarkerDao();
-		$markers    = $marker_dao->get_all_on_map( $group->map_id );
-
-		$response_dao = new ResponseDao();
-		$responses    = $response_dao->get_latest_by_group( $group_id );
-
+	/**
+	 * Get map markers which are either
+	 *  - questions/question groups/forms which are available to the current user/group,
+	 *  - "not tasks" (e.g. the "home marker").
+	 *
+	 * @param Group $group The group requesting the data.
+	 */
+	private static function get_markers_to_return( Group $group ) {
+		$marker_dao           = new MarkerDao();
+		$all_markers          = $marker_dao->get_all_on_map( $group->map_id );
 		$available_object_ids = self::get_available_form_object_ids( $group );
-
-		$available_markers = array_filter(
-			$markers,
+		return array_filter(
+			$all_markers,
 			function ( Marker $marker ) use ( $available_object_ids ) {
 				$link_form_id           = isset( $marker->link_form_id ) ? intval( $marker->link_form_id ) : null;
 				$link_question_group_id = isset( $marker->link_question_group_id ) ? intval( $marker->link_question_group_id ) : null;
@@ -99,6 +96,21 @@ class Map extends AbstractRestEndpoint {
 				return $is_available;
 			}
 		);
+	}
+
+	public static function get_markers( WP_REST_Request $request ) {
+		$token_decoded = $request->get_param( 'token_decoded' );
+
+		$group_id = $token_decoded->group_id;
+
+		$group_dao = new GroupDao();
+		$group     = $group_dao->get( $group_id );
+		if ( $group === false ) {
+			return self::create_response( 404 );
+		}
+
+		$response_dao = new ResponseDao();
+		$responses    = $response_dao->get_latest_by_group( $group_id );
 
 		return array_values(
 			array_map(
@@ -116,7 +128,7 @@ class Map extends AbstractRestEndpoint {
 						'is_response_submitted'  => isset( $responses[ $marker->link_form_question_id ] ),
 					);
 				},
-				$available_markers
+				self::get_markers_to_return( $group )
 			)
 		);
 	}

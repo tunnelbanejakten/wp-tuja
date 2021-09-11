@@ -38,6 +38,10 @@ class FormView {
 }
 
 class FormUtils {
+	const RETURN_DATABASE_QUESTION_OBJECT = 'RETURN_DATABASE_QUESTION_OBJECT';
+	const RETURN_NO_QUESTION_OBJECT       = 'RETURN_NO_QUESTION_OBJECT';
+	const RETURN_API_QUESTION_OBJECT      = 'RETURN_API_QUESTION_OBJECT';
+
 	private $group;
 	private $question_dao;
 	private $question_group_dao;
@@ -57,7 +61,7 @@ class FormUtils {
 		$this->group              = $group;
 	}
 
-	public function get_form_view( Form $form, bool $question_details, bool $exclude_objects_with_marker, bool $include_actual_question_objects ): FormView {
+	public function get_form_view( Form $form, string $question_response_spec, bool $exclude_objects_with_marker ): FormView {
 		$question_groups = array_filter(
 			$this->question_group_dao->get_all_in_form( $form->id ),
 			function ( QuestionGroup $question_group ) use ( $exclude_objects_with_marker ) {
@@ -68,15 +72,15 @@ class FormUtils {
 			intval( $form->id ),
 			$form->name,
 			array_map(
-				function ( QuestionGroup $question_group ) use ( $question_details, $exclude_objects_with_marker, $include_actual_question_objects ) {
-					return $this->get_question_group_view( $question_group, $question_details, $exclude_objects_with_marker, $include_actual_question_objects );
+				function ( QuestionGroup $question_group ) use ( $question_response_spec, $exclude_objects_with_marker ) {
+					return $this->get_question_group_view( $question_group, $question_response_spec, $exclude_objects_with_marker );
 				},
 				$question_groups
 			),
 		);
 	}
 
-	private function get_question_group_view( QuestionGroup $question_group, bool $question_details, bool $exclude_objects_with_marker, bool $include_actual_question_objects ) {
+	private function get_question_group_view( QuestionGroup $question_group, string $question_response_spec, bool $exclude_objects_with_marker ) {
 		$all_questions = $question_group->get_filtered_questions( $this->question_dao, $this->group_dao, $this->group );
 
 		$selected_questions = array_values(
@@ -95,10 +99,14 @@ class FormUtils {
 
 		$questions_list = array_values(
 			array_map(
-				function ( AbstractQuestion $question ) use ( $events, $responses, $question_details, $include_actual_question_objects ) {
+				function ( AbstractQuestion $question ) use ( $events, $responses, $question_response_spec ) {
 					return array_merge(
-						$question_details ? $this->get_question_response( $question, $events, $responses ) : array(),
-						$include_actual_question_objects ? array( 'obj' => $question ) : array(),
+						$question_response_spec === self::RETURN_API_QUESTION_OBJECT
+							? $this->get_question_response( $question, $events, $responses )
+							: array(),
+						$question_response_spec === self::RETURN_DATABASE_QUESTION_OBJECT
+							? array( 'obj' => $question )
+							: array(),
 						array( 'id' => intval( $question->id ) )
 					);
 				},

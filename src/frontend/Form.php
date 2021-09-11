@@ -176,7 +176,7 @@ class Form extends AbstractGroupView {
 		$displayed_question_ids = array();
 		$form_user_changes      = new FormUserChanges();
 		$form_utils             = new FormUtils( $group );
-		$form_view              = $form_utils->get_form_view( $this->get_form(), false, true, true );
+		$form_view              = $form_utils->get_form_view( $this->get_form(), FormUtils::RETURN_DATABASE_QUESTION_OBJECT, true );
 
 		foreach ( $form_view->question_groups as $question_group_view ) {
 			$current_group = '<section class="tuja-question-group">';
