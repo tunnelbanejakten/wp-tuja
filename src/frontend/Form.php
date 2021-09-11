@@ -7,14 +7,13 @@ use Exception;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\Response;
 use tuja\data\store\FormDao;
-use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionDao;
-use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
 use tuja\Frontend;
 use tuja\util\concurrency\LockValuesList;
 use tuja\util\Strings;
+use tuja\util\FormUtils;
 
 class Form extends AbstractGroupView {
 	private $form_key;
@@ -22,8 +21,6 @@ class Form extends AbstractGroupView {
 
 	private $question_dao;
 	private $response_dao;
-	private $category_dao;
-	private $question_group_dao;
 	private $form_dao;
 
 	const RESPONSE_FIELD_NAME_PREFIX = 'tuja_formshortcode__response__';
@@ -34,13 +31,11 @@ class Form extends AbstractGroupView {
 
 	public function __construct( string $url, string $group_key, string $form_key ) {
 		parent::__construct( $url, $group_key, 'Svara' );
-		$this->form_key           = $form_key;
-		$this->question_dao       = new QuestionDao();
-		$this->question_group_dao = new QuestionGroupDao();
-		$this->group_dao          = new GroupDao();
-		$this->response_dao       = new ResponseDao();
-		$this->form_dao           = new FormDao();
-		$this->category_dao       = new GroupCategoryDao();
+		$this->form_key     = $form_key;
+		$this->question_dao = new QuestionDao();
+		$this->group_dao    = new GroupDao();
+		$this->response_dao = new ResponseDao();
+		$this->form_dao     = new FormDao();
 	}
 
 	public static function get_response_field( $question_id ) {
@@ -127,33 +122,15 @@ class Form extends AbstractGroupView {
 	}
 
 	private function is_submit_allowed(): bool {
-		return $this->is_form_opened() && ! $this->is_form_closed();
+		return $this->get_form()->is_submit_allowed();
 	}
 
 	private function is_form_opened(): bool {
-		$form = $this->get_form();
-		$now  = new DateTime();
-		if ( $form->submit_response_start != null && $form->submit_response_start > $now ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	private function is_form_closed(): bool {
-		$form = $this->get_form();
-		$now  = new DateTime();
-		if ( $form->submit_response_end != null && $now > $form->submit_response_end ) {
-			return true;
-		}
-
-		return false;
+		return $this->get_form()->is_opened();
 	}
 
 	public function get_optimistic_lock_value( array $displayed_question_ids ) {
-		return $this->get_form_lock_validator()
-										  ->get_optimistic_lock_value( $displayed_question_ids )
-										  ->to_string();
+		return $this->get_form_lock_validator()->get_optimistic_lock_value( $displayed_question_ids )->to_string();
 	}
 
 	public function get_form_html(): string {
@@ -196,18 +173,19 @@ class Form extends AbstractGroupView {
 		}
 
 		$responses              = $this->response_dao->get_latest_by_group( $group_id );
-		$question_groups        = $this->question_group_dao->get_all_in_form( $this->get_form()->id );
 		$displayed_question_ids = array();
 		$form_user_changes      = new FormUserChanges();
+		$form_utils             = new FormUtils( $group );
+		$form_view              = $form_utils->get_form_view( $this->get_form(), FormUtils::RETURN_DATABASE_QUESTION_OBJECT, true );
 
-		foreach ( $question_groups as $question_group ) {
+		foreach ( $form_view->question_groups as $question_group_view ) {
 			$current_group = '<section class="tuja-question-group">';
-			if ( $question_group->text ) {
-				$current_group .= sprintf( '<h2 class="tuja-question-group-title">%s</h2>', $question_group->text );
+			if ( $question_group_view['name'] ) {
+				$current_group .= sprintf( '<h2 class="tuja-question-group-title">%s</h2>', $question_group_view['name'] );
 			}
 
-			$questions = $question_group->get_filtered_questions( $this->question_dao, $this->group_dao, $group );
-			foreach ( $questions as $question ) {
+			foreach ( $question_group_view['questions'] as $question_view ) {
+				$question   = $question_view['obj'];
 				$field_name = self::get_response_field( $question->id );
 
 				// We do not want to present the previously inputted values in case the user changed from one group to another.
@@ -267,7 +245,7 @@ class Form extends AbstractGroupView {
 			);
 		}
 
-		$html_sections[] = sprintf( '<input type="hidden" name="%s" id="%s" value="%s">', self::SCROLL_FIELD_NAME, self::SCROLL_FIELD_NAME, $_POST[ self::SCROLL_FIELD_NAME ] ?: '' );
+		$html_sections[] = sprintf( '<input type="hidden" name="%s" id="%s" value="%s">', self::SCROLL_FIELD_NAME, self::SCROLL_FIELD_NAME, @$_POST[ self::SCROLL_FIELD_NAME ] ?: '' );
 		$html_sections[] = sprintf( '<input type="hidden" name="%s" value="%s">', 'group', $this->get_group()->random_id );
 
 		return sprintf( '<form method="post" enctype="multipart/form-data" id="tuja-form">%s</form>', join( $html_sections ) );

@@ -82,11 +82,11 @@ describe('Review Answers', () => {
       textQuestion1Id = ids[3]
       textQuestion2Id = ids[4]
 
-      await adminPage.page.waitForSelector(`input[name="JSONEditor_tuja-question__${numberQuestionId}[text]"]`)
-      await adminPage.page.waitForSelector(`input[name="JSONEditor_tuja-question__${choiceQuestionId}[text]"]`)
-      await adminPage.page.waitForSelector(`input[name="JSONEditor_tuja-question__${imagesQuestionId}[text]"]`)
-      await adminPage.page.waitForSelector(`input[name="JSONEditor_tuja-question__${textQuestion1Id}[text]"]`)
-      await adminPage.page.waitForSelector(`input[name="JSONEditor_tuja-question__${textQuestion2Id}[text]"]`)
+      await adminPage.page.waitForSelector(`textarea[name="JSONEditor_tuja-question__${numberQuestionId}[text]"]`)
+      await adminPage.page.waitForSelector(`textarea[name="JSONEditor_tuja-question__${choiceQuestionId}[text]"]`)
+      await adminPage.page.waitForSelector(`textarea[name="JSONEditor_tuja-question__${imagesQuestionId}[text]"]`)
+      await adminPage.page.waitForSelector(`textarea[name="JSONEditor_tuja-question__${textQuestion1Id}[text]"]`)
+      await adminPage.page.waitForSelector(`textarea[name="JSONEditor_tuja-question__${textQuestion2Id}[text]"]`)
 
       // How many kilometers long is the equator? (number)
       await adminPage.$eval(`#tuja-question__${numberQuestionId}`, node => node.value = JSON.stringify({

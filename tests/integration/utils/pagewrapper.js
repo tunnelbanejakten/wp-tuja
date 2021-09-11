@@ -25,7 +25,7 @@ class PageWrapper {
 
   async goto (url, waitForNetwork = false) {
     await Promise.all([
-        this._page.waitForNavigation({ waitUntil: waitForNetwork ? 'networkidle2' : 'domcontentloaded', timeout: 10000 }),
+        this._page.waitForNavigation({ waitUntil: waitForNetwork ? 'networkidle2' : 'domcontentloaded', timeout: 30000 }),
         this._page.goto(url)
       ]
     )
@@ -33,7 +33,7 @@ class PageWrapper {
 
   async clickLink (selector) {
     await Promise.all([
-        this._page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 10000 }),
+        this._page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 30000 }),
         this._page.click(selector)
       ]
     )
