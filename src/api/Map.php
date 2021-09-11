@@ -106,7 +106,11 @@ class Map extends AbstractRestEndpoint {
 		$group_dao = new GroupDao();
 		$group     = $group_dao->get( $group_id );
 		if ( $group === false ) {
-			return self::create_response( 404 );
+			return self::create_response( 404 ); // Not Found.
+		}
+
+		if ( ! isset( $group->map_id ) ) {
+			return self::create_response( 204 ); // No Content.
 		}
 
 		$response_dao = new ResponseDao();
