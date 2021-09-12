@@ -93,16 +93,39 @@ class AdminUtils {
 		}
 
 		$image_manager = new ImageManager();
+		$comment       = $answer['comment'] ?? '';
+		$lines         = array_merge(
+			array( sprintf( '<em>%s</em>', $comment ) ),
+			array_map(
+				function ( $image_id ) use ( $image_manager, $group_key ) {
+					$thumbnail_image_url = $image_manager->get_resized_image_url(
+						$image_id,
+						ImageManager::DEFAULT_THUMBNAIL_PIXEL_COUNT,
+						$group_key
+					);
 
-		return join('<br>', array_map( function ( $image_id ) use ( $image_manager, $group_key ) {
-			$resized_image_url = $image_manager->get_resized_image_url(
-				$image_id,
-				ImageManager::DEFAULT_THUMBNAIL_PIXEL_COUNT,
-				$group_key );
+					if ( $thumbnail_image_url !== false ) {
+						$large_image_url = $image_manager->get_resized_image_url(
+							$image_id,
+							ImageManager::DEFAULT_LARGE_PIXEL_COUNT,
+							$group_key
+						);
 
-			// TODO: Show fullsize image in modal popup when clicking image (see https://codex.wordpress.org/ThickBox)
-			return $resized_image_url ? sprintf( '<img src="%s">', $resized_image_url ) : sprintf( 'Kan inte visa bild group-%s/%s', $group_key, $image_id );
-		}, $answer['images'] ) );
+						$popup_id   = uniqid();
+						$popup      = sprintf( '<div id="tuja-image-viewer-%s" style="display: none"><img src="%s" style="width: 100%%"></div>', $popup_id, $large_image_url );
+						$popup_link = sprintf( '<a href="#TB_inline?&width=900&height=900&inlineId=tuja-image-viewer-%s" class="thickbox"><img src="%s"></a>', $popup_id, $thumbnail_image_url );
+						return $popup_link . $popup;
+					} else {
+						return sprintf( 'Kan inte visa bild group-%s/%s', $group_key, $image_id );
+					}
+
+
+				},
+				$answer['images']
+			)
+		);
+
+		return join( '<br>', $lines );
 	}
 
 	public static function set_admin_mode( $is_admin ) {

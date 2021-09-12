@@ -11,6 +11,7 @@ use tuja\util\concurrency\LockValuesList;
 
 class ImageManager {
 	const DEFAULT_THUMBNAIL_PIXEL_COUNT = 200 * 200;
+	const DEFAULT_LARGE_PIXEL_COUNT = 1000 * 1000;
 
 	private $directory;
 	private $public_url_directory;
