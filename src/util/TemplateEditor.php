@@ -30,7 +30,7 @@ class TemplateEditor {
                                 <br><br>
                                 <div class="placeholder">**Fet**</div>
 								<div class="placeholder">*Kursiv*</div>
-								<div class="placeholder">&lt;%s&gt;</div>
+								<div class="placeholder">![](42) Bild 42 i WordPress mediabibliotek</div>
 								<div class="placeholder">~~Genomstruken~~</div>
 								<div class="placeholder">En lista:</div>
 								<div class="placeholder">* Mobiltelefon</div>
@@ -55,9 +55,7 @@ class TemplateEditor {
 			$target,
 			join( array_map( function ( $var ) {
 				return sprintf( '<div class="placeholder">{{%s}}</div>', $var );
-			}, array_keys( $sample_parameters ) ) ),
-			$target,
-			get_site_url() );
+			}, array_keys( $sample_parameters ) ) ) );
 	}
 
 	public static function render_preview( string $template, array $parameters ): string {

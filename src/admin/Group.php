@@ -22,6 +22,7 @@ use tuja\frontend\router\GroupSignupInitiator;
 use tuja\frontend\router\PointsOverrideInitiator;
 use tuja\util\score\ScoreCalculator;
 use tuja\util\JwtUtils;
+use tuja\util\AppUtils;
 
 class Group {
 
@@ -241,12 +242,7 @@ class Group {
 		$group_editor_link  = GroupEditorInitiator::link( $group );
 		$group_checkin_link = GroupCheckinInitiator::link( $group );
 
-		$is_localhost = strpos( $_SERVER['HTTP_HOST'], 'localhost' ) !== false;
-		$app_link     = sprintf(
-			'%s/#/%s/',
-			$is_localhost ? 'http://localhost:8081' : 'https://app.tunnelbanejakten.se',
-			$group->random_id
-		);
+		$app_link     = AppUtils::group_link( $group );
 
 		$group_form_links = array_map(
 			function ( \tuja\data\model\Form $form ) use ( $group ) {

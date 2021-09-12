@@ -18,10 +18,9 @@ class Admin extends Plugin {
 	public function init() {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu_item' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'add_thickbox' ) );
 		add_action( 'admin_action_tuja_report', array( $this, 'render_report' ) );
 		add_action( 'admin_action_tuja_markdown', array( $this, 'render_markdown' ) );
-		
-		add_action ( 'wp_enqueue_scripts', array( $this, 'add_thickbox' ) );
 
 		Strings::init( intval( @$_GET['tuja_competition'] ?: 0 ) );
 	}
