@@ -4,7 +4,7 @@
         "high_accuracy_timeout": 30
     },
     "uploads": {
-        "max_file_size": 5
+        "max_file_size": 20
     },
     "updates": {
         "config_poll_interval": 60
