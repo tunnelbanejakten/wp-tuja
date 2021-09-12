@@ -63,7 +63,6 @@ class ResponseDao extends AbstractDao
 
 	const TABLE_COLUMNS_FORMS = [
 		'id',
-		'random_id',
 		'competition_id',
 		'name',
 		'allow_multiple_responses_per_team',
