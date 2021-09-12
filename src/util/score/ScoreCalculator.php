@@ -4,6 +4,7 @@ namespace tuja\util\score;
 
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\Event;
+use tuja\data\model\Group;
 use tuja\data\store\EventDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PointsDao;
@@ -41,7 +42,7 @@ class ScoreCalculator {
 		$this->questions       = $question_dao->get_all_in_competition( $competition_id );
 	}
 
-	public static function score_combined( $response, AbstractQuestion $question, $override, ?Event $first_view_event ): ScoreQuestionResult {
+	public static function score_combined( $response, AbstractQuestion $question, $override, Group $group, ?Event $first_view_event ): ScoreQuestionResult {
 		$question_result = new ScoreQuestionResult();
 		$response_exists = isset( $response );
 		if ( $response_exists ) {
@@ -52,12 +53,13 @@ class ScoreCalculator {
 				$question_result->auto            = $auto_score_result->score;
 				$question_result->auto_confidence = $auto_score_result->confidence;
 
-				if ( $question->limit_time > 0 && isset( $first_view_event ) ) {
+				$time_limit_adjusted = $question->get_adjusted_time_limit( $group );
+				if ( $time_limit_adjusted > 0 && isset( $first_view_event ) ) {
 					$view_event_time = $first_view_event->created_at->getTimestamp();
 					$submit_time     = $response->created->getTimestamp();
 
 					$answer_time     = $submit_time - $view_event_time;
-					$max_answer_time = $question->limit_time + self::VIEW_EVENT_ERROR_MARGIN_SECONDS;
+					$max_answer_time = $time_limit_adjusted + self::VIEW_EVENT_ERROR_MARGIN_SECONDS;
 					if ( $answer_time > $max_answer_time ) {
 						$question_result->auto            = 0;
 						$question_result->auto_confidence = 1.0;
@@ -68,9 +70,9 @@ class ScoreCalculator {
 		}
 		$override_exists                    = isset( $override );
 		$override_set_after_latest_response = $response_exists &&
-		                                      isset( $override ) &&
-		                                      isset( $response->created ) &&
-		                                      $override->created > $response->created;
+											  isset( $override ) &&
+											  isset( $response->created ) &&
+											  $override->created > $response->created;
 		if ( $override_exists && ( ! $response_exists || $override_set_after_latest_response ) ) {
 			$question_result->override = $override->points;
 			$question_result->final    = $question_result->override ?: 0;
@@ -79,9 +81,9 @@ class ScoreCalculator {
 		return $question_result;
 	}
 
-	public function score( $group_id ): ScoreResult {
+	public function score( Group $group ): ScoreResult {
 		$result            = new ScoreResult();
-		$result->questions = $this->score_per_question( $group_id );
+		$result->questions = $this->score_per_question( $group );
 
 		$result->total_final = $this->calculate_total_final( $result );
 
@@ -91,22 +93,27 @@ class ScoreCalculator {
 	}
 
 	private function calculate_total_without_question_group_max_limits( ScoreResult $result ) {
-		return array_sum( array_map( function ( ScoreQuestionResult $question_result ) {
-			return $question_result->final;
-		}, $result->questions ) );
+		return array_sum(
+			array_map(
+				function ( ScoreQuestionResult $question_result ) {
+					return $question_result->final;
+				},
+				$result->questions
+			)
+		);
 	}
 
 	private function calculate_total_final( ScoreResult $result ) {
-		$sum_per_question_group = [];
+		$sum_per_question_group = array();
 
 		// Start by mapping a question id to a question group id, for easy access.
-		$question_group_map = [];
+		$question_group_map = array();
 		foreach ( $this->questions as $question ) {
 			$question_group_map[ $question->id ] = $question->question_group_id;
 		}
 
 		// ...and then map question group id to the maximum score per question group, for easy access.
-		$question_group_max = [];
+		$question_group_max = array();
 		foreach ( $this->question_groups as $question_group ) {
 			$question_group_max[ $question_group->id ] = $question_group->score_max ?: PHP_INT_MAX;
 		}
@@ -150,7 +157,8 @@ class ScoreCalculator {
 		return $first_event_per_question;
 	}
 
-	private function score_per_question( $group_id ) {
+	private function score_per_question( Group $group ) {
+		$group_id             = $group->id;
 		$points               = $this->points_dao->get_by_group( $group_id );
 		$points_overrides     = array_combine(
 			array_map(
@@ -173,6 +181,7 @@ class ScoreCalculator {
 				$response,
 				$question,
 				$override,
+				$group,
 				$first_view_event
 			);
 		}
@@ -181,13 +190,13 @@ class ScoreCalculator {
 	}
 
 	public function score_board() {
-		$result = [];
+		$result = array();
 		$groups = $this->group_dao->get_all_in_competition( $this->competition_id );
 		foreach ( $groups as $group ) {
 
-			$score_result = $this->score( $group->id );
+			$score_result = $this->score( $group );
 
-			$group_result = [];
+			$group_result = array();
 			// TODO: Return proper objects instead of associative arrays.
 			$group_result['group_id']   = $group->id;
 			$group_result['group_name'] = $group->name;

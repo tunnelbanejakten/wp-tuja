@@ -236,6 +236,7 @@ class GroupCategoryRules {
 			self::$config         = array_merge(
 				$bool_config( 'is_group_note_enabled', 'Meddelande till tävlingsledning' ),
 				$bool_config( 'is_crew', 'Funktionärer' ),
+				$int_config( 'time_limit_multiplier', 'Tidshandikappfaktor' ),
 				$date_range_config( 'create_registration_period', 'Anmäla lag' ),
 				$date_range_config( 'update_registration_period', 'Ändra lag' ),
 				$date_range_config( 'delete_registration_period', 'Avanmäla lag' ),
@@ -273,6 +274,10 @@ class GroupCategoryRules {
 		return array_map( function ( RuleConfig $config ) {
 			return $config->label();
 		}, self::get_config() );
+	}
+
+	function get_time_limit_multiplier(): int {
+		return $this->values['time_limit_multiplier'];
 	}
 
 	public function get_people_count_range( string ...$person_types ): array {
@@ -412,6 +417,7 @@ class GroupCategoryRules {
 
 			'is_group_note_enabled' => $rule_set->is_group_note_enabled(),
 			'is_crew'               => $rule_set->is_crew(),
+			'time_limit_multiplier' => $rule_set->get_time_limit_multiplier(),
 
 			'create_registration_period_start' => $rule_set->get_create_registration_period( $competition )->getStartDate()->getTimestamp(),
 			'create_registration_period_end'   => $rule_set->get_create_registration_period( $competition )->getEndDate()->getTimestamp(),

@@ -8,6 +8,10 @@ use tuja\data\model\Competition;
 
 class YoungParticipantsRuleSet extends RuleSet {
 
+	function get_time_limit_multiplier(): int {
+		return 100;
+	}
+
 	function get_group_size_range() {
 		return [ 4, 8 ];
 	}
