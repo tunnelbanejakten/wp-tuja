@@ -77,6 +77,7 @@ class Template {
 			'group_name'                             => $group->name,
 			'group_key'                              => $group->random_id,
 			'group_home_link'                        => GroupHomeInitiator::link( $group ),
+			'group_app_link'                         => AppUtils::group_link( $group ),
 			'group_edit_link'                        => GroupEditorInitiator::link( $group ),
 			'group_people_edit_link'                 => GroupPeopleEditorInitiator::link( $group ),
 			'group_signup_link'                      => GroupSignupInitiator::link( $group ),
