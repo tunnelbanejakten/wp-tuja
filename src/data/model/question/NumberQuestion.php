@@ -32,13 +32,18 @@ class NumberQuestion extends AbstractQuestion {
 		$this->correct_answer = $correct_answer;
 	}
 
+	private static function get_adjusted_answer_object( $answer_object ) {
+		if ( is_array( $answer_object ) ) {
+			return $answer_object[0];
+		}
+		return $answer_object;
+	}
+
 	/**
 	 * Grades an answer and returns the score for the answer.
 	 */
-	function score( $answer_object ): AutoScoreResult {
-		if ( is_array( $answer_object ) ) {
-			$answer_object = $answer_object[0];
-		}
+	function score( $original_answer_object ): AutoScoreResult {
+		$answer_object = self::get_adjusted_answer_object( $original_answer_object );
 		if ( ! is_numeric( $answer_object ) ) {
 			return new AutoScoreResult( 0, 1.0 );
 		}
@@ -91,7 +96,8 @@ class NumberQuestion extends AbstractQuestion {
 		return number_format_i18n( $this->correct_answer );
 	}
 
-	function get_submitted_answer_html( $answer_object, Group $group ) {
+	function get_submitted_answer_html( $original_answer_object, Group $group ) {
+		$answer_object = self::get_adjusted_answer_object( $original_answer_object );
 		if ( ! isset( $answer_object ) || $answer_object == '' ) {
 			return AbstractQuestion::RESPONSE_MISSING_HTML;
 		}

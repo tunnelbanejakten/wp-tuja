@@ -346,7 +346,7 @@ class ReviewComponent {
 					$points                = @$current_points[ $question_id . '__' . $group_id ] ?: null;
 					$response              = isset( $response_entry ) ? $response_entry['response'] : null;
 					$first_view_event      = @$view_question_events[ $question_id . '__' . $group_id ];
-					$score_question_result = ScoreCalculator::score_combined( $response, $question, $points, $first_view_event );
+					$score_question_result = ScoreCalculator::score_combined( $response, $question, $points, $group, $first_view_event );
 					if ( isset( $response ) ) {
 						$response_ids[] = $response->id;
 						$response_html  = $question->get_submitted_answer_html( $response->submitted_answer, $groups_map[ $response->group_id ] );

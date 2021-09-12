@@ -10,8 +10,6 @@ use tuja\data\model\Marker;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\QuestionGroup;
 use tuja\data\store\EventDao;
-use tuja\data\store\FormDao;
-use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\MarkerDao;
 use tuja\data\store\QuestionDao;
@@ -184,7 +182,8 @@ class FormUtils {
 			}
 		}
 
-		$is_view_event_required = $question->limit_time > 0;
+		$time_limit_adjusted    = $question->get_adjusted_time_limit( $this->group );
+		$is_view_event_required = $time_limit_adjusted > 0;
 		$response['view_event'] = array( 'is_required' => $is_view_event_required );
 		if ( $is_view_event_required ) {
 			$all_events = $all_group_events;
@@ -199,12 +198,12 @@ class FormUtils {
 
 			$is_view_event_found                = count( $events ) > 0;
 			$response['view_event']['is_found'] = $is_view_event_found;
-			$response['limit_time_max']         = $question->limit_time;
+			$response['limit_time_max']         = $time_limit_adjusted;
 			if ( $is_view_event_found ) {
 				$view_event                       = current( $events );
 				$time_passed                      = ( new DateTime( 'now' ) )->getTimestamp() - $view_event->created_at->getTimestamp();
 				$time_remaining_error_margin      = ScoreCalculator::VIEW_EVENT_ERROR_MARGIN_SECONDS / 2; // To account for network delays and such.
-				$time_remaining                   = $question->limit_time - $time_passed + $time_remaining_error_margin;
+				$time_remaining                   = $time_limit_adjusted - $time_passed + $time_remaining_error_margin;
 				$response['limit_time_remaining'] = max( 0, $time_remaining ); // No point in returing negative values.
 				$response['config']               = $question->get_public_properties();
 			} else {

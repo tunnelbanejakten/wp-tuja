@@ -39,6 +39,8 @@ abstract class RuleSet {
 		return $period->start < $now && $now < $period->end;
 	}
 
+	abstract function get_time_limit_multiplier(): int;
+
 	abstract function get_group_size_range();
 
 	abstract function is_group_leader_required(): bool;
