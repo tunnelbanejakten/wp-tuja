@@ -138,7 +138,7 @@ abstract class AbstractQuestion {
 	}
 	public function get_adjusted_time_limit( Group $group ) {
 		$time_limit_multiplier = $group->get_category()->get_rules()->get_time_limit_multiplier();
-		$time_limit_adjusted   = round( $this->limit_time * 0.01 * ( isset( $time_limit_multiplier ) && $time_limit_multiplier > 0 ? $time_limit_multiplier : 100 ) );
+		$time_limit_adjusted   = round( $this->limit_time * 0.01 * $time_limit_multiplier );
 		return $time_limit_adjusted;
 	}
 

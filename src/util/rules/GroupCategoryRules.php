@@ -277,7 +277,8 @@ class GroupCategoryRules {
 	}
 
 	function get_time_limit_multiplier(): int {
-		return $this->values['time_limit_multiplier'];
+		$value = $this->values['time_limit_multiplier'];
+		return is_int( $value ) && $value > 0 ? $value : 100;
 	}
 
 	public function get_people_count_range( string ...$person_types ): array {
