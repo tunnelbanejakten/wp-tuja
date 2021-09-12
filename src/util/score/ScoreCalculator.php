@@ -139,7 +139,7 @@ class ScoreCalculator {
 	private function get_view_question_events_by_question( $group_id ) {
 		$all_view_question_events = array_filter(
 			$this->event_dao->get_by_group( $group_id ),
-			function ( Event $event ) use ( $question ) {
+			function ( Event $event ) {
 				return $event->event_name === Event::EVENT_VIEW &&
 					$event->object_type === Event::OBJECT_TYPE_QUESTION;
 			}
