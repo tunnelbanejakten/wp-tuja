@@ -220,6 +220,10 @@ class Person {
 		return $this->is_attending;
 	}
 
+	public function is_adult(): bool {
+		return $this->is_adult_supervisor() || ( isset( $this->age ) && $this->age >= 18 );
+	}
+
 	public function is_adult_supervisor(): bool {
 		return ! $this->is_competing && $this->is_attending;
 	}

@@ -61,10 +61,10 @@ class RegistrationEvaluator {
 
 	private function rule_adult_supervision( Group $group, array $people ) {
 		$adults             = array_filter( $people, function ( Person $person ) {
-			return isset( $person->age ) && $person->age >= 18;
+			return $person->is_adult();
 		} );
 		$adult_participants = array_filter( $people, function ( Person $person ) {
-			return $person->is_competing() && isset( $person->age ) && $person->age >= 18;
+			return $person->is_adult() && $person->is_competing();
 		} );
 
 		$count_adults             = count( $adults );
@@ -77,7 +77,7 @@ class RegistrationEvaluator {
 					new RuleResult(
 						'Vuxen som följer med',
 						RuleResult::BLOCKER,
-						'Vuxna som följer med ska inte anges som lagmedlemmar.'
+						'Vuxna som bara följer med ska inte anges som lagmedlemmar.'
 					)
 				];
 			}
