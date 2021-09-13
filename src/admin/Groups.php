@@ -233,6 +233,12 @@ class Groups {
 				function ( $group_data ) {
 					return $group_data['registration_blocker_count'] > 0;
 				}
+			],
+			[
+				'Dölj avanmälda',
+				function ( $group_data ) {
+					return $group_data['model']->get_status() !== Group::STATUS_DELETED;
+				}
 			]
 		];
 		$filter_index   = intval( @$_GET['tuja_group_filter'] ) ?: 0;
