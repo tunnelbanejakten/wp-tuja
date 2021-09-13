@@ -396,3 +396,10 @@ div.tuja-ruleset-column label {
 div.tuja-ruleset-column:first-child {
     white-space: nowrap;
 }
+span.tuja-group-city {
+    display: inline-block;
+    text-overflow: ellipsis;
+    max-width: 7em;
+    overflow: hidden;
+    white-space: nowrap;
+}

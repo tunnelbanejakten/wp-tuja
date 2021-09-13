@@ -12,6 +12,7 @@ AdminUtils::printTopMenu( $competition );
             <th rowspan="2" valign="top">Namn</th>
             <th rowspan="2" valign="top">Ålder</th>
             <th rowspan="2" valign="top">Tävlingsklass</th>
+            <th rowspan="2" valign="top">Ort</th>
             <th rowspan="2" valign="top">Karta</th>
             <th colspan="3" valign="top">Antal</th>
             <th rowspan="2" valign="top">Avgift</th>
@@ -50,6 +51,7 @@ AdminUtils::printTopMenu( $competition );
                         </button>
                     </div>
                 </td>
+				<td></td>
                 <td>
 					<?php
 					// Print map selector
@@ -135,6 +137,8 @@ AdminUtils::printTopMenu( $competition );
 					$label );
 			}
 			printf( '<td>%s</td>', $group_data['category'] ? $group_data['category']->name : '' );
+
+			printf( '<td><span class="tuja-group-city" title="%s">%s</span></td>', $group->city, $group->city);
 
 			printf( '<td>%s</td>', isset($group->map_id) ? $map_map[ $group->map_id ] : '' );
 
