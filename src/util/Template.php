@@ -73,11 +73,40 @@ class Template {
 	public static function group_parameters( Group $group ) {
 		$evaluation_result = $group->evaluate_registration();
 
-		return [
+		$group_map_name        = 'Ni har ännu inte tilldelats en karta. Kontakta Kundtjänst.';
+		$group_map_start_coord = '?';
+		$group_map_start_label = '?';
+		if ( isset( $group->map_id ) ) {
+			// Get map name.
+			$map_dao        = new MapDao();
+			$map            = $map_dao->get( $group->map_id );
+			$group_map_name = $map->name;
+
+			// Get start location.
+			$marker_dao   = new MarkerDao();
+			$markers      = $marker_dao->get_all_on_map( $group->map_id );
+			$start_marker = current(
+				array_filter(
+					$markers,
+					function( Marker $marker ) {
+						return $marker->type === Marker::MARKER_TYPE_START;
+					}
+				)
+			);
+			if ( $start_marker !== false ) {
+				$group_map_start_coord = sprintf( '%s, %s', $start_marker->gps_coord_lat, $start_marker->gps_coord_long );
+				$group_map_start_label = $start_marker->name;
+			}
+		}
+
+		return array(
 			'group_name'                             => $group->name,
 			'group_key'                              => $group->random_id,
 			'group_home_link'                        => GroupHomeInitiator::link( $group ),
 			'group_app_link'                         => AppUtils::group_link( $group ),
+			'group_map_name'                         => $group_map_name,
+			'group_map_start_coord'                  => $group_map_start_coord,
+			'group_map_start_label'                  => $group_map_start_label,
 			'group_edit_link'                        => GroupEditorInitiator::link( $group ),
 			'group_people_edit_link'                 => GroupPeopleEditorInitiator::link( $group ),
 			'group_signup_link'                      => GroupSignupInitiator::link( $group ),
@@ -88,12 +117,14 @@ class Template {
 			'group_registration_evaluation_warnings' => self::group_parameter_registration_issues(
 				'template.registration_evaluation.warnings.label',
 				$evaluation_result,
-				RuleResult::WARNING ),
+				RuleResult::WARNING
+			),
 			'group_registration_evaluation_errors'   => self::group_parameter_registration_issues(
 				'template.registration_evaluation.errors.label',
 				$evaluation_result,
-				RuleResult::BLOCKER )
-		];
+				RuleResult::BLOCKER
+			),
+		);
 	}
 
 	public static function competition_parameters( Competition $competition ) {
