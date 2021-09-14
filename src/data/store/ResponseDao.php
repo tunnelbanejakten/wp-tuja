@@ -12,6 +12,7 @@ class ResponseDao extends AbstractDao
 	const QUESTION_FILTER_IMAGES = 'images';
 	const QUESTION_FILTER_UNREVIEWED_ALL = 'unreviewed_all';
 	const QUESTION_FILTER_UNREVIEWED_IMAGES = 'unreviewed_images';
+	const QUESTION_FILTER_UNREVIEWED_CHECKPOINT = 'unreviewed_checkpoints';
 	const QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE = 'low_confidence_auto_score';
 
 	const QUESTION_FILTERS = [
@@ -39,6 +40,14 @@ class ResponseDao extends AbstractDao
 			'sql_from'  => 'wp_tuja_form_question_response AS r INNER JOIN wp_tuja_form_question AS q ON q.id = r.form_question_id',
 			'sql_where' => [
 				'q.type = "' . QuestionDao::QUESTION_TYPE_IMAGES . '"',
+				'r.id IN (SELECT MAX(latest.id) FROM wp_tuja_form_question_response AS latest WHERE latest.team_id = r.team_id AND latest.form_question_id = r.form_question_id)',
+				'r.is_reviewed = FALSE'
+			]
+		],
+		self::QUESTION_FILTER_UNREVIEWED_CHECKPOINT         => [
+			'sql_from'  => 'wp_tuja_form_question_response AS r INNER JOIN wp_tuja_form_question AS q ON q.id = r.form_question_id',
+			'sql_where' => [
+				'EXISTS (SELECT m.id FROM wp_tuja_marker AS m WHERE m.link_form_question_id = q.id OR m.link_question_group_id = q.question_group_id)', // TODO: Doesn't account for whole forms linked to a marker, only questions and question groups.
 				'r.id IN (SELECT MAX(latest.id) FROM wp_tuja_form_question_response AS latest WHERE latest.team_id = r.team_id AND latest.form_question_id = r.form_question_id)',
 				'r.is_reviewed = FALSE'
 			]

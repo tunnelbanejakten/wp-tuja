@@ -9,7 +9,8 @@ use tuja\data\store\ResponseDao;
 $question_filters = [
 	ResponseDao::QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE => 'alla svar där auto-rättningen är osäker',
 	ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL            => 'alla svar som inte kontrollerats',
-	ResponseDao::QUESTION_FILTER_UNREVIEWED_IMAGES         => 'alla bilder som inte kontrollerats'
+	ResponseDao::QUESTION_FILTER_UNREVIEWED_IMAGES         => 'alla bilder som inte kontrollerats',
+	ResponseDao::QUESTION_FILTER_UNREVIEWED_CHECKPOINT     => 'alla kontroller som inte kontrollerats'
 ];
 
 ?>
