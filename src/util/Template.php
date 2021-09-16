@@ -16,6 +16,9 @@ use tuja\frontend\router\PersonEditorInitiator;
 use tuja\util\formattedtext\FormattedText;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
+use tuja\data\model\Marker;
+use tuja\data\store\MarkerDao;
+use tuja\data\store\MapDao;
 use tuja\util\rules\RuleResult;
 
 class Template {
