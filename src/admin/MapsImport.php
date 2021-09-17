@@ -167,7 +167,7 @@ class MapsImport {
 			foreach ( $matches[0] as $match ) {
 				preg_match( '|.*<name>(.*?)\s(.*?)</name>.*<coordinates>(.*?)</coordinates>.*|', $match, $placemark_data );
 				list(, $map_name, $marker_name, $coordinates) = array_map( 'trim', $placemark_data );
-				list($lat, $long)                             = explode( ',', $coordinates );
+				list($long, $lat)                             = explode( ',', $coordinates );
 				$objects[]                                    = array(
 					'map_name'    => $map_name,
 					'marker_name' => $marker_name,
