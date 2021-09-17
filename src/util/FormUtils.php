@@ -115,6 +115,10 @@ class FormUtils {
 		return array(
 			'id'            => intval( $question_group->id ),
 			'name'          => $question_group->text,
+
+			// Parse Markdown texts into HTML.
+			'description'   => isset( $question_group->text_description ) ? Template::string( $question_group->text_description )->render( array(), true ) : null,
+
 			'is_marker_set' => $this->is_marker_set( 'link_question_group_id', $question_group->id ),
 			'questions'     => $questions_list,
 		);

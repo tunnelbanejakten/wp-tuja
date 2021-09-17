@@ -19,6 +19,8 @@ class QuestionGroup {
 
 	public $text = '';
 
+	public $text_description = '';
+
 	public $sort_order = '';
 
 	public $score_max = 0;
@@ -27,7 +29,10 @@ class QuestionGroup {
 
 	public function validate() {
 		if ( strlen( $this->text ) > 65000 ) {
-			throw new ValidationException( 'text', 'Frågegruppens text är för lång.' );
+			throw new ValidationException( 'text', 'Frågegruppens rubrik är för lång.' );
+		}
+		if ( strlen( $this->text_description ) > 65000 ) {
+			throw new ValidationException( 'text', 'Frågegruppens beskrivning är för lång.' );
 		}
 		if ( isset( $this->score_max ) && $this->score_max < 0 ) {
 			throw new ValidationException( 'score_max', 'Maximal poäng måste vara mer än 0.' );

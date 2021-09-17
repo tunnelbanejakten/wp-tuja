@@ -24,6 +24,11 @@
       "title": "Rubrik",
       "type": "string",
       "format": "text"
+    },
+    "text_description": {
+      "title": "Beskrivning",
+      "type": "string",
+      "format": "textarea"
     }
   }
 }
