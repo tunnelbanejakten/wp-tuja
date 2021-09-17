@@ -38,12 +38,14 @@ class QuestionGroupDao extends AbstractDao {
 				'random_id'  => $this->id->random_string(),
 				'form_id'    => $group->form_id,
 				'text'       => $group->text,
+				'text_description'       => $group->text_description,
 				'sort_order' => $group->sort_order,
 				'config'     => self::get_config_string( $group )
 			),
 			array(
 				'%s',
 				'%d',
+				'%s',
 				'%s',
 				'%d',
 				'%s'
@@ -65,6 +67,7 @@ class QuestionGroupDao extends AbstractDao {
 		return $this->wpdb->update( $this->table,
 			array(
 				'text'       => $group->text,
+				'text_description'       => $group->text_description,
 				'sort_order' => $group->sort_order,
 				'config'     => self::get_config_string( $group )
 			),
@@ -115,6 +118,7 @@ class QuestionGroupDao extends AbstractDao {
 		$q->form_id    = $result->form_id;
 		$q->random_id  = $result->random_id;
 		$q->text       = $result->text;
+		$q->text_description       = $result->text_description;
 		$q->sort_order = $result->sort_order;
 		self::set_config( $q, $result->config );
 

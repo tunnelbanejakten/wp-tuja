@@ -153,6 +153,7 @@ abstract class Plugin {
 				random_id  VARCHAR(20)  NOT NULL,
 				form_id    INTEGER      NOT NULL,
 				text       TEXT,
+				text_description   TEXT,
 				sort_order SMALLINT,
 				config     TEXT,
 				PRIMARY KEY (id)
