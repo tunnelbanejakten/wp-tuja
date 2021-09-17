@@ -7,9 +7,11 @@ AdminUtils::printTopMenu( $competition );
 
 ?>
 
- <h3>Formulär <?= $this->form->name ?> - Grupp "<?= $this->question_group->text ?: $this->question_group->id; ?>"</h3>
+<h3>Formulär <?= $this->form->name ?> - Grupp "<?= $this->question_group->text ?: $this->question_group->id; ?>"</h3>
 
-<a id="tuja_form_questions_back" href="<?php echo admin_url('admin.php?page=tuja&tuja_view=Form&tuja_competition=' . $competition->id . '&tuja_form=' . $this->question_group->form_id); ?>">« Tillbaka till grupp</a>
+<?php
+printf( '<p><a id="tuja_form_questions_back" href="%s">« Tillbaka till grupp</a></p>', $back_url );
+?>
 
 <form method="post">
     <p><strong>Frågor</strong></p>

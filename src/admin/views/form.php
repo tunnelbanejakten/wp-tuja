@@ -39,7 +39,14 @@ AdminUtils::printTopMenu( $competition );
 		<button type="submit" name="tuja_action" class="button button-primary" value="question_groups_update">Spara frågegrupper</button>
 		<button type="submit" name="tuja_action" class="button" value="question_group_create">Ny frågegrupp</button>
 		
-		<?php foreach ($question_groups as $question_group): ?>
+		<?php
+		foreach ($question_groups as $question_group) {
+			$link = add_query_arg( array(
+				'tuja_competition' => $this->competition->id,
+				'tuja_view'        => 'FormQuestions',
+				'tuja_question_group'        => $question_group->id
+			) );
+		?>
 			<div class="tuja-admin-question">
 				<div class="tuja-admin-question-properties">
 					<?php
@@ -54,9 +61,11 @@ AdminUtils::printTopMenu( $competition );
 				</div>
 				
 				<button type="submit" class="button" name="tuja_action" onclick="return confirm('Är du säker?');" value="<?php echo self::ACTION_NAME_DELETE_PREFIX . $question_group->id; ?>">Ta bort</button>
-				<a href="<?php echo admin_url('admin.php?page=tuja&tuja_view=FormQuestions&tuja_question_group=' . $question_group->id); ?>" class="button button-primary">Visa frågor</a>
+				<a href="<?= $link ?>" class="button button-primary">Visa frågor</a>
 			</div>
-		<?php endforeach; ?>
+		<?php
+		}
+		?>
 		
 		<?php ob_end_flush(); ?>
 	<?php endif; ?>
