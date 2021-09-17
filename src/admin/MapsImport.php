@@ -47,7 +47,7 @@ class MapsImport {
 		$this->existing_markers = $this->db_marker->get_all_in_competition( $this->competition->id );
 	}
 
-
+	// TODO: Make this function do something, or delete it.
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {
 			return;
@@ -162,6 +162,7 @@ class MapsImport {
 			$data    = $_POST['tuja_maps_import_raw'];
 			$objects = array();
 
+			// TODO: Extract parsing to helper function.
 			$match_count = preg_match_all( '|<Placemark>.*?</Placemark>|', str_replace( "\n", '', $data ), $matches );
 			foreach ( $matches[0] as $match ) {
 				preg_match( '|.*<name>(.*?)\s(.*?)</name>.*<coordinates>(.*?)</coordinates>.*|', $match, $placemark_data );
