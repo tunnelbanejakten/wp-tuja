@@ -272,6 +272,10 @@ class MapsImport {
 			}
 		}
 
+		$back_url = add_query_arg( array(
+			'tuja_competition' => $this->competition->id,
+			'tuja_view'        => 'Maps'
+		) );
 		include 'views/maps-import.php';
 	}
 }

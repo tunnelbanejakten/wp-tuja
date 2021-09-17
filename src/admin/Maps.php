@@ -150,6 +150,11 @@ class Maps {
 
 		$questions = $this->get_marker_questions();
 
+		$import_url = add_query_arg( array(
+			'tuja_competition' => $this->competition->id,
+			'tuja_view'        => 'MapsImport'
+		) );
+	
 		include 'views/maps.php';
 	}
 }

@@ -171,6 +171,12 @@ class FormQuestions {
 		$competition    = $db_competition->get($this->form->competition_id);
 		$questions = $this->db_question->get_all_in_group($this->question_group->id);
 
+		$back_url = add_query_arg( array(
+			'tuja_competition' => $this->competition->id,
+			'tuja_form'        => $this->question_group->form_id,
+			'tuja_view'        => 'Form'
+		) );
+
 		include('views/form-questions.php');
 	}
 

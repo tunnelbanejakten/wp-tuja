@@ -11,6 +11,12 @@ AdminUtils::printTopMenu( $competition );
 ?>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
+	<h3>Importera</h3>
+	<?php
+	printf( '<p><a href="%s">Importera kartmarkörer</a></p>', $import_url );
+	?>
+
+	<h3>Alla markörer</h3>
 	<table>
 		<thead>
 		<tr>
@@ -26,7 +32,7 @@ AdminUtils::printTopMenu( $competition );
 			<?php
 			foreach ( $questions as $question ) {
 				printf(
-					'<tr><td>%s</td>%s</tr>',
+					'<tr><td><span class="tuja-maps-question">%s</span></td>%s</tr>',
 					$question->text,
 					join(
 						array_map(
