@@ -403,3 +403,10 @@ span.tuja-group-city {
     overflow: hidden;
     white-space: nowrap;
 }
+span.tuja-maps-question {
+    display: inline-block;
+    text-overflow: ellipsis;
+    max-width: 10em;
+    overflow: hidden;
+    white-space: nowrap;
+}

@@ -18,7 +18,7 @@ use tuja\data\store\QuestionDao;
 use function PHPUnit\Framework\matches;
 
 class MapsImport {
-	const MAGIC_NUMBER_NO_LINK = -42;
+	const MAGIC_NUMBER_NO_LINKING = -42;
 
 	private $competition;
 	private $db_map;
@@ -72,9 +72,9 @@ class MapsImport {
 		$question_dao = new QuestionDao();
 		$questions    = $question_dao->get_all_in_competition( $this->competition->id );
 
-		$pseudo_question_start_position = new TextQuestion( '(Koppla inte)', null, self::MAGIC_NUMBER_NO_LINK );
+		$pseudo_question_no_linking = new TextQuestion( '(Koppla inte)', null, self::MAGIC_NUMBER_NO_LINKING );
 
-		return array_merge( array( $pseudo_question_start_position ), $questions );
+		return array_merge( array( $pseudo_question_no_linking ), $questions );
 	}
 
 	private function get_or_create_map( $map_name ) {
@@ -113,9 +113,9 @@ class MapsImport {
 				function ( Marker $marker ) use ( $map_id, $name, $lat, $long ) {
 					$is_map_match   = $marker->map_id == $map_id;
 					$is_name_match  = $marker->name == $name;
+					$is_type_match  = $marker->type == Marker::MARKER_TYPE_TASK;
 					$is_coord_match = $marker->gps_coord_lat === $lat && $marker->gps_coord_long === $long;
-					// printf( '[%s, %s, %s => %s && (%s || %s)]<br>', $marker->name, $marker->gps_coord_lat, $marker->gps_coord_long, intval( $is_map_match ), intval( $is_name_match ), intval( $is_coord_match ) );
-					return $is_map_match && ( $is_name_match || $is_coord_match );
+					return $is_map_match && $is_type_match && ( $is_name_match || $is_coord_match );
 				}
 			)
 		);
@@ -175,17 +175,7 @@ class MapsImport {
 				);
 			}
 
-			$maps_defined = array_unique(
-				array_map(
-					function ( $object ) {
-						return $object['map_name'];
-					},
-					$objects
-				)
-			);
-			sort( $maps_defined );
-
-			// Detailed map list
+			// Map list.
 			$map_labels = array_reduce(
 				$objects,
 				function ( $res, $object ) {
@@ -200,18 +190,7 @@ class MapsImport {
 			);
 			ksort( $map_labels );
 
-			// Simple marker list
-			$markers_defined = array_unique(
-				array_map(
-					function ( $object ) {
-						return $object['marker_name'];
-					},
-					$objects
-				)
-			);
-			sort( $markers_defined );
-
-			// Detailed marker list
+			// Marker list.
 			$markers_labels = array_reduce(
 				$objects,
 				function ( $res, $object ) {
@@ -226,14 +205,10 @@ class MapsImport {
 			);
 			ksort( $markers_labels );
 
-			$questions = $this->get_marker_questions();
-
-			$existing_maps = $this->existing_maps;
-
 			if ( $this->is_save_mode() ) {
 				foreach ( array_keys( $markers_labels ) as $marker ) {
 					$target_question_id = intval( $_POST[ 'tuja_mapsimport_markerlabel__' . crc32( $marker ) . '__question' ] );
-					if ( $target_question_id !== self::MAGIC_NUMBER_NO_LINK && $target_question_id > 0 ) {
+					if ( $target_question_id !== self::MAGIC_NUMBER_NO_LINKING && $target_question_id > 0 ) {
 						foreach ( $objects as $object ) {
 							if ( $object['marker_name'] == $marker ) {
 								$message = sprintf(
@@ -272,10 +247,17 @@ class MapsImport {
 			}
 		}
 
-		$back_url = add_query_arg( array(
-			'tuja_competition' => $this->competition->id,
-			'tuja_view'        => 'Maps'
-		) );
+		$questions = $this->get_marker_questions();
+
+		$existing_maps = $this->existing_maps;
+
+		$back_url = add_query_arg(
+			array(
+				'tuja_competition' => $this->competition->id,
+				'tuja_view'        => 'Maps',
+			)
+		);
+
 		include 'views/maps-import.php';
 	}
 }
