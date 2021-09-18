@@ -10,7 +10,8 @@ use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
-use tuja\frontend\Form;
+use tuja\frontend\FormUserChanges;
+use tuja\frontend\Form as FrontendForm;
 use tuja\util\FormUtils;
 use WP_REST_Request;
 
@@ -75,7 +76,6 @@ class Questions extends AbstractRestEndpoint {
 				$available_forms
 			)
 		);
-
 	}
 
 	public static function post_answer( WP_REST_Request $request ) {
@@ -103,11 +103,14 @@ class Questions extends AbstractRestEndpoint {
 		$form     = $form_dao->get( $question_group->form_id );
 		$form_key = $form->random_id;
 
-		$form_handler = new Form( 'url', $group->random_id, $form_key );
+		$form_handler = new FrontendForm( 'url', $group->random_id, $form_key );
 		$errors       = $form_handler->update_answers( $group->id );
 
 		if ( count( $errors ) === 0 ) {
-			return self::create_response( 204 );
+			$response_dao = new ResponseDao();
+			$responses    = $response_dao->get_latest_by_group( $group->id );
+			$form_utils   = new FormUtils( $group );
+			return $form_utils->get_question_response( $question, array(), $responses );
 		} else {
 			return self::create_response( 400 );
 		}
