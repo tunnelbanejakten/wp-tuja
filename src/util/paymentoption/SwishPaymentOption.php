@@ -17,10 +17,15 @@ class SwishPaymentOption implements PaymentOption {
 	private $amount_readonly;
 	private $generate_qr_code;
 
-	function render( Group $group, int $fee ): string {
-		$html_sections = [];
+	function get_payment_reference( Group $group ): string {
+		return substr( Template::string( $this->message_template )->render( Template::group_parameters( $group ) ), 0, 50 );
+	}
 
-		$message = substr( Template::string( $this->message_template )->render( Template::group_parameters( $group ) ), 0, 50 );
+	function render( Group $group, int $fee ): string {
+		$html_sections = array();
+
+		$message = $this->get_payment_reference( $group );
+
 		if ( $this->description ) {
 			$html_sections[] = sprintf( '<p>%s</p>', $this->description );
 		}
@@ -32,7 +37,8 @@ class SwishPaymentOption implements PaymentOption {
 					$fee,
 					$message,
 					! $this->amount_readonly,
-					! $this->message_readonly );
+					! $this->message_readonly
+				);
 				$html_sections[]         = sprintf( '<div class="tuja-swish-qr-code-wrapper"><img class="tuja-swish-qr-code" src="%s" alt="QR-kod som kan scannas av Swish-appen"></div>', $swish_qr_code_image_url );
 			} catch ( Exception $e ) {
 			}

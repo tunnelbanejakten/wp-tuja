@@ -2,15 +2,15 @@
 
 namespace tuja\admin\reportgenerators;
 
-
 use DateTime;
 use tuja\data\model\Person;
 use tuja\data\store\AbstractDao;
 use tuja\data\store\GroupDao;
 use tuja\data\model\Group;
 use tuja\data\store\PersonDao;
+use tuja\util\paymentoption\PaymentOption;
 
-class ReportPayments extends AbstractReport {
+class ReportPayments extends AbstractListReport {
 	private $group_dao;
 
 	public function __construct() {
@@ -29,30 +29,40 @@ class ReportPayments extends AbstractReport {
 			$date
 		);
 
-		return array_reduce( $groups, function ( array $acc, Group $group ) use ( $date, $fee_calculator ) {
-			$people = ( new PersonDao() )->get_all_in_group( $group->id, false, $date );
+		return array_reduce(
+			$groups,
+			function ( array $acc, Group $group ) use ( $date, $fee_calculator ) {
+				$amount = $fee_calculator->calculate_fee( $group, $date ?: new DateTime() );
+				if ( $amount > 0 ) {
 
-			$amount = $fee_calculator->calculate_fee( $group, $date ?: new DateTime() );
-			if ( $amount > 0 ) {
-				$acc[] = [
-					'name'            => $group->name,
-					'reference'       => 'TSL20 ' . $group->name,
-					'count_competing' => $group->count_competing,
-					'count_follower'  => $group->count_follower,
-					'amount'          => $amount,
-					'people'          => array_map( function ( Person $person ) {
-						return $person->name;
-					}, $people )
-				];
-			}
+					$references = array_reduce(
+						$this->competition->payment_options,
+						function ( $refs, PaymentOption $payment_option ) use ( $group ) {
+							$column_name          = 'reference_' . strtolower( ( new \ReflectionClass( $payment_option ) )->getShortName() );
+							$refs[ $column_name ] = $payment_option->get_payment_reference( $group );
+							return $refs;
+						},
+						array()
+					);
 
-			return $acc;
-
-		}, [] );
+					$acc[] = array_merge(
+						array(
+							'name'            => $group->name,
+							'count_competing' => $group->count_competing,
+							'count_follower'  => $group->count_follower,
+							'amount'          => $amount,
+						),
+						$references
+					);
+				}
+				return $acc;
+			},
+			array()
+		);
 	}
 
 	function output_html( array $rows ) {
 		$groups = $rows;
-		include( 'views/report-payments.php' );
+		include 'views/report-payments.php';
 	}
 }
