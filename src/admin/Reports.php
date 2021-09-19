@@ -4,6 +4,13 @@ namespace tuja\admin;
 
 
 use tuja\data\store\CompetitionDao;
+use tuja\admin\reportgenerators\ReportCheckInOut;
+use tuja\admin\reportgenerators\ReportFoodPreferences;
+use tuja\admin\reportgenerators\ReportGroupScore;
+use tuja\admin\reportgenerators\ReportPayments;
+use tuja\admin\reportgenerators\ReportNotes;
+use tuja\admin\reportgenerators\ReportPeople;
+use tuja\admin\reportgenerators\ReportQuestionFiltering;
 
 class Reports {
 	private $competition;
@@ -35,7 +42,7 @@ class Reports {
 
 	private function report_config( $class_name, $name ) {
 		$short_name     = substr( $class_name, strrpos( $class_name, '\\' ) + 1 );
-		$config_file = __DIR__ . '/' . $short_name . '.config.json';
+		$config_file = __DIR__ . '/reportgenerators/' . $short_name . '.config.json';
 		$options_schema = file_exists( $config_file ) ? file_get_contents( $config_file ) : null;
 		return [
 			'name'           => $name,
@@ -62,6 +69,7 @@ class Reports {
 			$this->report_config( ReportGroupScore::class, 'Poängformulär' ),
 			$this->report_config( ReportPayments::class, 'Förväntade inbetalningar' ),
 			$this->report_config( ReportNotes::class, 'Meddelanden till tävlingsledningen' ),
+			$this->report_config( ReportPeople::class, 'Deltagare och funktionärer' ),
 			$this->report_config( ReportQuestionFiltering::class, 'get_filtered_questions' )
 		];
 

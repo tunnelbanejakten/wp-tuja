@@ -101,12 +101,17 @@ class Admin extends Plugin {
 	}
 
 	private function render_view( $view_name ) {
-		$view = 'tuja\\admin\\' . sanitize_text_field( $view_name );
-		if ( class_exists( $view ) ) {
-			$view = new $view();
-
-			if ( method_exists( $view, 'output' ) ) {
-				$view->output();
+		$possible_class_names = array(
+			'tuja\\admin\\' . sanitize_text_field( $view_name ),
+			'tuja\\admin\\reportgenerators\\' . sanitize_text_field( $view_name )
+		);
+		foreach($possible_class_names as $view) {
+			if ( class_exists( $view ) ) {
+				$view = new $view();
+	
+				if ( method_exists( $view, 'output' ) ) {
+					$view->output();
+				}
 			}
 		}
 	}

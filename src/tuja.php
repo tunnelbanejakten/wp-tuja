@@ -423,6 +423,7 @@ abstract class Plugin {
 			self::PATH . '/util/' . $classname . '.php',
 			self::PATH . '/view/' . $classname . '.php',
 			self::PATH . '/admin/' . $classname . '.php',
+			self::PATH . '/admin/reportgenerators/' . $classname . '.php',
 			self::PATH . '/frontend/' . $classname . '.php',
 			self::PATH . '/frontend/router/' . $classname . '.php',
 			self::PATH . '/api/' . $classname . '.php',
