@@ -54,7 +54,8 @@ class ReportNotes extends AbstractReport {
 					'label' => $label,
 					'count' => count( array_filter( $rows, function ( $row ) use ( $keywords ) {
 						foreach ( $keywords as $keyword ) {
-							if ( strpos( strtolower( $row['value'] ), strtolower( $keyword ) ) !== false ) {
+							$value = @$row['value'] ?? '';
+							if ( strpos( strtolower( $value ), strtolower( $keyword ) ) !== false ) {
 								return true;
 							}
 						}

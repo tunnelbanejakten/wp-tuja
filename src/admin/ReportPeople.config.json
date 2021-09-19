@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "properties": {
+    "tuja_reports_people_filter": {
+      "title": "Personer",
+      "type": "string",
+      "format": "radio",
+      "enum": [
+        "leaders_supervisors_admins",
+        "all_competing",
+        "everyone"
+      ]
+    },
+    "tuja_reports_people_properties": {
+      "title": "Kolumner",
+      "type": "array",
+      "uniqueItems": true,
+      "format": "checkbox",
+      "default": ["name"],
+      "items": {
+        "type": "string",
+        "enum": [
+          "name",
+          "pno",
+          "email",
+          "phone"
+        ]
+      }
+    }
+  }
+}
