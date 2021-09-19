@@ -7,7 +7,7 @@ use tuja\data\model\Person;
 use tuja\data\store\GroupDao;
 use tuja\data\store\PersonDao;
 
-class ReportPeople extends AbstractReport {
+class ReportPeople extends AbstractListReport {
 	private $person_dao;
 	private $groups_dao;
 

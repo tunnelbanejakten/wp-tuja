@@ -3,8 +3,14 @@ var tujaFormGenerator = (function () {
     init: function ($, $root) {
       $root = $root || $(document)
       $root.find('div.tuja-admin-formgenerator-form').each(function (index, el) {
-        var schema = JSON.parse(el.dataset.schema)
-        if (schema) {
+        const schemaRaw = el.dataset.schema
+        if (!schemaRaw) {
+          return
+        }
+        var schema = JSON.parse(schemaRaw)
+        if (!schema) {
+          return
+        }
           var editor = new JSONEditor(el, {
             form_name_root: el.dataset.rootName || ('JSONEditor_' + el.dataset.fieldId),
             schema: schema,

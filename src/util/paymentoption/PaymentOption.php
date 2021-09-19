@@ -9,6 +9,8 @@ use tuja\data\model\Group;
 interface PaymentOption {
 	function render(Group $group, int $fee): string;
 
+	function get_payment_reference(Group $group): string;
+
 	function configure( $config );
 
 	function get_config_json_schema();

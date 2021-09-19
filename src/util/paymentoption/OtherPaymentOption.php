@@ -11,14 +11,16 @@ class OtherPaymentOption implements PaymentOption {
 
 	private $message_template;
 
-	function render( Group $group, int $fee ): string {
-		// TODO: Implement render() method.
+	function get_payment_reference( Group $group ): string {
 		$params = array_merge(
 			Template::group_parameters( $group ),
 			Template::site_parameters()
 		);
+		return Template::string( $this->message_template )->render( $params );
+	}
 
-		return sprintf( '<p>%s</p>', $message = Template::string( $this->message_template )->render( $params ) );
+	function render( Group $group, int $fee ): string {
+		return sprintf( '<p>%s</p>', $message = $this->get_payment_reference( $group ));
 	}
 
 	function get_config_json_schema() {
