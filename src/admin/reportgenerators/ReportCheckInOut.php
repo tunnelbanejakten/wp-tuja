@@ -6,7 +6,7 @@ namespace tuja\admin\reportgenerators;
 use tuja\data\store\GroupDao;
 use tuja\data\model\Group;
 
-class ReportCheckInOut extends AbstractReport {
+class ReportCheckInOut extends AbstractListReport {
 	private $group_dao;
 
 	public function __construct() {
