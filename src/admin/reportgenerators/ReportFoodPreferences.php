@@ -1,42 +1,29 @@
 <?php
 
-namespace tuja\admin;
+namespace tuja\admin\reportgenerators;
 
 
 use tuja\data\model\Person;
-use tuja\data\store\GroupDao;
 use tuja\data\store\PersonDao;
 
-class ReportNotes extends AbstractReport {
+class ReportFoodPreferences extends AbstractReport {
 	private $person_dao;
-	private $group_dao;
 
 	public function __construct() {
 		parent::__construct();
 		$this->person_dao = new PersonDao();
-		$this->group_dao  = new GroupDao();
 	}
 
 	function get_rows(): array {
-		$rows = [];
-		foreach ( $this->group_dao->get_all_in_competition( $this->competition->id ) as $group ) {
-			if ( ! empty( $group->note ) ) {
-				$rows[] = [
-					'group'  => $group->name,
-					'person' => '',
-					'note'   => $group->note,
-				];
-			}
-			foreach ( $this->person_dao->get_all_in_group( $group->id ) as $person ) {
-				if ( ! empty( $person->note ) ) {
-					$rows[] = [
-						'group'  => $group->name,
-						'person' => $person->name,
-						'note'   => $person->note,
-					];
-				}
-			}
-		}
+		$people = $this->person_dao->get_all_in_competition( $this->competition->id );
+
+		$rows = array_map( function ( $value ) {
+			return [ 'value' => $value ];
+		}, array_unique( array_filter( array_map( function ( Person $person ) {
+			return $person->food;
+		}, $people ) ) ) );
+
+		sort( $rows );
 
 		return $rows;
 	}
@@ -54,8 +41,7 @@ class ReportNotes extends AbstractReport {
 					'label' => $label,
 					'count' => count( array_filter( $rows, function ( $row ) use ( $keywords ) {
 						foreach ( $keywords as $keyword ) {
-							$value = @$row['value'] ?? '';
-							if ( strpos( strtolower( $value ), strtolower( $keyword ) ) !== false ) {
+							if ( strpos( strtolower( $row['value'] ), strtolower( $keyword ) ) !== false ) {
 								return true;
 							}
 						}
@@ -66,6 +52,6 @@ class ReportNotes extends AbstractReport {
 			},
 			array_keys( $summary_config ),
 			array_values( $summary_config ) );
-		include( 'views/report-notes.php' );
+		include( 'views/report-foodpreferences.php' );
 	}
 }

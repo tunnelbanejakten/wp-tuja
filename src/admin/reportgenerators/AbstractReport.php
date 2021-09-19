@@ -1,6 +1,6 @@
 <?php
 
-namespace tuja\admin;
+namespace tuja\admin\reportgenerators;
 
 
 use tuja\data\store\CompetitionDao;
