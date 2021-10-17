@@ -1,10 +1,12 @@
 .DS_Store
-/.idea/
 /docker/wp-uploads/tuja/
 .env
 .vscode
 /web
 github.log
 /tests/integration/node_modules/
-/vendor/
 src/vendor
+docker/db-data/*
+backup/
+tests/integration/screenshot-*
+bin/*
