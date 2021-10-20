@@ -1,13 +1,11 @@
 .DS_Store
 .env
 .vscode
-/backup
 /bin/*
-/docker/db-data/*
-/docker/wp-uploads/tuja/
+/docker/volumes/db/*
+/docker/volumes/wordpress/*
 /src/vendor
 /temp
 /tests/integration/node_modules/
 /tests/integration/screenshot-*
-/web
 github.log
