@@ -428,6 +428,7 @@ abstract class Plugin {
 			self::PATH . '/frontend/router/' . $classname . '.php',
 			self::PATH . '/api/' . $classname . '.php',
 			self::PATH . '/inc/' . $classname . '.php',
+			self::PATH . '/controller/' . $classname . '.php',
 		);
 
 		foreach ( $paths as $path ) {
