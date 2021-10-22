@@ -70,6 +70,7 @@ class BootstrapCompetitionController {
 		if ($params->create_common_group_state_transition_sendout_templates) {
 			$this->create_common_sendout_templates($competition);
 		}
+		return $competition;
 	}
 
 	private function create_competition( string $name ) {

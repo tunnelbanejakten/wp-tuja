@@ -36,11 +36,24 @@ class CompetitionBootstrap {
 				$props->create_sample_form                                     = @$_POST['tuja_create_sample_form'] === 'true';
 				$props->create_sample_maps                                     = @$_POST['tuja_create_sample_maps'] === 'true';
 				$props->create_sample_stations                                 = @$_POST['tuja_create_sample_stations'] === 'true';
-				$controller->bootstrap_competition( $props );
+
+				$competition = $controller->bootstrap_competition( $props );
+
+				$url = add_query_arg(
+					array(
+						'tuja_view'        => 'Competition',
+						'tuja_competition' => $competition->id,
+					)
+				);
+
+				AdminUtils::printSuccess( sprintf( '<a href="%s" id="tuja_bootstrapped_competition_link" data-competition-id="%s">Tävling %s</a> har skapats.', $url, $competition->id, $props->name ) );
+
+				return true;
 			} catch ( Exception $e ) {
 				AdminUtils::printException( $e );
 			}
 		}
+		return false;
 	}
 
 	public function get_scripts(): array {
@@ -48,7 +61,7 @@ class CompetitionBootstrap {
 	}
 
 	public function output() {
-		$this->handle_post();
+		$is_competition_created = $this->handle_post();
 
 		$back_link = add_query_arg(
 			array(
@@ -85,6 +98,9 @@ class CompetitionBootstrap {
 			array_keys( $checkbox_definitions ),
 			array_values( $checkbox_definitions )
 		);
-		include 'views/competition-bootstrap.php';
+
+		if ( ! $is_competition_created ) {
+			include 'views/competition-bootstrap.php';
+		}
 	}
 }
