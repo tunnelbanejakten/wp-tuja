@@ -134,7 +134,8 @@ class FormQuestions {
 						break;
 				}
 
-				$success = $this->db_question->create( $props );
+				$new_id = $this->db_question->create( $props );
+				$success = $new_id !== false;
 			} catch ( Exception $e ) {
 				$success = false;
 			}

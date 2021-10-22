@@ -14,6 +14,8 @@ class CompetitionDao extends AbstractDao {
 	}
 
 	function create( Competition $competition ) {
+		$competition->validate();
+
 		$affected_rows = $this->wpdb->insert( $this->table,
 			array(
 				'random_id'            => $this->id->random_string(),

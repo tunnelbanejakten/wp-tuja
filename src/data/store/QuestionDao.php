@@ -102,7 +102,11 @@ class QuestionDao extends AbstractDao {
 			$question->text_hint
 		);
 
-		return $this->wpdb->query( $query );
+		$affected_rows = $this->wpdb->query( $query );
+
+		$success       = $affected_rows !== false && $affected_rows === 1;
+
+		return $success ? $this->wpdb->insert_id : false;
 	}
 
 	function delete( $id ) {

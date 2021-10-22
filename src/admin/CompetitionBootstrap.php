@@ -36,7 +36,6 @@ class CompetitionBootstrap {
 				$props->create_sample_form                                     = @$_POST['tuja_create_sample_form'] === 'true';
 				$props->create_sample_maps                                     = @$_POST['tuja_create_sample_maps'] === 'true';
 				$props->create_sample_stations                                 = @$_POST['tuja_create_sample_stations'] === 'true';
-				var_dump( $props );
 				$controller->bootstrap_competition( $props );
 			} catch ( Exception $e ) {
 				AdminUtils::printException( $e );
@@ -68,6 +67,7 @@ class CompetitionBootstrap {
 
 		$checkboxes = array_map(
 			function( string $key, string $label ) {
+				$is_form_submitted = isset( $_POST['tuja_action'] );
 				return sprintf(
 					'
 				<div>
@@ -77,7 +77,7 @@ class CompetitionBootstrap {
 			',
 					$key,
 					$key,
-					@$_POST[ $key ] === 'true' ? 'checked="checked"' : '',
+					! $is_form_submitted || @$_POST[ $key ] === 'true' ? 'checked="checked"' : '',
 					$key,
 					$label
 				);

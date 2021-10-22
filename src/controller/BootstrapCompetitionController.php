@@ -6,18 +6,24 @@ use tuja\data\model\Competition;
 use tuja\data\model\Form;
 use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
+use tuja\data\model\Map;
+use tuja\data\model\Marker;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\question\ImagesQuestion;
 use tuja\data\model\question\NumberQuestion;
 use tuja\data\model\question\OptionsQuestion;
 use tuja\data\model\question\TextQuestion;
 use tuja\data\model\QuestionGroup;
+use tuja\data\model\Station;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
+use tuja\data\store\MapDao;
+use tuja\data\store\MarkerDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
+use tuja\data\store\StationDao;
 use tuja\util\rules\CrewMembersRuleSet;
 use tuja\util\rules\GroupCategoryRules;
 use tuja\util\rules\OlderParticipantsRuleSet;
@@ -33,6 +39,9 @@ class BootstrapCompetitionController {
 		$this->form_dao           = new FormDao();
 		$this->question_group_dao = new QuestionGroupDao();
 		$this->question_dao       = new QuestionDao();
+		$this->station_dao        = new StationDao();
+		$this->map_dao            = new MapDao();
+		$this->marker_dao         = new MarkerDao();
 	}
 
 	function bootstrap_competition( BootstrapCompetitionParams $params ) {
@@ -46,8 +55,14 @@ class BootstrapCompetitionController {
 
 			$this->create_text_question( $question_group );
 			$this->create_number_question( $question_group );
-			$this->create_images_question( $question_group );
+			$this->create_images_question( $question_group, 'Ta en bild på något som får dig att le' );
 			$this->create_options_question( $question_group );
+		}
+		if ( $params->create_sample_stations ) {
+			$this->create_stations( $competition );
+		}
+		if ( $params->create_sample_maps ) {
+			$this->create_maps( $competition );
 		}
 	}
 
@@ -92,9 +107,9 @@ class BootstrapCompetitionController {
 		}
 	}
 
-	private function create_form( Competition $competition ) : Form {
+	private function create_form( Competition $competition, string $name = 'Ett formulär' ) : Form {
 		$props                                     = new Form();
-		$props->name                               = 'Ett formulär';
+		$props->name                               = $name;
 		$props->competition_id                     = $competition->id;
 		$props->allow_multiple_responses_per_group = false;
 		$props->submit_response_start              = null;
@@ -156,9 +171,9 @@ class BootstrapCompetitionController {
 		return $this->create_question( $question_group, $question_props );
 	}
 
-	private function create_images_question( QuestionGroup $question_group ): AbstractQuestion {
+	private function create_images_question( QuestionGroup $question_group, $text ): AbstractQuestion {
 		$question_props = new ImagesQuestion(
-			'Ta en bild på något som får dig att le',
+			$text,
 			'En ledtråd',
 			0,
 			$question_group->id,
@@ -195,5 +210,80 @@ class BootstrapCompetitionController {
 		}
 		$question = $this->question_dao->get( $question_id );
 		return $question;
+	}
+
+	private function create_stations( Competition $competition ) {
+		foreach ( array( '1:a stationen', '2:a stationen', '3:e stationen' ) as $name ) {
+			$props                          = new Station();
+			$props->name                    = $name;
+			$props->competition_id          = $competition->id;
+			$props->location_gps_coord_lat  = null;
+			$props->location_gps_coord_long = null;
+			$props->location_description    = null;
+
+			$station_id = $this->station_dao->create( $props );
+			if ( $station_id === false ) {
+				throw new Exception( 'Could not create station.' );
+			}
+		}
+	}
+
+	private function create_maps( Competition $competition ) {
+
+		$form           = $this->create_form( $competition, 'Ett kartformulär' );
+		$question_group = $this->create_question_group( $form );
+		$question_a     = $this->create_images_question( $question_group, 'Ta en bild på din omgivning.' );
+		$question_b     = $this->create_images_question( $question_group, 'Ta en till bild på din omgivning.' );
+		$question_c     = $this->create_images_question( $question_group, 'Ta ytterligare en bild på din omgivning.' );
+
+		$config = array(
+			array(
+				'Stockholm',
+				array(
+					array( 59.332280, 18.064106, 'Mitt på Plattan', $question_a->id ),
+					array( 59.327525, 18.055132, 'Stadshusets innergård', $question_b->id ),
+					array( 59.317896, 18.074455, 'Mosebacke torg', $question_c->id ),
+				),
+			),
+			array(
+				'Göteborg',
+				array(
+					array( 57.697341, 11.979380, 'Göteplatsen', $question_a->id ),
+					array( 57.697025, 11.990975, 'Liseberg', $question_b->id ),
+					array( 57.704861, 11.985694, 'Nya Ullevi', $question_c->id ),
+				),
+			),
+		);
+
+		foreach ( $config as $city_config ) {
+			list($name, $markers)      = $city_config;
+			$map_props                 = new Map();
+			$map_props->competition_id = $competition->id;
+			$map_props->name           = $name;
+
+			$map_id = $this->map_dao->create( $map_props );
+			if ( $map_id === false ) {
+				throw new Exception( 'Could not create map.' );
+			}
+			foreach ( $markers as $marker_config ) {
+				list($lat, $long, $label, $question_id) = $marker_config;
+				$marker_props                           = new Marker();
+				$marker_props->map_id                   = $map_id;
+				$marker_props->gps_coord_lat            = $lat;
+				$marker_props->gps_coord_long           = $long;
+				$marker_props->type                     = Marker::MARKER_TYPE_TASK;
+				$marker_props->name                     = $label;
+				$marker_props->description              = null;
+				$marker_props->link_form_id             = null;
+				$marker_props->link_form_question_id    = $question_id;
+				$marker_props->link_question_group_id   = null;
+				$marker_props->link_station_id          = null;
+
+				$marker_id = $this->marker_dao->create( $marker_props );
+				if ( $marker_id === false ) {
+					throw new Exception( 'Could not create map marker.' );
+				}
+			}
+		}
 	}
 }
