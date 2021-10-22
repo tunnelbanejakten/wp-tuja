@@ -9,7 +9,7 @@ services:
     ports:
       - 8080:80
     volumes:
-      - ./docker/volumes/wordpress:/var/www/html
+      - ./web:/var/www/html
       - ./src:/var/www/html/wp-content/plugins/tuja
     environment:
       WORDPRESS_DB_HOST: db:3306
