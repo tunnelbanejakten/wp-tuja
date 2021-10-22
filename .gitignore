@@ -8,4 +8,5 @@
 /temp
 /tests/integration/node_modules/
 /tests/integration/screenshot-*
+/web
 github.log
