@@ -11,6 +11,8 @@ services:
     volumes:
       - ./web:/var/www/html
       - ./src:/var/www/html/wp-content/plugins/tuja
+    environment:
+      WORDPRESS_DB_HOST: db:3306
     env_file:
       - .env
 
@@ -20,8 +22,8 @@ services:
       - db_data:/var/lib/mysql
     ports:
       - 3306:3306
-    environment:
-      MYSQL_ROOT_PASSWORD: root
+    env_file:
+      - .env
 
 volumes:
   db_data:
