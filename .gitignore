@@ -2,8 +2,6 @@
 .env
 .vscode
 /bin/*
-/docker/volumes/db/*
-/docker/volumes/wordpress/*
 /src/vendor
 /temp
 /tests/integration/node_modules/
