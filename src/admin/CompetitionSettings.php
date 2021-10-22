@@ -82,86 +82,40 @@ class CompetitionSettings {
 
 		$event_options = $this->get_event_options();
 
-		$template_configs = [
-			'awaiting_checkin.email'                         => [
-				'name'                => 'Dags att checka in - E-post',
-				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_ACCEPTED, \tuja\data\model\Group::STATUS_AWAITING_CHECKIN ),
-				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
-				'delivery_method'     => MessageTemplate::EMAIL
-			],
-			'awaiting_checkin.sms'                           => [
-				'name'                => 'Dags att checka in - SMS',
-				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_ACCEPTED, \tuja\data\model\Group::STATUS_AWAITING_CHECKIN ),
-				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
-				'delivery_method'     => MessageTemplate::SMS
-			],
-			'group_accepted_by_default.groupcontact.email'   => [
-				'name'                => 'Ny grupp - Direktanmäld',
-				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_CREATED, \tuja\data\model\Group::STATUS_ACCEPTED ),
-				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
-				'delivery_method'     => MessageTemplate::EMAIL
-			],
-			'group_accepted_by_default.admin.email'          => [
-				'name'                => 'Ny grupp - Direktanmäld (till Tuko)',
-				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_CREATED, \tuja\data\model\Group::STATUS_ACCEPTED ),
-				'auto_send_recipient' => EventMessageSender::RECIPIENT_ADMIN,
-				'delivery_method'     => MessageTemplate::EMAIL
-			],
-			'group_accepted_from_waiting_list.email'         => [
-				'name'                => 'Ny grupp - Inte längre på väntelistan',
-				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_AWAITING_APPROVAL, \tuja\data\model\Group::STATUS_ACCEPTED ),
-				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
-				'delivery_method'     => MessageTemplate::EMAIL
-			],
-			'group_added_to_waiting_list.admin.email'        => [
-				'name'                => 'Ny grupp - Tillagd på väntelistan (till Tuko)',
-				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_CREATED, \tuja\data\model\Group::STATUS_AWAITING_APPROVAL ),
-				'auto_send_recipient' => EventMessageSender::RECIPIENT_ADMIN,
-				'delivery_method'     => MessageTemplate::EMAIL
-			],
-			'group_added_to_waiting_list.groupcontact.email' => [
-				'name'                => 'Ny grupp - Tillagd på väntelistan',
-				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_CREATED, \tuja\data\model\Group::STATUS_AWAITING_APPROVAL ),
-				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
-				'delivery_method'     => MessageTemplate::EMAIL
-			],
-			'signup_completed.email'                         => [
-				'name'                => 'Anmälan komplett',
-				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_INCOMPLETE_DATA, \tuja\data\model\Group::STATUS_ACCEPTED ),
-				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
-				'delivery_method'     => MessageTemplate::EMAIL
-			],
-			'signup_incomplete_data.email'                   => [
-				'name'                => 'Anmälan behöver kompletteras',
-				'auto_send_trigger'   => EventMessageSender::group_status_change_event_name( \tuja\data\model\Group::STATUS_ACCEPTED, \tuja\data\model\Group::STATUS_INCOMPLETE_DATA ),
-				'auto_send_recipient' => EventMessageSender::RECIPIENT_GROUP_CONTACT,
-				'delivery_method'     => MessageTemplate::EMAIL
-			],
-			'person_added.non_crew.email'                    => [
-				'name'                => 'Ny person i tävlande lag',
-				'auto_send_trigger'   => EventMessageSender::new_group_member_event_name( false ),
-				'auto_send_recipient' => EventMessageSender::RECIPIENT_SELF,
-				'delivery_method'     => MessageTemplate::EMAIL
-			],
-			'person_added.crew.email'                        => [
-				'name'                => 'Ny person i funktionärslag',
-				'auto_send_trigger'   => EventMessageSender::new_group_member_event_name( true ),
-				'auto_send_recipient' => EventMessageSender::RECIPIENT_SELF,
-				'delivery_method'     => MessageTemplate::EMAIL
-			]
-		];
+		$template_configs = MessageTemplate::default_templates();
 
-		$default_message_templates = join( '<br>', array_map(
-			function ( $key, $config ) {
-				$strings           = parse_ini_file( __DIR__ . '/default_message_template/' . $key . '.ini' );
-				$config['subject'] = $strings['subject'];
-				$config['body']    = $strings['body'];
+		$default_message_templates = join(
+			'<br>',
+			array_map(
+				function ( $key, MessageTemplate $mt ) {
+					$config = array(
+						'name'                => $mt->name,
+						'auto_send_trigger'   => $mt->auto_send_trigger,
+						'auto_send_recipient' => $mt->auto_send_recipient,
+						'delivery_method'     => $mt->delivery_method,
+						'subject'             => $mt->subject,
+						'body'                => $mt->body,
+					);
 
-				return sprintf( '<button class="button tuja-add-messagetemplate" type="button" %s>Ny mall %s</button>', join( ' ', array_map( function ( $key, $value ) {
+					return sprintf(
+						'<button class="button tuja-add-messagetemplate" type="button" %s>Ny mall %s</button>',
+						join(
+							' ',
+							array_map(
+								function ( $key, $value ) {
 					return 'data-' . $key . '="' . htmlentities( $value ) . '"';
-				}, array_keys( $config ), array_values( $config ) ) ), $config['name'] ?: basename( $filename, '.ini' ) );
 			},
-			array_keys( $template_configs ), array_values( $template_configs ) ) );
+								array_keys( $config ),
+								array_values( $config )
+							)
+						),
+						$config['name'] ?: $key
+					);
+				},
+				array_keys( $template_configs ),
+				array_values( $template_configs )
+			)
+		);
 
 		$rules_html = [];
 		$i          = 0;
@@ -735,25 +689,7 @@ class CompetitionSettings {
 	}
 
 	private function get_event_options() {
-		$event_names  = [];
-		$event_labels = [];
-		foreach ( \tuja\data\model\Group::STATUS_TRANSITIONS as $current => $allowed_next ) {
-			$allowed_next = array_filter( $allowed_next, function ( $next ) {
-				return $next !== \tuja\data\model\Group::STATUS_DELETED;
-			} );
-			$event_names  = array_merge( $event_names, array_map( function ( $next ) use ( $current ) {
-				return EventMessageSender::group_status_change_event_name( $current, $next );
-			}, $allowed_next ) );
-			$event_labels = array_merge( $event_labels, array_map( function ( $next ) use ( $current ) {
-				return sprintf( 'grupps status går från %s till %s', strtoupper( $current ), strtoupper( $next ) );
-			}, $allowed_next ) );
-		}
-		$event_options = array_combine( $event_names, $event_labels );
-
-		$event_options[ EventMessageSender::new_group_member_event_name( true ) ]  = 'person anmäler sig till funktionärslag';
-		$event_options[ EventMessageSender::new_group_member_event_name( false ) ] = 'person anmäler sig till deltagarlag';
-
-		return $event_options;
+		return EventMessageSender::event_names();
 	}
 
 	private function competition_settings_save_strings( Competition $competition ) {

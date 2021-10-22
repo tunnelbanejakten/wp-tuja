@@ -39,6 +39,29 @@ class EventMessageSender {
 		return join( '.', [ 'group', $is_crew_group ? 'crew' : 'non-crew', 'new_person' ] );
 	}
 
+	public static function event_names() {
+		$event_names  = [];
+		$event_labels = [];
+		foreach ( Group::STATUS_TRANSITIONS as $current => $allowed_next ) {
+			$allowed_next = array_filter( $allowed_next, function ( $next ) {
+				return $next !== Group::STATUS_DELETED;
+			} );
+			$event_names  = array_merge( $event_names, array_map( function ( $next ) use ( $current ) {
+				return self::group_status_change_event_name( $current, $next );
+			}, $allowed_next ) );
+			$event_labels = array_merge( $event_labels, array_map( function ( $next ) use ( $current ) {
+				return sprintf( 'grupps status går från %s till %s', strtoupper( $current ), strtoupper( $next ) );
+			}, $allowed_next ) );
+		}
+		$event_options = array_combine( $event_names, $event_labels );
+
+		$event_options[ self::new_group_member_event_name( true ) ]  = 'person anmäler sig till funktionärslag';
+		$event_options[ self::new_group_member_event_name( false ) ] = 'person anmäler sig till deltagarlag';
+
+		return $event_options;
+
+	}
+
 	public function __construct() {
 		$this->message_template_dao = new MessageTemplateDao();
 		$this->person_dao           = new PersonDao();

@@ -8,6 +8,7 @@ use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
 use tuja\data\model\Map;
 use tuja\data\model\Marker;
+use tuja\data\model\MessageTemplate;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\question\ImagesQuestion;
 use tuja\data\model\question\NumberQuestion;
@@ -21,6 +22,7 @@ use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\MapDao;
 use tuja\data\store\MarkerDao;
+use tuja\data\store\MessageTemplateDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\StationDao;
@@ -42,6 +44,7 @@ class BootstrapCompetitionController {
 		$this->station_dao        = new StationDao();
 		$this->map_dao            = new MapDao();
 		$this->marker_dao         = new MarkerDao();
+		$this->message_template_dao = new MessageTemplateDao();
 	}
 
 	function bootstrap_competition( BootstrapCompetitionParams $params ) {
@@ -63,6 +66,9 @@ class BootstrapCompetitionController {
 		}
 		if ( $params->create_sample_maps ) {
 			$this->create_maps( $competition );
+		}
+		if ($params->create_common_group_state_transition_sendout_templates) {
+			$this->create_common_sendout_templates($competition);
 		}
 	}
 
@@ -283,6 +289,18 @@ class BootstrapCompetitionController {
 				if ( $marker_id === false ) {
 					throw new Exception( 'Could not create map marker.' );
 				}
+			}
+		}
+	}
+
+	private function create_common_sendout_templates( Competition $competition ) {
+		$templates = MessageTemplate::default_templates();
+		foreach ($templates as $template) {
+			$template->competition_id = $competition->id;
+
+			$template_id = $this->message_template_dao->create( $template );
+			if ( $template_id === false ) {
+				throw new Exception( 'Could not create sendout template.' );
 			}
 		}
 	}
