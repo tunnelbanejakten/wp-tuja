@@ -151,4 +151,15 @@ class CompetitionDao extends AbstractDao {
 			$competition_key );
 	}
 
+	function delete( $id ) {
+		$query_template = 'DELETE FROM ' . $this->table . ' WHERE id = %d';
+
+		$affected_rows = $this->wpdb->query( $this->wpdb->prepare( $query_template, $id ) );
+
+		$success = $affected_rows !== false && $affected_rows === 1;
+
+		if ( ! $success ) {
+			throw new Exception($this->wpdb->last_error);
+}
+	}
 }

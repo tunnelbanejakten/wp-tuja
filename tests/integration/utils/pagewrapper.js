@@ -49,7 +49,7 @@ class PageWrapper {
 
   async expectToContain (selector, expected) {
     const actual = await this._page.$eval(selector, node => node.innerText)
-    await expect(actual).toContain(expected)
+    expect(actual).toContain(expected)
   }
 
   async expectSuccessMessage (expected) {

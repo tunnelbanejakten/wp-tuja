@@ -38,21 +38,25 @@ class AdminUtils {
 	public static function printTopMenu( $competition ) {
 		printf( '<h1>%s</h1>', $competition->name );
 
-		$menu_config = [
+		$menu_config = array(
 			'Groups'     => 'Grupper',
 			'Scoreboard' => 'Poängställning',
 			'Review'     => 'Svar att rätta',
 			'Messages'   => 'Meddelanden',
-			'Reports'    => 'Rapporter'
-		];
-		if ( AdminUtils::is_admin_mode() ) {
-			$menu_config = array_merge( $menu_config, [
+			'Reports'    => 'Rapporter',
+		);
+		if ( self::is_admin_mode() ) {
+			$menu_config = array_merge(
+				$menu_config,
+				array(
 				'Competition'         => 'Formulär',
 				'Stations'            => 'Stationer',
 				'Maps'                => 'Kartor',
 				'CompetitionSettings' => 'Inställningar',
-				'Shortcodes'          => 'Shortcodes'
-			] );
+					'Shortcodes'          => 'Shortcodes',
+					'CompetitionDelete'   => 'Rensa',
+				)
+			);
 		}
 
 		$menu = array();
@@ -61,10 +65,16 @@ class AdminUtils {
 			if ( $is_view_selected ) {
 				$menu[] = sprintf( '<strong>%s</strong>', $label );
 			} else {
-				$menu[] = sprintf( '<a href="%s">%s</a>', add_query_arg( array(
+				$menu[] = sprintf(
+					'<a href="%s">%s</a>',
+					add_query_arg(
+						array(
 					'tuja_competition' => $competition->id,
-					'tuja_view'        => $view
-				) ), $label );
+							'tuja_view'        => $view,
+						)
+					),
+					$label
+				);
 			}
 		}
 
