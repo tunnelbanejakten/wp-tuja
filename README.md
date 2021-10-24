@@ -55,6 +55,12 @@ Running the test:
 
 You can alternatively run `yarn test` if you don't want to see the browser window during testing.
 
+## Troubleshooting
+
+Problem: This error is shown when running tests on Mac: "Chromium cannot be opened because the developer cannot be verified."
+
+Solution: See https://support.apple.com/en-us/HT202491.
+
 # Debugging
 
 Open shell to Wordpress installation:

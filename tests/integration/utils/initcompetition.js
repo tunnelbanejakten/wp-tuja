@@ -6,41 +6,25 @@ const querystring = require('querystring')
 
 const createCompetition = async (adminPage) => {
   // Go to Tuja page in Admin console
-  await adminPage.goto('http://localhost:8080/wp-admin/admin.php?page=tuja_admin')
+  await adminPage.goto('http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionBootstrap')
 
   // Create new competition
-  const competitionName = 'Test Competition ' + new Date().getTime()
+  const competitionName = 'Test ' + new Date().toLocaleString('se-SV', { timeZone: 'UTC' })
 
   await adminPage.type('#tuja_competition_name', competitionName)
-  await adminPage.clickLink('#tuja_create_competition_button')
+  await adminPage.click('#tuja_create_default_group_categories')
+  await adminPage.click('#tuja_create_default_crew_groups')
+  await adminPage.click('#tuja_create_common_group_state_transition_sendout_templates')
+  await adminPage.click('#tuja_create_sample_form')
+  await adminPage.click('#tuja_create_sample_maps')
+  await adminPage.click('#tuja_create_sample_stations')
+  await adminPage.clickLink('#tuja_competition_bootstrap_button')
 
-  const links = await adminPage.page.$$('form.tuja a')
-  let link = null
-  for (let i = 0; i < links.length; i++) {
-    const el = links[i]
-    const linkText = await el.evaluate(node => node.innerText)
-    const isEqual = linkText === competitionName
-    if (isEqual) {
-      link = el
-      break
-    }
-  }
-  const [resp] = await Promise.all([
-      adminPage.page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-      link.click()
-    ]
-  )
-
-  const competitionId = querystring.parse(resp.url()).tuja_competition
-  await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Shortcodes&tuja_competition=${competitionId}`)
-
-  const signUpLink = await adminPage.page.$('#tuja_shortcodes_competitionsignup_link')
-  const signUpLinkUrl = await signUpLink.evaluate(node => node.href)
-
-  const competitionKey = signUpLinkUrl.split(/\//)[3]
+  const continueLink = await adminPage.page.$('#tuja_bootstrapped_competition_link')
+  const ids = await continueLink.evaluate(node => ({ id: node.dataset.competitionId, key: node.dataset.competitionKey }))
   return ({
-    id: competitionId,
-    key: competitionKey,
+    id: ids.id,
+    key: ids.key,
     name: competitionName
   })
 }

@@ -9,13 +9,13 @@ class UserPageWrapper extends PageWrapper {
   // competitionId
   // competitionKey
 
-  constructor (browser, competitionId, competitionKey) {
+  constructor(browser, competitionId, competitionKey) {
     super(browser)
     this.competitionId = competitionId
     this.competitionKey = competitionKey
   }
 
-  async init () {
+  async init() {
     await super.init()
 
     // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js
@@ -24,14 +24,45 @@ class UserPageWrapper extends PageWrapper {
     return this
   }
 
-  async signUpTeam (adminPage, isAutomaticallyAccepted = true, isGroupLeader = true, isCitySpecified = false) {
+  async type(selector, value) {
+    await super.type(`#content ${selector}`, value)
+  }
+  async clickLink(selector) {
+    await super.clickLink(`#content ${selector}`)
+  }
+  async click(selector) {
+    await super.click(`#content ${selector}`)
+  }
+  async expectToContain(selector, expected) {
+    await super.expectToContain(`#content ${selector}`, expected)
+  }
+  async expectFormValue(selector, expected) {
+    await super.expectFormValue(`#content ${selector}`, expected)
+  }
+  async expectElementCount(selector, expectedCount) {
+    await super.expectElementCount(`#content ${selector}`, expectedCount)
+  }
+  async $(selector) {
+    return await super.$(`#content ${selector}`)
+  }
+  async $$(selector) {
+    return await super.$$(`#content ${selector}`)
+  }
+  async $eval(selector, func, ...funcArgs) {
+    return await super.$eval(`#content ${selector}`, func, ...funcArgs)
+  }
+  async $$eval(selector, func, ...funcArgs) {
+    return await super.$$eval(`#content ${selector}`, func, ...funcArgs)
+  }
+
+  async signUpTeam(adminPage, isAutomaticallyAccepted = true, isGroupLeader = true, isCitySpecified = false) {
     await adminPage.configureEventDateLimits(this.competitionId, 7 * 24 * 60, 7 * 24 * 60 + 60)
     const name = [
       ADJECTIVES,
       ANIMALS,
     ].map(options => options[Math.floor(Math.random() * options.length)]).join(' ')
     const city = CITIES[Math.floor(Math.random() * CITIES.length)]
-    
+
     await this.goto(`http://localhost:8080/${this.competitionKey}/anmal`)
     await this.click('#tuja-group__age-0')
     if (isGroupLeader) {

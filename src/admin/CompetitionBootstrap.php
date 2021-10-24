@@ -29,7 +29,7 @@ class CompetitionBootstrap {
 			$controller = new BootstrapCompetitionController();
 			try {
 				$props                                  = new BootstrapCompetitionParams();
-				$props->name                            = @$_POST['competition_name'];
+				$props->name                            = @$_POST['tuja_competition_name'];
 				$props->create_default_group_categories = @$_POST['tuja_create_default_group_categories'] === 'true';
 				$props->create_default_crew_groups      = @$_POST['tuja_create_default_crew_groups'] === 'true';
 				$props->create_common_group_state_transition_sendout_templates = @$_POST['tuja_create_common_group_state_transition_sendout_templates'] === 'true';
@@ -46,7 +46,7 @@ class CompetitionBootstrap {
 					)
 				);
 
-				AdminUtils::printSuccess( sprintf( '<a href="%s" id="tuja_bootstrapped_competition_link" data-competition-id="%s">Tävling %s</a> har skapats.', $url, $competition->id, $props->name ) );
+				AdminUtils::printSuccess( sprintf( '<a href="%s" id="tuja_bootstrapped_competition_link" data-competition-id="%s" data-competition-key="%s">Tävling %s</a> har skapats.', $url, $competition->id, $competition->random_id, $props->name ) );
 
 				return true;
 			} catch ( Exception $e ) {
