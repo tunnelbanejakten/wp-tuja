@@ -17,7 +17,7 @@ AdminUtils::printTopMenu( $competition );
 	    <?php
 	    $field_group_selector->render(
 		    'tuja_messages_group_selector',
-		    $_POST['tuja_messages_group_selector'] );
+		    @$_POST['tuja_messages_group_selector'] );
 	    ?>
     </div>
     <div style="float: left;">
@@ -28,7 +28,7 @@ AdminUtils::printTopMenu( $competition );
 
 			    return sprintf( '<option value="%s" %s>%s</option>',
 				    $key,
-				    $_POST['tuja_messages_people_selector'] == $key ? ' selected="selected"' : '',
+				    @$_POST['tuja_messages_people_selector'] == $key ? ' selected="selected"' : '',
 				    $person_selector['label'] );
 		    }, array_keys( $people_selectors ), array_values( $people_selectors ) ) ) ); ?>
     </div>
@@ -40,7 +40,7 @@ AdminUtils::printTopMenu( $competition );
 
 				return sprintf( '<option value="%s" %s>%s</option>',
 					$key,
-					( $_POST['tuja_messages_delivery_method'] ?: MessageTemplate::EMAIL ) == $key ? ' selected="selected"' : '',
+					( @$_POST['tuja_messages_delivery_method'] ?: MessageTemplate::EMAIL ) == $key ? ' selected="selected"' : '',
 					$delivery_method['label'] );
 			}, array_keys( $delivery_methods ), array_values( $delivery_methods ) ) ) ); ?>
     </div>
@@ -53,14 +53,14 @@ AdminUtils::printTopMenu( $competition );
                    name="tuja_messages_subject"
                    id="tuja-message-subject"
                    size="50"
-                   value="<?= $_POST['tuja_messages_subject'] ?>">
+                   value="<?= @$_POST['tuja_messages_subject'] ?>">
         </div>
 
         <div>
             <label for="tuja_messages_body">Meddelande:</label><br>
             <?= TemplateEditor::render(
             	'tuja_messages_body',
-	            $_POST['tuja_messages_body'] ?: '', $this->get_parameters( Person::sample(), Group::sample() )
+	            @$_POST['tuja_messages_body'] ?: '', $this->get_parameters( Person::sample(), Group::sample() )
             ) ?>
         </div>
     </div>

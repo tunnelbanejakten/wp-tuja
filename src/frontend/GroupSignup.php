@@ -31,7 +31,7 @@ class GroupSignup extends AbstractGroupView {
 			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.' );
 		}
 
-		$do_save = $_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE;
+		$do_save = @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE;
 		try {
 			if ( $do_save ) {
 				$this->validate_recaptcha_html();
