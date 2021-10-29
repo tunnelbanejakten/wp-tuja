@@ -25,28 +25,6 @@ describe('Crew', () => {
 
   const createNewUserPage = async () => (new UserPageWrapper(browser, competitionId, competitionKey)).init()
 
-  const createNewForm = async (formName) => {
-    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Competition&tuja_competition=${competitionId}`)
-
-    await adminPage.type('#tuja_form_name', formName)
-    await adminPage.clickLink('#tuja_form_create_button')
-
-    const links = await adminPage.page.$$('form.tuja a')
-    let link = null
-    for (let i = 0; i < links.length; i++) {
-      const el = links[i]
-      const linkText = await el.evaluate(node => node.innerText)
-      const isEqual = linkText === formName
-      if (isEqual) {
-        link = el
-        break
-      }
-    }
-
-    const formId = querystring.parse(await link.evaluate(node => node.href)).tuja_form
-    return formId
-  }
-
   beforeAll(async () => {
     competitionId = global.competitionId
     competitionKey = global.competitionKey
@@ -80,29 +58,9 @@ describe('Crew', () => {
       let competingGroupProps = null
       let stationScoreReportForm = 0
 
-      const createForm = async () => {
-        const formId = await createNewForm('The Stations')
-
-        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
-
-        await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
-        await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-        await adminPage.clickLink('#tuja_form_questions_back')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
-        await adminPage.clickLink('div.tuja-admin-question:nth-of-type(3) a[href*="FormQuestions"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-
-        return formId
-      }
-
       beforeAll(async () => {
-        competingGroupProps = await defaultPage.signUpTeam( adminPage)
-        stationScoreReportForm = await createForm()
+        competingGroupProps = await defaultPage.signUpTeam(adminPage)
+        stationScoreReportForm = global.formId
       })
 
       it('should be possible for crew member to report score', async () => {
@@ -118,7 +76,7 @@ describe('Crew', () => {
 
         await goToForm()
 
-        await defaultPage.expectElementCount('input.tuja-fieldtext', 3)
+        await defaultPage.expectElementCount('input.tuja-fieldtext', 4)
 
         await defaultPage.type('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '2')
         await defaultPage.type('div.tuja-field:nth-of-type(3) input.tuja-fieldtext', '3')
