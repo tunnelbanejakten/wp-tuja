@@ -13,12 +13,16 @@ class CustomEnvironment extends PuppeteerEnvironment {
       process.env.competitionKey = competitionData.key
       process.env.competitionName = competitionData.name
       process.env.crewGroupCategoryId = competitionData.crewGroupCategoryId
+      process.env.formKey = competitionData.formKey
+      process.env.formId = competitionData.formId
     }
 
     this.global.competitionId = process.env.competitionId
     this.global.competitionKey = process.env.competitionKey
     this.global.competitionName = process.env.competitionName
     this.global.crewGroupCategoryId = process.env.crewGroupCategoryId
+    this.global.formKey = process.env.formKey
+    this.global.formId = process.env.formId
   }
 
   async teardown () {

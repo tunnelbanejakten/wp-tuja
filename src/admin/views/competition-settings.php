@@ -72,24 +72,7 @@ AdminUtils::printTopMenu( $competition );
             <label for="tuja_competition_settings_initial_group_status">
                 Status för nya grupper:
             </label><br>
-			<?= join( '<br>', array_map( function ( $status ) use ( $competition ) {
-
-				$status_descriptions = [
-					\tuja\data\model\Group::STATUS_CREATED           => 'Inga meddelanden skickas ut per automatik.',
-					\tuja\data\model\Group::STATUS_AWAITING_APPROVAL => 'Bra om tävlingsledningen måste godkänna lag innan de får vara med. Automatiska meddelanden kan konfigureras.',
-					\tuja\data\model\Group::STATUS_ACCEPTED          => 'Bra om alla lag som anmäler sig får plats i tävlingen. Automatiska meddelanden kan konfigureras.'
-				];
-
-				return sprintf( '<input type="radio" id="tuja_competition_settings_initial_group_status-%s" name="tuja_competition_settings_initial_group_status" value="%s" %s/><label for="tuja_competition_settings_initial_group_status-%s"><span class="tuja-admin-groupstatus tuja-admin-groupstatus-%s">%s</span> <small>%s</small></label>',
-					$status,
-					$status,
-					$status == ( $competition->initial_group_status ?: \tuja\data\model\Group::DEFAULT_STATUS ) ? 'checked="checked"' : '',
-					$status,
-					$status,
-					$status,
-					@$status_descriptions[ $status ]
-				);
-			}, \tuja\data\model\Competition::allowed_initial_statuses() ) ) ?>
+			<?= AdminUtils::get_initial_group_status_selector($competition->initial_group_status, 'tuja_competition_settings_initial_group_status') ?>
         </div>
 
         <h4>Grupptyper</h4>

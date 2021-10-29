@@ -18,6 +18,10 @@ use tuja\util\score\ScoreCalculator;
 		<label for="competition_name">Namn</label><br>
 		<input type="text" name="tuja_competition_name" id="tuja_competition_name" value="<?php echo @$_POST['competition_name']; ?>"/>
 	</div>
+	<div>
+		Status för nya grupper:<br>
+		<?php echo AdminUtils::get_initial_group_status_selector(@$_POST['tuja_competition_initial_group_status'] ?: \tuja\data\model\Group::DEFAULT_STATUS, 'tuja_competition_initial_group_status') ?>
+	</div>
 	<?php print join( $checkboxes ); ?>
 	<button type="submit" class="button" name="tuja_action" value="competition_bootstrap" id="tuja_competition_bootstrap_button">Skapa</button>
 </form>

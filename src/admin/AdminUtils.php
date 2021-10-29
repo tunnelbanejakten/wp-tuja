@@ -4,6 +4,8 @@ namespace tuja\admin;
 
 use Exception;
 use tuja\util\ImageManager;
+use tuja\data\model\Group;
+use tuja\data\model\Competition;
 
 class AdminUtils {
 	private static $is_admin_mode = false;
@@ -16,9 +18,11 @@ class AdminUtils {
 	}
 
 	public static function printError( $message ) {
-		printf( '<div class="notice notice-error is-dismissable" style="margin-left: 2px"><p><strong>%s: </strong>%s</p></div>',
+		printf(
+			'<div class="notice notice-error is-dismissable" style="margin-left: 2px"><p><strong>%s: </strong>%s</p></div>',
 			'Fel',
-			$message );
+			$message
+		);
 	}
 
 	public static function printSuccess( $message ) {
@@ -28,7 +32,7 @@ class AdminUtils {
 	public static function getScoreCssClass( $score_percent ) {
 		if ( $score_percent > 0.90 ) {
 			return 'tuja-admin-review-autoscore-good';
-		} else if ( $score_percent < 0.10 ) {
+		} elseif ( $score_percent < 0.10 ) {
 			return 'tuja-admin-review-autoscore-poor';
 		} else {
 			return 'tuja-admin-review-autoscore-decent';
@@ -49,10 +53,10 @@ class AdminUtils {
 			$menu_config = array_merge(
 				$menu_config,
 				array(
-				'Competition'         => 'Formulär',
-				'Stations'            => 'Stationer',
-				'Maps'                => 'Kartor',
-				'CompetitionSettings' => 'Inställningar',
+					'Competition'         => 'Formulär',
+					'Stations'            => 'Stationer',
+					'Maps'                => 'Kartor',
+					'CompetitionSettings' => 'Inställningar',
 					'Shortcodes'          => 'Shortcodes',
 					'CompetitionDelete'   => 'Rensa',
 				)
@@ -69,7 +73,7 @@ class AdminUtils {
 					'<a href="%s">%s</a>',
 					add_query_arg(
 						array(
-					'tuja_competition' => $competition->id,
+							'tuja_competition' => $competition->id,
 							'tuja_view'        => $view,
 						)
 					),
@@ -129,7 +133,6 @@ class AdminUtils {
 						return sprintf( 'Kan inte visa bild group-%s/%s', $group_key, $image_id );
 					}
 
-
 				},
 				$answer['images']
 			)
@@ -144,5 +147,36 @@ class AdminUtils {
 
 	public static function is_admin_mode() {
 		return self::$is_admin_mode;
+	}
+
+	public static function get_initial_group_status_selector( string $preselected_status, string $field_name ) {
+		return join(
+			'<br>',
+			array_map(
+				function ( $status ) use ( $preselected_status, $field_name ) {
+
+					$status_descriptions = array(
+						Group::STATUS_CREATED           => 'Inga meddelanden skickas ut per automatik.',
+						Group::STATUS_AWAITING_APPROVAL => 'Bra om tävlingsledningen måste godkänna lag innan de får vara med. Automatiska meddelanden kan konfigureras.',
+						Group::STATUS_ACCEPTED          => 'Bra om alla lag som anmäler sig får plats i tävlingen. Automatiska meddelanden kan konfigureras.',
+					);
+
+					$id = $field_name . '-' . $status;
+
+					return sprintf(
+						'<input type="radio" id="%s" name="%s" value="%s" %s/><label for="%s"><span class="tuja-admin-groupstatus tuja-admin-groupstatus-%s">%s</span> <small>%s</small></label>',
+						$id,
+						$field_name,
+						$status,
+						$status == ( $preselected_status ?: Group::DEFAULT_STATUS ) ? 'checked="checked"' : '',
+						$id,
+						$status,
+						$status,
+						@$status_descriptions[ $status ]
+					);
+				},
+				Competition::allowed_initial_statuses()
+			)
+		);
 	}
 }

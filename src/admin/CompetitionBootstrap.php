@@ -19,7 +19,6 @@ class CompetitionBootstrap {
 	public function __construct() {
 	}
 
-
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {
 			return;
@@ -30,6 +29,7 @@ class CompetitionBootstrap {
 			try {
 				$props                                  = new BootstrapCompetitionParams();
 				$props->name                            = @$_POST['tuja_competition_name'];
+				$props->initial_group_status            = @$_POST['tuja_competition_initial_group_status'];
 				$props->create_default_group_categories = @$_POST['tuja_create_default_group_categories'] === 'true';
 				$props->create_default_crew_groups      = @$_POST['tuja_create_default_crew_groups'] === 'true';
 				$props->create_common_group_state_transition_sendout_templates = @$_POST['tuja_create_common_group_state_transition_sendout_templates'] === 'true';
@@ -37,7 +37,8 @@ class CompetitionBootstrap {
 				$props->create_sample_maps                                     = @$_POST['tuja_create_sample_maps'] === 'true';
 				$props->create_sample_stations                                 = @$_POST['tuja_create_sample_stations'] === 'true';
 
-				$competition = $controller->bootstrap_competition( $props );
+				$bootstrap_result = $controller->bootstrap_competition( $props );
+				$competition      = $bootstrap_result['competition'];
 
 				$url = add_query_arg(
 					array(
@@ -46,7 +47,24 @@ class CompetitionBootstrap {
 					)
 				);
 
-				AdminUtils::printSuccess( sprintf( '<a href="%s" id="tuja_bootstrapped_competition_link" data-competition-id="%s" data-competition-key="%s">Tävling %s</a> har skapats.', $url, $competition->id, $competition->random_id, $props->name ) );
+				AdminUtils::printSuccess(
+					sprintf(
+						'<a href="%s"
+							id="tuja_bootstrapped_competition_link"
+							data-crew-group-category-id="%s"
+							data-form-key="%s"
+							data-form-id="%s"
+							data-competition-id="%s"
+							data-competition-key="%s">Tävling %s</a> har skapats.',
+						$url,
+						$bootstrap_result['crew_group_category_id'],
+						$bootstrap_result['sample_form_key'],
+						$bootstrap_result['sample_form_id'],
+						$competition->id,
+						$competition->random_id,
+						$props->name
+					)
+				);
 
 				return true;
 			} catch ( Exception $e ) {
