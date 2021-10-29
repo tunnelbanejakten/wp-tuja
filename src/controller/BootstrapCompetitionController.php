@@ -50,7 +50,7 @@ class BootstrapCompetitionController {
 	function bootstrap_competition( BootstrapCompetitionParams $params ) {
 		$competition = $this->create_competition( $params->name, $params->initial_group_status );
 		if ( $params->create_default_group_categories ) {
-			$crew_group_category_id = $this->create_group_categories( $competition, $params->create_default_crew_groups );
+			$crew_group_key = $this->create_group_categories( $competition, $params->create_default_crew_groups );
 		}
 		if ( $params->create_sample_form ) {
 			$form           = $this->create_form( $competition );
@@ -62,7 +62,7 @@ class BootstrapCompetitionController {
 			$this->create_options_question( $question_group );
 
 			$sample_form_key = $form->random_id;
-			$sample_form_id = $form->id;
+			$sample_form_id  = $form->id;
 		}
 		if ( $params->create_sample_stations ) {
 			$this->create_stations( $competition );
@@ -74,10 +74,10 @@ class BootstrapCompetitionController {
 			$this->create_common_sendout_templates( $competition );
 		}
 		return array(
-			'competition'            => $competition,
-			'crew_group_category_id' => $crew_group_category_id ?: null,
-			'sample_form_key'        => $sample_form_key ?: null,
-			'sample_form_id'        => $sample_form_id ?: null,
+			'competition'     => $competition,
+			'crew_group_key'  => $crew_group_key ?: null,
+			'sample_form_key' => $sample_form_key ?: null,
+			'sample_form_id'  => $sample_form_id ?: null,
 		);
 	}
 
@@ -95,8 +95,8 @@ class BootstrapCompetitionController {
 	}
 
 	private function create_group_categories( Competition $competition, bool $create_default_crew_groups ) {
-		$crew_group_category_id = null;
-		$rule_sets              = array(
+		$crew_group_key = null;
+		$rule_sets      = array(
 			'The Crew'           => new CrewMembersRuleSet(),
 			'Young Participants' => new YoungParticipantsRuleSet(),
 			'Old Participants'   => new OlderParticipantsRuleSet(),
@@ -121,12 +121,15 @@ class BootstrapCompetitionController {
 					$group_props->category_id        = $category_id;
 					$group_props->set_status( Group::DEFAULT_STATUS );
 
-					$this->group_dao->create( $group_props );
+					$crew_group_id = $this->group_dao->create( $group_props );
+					if ( $crew_group_id !== false ) {
+						$crew_group     = $this->group_dao->get( $crew_group_id );
+						$crew_group_key = $crew_group->random_id;
+					}
 				}
-				$crew_group_category_id = $category_id;
 			}
 		}
-		return $crew_group_category_id;
+		return $crew_group_key;
 	}
 
 	private function create_form( Competition $competition, string $name = 'Ett formulär' ) : Form {
@@ -219,7 +222,7 @@ class BootstrapCompetitionController {
 			OptionsQuestion::GRADING_TYPE_ALL_OF,
 			true,
 			array( 'paris' ),
-			array( 'bergen', 'paris',  'milano', 'barcelona' ),
+			array( 'bergen', 'paris', 'milano', 'barcelona' ),
 			false
 		);
 		return $this->create_question( $question_group, $question_props );

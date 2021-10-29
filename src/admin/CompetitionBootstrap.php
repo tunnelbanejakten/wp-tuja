@@ -51,13 +51,13 @@ class CompetitionBootstrap {
 					sprintf(
 						'<a href="%s"
 							id="tuja_bootstrapped_competition_link"
-							data-crew-group-category-id="%s"
+							data-crew-group-key="%s"
 							data-form-key="%s"
 							data-form-id="%s"
 							data-competition-id="%s"
 							data-competition-key="%s">Tävling %s</a> har skapats.',
 						$url,
-						$bootstrap_result['crew_group_category_id'],
+						$bootstrap_result['crew_group_key'],
 						$bootstrap_result['sample_form_key'],
 						$bootstrap_result['sample_form_id'],
 						$competition->id,

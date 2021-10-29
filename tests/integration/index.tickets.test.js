@@ -19,13 +19,11 @@ describe('Tickets', () => {
   let competitionId = null
   let competitionKey = null
   let competitionName = null
-  let crewGroupCategoryId = null
 
   beforeAll(async () => {
     competitionId = global.competitionId
     competitionKey = global.competitionKey
     competitionName = global.competitionName
-    crewGroupCategoryId = global.crewGroupCategoryId
     adminPage = await (new AdminPageWrapper(browser).init())
     defaultPage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
   })

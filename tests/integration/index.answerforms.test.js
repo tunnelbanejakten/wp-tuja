@@ -24,7 +24,6 @@ describe('Answer Forms', () => {
   let competitionId = null
   let competitionKey = null
   let competitionName = null
-  let crewGroupCategoryId = null
 
   const createNewUserPage = async () => (new UserPageWrapper(browser, competitionId, competitionKey)).init()
 
@@ -54,7 +53,6 @@ describe('Answer Forms', () => {
     competitionId = global.competitionId
     competitionKey = global.competitionKey
     competitionName = global.competitionName
-    crewGroupCategoryId = global.crewGroupCategoryId
     adminPage = await (new AdminPageWrapper(browser).init())
     defaultPage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
   })

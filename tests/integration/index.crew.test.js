@@ -21,7 +21,7 @@ describe('Crew', () => {
   let competitionId = null
   let competitionKey = null
   let competitionName = null
-  let crewGroupCategoryId = null
+  let crewGroupKey = null
 
   const createNewUserPage = async () => (new UserPageWrapper(browser, competitionId, competitionKey)).init()
 
@@ -51,7 +51,7 @@ describe('Crew', () => {
     competitionId = global.competitionId
     competitionKey = global.competitionKey
     competitionName = global.competitionName
-    crewGroupCategoryId = global.crewGroupCategoryId
+    crewGroupKey = global.crewGroupKey
     adminPage = await (new AdminPageWrapper(browser).init())
     defaultPage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
 
@@ -69,23 +69,8 @@ describe('Crew', () => {
     let crewGroupProps = null
 
     beforeAll(async () => {
-      // Go to admin console
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Groups&tuja_competition=${competitionId}`)
-
-      // Select crew category in tuja_new_group_type
-      await adminPage.page.select('select[name="tuja_new_group_type"]', crewGroupCategoryId)
-
-      // Type crew group name in tuja_new_group_name
-      await adminPage.type('input[name="tuja_new_group_name"]', '_ The Regular Crew') // Underscore added to ensure group shown first in list(s)
-
-      // Click correct tuja_action button
-      await adminPage.clickLink('button[name="tuja_action"][value="group_create"]')
-
-      // Wait for page to load and extract crew group id from link in group list
-      const groupTableRow = await adminPage.$('table#tuja_groups_list > tbody > tr:first-child > td:first-child')
-      const key = await groupTableRow.evaluate(node => node.dataset.groupKey)
       crewGroupProps = {
-        key
+        key: crewGroupKey
       }
 
       await adminPage.configureEventDateLimits(competitionId, 7 * 24 * 60, 7 * 24 * 60 + 60)
