@@ -86,13 +86,11 @@ describe('Administration', () => {
       await adminPage.expectElementCount('input.tuja-map-name-field', 3)
       await adminPage.expectToContain('#tuja_map_create_map_result', '')
 
-      const messageNode = await adminPage.$('#tuja_map_create_map_result')
-      const { mapId } = await messageNode.evaluate(node => ({ mapId: node.dataset.mapId }))
+      const { mapId } = await adminPage.$eval('#tuja_map_create_map_result', node => ({ mapId: node.dataset.mapId }))
       await adminPage.expectFormValue(`#tuja_map_name__${mapId}`, name)
 
       // Delete map
       adminPage.page.once('dialog', async (dialog) => {
-        console.log(dialog.message());
         await dialog.accept();
       });
 
@@ -122,16 +120,17 @@ describe('Administration', () => {
 
       // Update markers
       const markerFields = await adminPage.$$eval(`input.tuja-marker-raw-field[id^="tuja_marker_raw__${preexistingMapId}__"]`, nodes => nodes.map(node => ({ id: node.id, value: node.value })))
-      console.log(markerFields)
+
       const { id: emptyFieldId } = markerFields.filter(({ value }) => !value)[0]
       const newMarkerData = '59.338609 17.939238 Brommaplan'
       await adminPage.type(`#${emptyFieldId}`, newMarkerData)
+      
       const { id: nonEmptyFieldId, value: nonEmptyFieldValue } = markerFields.filter(({ value }) => !!value)[0]
       const updatedMarkerData = nonEmptyFieldValue + '.'
       await adminPage.type(`#${nonEmptyFieldId}`, updatedMarkerData)
-      await adminPage.takeScreenshot()
+      
       await adminPage.clickLink('#tuja_save_button')
-      await adminPage.takeScreenshot()
+
       await adminPage.expectFormValue(`#${emptyFieldId}`, newMarkerData)
       await adminPage.expectFormValue(`#${nonEmptyFieldId}`, updatedMarkerData)
 
