@@ -68,7 +68,7 @@ class BootstrapCompetitionController {
 			$this->create_stations( $competition );
 		}
 		if ( $params->create_sample_maps ) {
-			$this->create_maps( $competition );
+			$sample_map_id = $this->create_maps( $competition );
 		}
 		if ( $params->create_common_group_state_transition_sendout_templates ) {
 			$this->create_common_sendout_templates( $competition );
@@ -78,6 +78,7 @@ class BootstrapCompetitionController {
 			'crew_group_key'  => $crew_group_key ?: null,
 			'sample_form_key' => $sample_form_key ?: null,
 			'sample_form_id'  => $sample_form_id ?: null,
+			'sample_map_id'   => $sample_map_id ?: null,
 		);
 	}
 
@@ -310,6 +311,8 @@ class BootstrapCompetitionController {
 				}
 			}
 		}
+
+		return $map_id; // Return id for last created map
 	}
 
 	private function create_common_sendout_templates( Competition $competition ) {

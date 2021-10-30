@@ -17,15 +17,32 @@ AdminUtils::printTopMenu( $competition );
 	?>
 
 	<h3>Alla markörer</h3>
-	<table>
+	<table id="tuja_all_markers">
 		<thead>
 		<tr>
-		<td></td>
+		<th>Karta:</th>
 		<?php
 		foreach ( $maps as $map ) {
-			printf( '<td>%s</a></td>', $map->name );
+			printf(
+				'
+			<td>
+				<input type="text" class="text tuja-map-name-field" value="%s" name="%s" id="%s"><br>
+				<button type="submit" class="button" name="tuja_action" onclick="return confirm(\'Är du säker?\');" value="%s" id="%s">Ta bort</button>
+			</td>',
+				$map->name,
+				'tuja_map_name__' . $map->id,
+				'tuja_map_name__' . $map->id,
+				'tuja_map_delete__' . $map->id,
+				'tuja_map_delete__' . $map->id
+			);
 		}
 		?>
+		<td>
+			<input type="text" name="tuja_map_name" id="tuja_map_name" placeholder="Namn på ny karta"/><br>
+			<button type="submit" class="button" name="tuja_action" value="map_create" id="tuja_map_create_button">
+				Lägg till
+			</button>
+		</td>
 		</tr>
 		</thead>
 		<tbody>
@@ -42,7 +59,11 @@ AdminUtils::printTopMenu( $competition );
 								if ( isset( $markers[ $key ] ) ) {
 									$value = sprintf( '%s %s %s', $markers[ $key ]->gps_coord_lat, $markers[ $key ]->gps_coord_long, $markers[ $key ]->name );
 								}
-								return sprintf( '<td><input type="text" name="%s" value="%s" /></td>', 'tuja_marker_raw__' . $key, $value );
+								return sprintf( 
+									'<td><input type="text" class="tuja-marker-raw-field" name="%s" id="%s" value="%s" /></td>', 
+									'tuja_marker_raw__' . $key, 
+									'tuja_marker_raw__' . $key, 
+									$value );
 							},
 							$maps
 						)
@@ -53,12 +74,8 @@ AdminUtils::printTopMenu( $competition );
 		</tbody>
 	</table>
 	<div>
-		<button type="submit" class="button" name="tuja_action" value="save" id="tuja_save_button">
+		<button type="submit" class="button button-primary" name="tuja_action" value="save" id="tuja_save_button">
 			Spara ändringar
 		</button>
 	</div>
-	<input type="text" name="tuja_map_name" id="tuja_map_name"/>
-	<button type="submit" class="button" name="tuja_action" value="map_create" id="tuja_map_create_button">
-		Skapa karta
-	</button>
 </form>
