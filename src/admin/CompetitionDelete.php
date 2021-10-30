@@ -26,8 +26,8 @@ class CompetitionDelete {
 			return true;
 		}
 
-		if ( $_POST['tuja_action'] == 'competition_delete' ) {
-			if ( $_POST['tuja_competition_delete_confirm'] !== 'true' ) {
+		if ( @$_POST['tuja_action'] == 'competition_delete' ) {
+			if ( @$_POST['tuja_competition_delete_confirm'] !== 'true' ) {
 				AdminUtils::printError( 'Du måste kryssa för att du verkligen vill ta bort tävlingen först.' );
 
 				return true;
