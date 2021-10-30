@@ -25,13 +25,11 @@ describe('Team Management', () => {
   let competitionId = null
   let competitionKey = null
   let competitionName = null
-  let crewGroupCategoryId = null
 
   beforeAll(async () => {
     competitionId = global.competitionId
     competitionKey = global.competitionKey
     competitionName = global.competitionName
-    crewGroupCategoryId = global.crewGroupCategoryId
     adminPage = await (new AdminPageWrapper(browser).init())
     defaultPage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
   })
@@ -137,6 +135,7 @@ describe('Team Management', () => {
       })
 
       it.each([
+        // This takes a LOT of time
         ['8311090123', '19831109-0123'],
         ['831109-0123', '19831109-0123'],
         ['198311090123', '19831109-0123'],
@@ -164,6 +163,7 @@ describe('Team Management', () => {
       })
 
       it.each([
+        // This takes a LOT of time
         ['19831109-012', true],
         ['19831109-01', true],
         ['12345', true],

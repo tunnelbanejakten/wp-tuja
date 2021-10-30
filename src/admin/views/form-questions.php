@@ -38,8 +38,8 @@ printf( '<p><a id="tuja_form_questions_back" href="%s">« Tillbaka till grupp</a
 		<?php
 
 		foreach ($questions as $question) {
-			echo '<div class="tuja-admin-question">';
-			printf( '<div>%s:</div>', substr( get_class( $question ), strrpos( get_class( $question ), '\\' ) + 1 ) );
+            $question_class_short = substr( get_class( $question ), strrpos( get_class( $question ), '\\' ) + 1 );
+			printf('<div class="tuja-admin-question tuja-admin-question-%s">', strtolower($question_class_short));
 			echo '<div class="tuja-admin-question-properties">';
 
 			$json       = $question->get_editable_properties_json( $question );

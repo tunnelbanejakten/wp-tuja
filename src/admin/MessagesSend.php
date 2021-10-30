@@ -197,8 +197,8 @@ class MessagesSend {
 			'tuja_view'        => 'CompetitionSettings'
 		) );
 
-		$is_preview = $_POST['tuja_messages_action'] === 'preview';
-		$is_send    = $_POST['tuja_messages_action'] === 'send';
+		$is_preview = @$_POST['tuja_messages_action'] === 'preview';
+		$is_send    = @$_POST['tuja_messages_action'] === 'send';
 
 		$field_group_selector = $this->field_group_selector;
 

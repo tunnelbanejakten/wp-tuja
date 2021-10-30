@@ -116,7 +116,7 @@ AdminUtils::printTopMenu( $competition );
 	}, array_keys( $question_filters ), array_values( $question_filters ) ) ) );
 
 	$review_component->render(
-		$_GET[ Group::QUESTION_FILTER_URL_PARAM ] ?: Group::DEFAULT_QUESTION_FILTER,
+		@$_GET[ Group::QUESTION_FILTER_URL_PARAM ] ?: Group::DEFAULT_QUESTION_FILTER,
 		[ $group ],
 		false );
 	?>

@@ -294,11 +294,11 @@ class GroupPeopleEditor extends AbstractGroupView {
 			if ( isset( $people_map[ $id ] ) ) {
 				try {
 					$posted_values = [
-						'name'  => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $people_map[ $id ] ) ] ?: $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $people_map[ $id ] ) ],
-						'email' => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $people_map[ $id ] ) ],
-						'phone' => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $people_map[ $id ] ) ],
-						'pno'   => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $people_map[ $id ] ) ],
-						'food'  => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $people_map[ $id ] ) ]
+						'name'  => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $people_map[ $id ] ) ] ?: @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $people_map[ $id ] ) ],
+						'email' => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $people_map[ $id ] ) ],
+						'phone' => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $people_map[ $id ] ) ],
+						'pno'   => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $people_map[ $id ] ) ],
+						'food'  => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $people_map[ $id ] ) ]
 					];
 
 					$is_person_property_updated = false;

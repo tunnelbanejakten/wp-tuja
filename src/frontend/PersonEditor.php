@@ -86,12 +86,12 @@ class PersonEditor extends AbstractGroupView {
 
 	private function update_person( Person $person ) {
 		$posted_values = [
-			'name'  => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $person ) ],
-			'email' => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ],
-			'phone' => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $person ) ],
-			'pno'   => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $person ) ],
-			'food'  => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $person ) ],
-			'note'  => $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NOTE, $person ) ]
+			'name'  => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $person ) ],
+			'email' => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ],
+			'phone' => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $person ) ],
+			'pno'   => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $person ) ],
+			'food'  => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $person ) ],
+			'note'  => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NOTE, $person ) ]
 		];
 
 		$is_updated = false;

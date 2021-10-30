@@ -75,7 +75,7 @@ class Admin extends Plugin {
 		// Load scripts based on screen->id
 		$screen = get_current_screen();
 
-		if ( $screen->id === 'toplevel_page_tuja' || $screen->id === 'tunnelbanejakten_page_tuja_admin' ) {
+		if ( ($screen->id === 'toplevel_page_tuja' || $screen->id === 'tunnelbanejakten_page_tuja_admin') && isset( $_GET['tuja_view'] ) ) {
 			foreach ( $this->list_scripts( $_GET['tuja_view'] ) as $script_file_name ) {
 				wp_enqueue_script( 'tuja-script-' . $script_file_name, static::get_url() . '/assets/js/' . $script_file_name );
 			}
@@ -93,11 +93,11 @@ class Admin extends Plugin {
 	public function route( $is_admin ) {
 		AdminUtils::set_admin_mode( $is_admin );
 
-		$this->render_view( $_GET['tuja_view'] ?: 'Competitions' );
+		$this->render_view( @$_GET['tuja_view'] ?: 'Competitions' );
 	}
 
 	public function route_report() {
-		$this->render_view( $_GET['tuja_view'] );
+		$this->render_view( @$_GET['tuja_view'] );
 	}
 
 	private function render_view( $view_name ) {

@@ -24,17 +24,19 @@ class GroupCategoryDao extends AbstractDao {
 			throw new ValidationException( 'name', 'Det finns redan en kategori med detta namn.' );
 		}
 
-		$affected_rows = $this->wpdb->insert( $this->table,
+		$affected_rows = $this->wpdb->insert(
+			$this->table,
 			array(
 				'competition_id'      => $category->competition_id,
 				'name'                => $category->name,
-				'rules_configuration' => json_encode( $category->get_rules()->get_values() )
+				'rules_configuration' => json_encode( $category->get_rules()->get_values() ),
 			),
 			array(
 				'%d',
 				'%s',
-				'%s'
-			) );
+				'%s',
+			)
+		);
 		$success       = $affected_rows !== false && $affected_rows === 1;
 
 		return $success ? $this->wpdb->insert_id : false;
@@ -47,14 +49,16 @@ class GroupCategoryDao extends AbstractDao {
 			throw new ValidationException( 'name', 'Det finns redan en kategori med detta namn.' );
 		}
 
-		return $this->wpdb->update( $this->table,
+		return $this->wpdb->update(
+			$this->table,
 			array(
 				'name'                => $category->name,
-				'rules_configuration' => json_encode( $category->get_rules()->get_values() )
+				'rules_configuration' => json_encode( $category->get_rules()->get_values() ),
 			),
 			array(
-				'id' => $category->id
-			) );
+				'id' => $category->id,
+			)
+		);
 	}
 
 	function exists( GroupCategory $category ) {
@@ -63,8 +67,10 @@ class GroupCategoryDao extends AbstractDao {
 				'SELECT id FROM ' . $this->table . ' WHERE name = %s AND id != %d AND competition_id = %d',
 				$category->name,
 				$category->id,
-				$category->competition_id ),
-			OBJECT );
+				$category->competition_id
+			),
+			OBJECT
+		);
 
 		return $db_results !== false && count( $db_results ) > 0;
 	}
@@ -75,7 +81,8 @@ class GroupCategoryDao extends AbstractDao {
 				return self::to_group_category( $row );
 			},
 			'SELECT * FROM ' . $this->table . ' WHERE id = %d',
-			$id );
+			$id
+		);
 	}
 
 	function get_all_in_competition( $competition_id ) {
@@ -84,7 +91,8 @@ class GroupCategoryDao extends AbstractDao {
 				return self::to_group_category( $row );
 			},
 			'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d ORDER BY name',
-			$competition_id );
+			$competition_id
+		);
 	}
 
 	function delete( $id ) {
@@ -119,11 +127,18 @@ class GroupCategoryDao extends AbstractDao {
 
 			// Set rules based on (legacy) reference to RuleSet class in rule_set column.
 			// TODO: Remove rule_set from database.
-			$gc->set_rules( GroupCategoryRules::from_rule_set( self::get_rule_set( isset( $result->rule_set )
-				? $result->rule_set
-				: ( $result->is_crew != 0
-					? CrewMembersRuleSet::class
-					: PassthroughRuleSet::class ) ), $competition ) );
+			$gc->set_rules(
+				GroupCategoryRules::from_rule_set(
+					self::get_rule_set(
+						isset( $result->rule_set )
+						? $result->rule_set
+						: ( $result->is_crew != 0
+						? CrewMembersRuleSet::class
+						: PassthroughRuleSet::class )
+					),
+					$competition
+				)
+			);
 		}
 
 		return $gc;

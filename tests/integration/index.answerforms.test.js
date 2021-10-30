@@ -24,7 +24,6 @@ describe('Answer Forms', () => {
   let competitionId = null
   let competitionKey = null
   let competitionName = null
-  let crewGroupCategoryId = null
 
   const createNewUserPage = async () => (new UserPageWrapper(browser, competitionId, competitionKey)).init()
 
@@ -54,7 +53,6 @@ describe('Answer Forms', () => {
     competitionId = global.competitionId
     competitionKey = global.competitionKey
     competitionName = global.competitionName
-    crewGroupCategoryId = global.crewGroupCategoryId
     adminPage = await (new AdminPageWrapper(browser).init())
     defaultPage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
   })
@@ -88,9 +86,8 @@ describe('Answer Forms', () => {
     beforeAll(async () => {
       groupProps = await defaultPage.signUpTeam(adminPage)
 
-      const formIds = await createForm()
-      formKey = formIds.key
-      formId = formIds.id
+      formKey = global.formKey
+      formId = global.formId
     })
 
     it('should show the correct number of questions', async () => {
@@ -100,7 +97,7 @@ describe('Answer Forms', () => {
       await expectElementCount('input.tuja-fieldtext[type="text"]', 1)
       await expectElementCount('input.tuja-fieldtext[type="number"]', 1)
       await expectElementCount('div.tuja-image', 1)
-      await expectElementCount('input.tuja-fieldchoices[type="radio"]', 3)
+      await expectElementCount('input.tuja-fieldchoices[type="radio"]', 4)
       await expectElementCount('button[name="tuja_formshortcode__action"][value="update"]', 1)
     })
 

@@ -42,7 +42,7 @@ AdminUtils::printTopMenu( $competition );
 		<?php
 		foreach ($question_groups as $question_group) {
 			$link = add_query_arg( array(
-				'tuja_competition' => $this->competition->id,
+				'tuja_competition' => $competition->id,
 				'tuja_view'        => 'FormQuestions',
 				'tuja_question_group'        => $question_group->id
 			) );

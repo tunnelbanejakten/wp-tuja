@@ -45,7 +45,11 @@ class AbstractDao {
 	}
 
 	protected function get_objects( $mapper, $query, ...$arguments ) {
-		$db_results = $this->wpdb->get_results( $this->wpdb->prepare( $query, $arguments ), OBJECT );
+		$db_results = $this->wpdb->get_results(
+			count($arguments) > 0
+				? $this->wpdb->prepare( $query, $arguments )
+				: $query
+			, OBJECT );
 		$results    = array();
 		foreach ( $db_results as $result ) {
 			$results[] = $mapper( $result );

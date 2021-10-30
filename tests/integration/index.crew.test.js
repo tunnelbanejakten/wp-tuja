@@ -21,37 +21,15 @@ describe('Crew', () => {
   let competitionId = null
   let competitionKey = null
   let competitionName = null
-  let crewGroupCategoryId = null
+  let crewGroupKey = null
 
   const createNewUserPage = async () => (new UserPageWrapper(browser, competitionId, competitionKey)).init()
-
-  const createNewForm = async (formName) => {
-    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Competition&tuja_competition=${competitionId}`)
-
-    await adminPage.type('#tuja_form_name', formName)
-    await adminPage.clickLink('#tuja_form_create_button')
-
-    const links = await adminPage.page.$$('form.tuja a')
-    let link = null
-    for (let i = 0; i < links.length; i++) {
-      const el = links[i]
-      const linkText = await el.evaluate(node => node.innerText)
-      const isEqual = linkText === formName
-      if (isEqual) {
-        link = el
-        break
-      }
-    }
-
-    const formId = querystring.parse(await link.evaluate(node => node.href)).tuja_form
-    return formId
-  }
 
   beforeAll(async () => {
     competitionId = global.competitionId
     competitionKey = global.competitionKey
     competitionName = global.competitionName
-    crewGroupCategoryId = global.crewGroupCategoryId
+    crewGroupKey = global.crewGroupKey
     adminPage = await (new AdminPageWrapper(browser).init())
     defaultPage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
 
@@ -69,23 +47,8 @@ describe('Crew', () => {
     let crewGroupProps = null
 
     beforeAll(async () => {
-      // Go to admin console
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Groups&tuja_competition=${competitionId}`)
-
-      // Select crew category in tuja_new_group_type
-      await adminPage.page.select('select[name="tuja_new_group_type"]', crewGroupCategoryId)
-
-      // Type crew group name in tuja_new_group_name
-      await adminPage.type('input[name="tuja_new_group_name"]', '_ The Regular Crew') // Underscore added to ensure group shown first in list(s)
-
-      // Click correct tuja_action button
-      await adminPage.clickLink('button[name="tuja_action"][value="group_create"]')
-
-      // Wait for page to load and extract crew group id from link in group list
-      const groupTableRow = await adminPage.$('table#tuja_groups_list > tbody > tr:first-child > td:first-child')
-      const key = await groupTableRow.evaluate(node => node.dataset.groupKey)
       crewGroupProps = {
-        key
+        key: crewGroupKey
       }
 
       await adminPage.configureEventDateLimits(competitionId, 7 * 24 * 60, 7 * 24 * 60 + 60)
@@ -95,29 +58,9 @@ describe('Crew', () => {
       let competingGroupProps = null
       let stationScoreReportForm = 0
 
-      const createForm = async () => {
-        const formId = await createNewForm('The Stations')
-
-        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
-
-        await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
-        await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-        await adminPage.clickLink('#tuja_form_questions_back')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
-        await adminPage.clickLink('div.tuja-admin-question:nth-of-type(3) a[href*="FormQuestions"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-        await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-
-        return formId
-      }
-
       beforeAll(async () => {
-        competingGroupProps = await defaultPage.signUpTeam( adminPage)
-        stationScoreReportForm = await createForm()
+        competingGroupProps = await defaultPage.signUpTeam(adminPage)
+        stationScoreReportForm = global.formId
       })
 
       it('should be possible for crew member to report score', async () => {
@@ -133,7 +76,7 @@ describe('Crew', () => {
 
         await goToForm()
 
-        await defaultPage.expectElementCount('input.tuja-fieldtext', 3)
+        await defaultPage.expectElementCount('input.tuja-fieldtext', 4)
 
         await defaultPage.type('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '2')
         await defaultPage.type('div.tuja-field:nth-of-type(3) input.tuja-fieldtext', '3')

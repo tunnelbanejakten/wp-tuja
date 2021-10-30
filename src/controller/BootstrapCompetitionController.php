@@ -35,22 +35,22 @@ class BootstrapCompetitionController {
 	private $competition_dao;
 
 	function __construct() {
-		$this->competition_dao    = new CompetitionDao();
-		$this->category_dao       = new GroupCategoryDao();
-		$this->group_dao          = new GroupDao();
-		$this->form_dao           = new FormDao();
-		$this->question_group_dao = new QuestionGroupDao();
-		$this->question_dao       = new QuestionDao();
-		$this->station_dao        = new StationDao();
-		$this->map_dao            = new MapDao();
-		$this->marker_dao         = new MarkerDao();
+		$this->competition_dao      = new CompetitionDao();
+		$this->category_dao         = new GroupCategoryDao();
+		$this->group_dao            = new GroupDao();
+		$this->form_dao             = new FormDao();
+		$this->question_group_dao   = new QuestionGroupDao();
+		$this->question_dao         = new QuestionDao();
+		$this->station_dao          = new StationDao();
+		$this->map_dao              = new MapDao();
+		$this->marker_dao           = new MarkerDao();
 		$this->message_template_dao = new MessageTemplateDao();
 	}
 
 	function bootstrap_competition( BootstrapCompetitionParams $params ) {
-		$competition = $this->create_competition( $params->name );
+		$competition = $this->create_competition( $params->name, $params->initial_group_status );
 		if ( $params->create_default_group_categories ) {
-			$this->create_group_categories( $competition, $params->create_default_crew_groups );
+			$crew_group_key = $this->create_group_categories( $competition, $params->create_default_crew_groups );
 		}
 		if ( $params->create_sample_form ) {
 			$form           = $this->create_form( $competition );
@@ -60,6 +60,9 @@ class BootstrapCompetitionController {
 			$this->create_number_question( $question_group );
 			$this->create_images_question( $question_group, 'Ta en bild på något som får dig att le' );
 			$this->create_options_question( $question_group );
+
+			$sample_form_key = $form->random_id;
+			$sample_form_id  = $form->id;
 		}
 		if ( $params->create_sample_stations ) {
 			$this->create_stations( $competition );
@@ -67,15 +70,21 @@ class BootstrapCompetitionController {
 		if ( $params->create_sample_maps ) {
 			$this->create_maps( $competition );
 		}
-		if ($params->create_common_group_state_transition_sendout_templates) {
-			$this->create_common_sendout_templates($competition);
+		if ( $params->create_common_group_state_transition_sendout_templates ) {
+			$this->create_common_sendout_templates( $competition );
 		}
-		return $competition;
+		return array(
+			'competition'     => $competition,
+			'crew_group_key'  => $crew_group_key ?: null,
+			'sample_form_key' => $sample_form_key ?: null,
+			'sample_form_id'  => $sample_form_id ?: null,
+		);
 	}
 
-	private function create_competition( string $name ) {
-		$competition       = new Competition();
-		$competition->name = $name;
+	private function create_competition( string $name, string $initial_group_status ) {
+		$competition                       = new Competition();
+		$competition->name                 = $name;
+		$competition->initial_group_status = $initial_group_status;
 
 		$competition_id = $this->competition_dao->create( $competition );
 		if ( $competition_id === false ) {
@@ -86,32 +95,41 @@ class BootstrapCompetitionController {
 	}
 
 	private function create_group_categories( Competition $competition, bool $create_default_crew_groups ) {
-		$rule_sets = array(
-			'Crew Members'       => new CrewMembersRuleSet(),
+		$crew_group_key = null;
+		$rule_sets      = array(
+			'The Crew'           => new CrewMembersRuleSet(),
 			'Young Participants' => new YoungParticipantsRuleSet(),
-			'Older Participants' => new OlderParticipantsRuleSet(),
+			'Old Participants'   => new OlderParticipantsRuleSet(),
 		);
 		foreach ( $rule_sets as $name => $rule_set ) {
-			$props                 = new GroupCategory();
-			$props->competition_id = $competition->id;
-			$props->name           = $name;
+			$is_crew_group_category = $rule_set->is_crew();
+			$props                  = new GroupCategory();
+			$props->competition_id  = $competition->id;
+			$props->name            = $name;
 			$props->set_rules( GroupCategoryRules::from_rule_set( $rule_set, $competition ) );
 
 			$category_id = $this->category_dao->create( $props );
-			if ( $category_id !== false && $create_default_crew_groups && $rule_set->is_crew() ) {
-				$group_props                     = new Group();
-				$group_props->competition_id     = $competition->id;
-				$group_props->map_id             = null;
-				$group_props->name               = $name;
-				$group_props->note               = null;
-				$group_props->city               = null;
-				$group_props->is_always_editable = false;
-				$group_props->category_id        = $category_id;
-				$group_props->set_status( Group::DEFAULT_STATUS );
+			if ( $category_id !== false && $is_crew_group_category ) {
+				if ( $create_default_crew_groups ) {
+					$group_props                     = new Group();
+					$group_props->competition_id     = $competition->id;
+					$group_props->map_id             = null;
+					$group_props->name               = $name;
+					$group_props->note               = null;
+					$group_props->city               = null;
+					$group_props->is_always_editable = false;
+					$group_props->category_id        = $category_id;
+					$group_props->set_status( Group::DEFAULT_STATUS );
 
-				$group_id = $this->group_dao->create( $group_props );
+					$crew_group_id = $this->group_dao->create( $group_props );
+					if ( $crew_group_id !== false ) {
+						$crew_group     = $this->group_dao->get( $crew_group_id );
+						$crew_group_key = $crew_group->random_id;
+					}
+				}
 			}
 		}
+		return $crew_group_key;
 	}
 
 	private function create_form( Competition $competition, string $name = 'Ett formulär' ) : Form {
@@ -194,7 +212,7 @@ class BootstrapCompetitionController {
 
 	private function create_options_question( QuestionGroup $question_group ): AbstractQuestion {
 		$question_props = new OptionsQuestion(
-			'Vilka av de här städerna är europeiska huvudstäder?',
+			'Vilken är en huvudstad?',
 			'En ledtråd',
 			0,
 			$question_group->id,
@@ -203,8 +221,8 @@ class BootstrapCompetitionController {
 			10,
 			OptionsQuestion::GRADING_TYPE_ALL_OF,
 			true,
-			array( 'stockholm', 'helsingfors', 'berlin', 'paris', 'rom' ),
-			array( 'stockholm', 'helsingfors', 'berlin', 'paris', 'rom', 'göteborg', 'bonn', 'milano', 'barcelona' ),
+			array( 'paris' ),
+			array( 'bergen', 'paris', 'milano', 'barcelona' ),
 			false
 		);
 		return $this->create_question( $question_group, $question_props );
@@ -296,7 +314,7 @@ class BootstrapCompetitionController {
 
 	private function create_common_sendout_templates( Competition $competition ) {
 		$templates = MessageTemplate::default_templates();
-		foreach ($templates as $template) {
+		foreach ( $templates as $template ) {
 			$template->competition_id = $competition->id;
 
 			$template_id = $this->message_template_dao->create( $template );

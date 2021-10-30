@@ -140,13 +140,13 @@ class CompetitionSignup extends FrontendView {
 			Strings::get( 'competition_signup.form.group_name.label' ),
 			Strings::get( 'competition_signup.form.group_name.hint' ),
 			false, [] );
-		$html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, $errors[ self::FIELD_GROUP_NAME ] );
+		$html_sections[]     = $this->render_field( $group_name_question, self::FIELD_GROUP_NAME, @$errors[ self::FIELD_GROUP_NAME ] );
 
 		$group_city_question = new FieldText(
 			Strings::get( 'competition_signup.form.group_city.label' ),
 			Strings::get( 'competition_signup.form.group_city.hint' ),
 			false, [] );
-		$html_sections[]     = $this->render_field( $group_city_question, self::FIELD_GROUP_CITY, $errors[ self::FIELD_GROUP_CITY ] );
+		$html_sections[]     = $this->render_field( $group_city_question, self::FIELD_GROUP_CITY, @$errors[ self::FIELD_GROUP_CITY ] );
 
 		$group_category_options =
 			array_map(
@@ -167,7 +167,7 @@ class CompetitionSignup extends FrontendView {
 			false,
 			$group_category_options,
 			false );
-		$html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, $errors[ self::FIELD_GROUP_AGE ] );
+		$html_sections[]         = $this->render_field( $group_category_question, self::FIELD_GROUP_AGE, @$errors[ self::FIELD_GROUP_AGE ] );
 
 		$reporter_role   = new FieldChoices(
 			Strings::get( 'competition_signup.form.role.label' ),
@@ -179,7 +179,7 @@ class CompetitionSignup extends FrontendView {
 			],
 			false );
 
-		$html_sections[] = $this->render_field( $reporter_role, self::FIELD_PERSON_ROLE, @$errors[ self::FIELD_PERSON_ROLE ], $_POST[ self::FIELD_PERSON_ROLE ] ?: self::ROLE_LABEL_GROUP_LEADER );
+		$html_sections[] = $this->render_field( $reporter_role, self::FIELD_PERSON_ROLE, @$errors[ self::FIELD_PERSON_ROLE ], @$_POST[ self::FIELD_PERSON_ROLE ] ?: self::ROLE_LABEL_GROUP_LEADER );
 
 		$html_sections[] = $this->get_recaptcha_html();
 
@@ -252,8 +252,8 @@ class CompetitionSignup extends FrontendView {
 		// DETERMINE REQUESTED CHANGES
 		$new_group = new Group();
 		$new_group->set_status( Group::DEFAULT_STATUS );
-		$new_group->name           = $_POST[ self::FIELD_GROUP_NAME ];
-		$new_group->city           = $_POST[ self::FIELD_GROUP_CITY ];
+		$new_group->name           = @$_POST[ self::FIELD_GROUP_NAME ];
+		$new_group->city           = @$_POST[ self::FIELD_GROUP_CITY ];
 		$new_group->competition_id = $this->get_competition()->id;
 		if ( isset( $category ) ) {
 			$new_group->category_id = $category->id;
@@ -310,15 +310,15 @@ class CompetitionSignup extends FrontendView {
 	private function get_posted_person(): Person {
 		$new_person = new Person();
 		$new_person->set_status( Person::DEFAULT_STATUS );
-		$new_person->email = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $new_person ) ];
-		if ( $_POST[ self::FIELD_PERSON_ROLE ] == self::ROLE_LABEL_EXTRA_CONTACT ) {
-			$new_person->name = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $new_person ) ];
+		$new_person->email = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $new_person ) ];
+		if ( @$_POST[ self::FIELD_PERSON_ROLE ] == self::ROLE_LABEL_EXTRA_CONTACT ) {
+			$new_person->name = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $new_person ) ];
 			$new_person->set_type( Person::PERSON_TYPE_ADMIN );
 		} else {
-			$new_person->name  = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $new_person ) ];
-			$new_person->phone = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $new_person ) ];
-			$new_person->pno   = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $new_person ) ];
-			$new_person->food  = $_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $new_person ) ];
+			$new_person->name  = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $new_person ) ];
+			$new_person->phone = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $new_person ) ];
+			$new_person->pno   = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $new_person ) ];
+			$new_person->food  = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $new_person ) ];
 			$new_person->set_type( Person::PERSON_TYPE_LEADER );
 		}
 
