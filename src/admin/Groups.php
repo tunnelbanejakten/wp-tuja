@@ -86,7 +86,7 @@ class Groups {
 				$all_groups = $group_dao->get_all_in_competition( $this->competition->id, true );
 
 				$competing_groups = array_filter( $all_groups, function ( Group $grp ) {
-					return $grp->get_category()->get_rules()->is_crew();
+					return ! $grp->get_category()->get_rules()->is_crew();
 				} );
 
 				switch ( $_POST['tuja_anonymizer_filter'] ) {
