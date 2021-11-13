@@ -219,7 +219,7 @@ class PersonDao extends AbstractDao {
 		} );
 	}
 
-	function anonymize( $group_ids = [], $exclude_contacts = false ) {
+	function anonymize( $group_ids = array(), $exclude_contacts = false ) {
 		$anonymizer = new Anonymizer();
 		$id         = new Id();
 
@@ -232,53 +232,77 @@ class PersonDao extends AbstractDao {
 			$where .= ' AND is_team_contact != 1';
 		}
 
-		$current_names = array_map( function ( $row ) {
+		$current_names = array_map(
+			function ( $row ) {
 			return $row[0];
-		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT name FROM ' . $this->props_table . ' WHERE ' . $where ), ARRAY_N ) );
+			},
+			$this->wpdb->get_results( 'SELECT DISTINCT name FROM ' . $this->props_table . ' WHERE ' . $where, ARRAY_N )
+		);
 		foreach ( $current_names as $current_name ) {
-			$this->wpdb->query( $this->wpdb->prepare(
+			$this->wpdb->query(
+				$this->wpdb->prepare(
 				'UPDATE ' . $this->props_table . ' SET name = %s WHERE name = %s AND ' . $where,
 				$anonymizer->first_name() . ' ' . $anonymizer->last_name(),
-				$current_name ) );
+					$current_name
+				)
+			);
 		}
 
-		$current_phone_numbers = array_map( function ( $row ) {
+		$current_phone_numbers = array_map(
+			function ( $row ) {
 			return $row[0];
-		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT phone FROM ' . $this->props_table . ' WHERE ' . $where ), ARRAY_N ) );
+			},
+			$this->wpdb->get_results( 'SELECT DISTINCT phone FROM ' . $this->props_table . ' WHERE ' . $where, ARRAY_N )
+		);
 		foreach ( $current_phone_numbers as $current_phone_number ) {
 			if ( ! empty( $current_phone_number ) ) {
-				$this->wpdb->query( $this->wpdb->prepare(
+				$this->wpdb->query(
+					$this->wpdb->prepare(
 					'UPDATE ' . $this->props_table . ' SET phone = %s WHERE phone = %s AND ' . $where,
 					'0760-' . rand( 100000, 999999 ),
-					$current_phone_number ) );
+						$current_phone_number
+					)
+				);
 			};
 		}
 
-		$current_email_addresses = array_map( function ( $row ) {
+		$current_email_addresses = array_map(
+			function ( $row ) {
 			return $row[0];
-		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT email FROM ' . $this->props_table . ' WHERE ' . $where ), ARRAY_N ) );
+			},
+			$this->wpdb->get_results( 'SELECT DISTINCT email FROM ' . $this->props_table . ' WHERE ' . $where, ARRAY_N )
+		);
 		foreach ( $current_email_addresses as $current_email_address ) {
 			if ( ! empty( $current_email_address ) ) {
-				$this->wpdb->query( $this->wpdb->prepare(
+				$this->wpdb->query(
+					$this->wpdb->prepare(
 					'UPDATE ' . $this->props_table . ' SET email = %s WHERE email = %s AND ' . $where,
 					$id->random_string( 5 ) . '@example.com',
-					$current_email_address ) );
+						$current_email_address
+					)
+				);
 			}
 		}
 
-		$current_pnos = array_map( function ( $row ) {
+		$current_pnos = array_map(
+			function ( $row ) {
 			return $row[0];
-		}, $this->wpdb->get_results( $this->wpdb->prepare( 'SELECT DISTINCT pno FROM ' . $this->props_table . ' WHERE ' . $where ), ARRAY_N ) );
+			},
+			$this->wpdb->get_results( 'SELECT DISTINCT pno FROM ' . $this->props_table . ' WHERE ' . $where, ARRAY_N )
+		);
 		foreach ( $current_pnos as $current_pno ) {
 			if ( ! empty( $current_pno ) ) {
-				$this->wpdb->query( $this->wpdb->prepare(
+				$this->wpdb->query(
+					$this->wpdb->prepare(
 					'UPDATE ' . $this->props_table . ' SET pno = %s WHERE pno = %s AND ' . $where,
 					$anonymizer->birthdate( isset( $current_pno ) ? substr( $current_pno, 0, 4 ) : 2005 ) . '-0000',
-					$current_pno ) );
+						$current_pno
+					)
+				);
 			}
 		}
 
-		$this->wpdb->query( $this->wpdb->prepare( 'UPDATE ' . $this->props_table . ' SET food = NULL WHERE ' . $where ) );
+		$this->wpdb->query( 'UPDATE ' . $this->props_table . ' SET food = NULL WHERE ' . $where );
 	}
 
 	public function delete_by_key( $key ) {

@@ -260,31 +260,33 @@ class GroupDao extends AbstractDao {
 		}
 	}
 
-	public function anonymize( array $group_ids = [] ) {
+	public function anonymize( array $group_ids = array() ) {
 		$anonymizer = new Anonymizer();
 
 		if ( empty( $group_ids ) ) {
 			throw new Exception( 'Must specify groups to anonymize.' );
 		}
 
-		$table = $this->table;	
-		$group_ids = join( ', ', $group_ids );
+		$props_table = $this->props_table;
+		$group_ids   = join( ', ', $group_ids );
 
-		$get_names_query = "SELECT DISTINCT name FROM $table WHERE id IN ($group_ids)";
-		$update_names_query = "UPDATE $table SET name = %s, city = %s WHERE name = %s AND id IN ($group_ids)";
+		$get_names_query    = "SELECT DISTINCT name FROM $props_table WHERE id IN ($group_ids)";
+		$update_names_query = "UPDATE $props_table SET name = %s, city = %s WHERE name = %s AND id IN ($group_ids)";
 		
-		$current_names = $this->wpdb->get_col( $this->wpdb->prepare( $get_names_query ), ARRAY_N );
+		$current_names = $this->wpdb->get_col( $get_names_query, ARRAY_N );
 
 		foreach ( $current_names as $current_name ) {
 			$new_city = $anonymizer->neighborhood();
 			$new_name = $anonymizer->animal() . ' från ' . $new_city;
 
-			$this->wpdb->query( $this->wpdb->prepare(
+			$this->wpdb->query(
+				$this->wpdb->prepare(
 				$update_names_query,
 				$new_name,
 				$new_city,
 				$current_name
-			) );
+				)
+			);
 		}
 	}
 }

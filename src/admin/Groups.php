@@ -74,48 +74,6 @@ class Groups {
 					}
 				}
 				break;
-			case 'anonymize':
-				if ( $_POST['tuja_anonymizer_confirm'] !== 'true' ) {
-					AdminUtils::printError( 'Du måste kryssa för att du verkligen vill anonymisera personuppgifterna först.' );
-
-					return;
-				}
-
-				$exclude_contacts = false;
-
-				$all_groups = $group_dao->get_all_in_competition( $this->competition->id, true );
-
-				$competing_groups = array_filter( $all_groups, function ( Group $grp ) {
-					return ! $grp->get_category()->get_rules()->is_crew();
-				} );
-
-				switch ( $_POST['tuja_anonymizer_filter'] ) {
-					case 'participants':
-						$groups           = $competing_groups;
-						$exclude_contacts = false;
-						break;
-					case 'non_contacts':
-						$groups           = $competing_groups;
-						$exclude_contacts = true;
-						break;
-					default:
-						$groups           = $all_groups;
-						$exclude_contacts = false;
-						break;
-				}
-				try {
-					$group_ids = array_map( function ( Group $grp ) {
-						return $grp->id;
-					}, $groups );
-
-					$person_dao->anonymize( $group_ids, $exclude_contacts );
-					$group_dao->anonymize( $group_ids );
-
-					AdminUtils::printSuccess( 'Klart. Personuppgifterna har anonymiserats.' );
-				} catch ( Exception $e ) {
-					AdminUtils::printException( $e );
-				}
-				break;
 			case 'group_create':
 				$props                 = new Group();
 				$props->name           = $_POST['tuja_new_group_name'];

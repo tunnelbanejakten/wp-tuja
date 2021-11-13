@@ -5,6 +5,7 @@ namespace tuja\admin;
 use Exception;
 use tuja\controller\DeleteCompetitionController;
 use tuja\data\store\CompetitionDao;
+use tuja\controller\AnonymizeController;
 
 class CompetitionDelete {
 
@@ -45,6 +46,31 @@ class CompetitionDelete {
 				AdminUtils::printSuccess( sprintf( 'Tävlingen har tagits bort. Vad sägs om att gå till <a href="%s">startsidan</a> för att kanske skapa en ny?', $url ) );
 
 				return false;
+			} catch ( Exception $e ) {
+				AdminUtils::printException( $e );
+			}
+		} elseif ( @$_POST['tuja_action'] == 'anonymize' ) {
+			if ( @$_POST['tuja_anonymizer_confirm'] !== 'true' ) {
+				AdminUtils::printError( 'Du måste kryssa för att du verkligen vill anonymisera personuppgifterna först.' );
+
+				return true;
+			}
+
+			try {
+				$controller = new AnonymizeController( $this->competition );
+				$filter     = @$_POST['tuja_anonymizer_filter'];
+				if ( $filter === 'participants' ) {
+					$controller->anonymize_participants_incl_contacts();
+				} elseif ( $filter === 'non_contacts' ) {
+					$controller->anonymize_participants_excl_contacts();
+				} elseif ( $filter === 'all' ) {
+					$controller->anonymize_all();
+				} else {
+					AdminUtils::printError( 'Du måste välja vilket urval av personuppgifter du vill anonymisera.' );
+
+					return true;
+				}
+				AdminUtils::printSuccess( 'Klart. Personuppgifterna har anonymiserats.' );
 			} catch ( Exception $e ) {
 				AdminUtils::printException( $e );
 			}
