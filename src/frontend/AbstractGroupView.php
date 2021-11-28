@@ -93,7 +93,7 @@ abstract class AbstractGroupView extends FrontendView {
 		return $person;
 	}
 
-	protected function check_group_status( Group $group ) {
+	protected function check_group_not_on_waiting_list( Group $group ) {
 		if ( $group->get_status() === Group::STATUS_AWAITING_APPROVAL ) {
 			throw new WarningException( Strings::get( 'group.is_on_waiting_list' ) );
 		}

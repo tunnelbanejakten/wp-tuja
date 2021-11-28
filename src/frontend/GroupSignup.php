@@ -25,7 +25,7 @@ class GroupSignup extends AbstractGroupView {
 		$errors_overall = '';
 		$group          = $this->get_group();
 
-		$this->check_group_status( $group );
+		$this->check_group_not_on_waiting_list( $group );
 
 		if ( ! $this->is_edit_allowed( $group ) ) {
 			return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', 'Tyvärr så går det inte att anmäla sig nu.' );

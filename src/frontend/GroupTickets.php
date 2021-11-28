@@ -25,7 +25,7 @@ class GroupTickets extends AbstractGroupView {
 		$ticket_dao = new TicketDao();
 		$group      = $this->get_group();
 
-		$this->check_group_status( $group );
+		$this->check_group_not_on_waiting_list( $group );
 		$this->check_event_is_ongoing( );
 
 		$error_message   = '';
