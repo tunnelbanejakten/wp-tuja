@@ -28,16 +28,18 @@ class GroupDao extends AbstractDao {
 
 		$affected_rows = $this->wpdb->insert( $this->table,
 			array(
-				'random_id'          => $this->id->random_string(),
-				// 'name'               => $group->name,
-				'competition_id'     => $group->competition_id,
-				'map_id'             => $group->map_id,
-				'is_always_editable' => $group->is_always_editable
+				'random_id'            => $this->id->random_string(),
+				// 'name'                 => $group->name,
+				'competition_id'       => $group->competition_id,
+				'payment_instructions' => self::serialize_payment_instructions( $group->fee_calculator, array() ),
+				'map_id'               => $group->map_id,
+				'is_always_editable'   => $group->is_always_editable
 			),
 			array(
 				'%s',
 				'%d',
 				'%d',
+				'%s',
 				'%d',
 			) );
 
@@ -59,8 +61,9 @@ class GroupDao extends AbstractDao {
 
 		$success = $this->wpdb->update( $this->table,
 			array(
-				'is_always_editable' => $group->is_always_editable,
-				'map_id'             => $group->map_id
+				'is_always_editable'   => $group->is_always_editable,
+				'payment_instructions' => self::serialize_payment_instructions( $group->fee_calculator, array() ),
+				'map_id'               => $group->map_id
 			),
 			array(
 				'id' => $group->id
@@ -209,6 +212,9 @@ class GroupDao extends AbstractDao {
 		$g->note               = $result->note;
 		$g->age_competing_avg  = null;
 		$g->set_status( $result->status );
+
+		list ($fee_calculator, ) = self::deserialize_payment_instructions($result->payment_instructions);
+		$g->fee_calculator = $fee_calculator;
 
 		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, false, $date );
 		$people_competing          = array_filter( $people, function ( Person $person ) {

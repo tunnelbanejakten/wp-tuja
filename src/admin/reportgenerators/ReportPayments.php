@@ -32,7 +32,7 @@ class ReportPayments extends AbstractListReport {
 		return array_reduce(
 			$groups,
 			function ( array $acc, Group $group ) use ( $date, $fee_calculator ) {
-				$amount = $fee_calculator->calculate_fee( $group, $date ?: new DateTime() );
+				$amount = ( $group->fee_calculator ?? $fee_calculator )->calculate_fee( $group, $date ?: new DateTime() );
 				if ( $amount > 0 ) {
 
 					$references = array_reduce(

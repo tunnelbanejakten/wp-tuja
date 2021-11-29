@@ -23,6 +23,9 @@ use tuja\frontend\router\PointsOverrideInitiator;
 use tuja\util\score\ScoreCalculator;
 use tuja\util\JwtUtils;
 use tuja\util\AppUtils;
+use tuja\util\fee\CompetingParticipantFeeCalculator;
+use tuja\util\fee\PersonTypeFeeCalculator;
+use tuja\util\fee\FixedFeeCalculator;
 
 class Group {
 
@@ -59,11 +62,13 @@ class Group {
 
 
 	public function handle_post() {
+		global $wpdb;
+
 		if ( ! isset( $_POST['tuja_points_action'] ) ) {
 			return;
 		}
 
-		list( $action, $parameter ) = explode( '__', $_POST['tuja_points_action'] );
+		@list( $action, $parameter ) = explode( '__', @$_POST['tuja_points_action'] );
 
 		if ( $action === 'save' ) {
 
@@ -87,6 +92,24 @@ class Group {
 						count( $result['marked_as_reviewed'] )
 					)
 				);
+			}
+		} elseif ( $action === 'save_group' ) {
+			// Fee calculator
+			if ( @$_POST['tuja_group_fee_calculator_enabled'] === 'true' ) {
+				$fee_calculator_cfg = json_decode( stripslashes( $_POST['tuja_group_fee_calculator'] ), true );
+				$fee_calculator = ( new \ReflectionClass( $fee_calculator_cfg['type'] ) )->newInstance();
+				$fee_calculator->configure( $fee_calculator_cfg[ 'config_' . $fee_calculator_cfg['type'] ] );
+				$this->group->fee_calculator = $fee_calculator;
+			} else {
+				$this->group->fee_calculator = null;
+			}
+
+			$success = $this->group_dao->update( $this->group );
+
+			if ( $success ) {
+				AdminUtils::printSuccess( 'Ändringar sparade.' );
+			} else {
+				AdminUtils::printError( 'Kunde inte spara.' );
 			}
 		} elseif ( $action === 'transition' ) {
 
@@ -161,8 +184,18 @@ class Group {
 		}
 	}
 
+	public function print_fee_configuration_form() {
+		return AdminUtils::print_fee_configuration_form(
+			$this->group->fee_calculator ?? $this->competition->get_group_fee_calculator(),
+			'tuja_group_fee_calculator'
+		);
+	}
+
 	public function get_scripts(): array {
 		return array(
+			'admin-formgenerator.js',
+			'jsoneditor.min.js',
+			'admin-group.js',
 			'admin-review-component.js',
 		);
 	}
@@ -242,7 +275,7 @@ class Group {
 		$group_editor_link  = GroupEditorInitiator::link( $group );
 		$group_checkin_link = GroupCheckinInitiator::link( $group );
 
-		$app_link     = AppUtils::group_link( $group );
+		$app_link = AppUtils::group_link( $group );
 
 		$group_form_links = array_map(
 			function ( \tuja\data\model\Form $form ) use ( $group ) {

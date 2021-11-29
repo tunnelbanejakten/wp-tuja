@@ -6,6 +6,10 @@ use Exception;
 use tuja\util\ImageManager;
 use tuja\data\model\Group;
 use tuja\data\model\Competition;
+use tuja\util\fee\GroupFeeCalculator;
+use tuja\util\fee\CompetingParticipantFeeCalculator;
+use tuja\util\fee\PersonTypeFeeCalculator;
+use tuja\util\fee\FixedFeeCalculator;
 
 class AdminUtils {
 	private static $is_admin_mode = false;
@@ -179,4 +183,135 @@ class AdminUtils {
 			)
 		);
 	}
+
+
+	public static function print_fee_configuration_form( GroupFeeCalculator $default_fee_calculator, string $target_field_name ) {
+		$fee_calculators        = [
+			CompetingParticipantFeeCalculator::class => "Betala per tävlande",
+			PersonTypeFeeCalculator::class           => "Betala beroende på roll",
+			FixedFeeCalculator::class                => "Fast avgift"
+		];
+		$fee_calculator_classes = array_keys( $fee_calculators );
+
+		/**
+		 * $jsoneditor_config will look something like this:
+		 *
+		 *  {
+		 *    "type": "object",
+		 *      "properties": {
+		 *        "type": {
+		 *          "title": "Avgiftsmodell",
+		 *          "type": "string",
+		 *          "default": "PersonTypeFeeCalculator",
+		 *          "enum": [
+		 *            "PersonTypeFeeCalculator",
+		 *            "FixedFeeCalculator"
+		 *          ]
+		 *        },
+		 *        ...
+		 *        "config_FixedFeeCalculator": {
+		 *          "type": "object",
+		 *          "title": "Inst\u00e4llningar f\u00f6r FixedFeeCalculator",
+		 *          "options": {
+		 *            "dependencies": {
+		 *              "type": "FixedFeeCalculator"
+		 *            }
+		 *          },
+		 *          "properties": {
+		 *            "fee": {
+		 *              "title": "Avgift",
+		 *              "type": "integer",
+		 *              "format": "number"
+		 *            }
+		 *            ...
+		 *          }
+		 *        }
+		 *      }
+		 *    }
+		 *  }
+		 *
+		 */
+		$jsoneditor_config = [
+			"type"       => "object",
+			"properties" => array_merge(
+				[
+					"type" => [
+						"title"   => "Avgiftsmodell",
+						"type"    => "string",
+						"default" => $fee_calculator_classes[0],
+						"enum"    => $fee_calculator_classes,
+						"options" => [
+							"enum_titles" => array_values( $fee_calculators )
+						]
+					]
+				],
+				array_combine( array_map( function ( $class_name ) {
+					return "config_" . $class_name;
+				}, $fee_calculator_classes ), array_map( function ( $class_name ) use ( $fee_calculators ) {
+					return array_merge(
+						[
+							"type"    => "object",
+							"title"   => 'Inställningar för ' . $fee_calculators[ $class_name ],
+							"options" => [
+								"dependencies" => [
+									"type" => $class_name
+								]
+							]
+						],
+						( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_config_json_schema()
+					);
+				}, $fee_calculator_classes ) ) )
+		];
+
+
+		/**
+		 * $default_values will look something like this:
+		 *
+		 *  {
+		 *    "type": "PersonTypeFeeCalculator",
+		 *    "config_PersonTypeFeeCalculator": {
+		 *      "fee_leader": 0,
+		 *      "fee_regular": 0,
+		 *      "fee_supervisor": 0,
+		 *      "fee_admin": 0
+		 *    },
+		 *    "config_FixedFeeCalculator": {
+		 *      "fee": 0
+		 *    }
+		 *  }
+		 *
+		 */
+		$default_values = array_merge(
+			[
+				"type" => ( new \ReflectionClass( $default_fee_calculator ) )->getName()
+			],
+			array_combine(
+				array_map( function ( $class_name ) {
+					return "config_" . $class_name;
+				}, $fee_calculator_classes ),
+				array_map( function ( $class_name ) {
+					return ( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_default_config();
+				}, $fee_calculator_classes ) ) );
+
+		$stored_values = [
+			"config_" . ( new \ReflectionClass( $default_fee_calculator ) )->getName() => $default_fee_calculator->get_config()
+		];
+
+		$jsoneditor_values = array_merge(
+			$default_values,
+			$stored_values // Overrides any default values, including which fee calculator is actually used.
+		);
+
+		return sprintf( '
+				<div class="tuja-admin-formgenerator-form" 
+					data-schema="%s" 
+					data-values="%s" 
+					data-field-id="%s"
+					data-root-name="%s"></div>',
+			htmlentities( json_encode( $jsoneditor_config ) ),
+			htmlentities( json_encode( $jsoneditor_values ) ),
+			$target_field_name,
+			$target_field_name );
+	}
+
 }

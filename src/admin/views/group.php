@@ -42,6 +42,35 @@ AdminUtils::printTopMenu( $competition );
 		<?= sprintf( '<a href="%s">%s</a>', $app_link, $app_link ) ?>
     </p>
 
+	<h3>Regigera grupp</h3>
+
+	<h4>Anmälningsavgift</h4>
+
+	<div id="tuja-group-payment">
+		<div>
+			<input type="radio" 
+				name="tuja_group_fee_calculator_enabled" 
+				<?php if (!isset($group->fee_calculator)) { print 'checked="checked"'; } ?>
+				id="tuja_group_fee_calculator_enabled_false" 
+				value="false">
+			<label for="tuja_group_fee_calculator_enabled_false">Standardavgift</label>
+		</div>
+		<div>
+			<input type="radio" 
+				name="tuja_group_fee_calculator_enabled" 
+				<?php if (isset($group->fee_calculator)) { print 'checked="checked"'; } ?>
+				id="tuja_group_fee_calculator_enabled_true" 
+				value="true">
+			<label for="tuja_group_fee_calculator_enabled_true">Anpassad avgift:</label>
+		</div>
+		<?= $this->print_fee_configuration_form(); ?>
+		<input type="hidden" name="tuja_group_fee_calculator" id="tuja_group_fee_calculator"/>
+	</div>
+
+    <button class="button button-primary" type="submit" name="tuja_points_action" value="save_group">
+        Spara
+    </button>
+
     <h3>Tidsbegränsade frågor som visats</h3>
 
 	<?php
