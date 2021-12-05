@@ -1,20 +1,20 @@
 <?php
 namespace tuja\admin;
 
-use ReflectionClass;
-use tuja\data\model\GroupCategory;
 use tuja\data\model\MessageTemplate;
 use tuja\util\DateUtils;
-use tuja\util\rules\CrewMembersRuleSet;
-use tuja\util\rules\GroupCategoryRules;
-use tuja\util\rules\OlderParticipantsRuleSet;
-use tuja\util\rules\PassthroughRuleSet;
-use tuja\util\rules\RuleSet;
-use tuja\util\rules\YoungParticipantsRuleSet;
 use tuja\util\Strings;
 use tuja\util\TemplateEditor;
 
 AdminUtils::printTopMenu( $competition );
+?>
+
+<?php
+	$group_categories_url = add_query_arg( array(
+		'tuja_competition' => $competition->id,
+		'tuja_view'        => 'CompetitionSettingsGroupCategories'
+	) );
+	printf( '<p><a href="%s">Gruppkategorier</a></p>', $group_categories_url );
 ?>
 
 <form method="post" class="tuja">
@@ -65,8 +65,10 @@ AdminUtils::printTopMenu( $competition );
 
         <h4>Livscykel för grupp</h4>
 
-        <div class="tuja-stategraph" data-definition="<?= htmlentities( $group_status_transitions_definitions ) ?>"
-             data-width-factor="0.60"></div>
+        <div 
+            class="tuja-stategraph" 
+            data-definition="<?= htmlentities( $group_status_transitions_definitions ) ?>"
+            data-width-factor="0.60"></div>
 
         <div>
             <label for="tuja_competition_settings_initial_group_status">
@@ -74,55 +76,6 @@ AdminUtils::printTopMenu( $competition );
             </label><br>
 			<?= AdminUtils::get_initial_group_status_selector($competition->initial_group_status, 'tuja_competition_settings_initial_group_status') ?>
         </div>
-
-        <h4>Grupptyper</h4>
-
-        <p>
-            Grupptyper gör det möjligt att hantera flera tävlingsklasser och att skilja på tävlande och funktionärer.
-            Grypptyper ska inte förväxlas med grupper. En tävling kan ha flera grupper och varje person är med i en
-            grupp. Grupptyper är ett sätt att klassificera grupperna utifrån deras roll i tävlingen.
-        </p>
-
-        <div class="tuja-ruleset-columns tuja-groupcategory-existing">
-				<?php
-
-				printf( '<div class="tuja-ruleset-column"><div class="row"></div>%s</div>', join( array_map( function ( string $label ) {
-					return sprintf( '<div class="row">%s</div>', $label );
-				}, GroupCategoryRules::get_props_labels() ) ) );
-
-				print join( array_map( function ( GroupCategory $category ) use ( $competition ) {
-					return $this->print_group_category_form( $category, $competition );
-				}, $category_dao->get_all_in_competition( $competition->id ) ) );
-				?>
-        </div>
-            <?php
-            foreach ( [
-                    null,
-                    new YoungParticipantsRuleSet(),
-                    new OlderParticipantsRuleSet(),
-                    new CrewMembersRuleSet()
-                ] as $rule_set ) {
-                $group_category = new GroupCategory();
-                $group_category->set_rules(
-                        isset($rule_set)
-                            ? GroupCategoryRules::from_rule_set($rule_set, $competition)
-                            : new GroupCategoryRules()
-                );
-	            $template_slug = isset( $rule_set )
-                    ? ( new ReflectionClass( $rule_set ) )->getShortName()
-                    : '';
-	            $id  = 'tuja_add_group_category_button_' . $template_slug;
-	            printf( '
-                    <div class="tuja-groupcategory-template" id="%s_template">
-                        %s
-                    </div>
-                    <button class="button tuja-add-groupcategory" type="button" id="%s">
-                        Ny %s
-                    </button>
-                ', $id, $this->print_group_category_form( $group_category, $competition ), $id, $template_slug );
-            }
-            ?>
-
     </div>
     <div class="tuja-tab" id="tuja-tab-payment">
 

@@ -33,13 +33,6 @@ use tuja\util\TemplateEditor;
 class CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
-	const RULE_SETS = [
-		PassthroughRuleSet::class       => 'Inga regler',
-		YoungParticipantsRuleSet::class => 'Deltagare under 15 år',
-		OlderParticipantsRuleSet::class => 'Deltagare över 15 år',
-		CrewMembersRuleSet::class       => 'Funktionärer'
-	];
-
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_competition_settings_action'] ) ) {
 			return;
@@ -54,7 +47,6 @@ class CompetitionSettings {
 
 		if ( $_POST['tuja_competition_settings_action'] === 'save' ) {
 			$this->competition_settings_save_other( $competition );
-			$this->competition_settings_save_groups( $competition );
 			$this->competition_settings_save_message_templates( $competition );
 			$this->competition_settings_save_strings( $competition );
 		}
@@ -76,7 +68,6 @@ class CompetitionSettings {
 		$competition_dao      = new CompetitionDao();
 		$competition          = $competition_dao->get( $_GET['tuja_competition'] );
 		$message_template_dao = new MessageTemplateDao();
-		$category_dao         = new GroupCategoryDao();
 
 		$message_templates = $message_template_dao->get_all_in_competition( $competition->id );
 
@@ -116,27 +107,6 @@ class CompetitionSettings {
 				array_values( $template_configs )
 			)
 		);
-
-		$rules_html = [];
-		$i          = 0;
-		foreach ( self::RULE_SETS as $class_name => $label ) {
-			if ( ! empty( $class_name ) ) {
-				$rules = new $class_name;
-
-				$indent = str_repeat( '&nbsp;', 4 );
-
-				$rules_html[''][ $i ]                        = sprintf( '<strong>%s</strong>', $label );
-				$rules_html['Antal i grupp'][ $i ]           = join( '-', $rules->get_group_size_range() );
-				$rules_html['Vuxen medföljare'][ $i ]        = $rules->is_adult_supervisor_required() ? 'Ja, krav' : '-';
-				$rules_html['Får rapportera poäng'][ $i ]    = $rules->is_crew() ? 'Ja' : '-';
-				$rules_html['Sista dag för att'][ $i ]       = '';
-				$rules_html[ $indent . '...anmäla' ][ $i ]   = $rules->get_create_registration_period( $competition )->end->format( 'd M' );
-				$rules_html[ $indent . '...ändra' ][ $i ]    = $rules->get_update_registration_period( $competition )->end->format( 'd M' );
-				$rules_html[ $indent . '...avanmäla' ][ $i ] = $rules->get_delete_registration_period( $competition )->end->format( 'd M' );
-
-				$i = $i + 1;
-			}
-		}
 
 		$group_status_transitions_definitions = StateMachine::as_mermaid_chart_definition( \tuja\data\model\Group::STATUS_TRANSITIONS );
 
@@ -225,37 +195,6 @@ class CompetitionSettings {
 			$auto_send_recipient_options,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_trigger' ),
 			$auto_send_trigger_options );
-	}
-
-	public function print_group_category_form( GroupCategory $category, Competition $competition ) {
-		$rules             = $category->get_rules();
-		$jsoneditor_config = GroupCategoryRules::get_jsoneditor_config();
-		$jsoneditor_values = $rules->get_json_values();
-
-		return sprintf( '
-			<div class="tuja-groupcategory-form tuja-ruleset-column">
-				<input type="hidden" name="%s" id="%s" value="%s">
-				<div class="row">
-					<input type="text" placeholder="Grupptypens namn" name="%s" value="%s">
-				</div>
-				<div class="tuja-admin-formgenerator-form" 
-					data-schema="%s" 
-					data-values="%s" 
-					data-field-id="%s"
-					data-root-name="%s"></div>
-				<button class="button tuja-delete-groupcategory" type="button">
-					Ta bort
-				</button>
-			</div>',
-			$this->list_item_field_name( 'groupcategory', $category->id, 'rules' ),
-			$this->list_item_field_name( 'groupcategory', $category->id, 'rules' ),
-			htmlentities( $jsoneditor_values ),
-			$this->list_item_field_name( 'groupcategory', $category->id, 'name' ),
-			$category->name,
-			htmlentities( $jsoneditor_config ),
-			htmlentities( $jsoneditor_values ),
-			htmlentities( $this->list_item_field_name( 'groupcategory', $category->id, 'rules' ) ),
-			'tuja-admin-formgenerator-form-' . $category->id );
 	}
 
 	public function print_app_config_form( Competition $competition ) {
@@ -416,66 +355,6 @@ class CompetitionSettings {
 				$delete_successful = $message_template_dao->delete( $id );
 				if ( ! $delete_successful ) {
 					AdminUtils::printError( 'Could not delete message template' );
-				}
-			}
-		}
-	}
-
-	public function competition_settings_save_groups( Competition $competition ) {
-		$category_dao = new GroupCategoryDao();
-
-		$categories = $category_dao->get_all_in_competition( $competition->id );
-
-		$preexisting_ids = array_map( function ( $category ) {
-			return $category->id;
-		}, $categories );
-
-		$submitted_ids = $this->submitted_list_item_ids( 'groupcategory' );
-
-		$updated_ids = array_intersect( $preexisting_ids, $submitted_ids );
-		$deleted_ids = array_diff( $preexisting_ids, $submitted_ids );
-		$created_ids = array_diff( $submitted_ids, $preexisting_ids );
-
-		$category_map = array_combine( array_map( function ( $category ) {
-			return $category->id;
-		}, $categories ), $categories );
-
-		foreach ( $created_ids as $id ) {
-			try {
-				$category                 = new GroupCategory();
-				$category->competition_id = $competition->id;
-				$category->name           = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
-				$category->set_rules( new GroupCategoryRules( json_decode( stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'rules' ) ] ), true ) ) );
-
-				$new_category_id = $category_dao->create( $category );
-			} catch ( ValidationException $e ) {
-				AdminUtils::printException( $e );
-			} catch ( Exception $e ) {
-				AdminUtils::printException( $e );
-			}
-		}
-
-		foreach ( $updated_ids as $id ) {
-			if ( isset( $category_map[ $id ] ) ) {
-				try {
-					$category_map[ $id ]->name = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
-					$category_map[ $id ]->set_rules( new GroupCategoryRules( json_decode( stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'rules' ) ] ), true ) ) );
-
-					$affected_rows = $category_dao->update( $category_map[ $id ] );
-				} catch ( ValidationException $e ) {
-					AdminUtils::printException( $e );
-				} catch ( Exception $e ) {
-					AdminUtils::printException( $e );
-				}
-			}
-		}
-
-		foreach ( $deleted_ids as $id ) {
-			if ( isset( $category_map[ $id ] ) ) {
-				$delete_successful = $category_dao->delete( $id );
-				if ( ! $delete_successful ) {
-					global $wpdb;
-					AdminUtils::printError( 'Could not delete category' . $wpdb->last_error );
 				}
 			}
 		}

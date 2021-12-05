@@ -344,15 +344,6 @@ tr.tuja-person-status-deleted td {
     text-decoration-line: line-through;
 }
 
-div.tuja-ruleset-columns {
-    display: flex
-}
-
-div.tuja-ruleset-column {
-    flex: 0;
-    margin: 0 1em 0 0;
-}
-
 div#tuja-tab-appconfig label.je-form-input-label,
 div#tuja-tab-payment label.je-form-input-label {
     display: inline-block;
@@ -393,7 +384,8 @@ div.tuja-ruleset-column label {
     color: transparent;
 }
 
-div.tuja-ruleset-column:first-child {
+div.tuja-ruleset-column {
+    margin: 0 0 1em 0;
     white-space: nowrap;
 }
 span.tuja-group-city {

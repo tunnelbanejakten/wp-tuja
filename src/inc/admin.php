@@ -108,12 +108,14 @@ class Admin extends Plugin {
 		foreach($possible_class_names as $view) {
 			if ( class_exists( $view ) ) {
 				$view = new $view();
-	
 				if ( method_exists( $view, 'output' ) ) {
 					$view->output();
+					return;
 				}
 			}
 		}
+
+		AdminUtils::printError('View not found.');
 	}
 
 	private function list_scripts( $view_name ) {
