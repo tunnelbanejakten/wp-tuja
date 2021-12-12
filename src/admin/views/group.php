@@ -42,7 +42,7 @@ AdminUtils::printTopMenu( $competition );
 		<?= sprintf( '<a href="%s">%s</a>', $app_link, $app_link ) ?>
     </p>
 
-	<h3>Regigera grupp</h3>
+	<h3>Redigera grupp</h3>
 
 	<h4>Anmälningsavgift</h4>
 
@@ -50,7 +50,21 @@ AdminUtils::printTopMenu( $competition );
 		<?= $this->print_fee_configuration_form(); ?>
 	</div>
 
-    <button class="button button-primary" type="submit" name="tuja_points_action" value="save_group">
+	<?php
+	$group_categories_settings_url = add_query_arg( array(
+		'tuja_competition' => $competition->id,
+		'tuja_view'        => 'CompetitionSettingsGroupCategories'
+	) );
+	$competition_settings_url = add_query_arg( array(
+		'tuja_competition' => $competition->id,
+		'tuja_view'        => 'CompetitionSettings'
+	) );
+	printf( '<p><em>Anmälningsavgift kan konfigureras per enskilt lag, per <a href="%s">gruppkategori</a> eller för <a href="%s">tävlingen generellt</a>. Den mest specifika inställningen används.</em></p>', 
+		$group_categories_settings_url,
+		$competition_settings_url );
+	?>
+
+	<button class="button button-primary" type="submit" name="tuja_points_action" value="save_group">
         Spara
     </button>
 

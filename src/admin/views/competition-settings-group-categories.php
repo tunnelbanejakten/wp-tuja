@@ -49,7 +49,7 @@ AdminUtils::printTopMenu( $competition );
 		</thead>
 		<tbody>
 			<tr>
-                <td class="tuja-group-fee-configuration-form">Avgift</td>
+                <td class="tuja-group-fee-configuration-form" rowspan="2">Avgift</td>
 				<?php
 				print join(
 					array_map(
@@ -60,7 +60,7 @@ AdminUtils::printTopMenu( $competition );
 					)
 				);
 				?>
-				<td valign="top" rowspan="2">
+				<td valign="top" rowspan="3">
 					Förvalda regler:
 					<?php
 					$selected_ruleset = isset($_POST['tuja_groupcategory_ruleset']) ? stripslashes($_POST['tuja_groupcategory_ruleset']) : PassthroughRuleSet::class;
@@ -81,6 +81,18 @@ AdminUtils::printTopMenu( $competition );
 						)
 					)
 					?>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3">
+				<?php
+				$competition_settings_url = add_query_arg( array(
+					'tuja_competition' => $competition->id,
+					'tuja_view'        => 'CompetitionSettings'
+				) );
+				printf( '<p><em>Anmälningsavgift kan konfigureras per enskilt lag, per gruppkategori eller för <a href="%s">tävlingen generellt</a>. Den mest specifika inställningen används.</em></p>', 
+					$competition_settings_url );
+				?>
 				</td>
 			</tr>
 			<tr>

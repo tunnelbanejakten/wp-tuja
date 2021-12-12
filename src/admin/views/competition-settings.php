@@ -83,6 +83,15 @@ AdminUtils::printTopMenu( $competition );
 
         <?= $this->print_group_fee_configuration_form($competition); ?>
 
+        <?php
+        $group_categories_settings_url = add_query_arg( array(
+            'tuja_competition' => $competition->id,
+            'tuja_view'        => 'CompetitionSettingsGroupCategories'
+        ) );
+        printf( '<p><em>Anmälningsavgift kan konfigureras per enskilt lag, per <a href="%s">gruppkategori</a> eller för tävlingen generellt. Den mest specifika inställningen används.</em></p>', 
+            $group_categories_settings_url );
+        ?>
+
         <h4>Betalningsmetoder</h4>
 
         <?= $this->print_payment_options_configuration_form($competition); ?>
