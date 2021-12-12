@@ -37,6 +37,7 @@ class GroupCategoryDao extends AbstractDao {
 				'%d',
 				'%s',
 				'%s',
+				'%s'
 			)
 		);
 		$success       = $affected_rows !== false && $affected_rows === 1;

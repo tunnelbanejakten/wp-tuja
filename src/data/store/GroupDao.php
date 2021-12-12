@@ -40,8 +40,8 @@ class GroupDao extends AbstractDao {
 			array(
 				'%s',
 				'%d',
-				'%d',
 				'%s',
+				'%d',
 				'%d',
 			) );
 

@@ -186,7 +186,7 @@ class AdminUtils {
 
 
 	public static function get_fee_configuration_object( string $form_field_name ) {
-		$fee_calculator_cfg = json_decode( stripslashes( @$_POST[$form_field_name] ?? '{}' ), true );
+		$fee_calculator_cfg = json_decode( stripslashes( @$_POST[ $form_field_name ] ?? '{}' ), true );
 		if ( @$fee_calculator_cfg['type'] !== 'inherit' ) {
 			$fee_calculator = ( new \ReflectionClass( $fee_calculator_cfg['type'] ) )->newInstance();
 			$fee_calculator->configure( $fee_calculator_cfg[ 'config_' . $fee_calculator_cfg['type'] ] );
