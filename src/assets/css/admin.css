@@ -402,3 +402,7 @@ span.tuja-maps-question {
     overflow: hidden;
     white-space: nowrap;
 }
+
+td.tuja-group-fee-configuration-form {
+    vertical-align: top;
+}

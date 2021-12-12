@@ -18,7 +18,7 @@ class GroupPayment extends AbstractGroupView {
 
 		$competition = $this->competition_dao->get( $this->get_group()->competition_id );
 
-		$fee_calculator  = $group->fee_calculator ?? $competition->get_group_fee_calculator();
+		$fee_calculator  = $group->effective_fee_calculator;
 		$fee_amount      = $fee_calculator->calculate_fee( $group, new DateTime() );
 		$fee_description = $fee_calculator->description();
 

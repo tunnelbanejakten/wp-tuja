@@ -82,7 +82,6 @@ AdminUtils::printTopMenu( $competition );
         <h4>Anmälningsavgift</h4>
 
         <?= $this->print_group_fee_configuration_form($competition); ?>
-        <input type="hidden" name="tuja_competition_settings_fee_calculator" id="tuja_competition_settings_fee_calculator"/>
 
         <h4>Betalningsmetoder</h4>
 

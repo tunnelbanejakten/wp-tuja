@@ -17,6 +17,7 @@ use tuja\util\DateUtils;
 use tuja\util\fee\CompetingParticipantFeeCalculator;
 use tuja\util\fee\PersonTypeFeeCalculator;
 use tuja\util\fee\FixedFeeCalculator;
+use tuja\util\fee\GroupFeeCalculator;
 use tuja\util\paymentoption\OtherPaymentOption;
 use tuja\util\paymentoption\PaymentOption;
 use tuja\util\paymentoption\SwishPaymentOption;
@@ -225,8 +226,9 @@ class CompetitionSettings {
 
 	public function print_group_fee_configuration_form( Competition $competition ) {
 		return AdminUtils::print_fee_configuration_form(
-			$competition->get_group_fee_calculator(), 
-			'tuja_competition_settings_fee_calculator'
+			$competition->fee_calculator,
+			'tuja_competition_settings_fee_calculator',
+			false
 		);
 	}
 
@@ -368,10 +370,7 @@ class CompetitionSettings {
 			$competition->app_config           = json_decode(stripslashes($_POST['tuja_competition_settings_appconfig']));
 
 			// Fee calculator
-			$fee_calculator_cfg = json_decode( stripslashes( $_POST['tuja_competition_settings_fee_calculator'] ), true );
-			$fee_calculator     = ( new \ReflectionClass( $fee_calculator_cfg['type'] ) )->newInstance();
-			$fee_calculator->configure( $fee_calculator_cfg[ 'config_' . $fee_calculator_cfg['type'] ] );
-			$competition->fee_calculator = $fee_calculator;
+			$competition->fee_calculator = AdminUtils::get_fee_configuration_object('tuja_competition_settings_fee_calculator');
 
 			// Payment methods
 			$payment_options_cfg          = json_decode( stripslashes( $_POST['tuja_competition_settings_payment_options'] ), true );

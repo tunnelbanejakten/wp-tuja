@@ -115,12 +115,10 @@ class Groups {
 
 		$unreviewed_answers = $this->get_unreviewed_answers_count();
 
-		$fee_calculator = $competition->get_group_fee_calculator();
-
 		foreach ( $groups as $group ) {
 			$group_data          = [];
 			$group_data['model'] = $group;
-			$group_data['fee']   = number_format_i18n( ( $group->fee_calculator ?? $fee_calculator )->calculate_fee( $group, new DateTime() ), 0 );
+			$group_data['fee']   = number_format_i18n( $group->effective_fee_calculator->calculate_fee( $group, new DateTime() ), 0 );
 
 			$registration_evaluation = $group->evaluate_registration();
 

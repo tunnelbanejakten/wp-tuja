@@ -9,6 +9,8 @@ use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
 use tuja\util\Anonymizer;
 use tuja\util\Database;
+use tuja\util\fee\GroupFeeCalculator;
+use tuja\util\fee\CompetingParticipantFeeCalculator;
 use tuja\util\messaging\EventMessageSender;
 use tuja\util\rules\RuleResult;
 
@@ -150,12 +152,16 @@ class GroupDao extends AbstractDao {
 		return '
 			SELECT
 				g.*,
-				gp.*
+				gp.*,
+				gc.payment_instructions AS gc_payment_instructions,
+				c.payment_instructions AS c_payment_instructions
 			FROM 
 				' . $this->table . ' AS g 
 				INNER JOIN 
 				' . $this->props_table . ' AS gp 
 				ON g.id = gp.team_id 
+				INNER JOIN ' . Database::get_table( 'competition' ) . ' AS c ON g.competition_id = c.id
+				INNER JOIN ' . Database::get_table( 'team_category' ) . ' AS gc ON gp.category_id = gc.id
 			WHERE 
 				gp.id IN (
 					SELECT MAX(id)
@@ -212,9 +218,11 @@ class GroupDao extends AbstractDao {
 		$g->note               = $result->note;
 		$g->age_competing_avg  = null;
 		$g->set_status( $result->status );
-
-		list ($fee_calculator, ) = self::deserialize_payment_instructions($result->payment_instructions);
-		$g->fee_calculator = $fee_calculator;
+		list ($fee_calculator, )     = self::deserialize_payment_instructions($result->payment_instructions);
+		list ($fee_calculator_gc, )  = self::deserialize_payment_instructions($result->gc_payment_instructions);
+		list ($fee_calculator_c, )   = self::deserialize_payment_instructions($result->c_payment_instructions);
+		$g->fee_calculator           = $fee_calculator;
+		$g->effective_fee_calculator = $fee_calculator ?? $fee_calculator_gc ?? $fee_calculator_c ?? new CompetingParticipantFeeCalculator();
 
 		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, false, $date );
 		$people_competing          = array_filter( $people, function ( Person $person ) {

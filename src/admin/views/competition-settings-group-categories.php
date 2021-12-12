@@ -49,6 +49,41 @@ AdminUtils::printTopMenu( $competition );
 		</thead>
 		<tbody>
 			<tr>
+                <td class="tuja-group-fee-configuration-form">Avgift</td>
+				<?php
+				print join(
+					array_map(
+						function ( GroupCategory $category ) {
+							return $this->print_group_fee_configuration_form( $category );
+						},
+						$category_dao->get_all_in_competition( $competition->id )
+					)
+				);
+				?>
+				<td valign="top" rowspan="2">
+					Förvalda regler:
+					<?php
+					$selected_ruleset = isset($_POST['tuja_groupcategory_ruleset']) ? stripslashes($_POST['tuja_groupcategory_ruleset']) : PassthroughRuleSet::class;
+					echo join(
+						array_map(
+							function ( $class_name, $label ) use ( $selected_ruleset ) {
+								return sprintf(
+									'<br><input type="radio" name="tuja_groupcategory_ruleset" value="%s" %s id="%s"><label for="%s">%s</label>',
+									$class_name,
+									$selected_ruleset === $class_name ? 'checked="checked"' : '',
+									'tuja_groupcategory_ruleset__' . crc32( $class_name ),
+									'tuja_groupcategory_ruleset__' . crc32( $class_name ),
+									$label
+								);
+							},
+							array_keys( self::RULE_SETS ),
+							array_values( self::RULE_SETS )
+						)
+					)
+					?>
+				</td>
+			</tr>
+			<tr>
 				<?php
 				printf(
 					'<td><div class="tuja-ruleset-column">%s</div></td>',
@@ -71,28 +106,6 @@ AdminUtils::printTopMenu( $competition );
 					)
 				);
 				?>
-				<td valign="top">
-					Förvalda regler:
-					<?php
-					$selected_ruleset = isset($_POST['tuja_groupcategory_ruleset']) ? stripslashes($_POST['tuja_groupcategory_ruleset']) : PassthroughRuleSet::class;
-					echo join(
-						array_map(
-							function ( $class_name, $label ) use ( $selected_ruleset ) {
-								return sprintf(
-									'<br><input type="radio" name="tuja_groupcategory_ruleset" value="%s" %s id="%s"><label for="%s">%s</label>',
-									$class_name,
-									$selected_ruleset === $class_name ? 'checked="checked"' : '',
-									'tuja_groupcategory_ruleset__' . crc32( $class_name ),
-									'tuja_groupcategory_ruleset__' . crc32( $class_name ),
-									$label
-								);
-							},
-							array_keys( self::RULE_SETS ),
-							array_values( self::RULE_SETS )
-						)
-					)
-					?>
-				</td>
 			</tr>
 		</tbody>
 	</table>

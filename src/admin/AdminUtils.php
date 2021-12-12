@@ -185,12 +185,26 @@ class AdminUtils {
 	}
 
 
-	public static function print_fee_configuration_form( GroupFeeCalculator $default_fee_calculator, string $target_field_name ) {
-		$fee_calculators        = [
-			CompetingParticipantFeeCalculator::class => "Betala per tävlande",
-			PersonTypeFeeCalculator::class           => "Betala beroende på roll",
-			FixedFeeCalculator::class                => "Fast avgift"
-		];
+	public static function get_fee_configuration_object( string $form_field_name ) {
+		$fee_calculator_cfg = json_decode( stripslashes( @$_POST[$form_field_name] ?? '{}' ), true );
+		if ( @$fee_calculator_cfg['type'] !== 'inherit' ) {
+			$fee_calculator = ( new \ReflectionClass( $fee_calculator_cfg['type'] ) )->newInstance();
+			$fee_calculator->configure( $fee_calculator_cfg[ 'config_' . $fee_calculator_cfg['type'] ] );
+			return $fee_calculator;
+		} else {
+			return null;
+		}
+	}
+
+	public static function print_fee_configuration_form( $fee_calculator, string $target_field_name, bool $is_optional ) {
+		$is_inherit_available = $is_optional;
+		$is_inherit_selected  = ! isset( $fee_calculator );
+
+		$fee_calculators        = array(
+			CompetingParticipantFeeCalculator::class => 'Betala per tävlande',
+			PersonTypeFeeCalculator::class           => 'Betala beroende på roll',
+			FixedFeeCalculator::class                => 'Fast avgift',
+		);
 		$fee_calculator_classes = array_keys( $fee_calculators );
 
 		/**
@@ -229,40 +243,55 @@ class AdminUtils {
 		 *      }
 		 *    }
 		 *  }
-		 *
 		 */
-		$jsoneditor_config = [
-			"type"       => "object",
-			"properties" => array_merge(
-				[
-					"type" => [
-						"title"   => "Avgiftsmodell",
-						"type"    => "string",
-						"default" => $fee_calculator_classes[0],
-						"enum"    => $fee_calculator_classes,
-						"options" => [
-							"enum_titles" => array_values( $fee_calculators )
-						]
-					]
-				],
-				array_combine( array_map( function ( $class_name ) {
-					return "config_" . $class_name;
-				}, $fee_calculator_classes ), array_map( function ( $class_name ) use ( $fee_calculators ) {
-					return array_merge(
-						[
-							"type"    => "object",
-							"title"   => 'Inställningar för ' . $fee_calculators[ $class_name ],
-							"options" => [
-								"dependencies" => [
-									"type" => $class_name
-								]
-							]
-						],
-						( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_config_json_schema()
-					);
-				}, $fee_calculator_classes ) ) )
-		];
-
+		$jsoneditor_config = array(
+			'type'       => 'object',
+			'required'   => array( 'type' ),
+			'properties' => array_merge(
+				array(
+					'type' => array(
+						'title'   => 'Avgiftsmodell',
+						'type'    => 'string',
+						'default' => $fee_calculator_classes[0],
+						'enum'    => array_merge(
+							$is_inherit_available ? array( 'inherit' ) : array(),
+							$fee_calculator_classes
+						),
+						'options' => array(
+							'enum_titles' => array_merge(
+								$is_inherit_available ? array( 'Ingen anpassning' ) : array(),
+								array_values( $fee_calculators )
+							),
+						),
+					),
+				),
+				array_combine(
+					array_map(
+						function ( $class_name ) {
+							return 'config_' . $class_name;
+						},
+						$fee_calculator_classes
+					),
+					array_map(
+						function ( $class_name ) use ( $fee_calculators ) {
+							return array_merge(
+								array(
+									'type'    => 'object',
+									'title'   => 'Inställningar för ' . $fee_calculators[ $class_name ],
+									'options' => array(
+										'dependencies' => array(
+											'type' => $class_name,
+										),
+									),
+								),
+								( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_config_json_schema()
+							);
+						},
+						$fee_calculator_classes
+					)
+				)
+			),
+		);
 
 		/**
 		 * $default_values will look something like this:
@@ -279,39 +308,53 @@ class AdminUtils {
 		 *      "fee": 0
 		 *    }
 		 *  }
-		 *
 		 */
 		$default_values = array_merge(
-			[
-				"type" => ( new \ReflectionClass( $default_fee_calculator ) )->getName()
-			],
+			array(
+				'type' => $is_inherit_selected ? 'inherit' : ( new \ReflectionClass( $fee_calculator ) )->getName(),
+			),
 			array_combine(
-				array_map( function ( $class_name ) {
-					return "config_" . $class_name;
-				}, $fee_calculator_classes ),
-				array_map( function ( $class_name ) {
-					return ( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_default_config();
-				}, $fee_calculator_classes ) ) );
+				array_map(
+					function ( $class_name ) {
+						return 'config_' . $class_name;
+					},
+					$fee_calculator_classes
+				),
+				array_map(
+					function ( $class_name ) {
+						return ( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_default_config();
+					},
+					$fee_calculator_classes
+				)
+			)
+		);
 
-		$stored_values = [
-			"config_" . ( new \ReflectionClass( $default_fee_calculator ) )->getName() => $default_fee_calculator->get_config()
-		];
+		$stored_values = $is_inherit_selected ? array() : array(
+			'config_' . ( new \ReflectionClass( $fee_calculator ) )->getName() => $fee_calculator->get_config(),
+		);
 
 		$jsoneditor_values = array_merge(
 			$default_values,
 			$stored_values // Overrides any default values, including which fee calculator is actually used.
 		);
 
-		return sprintf( '
-				<div class="tuja-admin-formgenerator-form" 
-					data-schema="%s" 
-					data-values="%s" 
-					data-field-id="%s"
-					data-root-name="%s"></div>',
+		return sprintf(
+			'
+		<div class="tuja-admin-formgenerator-form" 
+			data-schema="%s" 
+			data-values="%s" 
+			data-field-id="%s"
+			data-root-name="%s"></div>
+		<input type="hidden" name="%s" id="%s" value="%s">
+					',
 			htmlentities( json_encode( $jsoneditor_config ) ),
 			htmlentities( json_encode( $jsoneditor_values ) ),
 			$target_field_name,
-			$target_field_name );
+			$target_field_name,
+			$target_field_name,
+			$target_field_name,
+			htmlentities( json_encode( $jsoneditor_values ) )
+		);
 	}
 
 }

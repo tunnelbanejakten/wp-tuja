@@ -239,12 +239,13 @@ abstract class Plugin {
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'team_category' ) . ' (
-				id                  INTEGER AUTO_INCREMENT NOT NULL,
-				competition_id      INTEGER NOT NULL,
-				is_crew             BOOLEAN NOT NULL DEFAULT FALSE,
-				name                VARCHAR(100),
-				rule_set            VARCHAR(100),
-				rules_configuration TEXT,
+				id                   INTEGER AUTO_INCREMENT NOT NULL,
+				competition_id       INTEGER NOT NULL,
+				is_crew              BOOLEAN NOT NULL DEFAULT FALSE,
+				name                 VARCHAR(100),
+				payment_instructions TEXT,
+				rule_set             VARCHAR(100),
+				rules_configuration  TEXT,
 				PRIMARY KEY (id)
 			) ' . $charset;
 

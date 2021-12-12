@@ -13,6 +13,7 @@ use tuja\util\rules\GroupCategoryRules;
 use tuja\util\rules\OlderParticipantsRuleSet;
 use tuja\util\rules\PassthroughRuleSet;
 use tuja\util\rules\YoungParticipantsRuleSet;
+use tuja\util\fee\GroupFeeCalculator;
 
 class CompetitionSettingsGroupCategories {
 	const FIELD_SEPARATOR = '__';
@@ -120,25 +121,19 @@ class CompetitionSettingsGroupCategories {
 		);
 	}
 
-	// public function print_group_fee_configuration_form( GroupCategory $category ) {
-	// 	return sprintf(
-	// 		'
-	// 	<td>
-	// 		<div class="tuja-groupcategory-form tuja-ruleset-column">
-	// 			<input type="hidden" name="%s" id="%s" value="%s">
-	// 			%s
-	// 		</div>
-	// 	</td>',
-	// 		$this->list_item_field_name( 'groupcategory', $category->id, 'fee' ),
-	// 		$this->list_item_field_name( 'groupcategory', $category->id, 'fee' ),
-	// 		htmlentities( $jsoneditor_values ),
-	// 		AdminUtils::print_fee_configuration_form(
-	// 			$category->get_group_fee_calculator(),
-	// 			$this->list_item_field_name( 'groupcategory', $category->id, 'fee' )
-	// 		)
-	// 	);
-	// 	return ;
-	// }
+	public function print_group_fee_configuration_form( GroupCategory $category ) {
+		return sprintf(
+			'
+		<td class="tuja-group-fee-configuration-form">
+			%s
+		</td>',
+			AdminUtils::print_fee_configuration_form(
+				$category->fee_calculator,
+				$this->list_item_field_name( 'groupcategory', $category->id, 'fee' ),
+				true
+			)
+		);
+	}
 
 	public function delete_category( int $id ) {
 		$category_dao      = new GroupCategoryDao();
@@ -175,8 +170,9 @@ class CompetitionSettingsGroupCategories {
 			$categories,
 			function ( GroupCategory $category ) use ( $category_dao ) {
 				try {
-					$id             = $category->id;
-					$category->name = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
+					$id                       = $category->id;
+					$category->name           = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
+					$category->fee_calculator = AdminUtils::get_fee_configuration_object( $this->list_item_field_name( 'groupcategory', $id, 'fee' ) );
 					$category->set_rules( new GroupCategoryRules( json_decode( stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'rules' ) ] ), true ) ) );
 
 					$affected_rows = $category_dao->update( $category );

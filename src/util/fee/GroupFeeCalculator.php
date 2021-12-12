@@ -8,6 +8,8 @@ use DateTime;
 use tuja\data\model\Group;
 
 interface GroupFeeCalculator {
+	const DEFAULT = CompetingParticipantFeeCalculator::class;
+
 	function calculate_fee( Group $group, DateTime $date ): int;
 
 	function description(): string;

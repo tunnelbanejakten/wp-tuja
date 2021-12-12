@@ -21,8 +21,6 @@ class ReportPayments extends AbstractListReport {
 	function get_rows(): array {
 		$date = isset( $_GET['tuja_reports_date'] ) ? AbstractDao::from_db_date( $_GET['tuja_reports_date'] ) : null;
 
-		$fee_calculator = $this->competition->get_group_fee_calculator();
-
 		$groups = $this->group_dao->get_all_in_competition(
 			$this->competition->id,
 			false,
@@ -31,8 +29,8 @@ class ReportPayments extends AbstractListReport {
 
 		return array_reduce(
 			$groups,
-			function ( array $acc, Group $group ) use ( $date, $fee_calculator ) {
-				$amount = ( $group->fee_calculator ?? $fee_calculator )->calculate_fee( $group, $date ?: new DateTime() );
+			function ( array $acc, Group $group ) use ( $date ) {
+				$amount = $group->effective_fee_calculator->calculate_fee( $group, $date ?: new DateTime() );
 				if ( $amount > 0 ) {
 
 					$references = array_reduce(

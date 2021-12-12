@@ -26,6 +26,7 @@ use tuja\util\AppUtils;
 use tuja\util\fee\CompetingParticipantFeeCalculator;
 use tuja\util\fee\PersonTypeFeeCalculator;
 use tuja\util\fee\FixedFeeCalculator;
+use tuja\util\fee\GroupFeeCalculator;
 
 class Group {
 
@@ -95,18 +96,12 @@ class Group {
 			}
 		} elseif ( $action === 'save_group' ) {
 			// Fee calculator
-			if ( @$_POST['tuja_group_fee_calculator_enabled'] === 'true' ) {
-				$fee_calculator_cfg = json_decode( stripslashes( $_POST['tuja_group_fee_calculator'] ), true );
-				$fee_calculator = ( new \ReflectionClass( $fee_calculator_cfg['type'] ) )->newInstance();
-				$fee_calculator->configure( $fee_calculator_cfg[ 'config_' . $fee_calculator_cfg['type'] ] );
-				$this->group->fee_calculator = $fee_calculator;
-			} else {
-				$this->group->fee_calculator = null;
-			}
+			$this->group->fee_calculator = AdminUtils::get_fee_configuration_object('tuja_group_fee_calculator');
 
 			$success = $this->group_dao->update( $this->group );
 
 			if ( $success ) {
+				$this->group              = $this->group_dao->get( $_GET['tuja_group'] );
 				AdminUtils::printSuccess( 'Ändringar sparade.' );
 			} else {
 				AdminUtils::printError( 'Kunde inte spara.' );
@@ -118,6 +113,7 @@ class Group {
 			$success = $this->group_dao->update( $this->group );
 
 			if ( $success ) {
+				$this->group              = $this->group_dao->get( $_GET['tuja_group'] );
 				AdminUtils::printSuccess(
 					sprintf(
 						'Status har ändrats till %s.',
@@ -186,8 +182,9 @@ class Group {
 
 	public function print_fee_configuration_form() {
 		return AdminUtils::print_fee_configuration_form(
-			$this->group->fee_calculator ?? $this->competition->get_group_fee_calculator(),
-			'tuja_group_fee_calculator'
+			$this->group->fee_calculator,
+			'tuja_group_fee_calculator',
+			true
 		);
 	}
 
