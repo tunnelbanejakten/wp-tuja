@@ -18,6 +18,8 @@ use tuja\data\store\ResponseDao;
 use tuja\frontend\router\FormInitiator;
 use tuja\frontend\router\GroupCheckinInitiator;
 use tuja\frontend\router\GroupEditorInitiator;
+use tuja\frontend\router\GroupHomeInitiator;
+use tuja\frontend\router\GroupPeopleEditorInitiator;
 use tuja\frontend\router\GroupSignupInitiator;
 use tuja\frontend\router\PointsOverrideInitiator;
 use tuja\util\score\ScoreCalculator;
@@ -96,12 +98,12 @@ class Group {
 			}
 		} elseif ( $action === 'save_group' ) {
 			// Fee calculator
-			$this->group->fee_calculator = AdminUtils::get_fee_configuration_object('tuja_group_fee_calculator');
+			$this->group->fee_calculator = AdminUtils::get_fee_configuration_object( 'tuja_group_fee_calculator' );
 
 			$success = $this->group_dao->update( $this->group );
 
 			if ( $success ) {
-				$this->group              = $this->group_dao->get( $_GET['tuja_group'] );
+				$this->group = $this->group_dao->get( $_GET['tuja_group'] );
 				AdminUtils::printSuccess( 'Ändringar sparade.' );
 			} else {
 				AdminUtils::printError( 'Kunde inte spara.' );
@@ -113,7 +115,7 @@ class Group {
 			$success = $this->group_dao->update( $this->group );
 
 			if ( $success ) {
-				$this->group              = $this->group_dao->get( $_GET['tuja_group'] );
+				$this->group = $this->group_dao->get( $_GET['tuja_group'] );
 				AdminUtils::printSuccess(
 					sprintf(
 						'Status har ändrats till %s.',
@@ -268,9 +270,11 @@ class Group {
 
 		$groups = $db_groups->get_all_in_competition( $competition->id, true );
 
-		$group_signup_link  = GroupSignupInitiator::link( $group );
-		$group_editor_link  = GroupEditorInitiator::link( $group );
-		$group_checkin_link = GroupCheckinInitiator::link( $group );
+		$group_home_link          = GroupHomeInitiator::link( $group );
+		$group_signup_link        = GroupSignupInitiator::link( $group );
+		$group_people_editor_link = GroupPeopleEditorInitiator::link( $group );
+		$group_editor_link        = GroupEditorInitiator::link( $group );
+		$group_checkin_link       = GroupCheckinInitiator::link( $group );
 
 		$app_link = AppUtils::group_link( $group );
 
@@ -302,6 +306,13 @@ class Group {
 			function ( Event $event ) {
 				return $event->event_name === Event::EVENT_VIEW && $event->object_type === Event::OBJECT_TYPE_QUESTION;
 			}
+		);
+
+		$back_url = add_query_arg(
+			array(
+				'tuja_competition' => $competition->id,
+				'tuja_view'        => 'Groups',
+			)
 		);
 
 		include 'views/group.php';

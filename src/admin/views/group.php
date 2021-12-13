@@ -9,10 +9,11 @@ use tuja\util\rules\RuleResult;
 AdminUtils::printTopMenu( $competition );
 ?>
 
-<form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
-    <h3>Grupp <?= htmlspecialchars( $group->name ) ?> (id: <code><?= htmlspecialchars( $group->random_id ) ?></code>)
-    </h3>
+<h3>Grupp <?= htmlspecialchars( $group->name ) ?> (id: <code><?= htmlspecialchars( $group->random_id ) ?></code>)</h3>
 
+<?php printf( '<p><a id="tuja_group_back" href="%s">« Tillbaka till grupplistan</a></p>', $back_url ); ?>
+
+<form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
 	<?php
 	if ( ! empty( $group->note ) ) {
 		printf( '<p>Meddelande från laget: <em>%s</em></p>', $group->note );
@@ -23,9 +24,20 @@ AdminUtils::printTopMenu( $competition );
 		printf( '<p>Ort: <em>%s</em></p>', $group->city );
 	}
 	?>
-    <p>
+
+	<h3>Länkar</h3>
+
+	<p>
         Länk till lagportal:
+		<?= sprintf( '<a href="%s">%s</a>', $group_home_link, $group_home_link ) ?>
+    </p>
+    <p>
+        Länk för att ändra lagets namn och tävlingsklass:
 		<?= sprintf( '<a href="%s">%s</a>', $group_editor_link, $group_editor_link ) ?>
+    </p>
+    <p>
+        Länk för att ändra deltagare:
+		<?= sprintf( '<a href="%s">%s</a>', $group_people_editor_link, $group_people_editor_link ) ?>
     </p>
     <p>
         Länk för att checka in:

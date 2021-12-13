@@ -6,13 +6,14 @@ use Exception;
 use tuja\util\ImageManager;
 use tuja\data\model\Group;
 use tuja\data\model\Competition;
-use tuja\util\fee\GroupFeeCalculator;
 use tuja\util\fee\CompetingParticipantFeeCalculator;
 use tuja\util\fee\PersonTypeFeeCalculator;
 use tuja\util\fee\FixedFeeCalculator;
 
 class AdminUtils {
 	private static $is_admin_mode = false;
+
+	const INHERIT = 'inherit';
 
 	/**
 	 * Prints an error message, with WP's default admin page style, based on an exception.
@@ -187,7 +188,7 @@ class AdminUtils {
 
 	public static function get_fee_configuration_object( string $form_field_name ) {
 		$fee_calculator_cfg = json_decode( stripslashes( @$_POST[ $form_field_name ] ?? '{}' ), true );
-		if ( @$fee_calculator_cfg['type'] !== 'inherit' ) {
+		if ( @$fee_calculator_cfg['type'] !== self::INHERIT ) {
 			$fee_calculator = ( new \ReflectionClass( $fee_calculator_cfg['type'] ) )->newInstance();
 			$fee_calculator->configure( $fee_calculator_cfg[ 'config_' . $fee_calculator_cfg['type'] ] );
 			return $fee_calculator;
@@ -196,10 +197,7 @@ class AdminUtils {
 		}
 	}
 
-	public static function print_fee_configuration_form( $fee_calculator, string $target_field_name, bool $is_optional ) {
-		$is_inherit_available = $is_optional;
-		$is_inherit_selected  = ! isset( $fee_calculator );
-
+	public static function print_fee_configuration_form( $fee_calculator, string $target_field_name, bool $is_inherit_available ) {
 		$fee_calculators        = array(
 			CompetingParticipantFeeCalculator::class => 'Betala per tävlande',
 			PersonTypeFeeCalculator::class           => 'Betala beroende på roll',
@@ -254,7 +252,7 @@ class AdminUtils {
 						'type'    => 'string',
 						'default' => $fee_calculator_classes[0],
 						'enum'    => array_merge(
-							$is_inherit_available ? array( 'inherit' ) : array(),
+							$is_inherit_available ? array( self::INHERIT ) : array(),
 							$fee_calculator_classes
 						),
 						'options' => array(
@@ -274,17 +272,21 @@ class AdminUtils {
 					),
 					array_map(
 						function ( $class_name ) use ( $fee_calculators ) {
-							return array_merge(
-								array(
-									'type'    => 'object',
-									'title'   => 'Inställningar för ' . $fee_calculators[ $class_name ],
-									'options' => array(
-										'dependencies' => array(
-											'type' => $class_name,
-										),
+							$header_schema = array(
+								'type'    => 'object',
+								'title'   => 'Inställningar för ' . $fee_calculators[ $class_name ],
+								'options' => array(
+									'dependencies' => array(
+										'type' => $class_name,
 									),
 								),
-								( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_config_json_schema()
+							);
+
+							$config_schema = ( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_config_json_schema();
+
+							return array_merge(
+								$header_schema,
+								$config_schema
 							);
 						},
 						$fee_calculator_classes
@@ -309,9 +311,11 @@ class AdminUtils {
 		 *    }
 		 *  }
 		 */
-		$default_values = array_merge(
+		$is_inherit_selected = ! isset( $fee_calculator );
+		$fee_calculator_fqn  = $is_inherit_selected ? '' : ( new \ReflectionClass( $fee_calculator ) )->getName();
+		$default_values      = array_merge(
 			array(
-				'type' => $is_inherit_selected ? 'inherit' : ( new \ReflectionClass( $fee_calculator ) )->getName(),
+				'type' => $is_inherit_selected ? self::INHERIT : $fee_calculator_fqn,
 			),
 			array_combine(
 				array_map(
@@ -330,7 +334,7 @@ class AdminUtils {
 		);
 
 		$stored_values = $is_inherit_selected ? array() : array(
-			'config_' . ( new \ReflectionClass( $fee_calculator ) )->getName() => $fee_calculator->get_config(),
+			'config_' . $fee_calculator_fqn => $fee_calculator->get_config(),
 		);
 
 		$jsoneditor_values = array_merge(
@@ -339,18 +343,16 @@ class AdminUtils {
 		);
 
 		return sprintf(
-			'
-		<div class="tuja-admin-formgenerator-form" 
-			data-schema="%s" 
-			data-values="%s" 
-			data-field-id="%s"
-			data-root-name="%s"></div>
-		<input type="hidden" name="%s" id="%s" value="%s">
-					',
+			'<div class="tuja-admin-formgenerator-form" 
+				data-schema="%s" 
+				data-values="%s" 
+				data-field-id="%s"
+				data-root-name="%s"></div>
+			<input type="hidden" name="%s" id="%s" value="%s">',
 			htmlentities( json_encode( $jsoneditor_config ) ),
 			htmlentities( json_encode( $jsoneditor_values ) ),
 			$target_field_name,
-			$target_field_name,
+			"{$target_field_name}_temp",
 			$target_field_name,
 			$target_field_name,
 			htmlentities( json_encode( $jsoneditor_values ) )
