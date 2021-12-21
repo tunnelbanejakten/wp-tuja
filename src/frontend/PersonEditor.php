@@ -19,7 +19,7 @@ class PersonEditor extends AbstractGroupView {
 		$person = $this->get_person();
 		$group  = $this->get_group();
 
-		$this->check_group_status( $group );
+		$this->check_group_not_on_waiting_list( $group );
 
 		$errors = [];
 		if ( $person->group_id != $group->id ) {

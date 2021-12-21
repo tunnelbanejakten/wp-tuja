@@ -20,7 +20,7 @@ class GroupHome extends AbstractGroupView {
 	function output() {
 		$group = $this->get_group();
 
-		$this->check_group_status( $group );
+		$this->check_group_not_on_waiting_list( $group );
 
 		$incomplete_message = '';
 		if ( $group->get_status() == Group::STATUS_INCOMPLETE_DATA ) {

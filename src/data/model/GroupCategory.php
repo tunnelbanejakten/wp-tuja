@@ -5,11 +5,15 @@ namespace tuja\data\model;
 
 use tuja\util\rules\GroupCategoryRules;
 use tuja\util\rules\YoungParticipantsRuleSet;
+use tuja\util\fee\CompetingParticipantFeeCalculator;
+use tuja\util\fee\GroupFeeCalculator;
+
 
 class GroupCategory {
 	public $id;
 	public $competition_id;
 	public $name;
+	public $fee_calculator;
 	private $rules;
 
 	public function set_rules( GroupCategoryRules $rules ) {

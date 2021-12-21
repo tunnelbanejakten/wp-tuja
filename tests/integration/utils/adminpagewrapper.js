@@ -7,27 +7,6 @@ class AdminPageWrapper extends PageWrapper {
     super(browser)
   }
 
-  async configureGroupCategories (competitionId) {
-    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
-
-    await this.click('#tuja_tab_groups')
-
-    const addGroupCategory = async (name, ruleSetName) => {
-      await this.click('#tuja_add_group_category_button_' + ruleSetName)
-      const groupCategoryForm = await this.page.$('div.tuja-groupcategory-form:last-of-type')
-      const groupCategoryName = await groupCategoryForm.$('input[type=text][name^="groupcategory__name__"]')
-      await groupCategoryName.type(name)
-    }
-
-    const crewGroupCategoryName = 'The Crew'
-    await addGroupCategory('Young Participants', 'YoungParticipantsRuleSet')
-    await addGroupCategory('Old Participants', 'OlderParticipantsRuleSet')
-    await addGroupCategory(crewGroupCategoryName, 'CrewMembersRuleSet')
-
-    await this.clickLink('#tuja_save_competition_settings_button')
-    return await this.$eval('input[type="text"][value="' + crewGroupCategoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
-  }
-
   async configurePaymentDetails (competitionId) {
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
@@ -59,7 +38,7 @@ class AdminPageWrapper extends PageWrapper {
   }
 
   async configureGroupCategoryDateLimits (competitionId, isYoungParticipantsCategoryOpenNow, isOldParticipantsCategoryOpenNow) {
-    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettingsGroupCategories&tuja_competition=${competitionId}`)
 
     const setGroupCategoryDateRange = async (categoryName, includeNow, isNinOptional) => {
       const categoryId = await this.$eval('input[type="text"][value="' + categoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
@@ -79,8 +58,6 @@ class AdminPageWrapper extends PageWrapper {
         })
       }, includeNow, isNinOptional)
     }
-
-    await this.click('#tuja_tab_groups')
 
     await setGroupCategoryDateRange('Young Participants', isYoungParticipantsCategoryOpenNow, true)
     await setGroupCategoryDateRange('Old Participants', isOldParticipantsCategoryOpenNow, false)

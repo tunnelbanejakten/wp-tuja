@@ -6,9 +6,14 @@ use Exception;
 use tuja\util\ImageManager;
 use tuja\data\model\Group;
 use tuja\data\model\Competition;
+use tuja\util\fee\CompetingParticipantFeeCalculator;
+use tuja\util\fee\PersonTypeFeeCalculator;
+use tuja\util\fee\FixedFeeCalculator;
 
 class AdminUtils {
 	private static $is_admin_mode = false;
+
+	const INHERIT = 'inherit';
 
 	/**
 	 * Prints an error message, with WP's default admin page style, based on an exception.
@@ -179,4 +184,179 @@ class AdminUtils {
 			)
 		);
 	}
+
+
+	public static function get_fee_configuration_object( string $form_field_name ) {
+		$fee_calculator_cfg = json_decode( stripslashes( @$_POST[ $form_field_name ] ?? '{}' ), true );
+		if ( @$fee_calculator_cfg['type'] !== self::INHERIT ) {
+			$fee_calculator = ( new \ReflectionClass( $fee_calculator_cfg['type'] ) )->newInstance();
+			$fee_calculator->configure( $fee_calculator_cfg[ 'config_' . $fee_calculator_cfg['type'] ] );
+			return $fee_calculator;
+		} else {
+			return null;
+		}
+	}
+
+	public static function print_fee_configuration_form( $fee_calculator, string $target_field_name, bool $is_inherit_available ) {
+		$fee_calculators        = array(
+			CompetingParticipantFeeCalculator::class => 'Betala per tävlande',
+			PersonTypeFeeCalculator::class           => 'Betala beroende på roll',
+			FixedFeeCalculator::class                => 'Fast avgift',
+		);
+		$fee_calculator_classes = array_keys( $fee_calculators );
+
+		/**
+		 * $jsoneditor_config will look something like this:
+		 *
+		 *  {
+		 *    "type": "object",
+		 *      "properties": {
+		 *        "type": {
+		 *          "title": "Avgiftsmodell",
+		 *          "type": "string",
+		 *          "default": "PersonTypeFeeCalculator",
+		 *          "enum": [
+		 *            "PersonTypeFeeCalculator",
+		 *            "FixedFeeCalculator"
+		 *          ]
+		 *        },
+		 *        ...
+		 *        "config_FixedFeeCalculator": {
+		 *          "type": "object",
+		 *          "title": "Inst\u00e4llningar f\u00f6r FixedFeeCalculator",
+		 *          "options": {
+		 *            "dependencies": {
+		 *              "type": "FixedFeeCalculator"
+		 *            }
+		 *          },
+		 *          "properties": {
+		 *            "fee": {
+		 *              "title": "Avgift",
+		 *              "type": "integer",
+		 *              "format": "number"
+		 *            }
+		 *            ...
+		 *          }
+		 *        }
+		 *      }
+		 *    }
+		 *  }
+		 */
+		$jsoneditor_config = array(
+			'type'       => 'object',
+			'required'   => array( 'type' ),
+			'properties' => array_merge(
+				array(
+					'type' => array(
+						'title'   => 'Avgiftsmodell',
+						'type'    => 'string',
+						'default' => $fee_calculator_classes[0],
+						'enum'    => array_merge(
+							$is_inherit_available ? array( self::INHERIT ) : array(),
+							$fee_calculator_classes
+						),
+						'options' => array(
+							'enum_titles' => array_merge(
+								$is_inherit_available ? array( 'Ingen anpassning' ) : array(),
+								array_values( $fee_calculators )
+							),
+						),
+					),
+				),
+				array_combine(
+					array_map(
+						function ( $class_name ) {
+							return 'config_' . $class_name;
+						},
+						$fee_calculator_classes
+					),
+					array_map(
+						function ( $class_name ) use ( $fee_calculators ) {
+							$header_schema = array(
+								'type'    => 'object',
+								'title'   => 'Inställningar för ' . $fee_calculators[ $class_name ],
+								'options' => array(
+									'dependencies' => array(
+										'type' => $class_name,
+									),
+								),
+							);
+
+							$config_schema = ( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_config_json_schema();
+
+							return array_merge(
+								$header_schema,
+								$config_schema
+							);
+						},
+						$fee_calculator_classes
+					)
+				)
+			),
+		);
+
+		/**
+		 * $default_values will look something like this:
+		 *
+		 *  {
+		 *    "type": "PersonTypeFeeCalculator",
+		 *    "config_PersonTypeFeeCalculator": {
+		 *      "fee_leader": 0,
+		 *      "fee_regular": 0,
+		 *      "fee_supervisor": 0,
+		 *      "fee_admin": 0
+		 *    },
+		 *    "config_FixedFeeCalculator": {
+		 *      "fee": 0
+		 *    }
+		 *  }
+		 */
+		$is_inherit_selected = ! isset( $fee_calculator );
+		$fee_calculator_fqn  = $is_inherit_selected ? '' : ( new \ReflectionClass( $fee_calculator ) )->getName();
+		$default_values      = array_merge(
+			array(
+				'type' => $is_inherit_selected ? self::INHERIT : $fee_calculator_fqn,
+			),
+			array_combine(
+				array_map(
+					function ( $class_name ) {
+						return 'config_' . $class_name;
+					},
+					$fee_calculator_classes
+				),
+				array_map(
+					function ( $class_name ) {
+						return ( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_default_config();
+					},
+					$fee_calculator_classes
+				)
+			)
+		);
+
+		$stored_values = $is_inherit_selected ? array() : array(
+			'config_' . $fee_calculator_fqn => $fee_calculator->get_config(),
+		);
+
+		$jsoneditor_values = array_merge(
+			$default_values,
+			$stored_values // Overrides any default values, including which fee calculator is actually used.
+		);
+
+		return sprintf(
+			'<div class="tuja-admin-formgenerator-form" 
+				data-schema="%s" 
+				data-values="%s" 
+				data-field-id="%s"
+				data-root-name="%s"></div>
+			<input type="hidden" name="%s" id="%s" value="%s">',
+			htmlentities( json_encode( $jsoneditor_config ) ),
+			htmlentities( json_encode( $jsoneditor_values ) ),
+			$target_field_name,
+			"{$target_field_name}_temp",
+			$target_field_name,
+			$target_field_name,
+			htmlentities( json_encode( $jsoneditor_values ) )
+		);
+	}
+
 }

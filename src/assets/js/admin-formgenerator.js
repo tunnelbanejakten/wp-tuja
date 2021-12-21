@@ -11,6 +11,7 @@ var tujaFormGenerator = (function () {
         if (!schema) {
           return
         }
+        var initialValue = JSON.parse(el.dataset.values)
         var editor = new JSONEditor(el, {
           form_name_root: el.dataset.rootName || ('JSONEditor_' + el.dataset.fieldId),
           schema: schema,
@@ -21,9 +22,9 @@ var tujaFormGenerator = (function () {
           disable_properties: true,
           disable_collapse: true,
           disable_array_delete_all_rows: true,
-          disable_array_delete_last_row: true
+          disable_array_delete_last_row: true,
+          startval: initialValue
         })
-        editor.setValue(JSON.parse(el.dataset.values))
         editor.on('change', function () {
           var conf = this.getValue()
           $('#' + el.dataset.fieldId).val(JSON.stringify(conf))

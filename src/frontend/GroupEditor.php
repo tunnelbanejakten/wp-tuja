@@ -31,7 +31,7 @@ class GroupEditor extends AbstractGroupView {
 
 		$group = $this->get_group();
 
-		$this->check_group_status( $group );
+		$this->check_group_not_on_waiting_list( $group );
 
 		$errors = [];
 

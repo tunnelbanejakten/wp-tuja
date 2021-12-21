@@ -35,8 +35,4 @@ class Competition {
 	public static function allowed_initial_statuses() {
 		return array_merge( array( Group::DEFAULT_STATUS ), Group::STATUS_TRANSITIONS[ Group::DEFAULT_STATUS ] );
 	}
-
-	public function get_group_fee_calculator(): GroupFeeCalculator {
-		return $this->fee_calculator ?: new CompetingParticipantFeeCalculator();
-	}
 }
