@@ -174,9 +174,14 @@ tr.tuja-admin-review-correctanswer-row td {
     padding: 0.5em 0;
 }
 
-table.tuja-admin-review th,
-table.tuja-admin-review td {
-    padding: 0.3em 1em 0.3em 0;
+table.tuja-table tr {
+    height: 30px;
+}
+
+table.tuja-table th,
+table.tuja-table td {
+    padding: 0.2em 1em 0.2em 0;
+    border-collapse: collapse;
 }
 
 tr.tuja-admin-review-response-row td {
@@ -208,10 +213,10 @@ tr.tuja-admin-review-response-row.question-group td {
 
 span.tuja-admin-review-autoscore, span.tuja-admin-groupstatus {
     display: inline-block;
-    border-radius: 3px;
+    border-radius: 5px;
     border-width: 1px;
     border-style: solid;
-    padding: 3px 5px;
+    padding: 2px 5px;
     white-space: nowrap;
 }
 
@@ -409,4 +414,13 @@ span.tuja-maps-question {
     max-width: 10em;
     overflow: hidden;
     white-space: nowrap;
+}
+
+div.progress-bar-wrapper {
+    border: 1px solid #ccc;
+    width: 5em;
+}
+div.progress-bar {
+    background-color: #aaa;
+    height: 1em;
 }

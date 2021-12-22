@@ -113,8 +113,6 @@ class Groups {
 		$groups_data = [];
 		$groups      = $db_groups->get_all_in_competition( $competition->id, true );
 
-		$unreviewed_answers = $this->get_unreviewed_answers_count();
-
 		$fee_calculator = $competition->get_group_fee_calculator();
 
 		foreach ( $groups as $group ) {
@@ -137,13 +135,7 @@ class Groups {
 				'tuja_view'                                  => 'Group',
 				\tuja\admin\Group::QUESTION_FILTER_URL_PARAM => ResponseDao::QUESTION_FILTER_ALL
 			) );
-			$group_data['unreviewed_link']  = add_query_arg( array(
-				'tuja_group'                                 => $group->id,
-				'tuja_view'                                  => 'Group',
-				\tuja\admin\Group::QUESTION_FILTER_URL_PARAM => ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL
-			) );
 			$group_data['category'] = $group->get_category();
-			$group_data['count_unreviewed'] = @$unreviewed_answers[ $group->id ] ?: 0;
 
 			if ( ! $group_data['category']->get_rules()->is_crew() && $group->get_status() !== Group::STATUS_DELETED ) {
 				$groups_competing                                     += 1;
@@ -178,12 +170,6 @@ class Groups {
 				'Accepterade lag',
 				function ( $group_data ) {
 					return $group_data['model']->get_status() == Group::STATUS_ACCEPTED;
-				}
-			],
-			[
-				'Orättade svar',
-				function ( $group_data ) {
-					return $group_data['count_unreviewed'] > 0;
 				}
 			],
 			[
@@ -247,25 +233,4 @@ class Groups {
 		);
 	}
 
-	private function get_unreviewed_answers_count(): array {
-		$response_dao = new ResponseDao();
-		$data         = $response_dao->get_by_questions(
-			$this->competition->id,
-			ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL,
-			[] );
-
-		$unreviewed_answers = [];
-		foreach ( $data as $form_id => $form_entry ) {
-			foreach ( $form_entry['questions'] as $question_id => $question_entry ) {
-				foreach ( $question_entry['responses'] as $group_id => $response_entry ) {
-					$response = isset( $response_entry ) ? $response_entry['response'] : null;
-					if ( isset( $response ) ) {
-						$unreviewed_answers[ $response->group_id ] = ( @$unreviewed_answers[ $response->group_id ] ?: 0 ) + 1;
-					}
-				}
-			}
-		}
-
-		return $unreviewed_answers;
-	}
 }

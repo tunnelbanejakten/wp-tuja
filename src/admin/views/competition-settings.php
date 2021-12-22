@@ -142,7 +142,7 @@ AdminUtils::printTopMenu( $competition );
     </div>
     <div class="tuja-tab" id="tuja-tab-strings">
 
-        <table style="width: 100%">
+        <table style="width: 100%" class="tuja-table">
             <tbody>
 			<?php
 			$final_list  = Strings::get_list();

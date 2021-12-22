@@ -278,7 +278,7 @@ class ReviewComponent {
 			return;
 		}
 		print ( '
-	        <table class="tuja-admin-review"><tbody>
+	        <table class="tuja-admin-review tuja-table"><tbody>
 	            <tr>
 	                <td><div class="spacer"></div></td>
 	                <td><div class="spacer"></div></td>

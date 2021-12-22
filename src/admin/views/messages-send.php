@@ -131,7 +131,7 @@ if ( ! empty( $action_result ) ) {
 		return sprintf( '<td><strong>%s</strong></td>', $variable );
 	}, $variables ) );
 
-	printf( '<table>' .
+	printf( '<table class="tuja-table">' .
 	        '  <thead>' .
 	        '  <tr>' .
 	        '    <td colspan="2" rowspan="2" valign="top"><strong>Mottagare</strong>' .

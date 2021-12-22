@@ -17,7 +17,7 @@ AdminUtils::printTopMenu( $competition );
 	?>
 
 	<h3>Alla markörer</h3>
-	<table id="tuja_all_markers">
+	<table id="tuja_all_markers" class="tuja-table">
 		<thead>
 		<tr>
 		<th>Karta:</th>

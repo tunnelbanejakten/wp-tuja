@@ -194,13 +194,20 @@ class ScoreCalculator {
 		$groups = $this->group_dao->get_all_in_competition( $this->competition_id );
 		foreach ( $groups as $group ) {
 
-			$score_result = $this->score( $group );
+			$score_result           = $this->score( $group );
+			$count_scored_questions = array_filter(
+				$score_result->questions,
+				function ( $q ) {
+					return ! is_null( $q->auto ) || ! is_null( $q->override );
+				}
+			);
 
 			$group_result = array();
 			// TODO: Return proper objects instead of associative arrays.
 			$group_result['group_id']   = $group->id;
 			$group_result['group_name'] = $group->name;
 			$group_result['score']      = $score_result->total_final;
+			$group_result['progress']   = count( $count_scored_questions ) / count( $score_result->questions );
 			$result[]                   = $group_result;
 		}
 

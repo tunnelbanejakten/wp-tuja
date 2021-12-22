@@ -5,7 +5,7 @@ AdminUtils::printTopMenu( $competition );
 ?>
 <p>Filter: <?= $filters ?>.</p>
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
-    <table id="tuja_groups_list">
+    <table id="tuja_groups_list" class="tuja-table">
         <thead>
         <tr>
             <th rowspan="2" valign="top"><input type="checkbox" id="tuja_group_toggle_all"></th>
@@ -17,7 +17,6 @@ AdminUtils::printTopMenu( $competition );
             <th colspan="3" valign="top">Antal</th>
             <th rowspan="2" valign="top">Avgift</th>
             <th colspan="3" valign="top">Anmälningsstatus</th>
-            <th rowspan="2" valign="top">Rättning</th>
         </tr>
         <tr>
             <td>Tävlande</td>
@@ -178,17 +177,6 @@ AdminUtils::printTopMenu( $competition );
 					''
 			);
 
-			// Print summary sign-up status
-			$count_unreviewed = $group_data['count_unreviewed'];
-			printf( '<td><span class="tuja-admin-review-autoscore %s">%s orättade svar</span></td>',
-				$count_unreviewed > 0
-					? 'tuja-admin-review-autoscore-decent'
-					: 'tuja-admin-review-autoscore-good',
-				$count_unreviewed > 0
-					? sprintf( '<a href="%s">%s</a>', $group_data['unreviewed_link'], $count_unreviewed )
-					: 'Inga'
-			);
-
 			print '</tr>';
 		}
 		?>
@@ -210,7 +198,7 @@ AdminUtils::printTopMenu( $competition );
 
 <h3>Statistik</h3>
 
-<table>
+<table class="tuja-table">
     <tbody>
     <tr>
         <td>Antal tävlande personer:</td>
