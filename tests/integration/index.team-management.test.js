@@ -318,6 +318,24 @@ describe('Team Management', () => {
       })
 
       it('should evaluate registration rules for team size, and calculate participation fee', async () => {
+        const configurePerParticipantFee = async (idPrefix, fee) => {
+          await adminPage.page.select(`select[name="${idPrefix}_temp[type]"]`, 'tuja\\util\\fee\\CompetingParticipantFeeCalculator')
+          await adminPage.page.waitForSelector(`input[name="${idPrefix}_temp[config_tuja\\\\util\\\\fee\\\\CompetingParticipantFeeCalculator][fee]"]`)
+          await adminPage.type(`input[name="${idPrefix}_temp[config_tuja\\\\util\\\\fee\\\\CompetingParticipantFeeCalculator][fee]"]`, String(fee)) // The "change" event will not be triggered...
+          await adminPage.click(`select[name="${idPrefix}_temp[type]"]`) // ...until we click on something, anything, else.
+        }
+        const configureGroupCategoryFeeCalculator = async () => {
+          await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettingsGroupCategories&tuja_competition=${competitionId}`)
+      
+          const getCategoryId = async (categoryName) => await adminPage.$eval('input[type="text"][value="' + categoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
+      
+          const youngCategoryId = await getCategoryId('Young Participants')
+      
+          await configurePerParticipantFee(`groupcategory__fee__${youngCategoryId}`, 1)
+      
+          await adminPage.clickLink('#tuja_save_competition_settings_button')
+        }
+        await configureGroupCategoryFeeCalculator()
 
         const verifyFeePage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
 
@@ -390,6 +408,19 @@ describe('Team Management', () => {
         // Remove one team member (and verify that a warning is no longer shown, and that the group sign-up status is ACCEPTED)
         await click('div.tuja-person-role-regular div.tuja-signup-person:last-child button.tuja-delete-person')
         await saveAndVerify(false, 800)
+
+        // Change group category (to one with different fee calculator)
+        await goto(`http://localhost:8080/${tempGroupProps.key}/andra`)
+        await click('#tuja-group__age-2')
+        await clickLink('button[name="tuja-action"]')
+        await expectSuccessMessage('Ändringarna har sparats.')
+        await verifyGroupFee(8)
+        
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${tempGroupProps.id}`)
+        await configurePerParticipantFee('tuja_group_fee_calculator', 2)
+        await adminPage.clickLink('button[name="tuja_points_action"][value="save_group"]')
+        await expectSuccessMessage('Ändringarna har sparats.')
+        await verifyGroupFee(16)
 
         await verifyFeePage.close()
       })

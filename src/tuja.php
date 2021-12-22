@@ -84,11 +84,12 @@ abstract class Plugin {
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'team' ) . ' (
-				id                 INTEGER AUTO_INCREMENT NOT NULL,
-				random_id          VARCHAR(20)  NOT NULL,
-				competition_id     INTEGER      NOT NULL,
-				map_id             INTEGER,
-				is_always_editable BOOLEAN      NOT NULL DEFAULT FALSE,
+				id                    INTEGER AUTO_INCREMENT NOT NULL,
+				random_id             VARCHAR(20)  			 NOT NULL,
+				competition_id        INTEGER      			 NOT NULL,
+				payment_instructions  TEXT,
+				map_id                INTEGER,
+				is_always_editable    BOOLEAN      			 NOT NULL DEFAULT FALSE,
 				PRIMARY KEY (id),
 				UNIQUE KEY idx_team_token (random_id)
 			) ' . $charset;
@@ -238,12 +239,13 @@ abstract class Plugin {
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'team_category' ) . ' (
-				id                  INTEGER AUTO_INCREMENT NOT NULL,
-				competition_id      INTEGER NOT NULL,
-				is_crew             BOOLEAN NOT NULL DEFAULT FALSE,
-				name                VARCHAR(100),
-				rule_set            VARCHAR(100),
-				rules_configuration TEXT,
+				id                   INTEGER AUTO_INCREMENT NOT NULL,
+				competition_id       INTEGER NOT NULL,
+				is_crew              BOOLEAN NOT NULL DEFAULT FALSE,
+				name                 VARCHAR(100),
+				payment_instructions TEXT,
+				rule_set             VARCHAR(100),
+				rules_configuration  TEXT,
 				PRIMARY KEY (id)
 			) ' . $charset;
 

@@ -18,11 +18,17 @@ use tuja\data\store\ResponseDao;
 use tuja\frontend\router\FormInitiator;
 use tuja\frontend\router\GroupCheckinInitiator;
 use tuja\frontend\router\GroupEditorInitiator;
+use tuja\frontend\router\GroupHomeInitiator;
+use tuja\frontend\router\GroupPeopleEditorInitiator;
 use tuja\frontend\router\GroupSignupInitiator;
 use tuja\frontend\router\PointsOverrideInitiator;
 use tuja\util\score\ScoreCalculator;
 use tuja\util\JwtUtils;
 use tuja\util\AppUtils;
+use tuja\util\fee\CompetingParticipantFeeCalculator;
+use tuja\util\fee\PersonTypeFeeCalculator;
+use tuja\util\fee\FixedFeeCalculator;
+use tuja\util\fee\GroupFeeCalculator;
 
 class Group {
 
@@ -59,11 +65,13 @@ class Group {
 
 
 	public function handle_post() {
+		global $wpdb;
+
 		if ( ! isset( $_POST['tuja_points_action'] ) ) {
 			return;
 		}
 
-		list( $action, $parameter ) = explode( '__', $_POST['tuja_points_action'] );
+		@list( $action, $parameter ) = explode( '__', @$_POST['tuja_points_action'] );
 
 		if ( $action === 'save' ) {
 
@@ -88,6 +96,18 @@ class Group {
 					)
 				);
 			}
+		} elseif ( $action === 'save_group' ) {
+			// Fee calculator
+			$this->group->fee_calculator = AdminUtils::get_fee_configuration_object( 'tuja_group_fee_calculator' );
+
+			$success = $this->group_dao->update( $this->group );
+
+			if ( $success ) {
+				$this->group = $this->group_dao->get( $_GET['tuja_group'] );
+				AdminUtils::printSuccess( 'Ändringar sparade.' );
+			} else {
+				AdminUtils::printError( 'Kunde inte spara.' );
+			}
 		} elseif ( $action === 'transition' ) {
 
 			$this->group->set_status( $parameter );
@@ -95,6 +115,7 @@ class Group {
 			$success = $this->group_dao->update( $this->group );
 
 			if ( $success ) {
+				$this->group = $this->group_dao->get( $_GET['tuja_group'] );
 				AdminUtils::printSuccess(
 					sprintf(
 						'Status har ändrats till %s.',
@@ -161,8 +182,19 @@ class Group {
 		}
 	}
 
+	public function print_fee_configuration_form() {
+		return AdminUtils::print_fee_configuration_form(
+			$this->group->fee_calculator,
+			'tuja_group_fee_calculator',
+			true
+		);
+	}
+
 	public function get_scripts(): array {
 		return array(
+			'admin-formgenerator.js',
+			'jsoneditor.min.js',
+			'admin-group.js',
 			'admin-review-component.js',
 		);
 	}
@@ -238,11 +270,13 @@ class Group {
 
 		$groups = $db_groups->get_all_in_competition( $competition->id, true );
 
-		$group_signup_link  = GroupSignupInitiator::link( $group );
-		$group_editor_link  = GroupEditorInitiator::link( $group );
-		$group_checkin_link = GroupCheckinInitiator::link( $group );
+		$group_home_link          = GroupHomeInitiator::link( $group );
+		$group_signup_link        = GroupSignupInitiator::link( $group );
+		$group_people_editor_link = GroupPeopleEditorInitiator::link( $group );
+		$group_editor_link        = GroupEditorInitiator::link( $group );
+		$group_checkin_link       = GroupCheckinInitiator::link( $group );
 
-		$app_link     = AppUtils::group_link( $group );
+		$app_link = AppUtils::group_link( $group );
 
 		$group_form_links = array_map(
 			function ( \tuja\data\model\Form $form ) use ( $group ) {
@@ -272,6 +306,13 @@ class Group {
 			function ( Event $event ) {
 				return $event->event_name === Event::EVENT_VIEW && $event->object_type === Event::OBJECT_TYPE_QUESTION;
 			}
+		);
+
+		$back_url = add_query_arg(
+			array(
+				'tuja_competition' => $competition->id,
+				'tuja_view'        => 'Groups',
+			)
 		);
 
 		include 'views/group.php';

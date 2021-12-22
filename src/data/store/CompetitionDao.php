@@ -2,10 +2,10 @@
 
 namespace tuja\data\store;
 
+use Exception;
 use ReflectionClass;
 use tuja\data\model\Competition;
 use tuja\util\Database;
-use tuja\util\paymentoption\PaymentOption;
 
 class CompetitionDao extends AbstractDao {
 	function __construct() {
@@ -28,7 +28,7 @@ class CompetitionDao extends AbstractDao {
 				'event_end'            => self::to_db_date( $competition->event_end ),
 				'initial_group_status' => $competition->initial_group_status,
 				'app_config'           => json_encode( $competition->app_config ),
-				'payment_instructions' => json_encode( self::to_payment_instructions( $competition->fee_calculator, $competition->payment_options ) )
+				'payment_instructions' => self::serialize_payment_instructions( $competition->fee_calculator, $competition->payment_options )
 			),
 			array(
 				'%s',
@@ -62,7 +62,7 @@ class CompetitionDao extends AbstractDao {
 				'event_end'            => self::to_db_date( $competition->event_end ),
 				'initial_group_status' => $competition->initial_group_status,
 				'app_config'           => json_encode( $competition->app_config ),
-				'payment_instructions' => json_encode( self::to_payment_instructions( $competition->fee_calculator, $competition->payment_options ) )
+				'payment_instructions' => self::serialize_payment_instructions( $competition->fee_calculator, $competition->payment_options )
 			),
 			array(
 				'id' => $competition->id
@@ -103,43 +103,13 @@ class CompetitionDao extends AbstractDao {
 		$combined_app_config  = array_replace_recursive( $default_app_config, $stored_app_config );
 		$c->app_config        = $combined_app_config;
 
-		$payment_details = json_decode( $result->payment_instructions, true );
-
-		if ( @$payment_details['fee_calculator']['class_name'] ) {
-			try {
-				$fee_calculator_class = new ReflectionClass( $payment_details['fee_calculator']['class_name'] );
-				$c->fee_calculator    = $fee_calculator_class->newInstance();
-				$c->fee_calculator->configure( $payment_details['fee_calculator']['config'] );
-			} catch ( \Exception $e ) {
-			}
-		}
-
-		$c->payment_options = array_map( function ( $cfg ) {
-			$payment_option_class = new ReflectionClass( $cfg['class_name'] );
-			$payment_option       = $payment_option_class->newInstance();
-			$payment_option->configure( $cfg['config'] );
-
-			return $payment_option;
-		}, @$payment_details['payment_options'] ?: [] );
+		list($fee_calculator, $payment_options ) = self::deserialize_payment_instructions( $result->payment_instructions);
+		$c->fee_calculator = $fee_calculator;
+		$c->payment_options = $payment_options;
 
 		$c->initial_group_status = $result->initial_group_status;
 
 		return $c;
-	}
-
-	private static function to_payment_instructions( $fee_calculator, array $payment_options ) {
-		return [
-			'fee_calculator'  => $fee_calculator ? [
-				'class_name' => ( new ReflectionClass( $fee_calculator ) )->getName(),
-				'config'     => $fee_calculator->get_config()
-			] : null,
-			'payment_options' => array_map( function ( PaymentOption $payment_option ) {
-				return [
-					'class_name' => ( new ReflectionClass( $payment_option ) )->getName(),
-					'config'     => $payment_option->get_config()
-				];
-			}, $payment_options )
-		];
 	}
 
 	public function get_by_key( $competition_key ) {

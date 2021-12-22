@@ -78,6 +78,7 @@ class Group {
 	public $map_id;
 	public $is_always_editable = false;
 	public $note;
+	public $fee_calculator;
 
 	public function __construct( $random_id = null ) {
 		$this->status    = new StateMachine( null, self::STATUS_TRANSITIONS );

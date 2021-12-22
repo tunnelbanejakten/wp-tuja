@@ -17,6 +17,7 @@ use tuja\util\DateUtils;
 use tuja\util\fee\CompetingParticipantFeeCalculator;
 use tuja\util\fee\PersonTypeFeeCalculator;
 use tuja\util\fee\FixedFeeCalculator;
+use tuja\util\fee\GroupFeeCalculator;
 use tuja\util\paymentoption\OtherPaymentOption;
 use tuja\util\paymentoption\PaymentOption;
 use tuja\util\paymentoption\SwishPaymentOption;
@@ -33,13 +34,6 @@ use tuja\util\TemplateEditor;
 class CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
-	const RULE_SETS = [
-		PassthroughRuleSet::class       => 'Inga regler',
-		YoungParticipantsRuleSet::class => 'Deltagare under 15 år',
-		OlderParticipantsRuleSet::class => 'Deltagare över 15 år',
-		CrewMembersRuleSet::class       => 'Funktionärer'
-	];
-
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_competition_settings_action'] ) ) {
 			return;
@@ -54,7 +48,6 @@ class CompetitionSettings {
 
 		if ( $_POST['tuja_competition_settings_action'] === 'save' ) {
 			$this->competition_settings_save_other( $competition );
-			$this->competition_settings_save_groups( $competition );
 			$this->competition_settings_save_message_templates( $competition );
 			$this->competition_settings_save_strings( $competition );
 		}
@@ -76,7 +69,6 @@ class CompetitionSettings {
 		$competition_dao      = new CompetitionDao();
 		$competition          = $competition_dao->get( $_GET['tuja_competition'] );
 		$message_template_dao = new MessageTemplateDao();
-		$category_dao         = new GroupCategoryDao();
 
 		$message_templates = $message_template_dao->get_all_in_competition( $competition->id );
 
@@ -116,27 +108,6 @@ class CompetitionSettings {
 				array_values( $template_configs )
 			)
 		);
-
-		$rules_html = [];
-		$i          = 0;
-		foreach ( self::RULE_SETS as $class_name => $label ) {
-			if ( ! empty( $class_name ) ) {
-				$rules = new $class_name;
-
-				$indent = str_repeat( '&nbsp;', 4 );
-
-				$rules_html[''][ $i ]                        = sprintf( '<strong>%s</strong>', $label );
-				$rules_html['Antal i grupp'][ $i ]           = join( '-', $rules->get_group_size_range() );
-				$rules_html['Vuxen medföljare'][ $i ]        = $rules->is_adult_supervisor_required() ? 'Ja, krav' : '-';
-				$rules_html['Får rapportera poäng'][ $i ]    = $rules->is_crew() ? 'Ja' : '-';
-				$rules_html['Sista dag för att'][ $i ]       = '';
-				$rules_html[ $indent . '...anmäla' ][ $i ]   = $rules->get_create_registration_period( $competition )->end->format( 'd M' );
-				$rules_html[ $indent . '...ändra' ][ $i ]    = $rules->get_update_registration_period( $competition )->end->format( 'd M' );
-				$rules_html[ $indent . '...avanmäla' ][ $i ] = $rules->get_delete_registration_period( $competition )->end->format( 'd M' );
-
-				$i = $i + 1;
-			}
-		}
 
 		$group_status_transitions_definitions = StateMachine::as_mermaid_chart_definition( \tuja\data\model\Group::STATUS_TRANSITIONS );
 
@@ -227,37 +198,6 @@ class CompetitionSettings {
 			$auto_send_trigger_options );
 	}
 
-	public function print_group_category_form( GroupCategory $category, Competition $competition ) {
-		$rules             = $category->get_rules();
-		$jsoneditor_config = GroupCategoryRules::get_jsoneditor_config();
-		$jsoneditor_values = $rules->get_json_values();
-
-		return sprintf( '
-			<div class="tuja-groupcategory-form tuja-ruleset-column">
-				<input type="hidden" name="%s" id="%s" value="%s">
-				<div class="row">
-					<input type="text" placeholder="Grupptypens namn" name="%s" value="%s">
-				</div>
-				<div class="tuja-admin-formgenerator-form" 
-					data-schema="%s" 
-					data-values="%s" 
-					data-field-id="%s"
-					data-root-name="%s"></div>
-				<button class="button tuja-delete-groupcategory" type="button">
-					Ta bort
-				</button>
-			</div>',
-			$this->list_item_field_name( 'groupcategory', $category->id, 'rules' ),
-			$this->list_item_field_name( 'groupcategory', $category->id, 'rules' ),
-			htmlentities( $jsoneditor_values ),
-			$this->list_item_field_name( 'groupcategory', $category->id, 'name' ),
-			$category->name,
-			htmlentities( $jsoneditor_config ),
-			htmlentities( $jsoneditor_values ),
-			htmlentities( $this->list_item_field_name( 'groupcategory', $category->id, 'rules' ) ),
-			'tuja-admin-formgenerator-form-' . $category->id );
-	}
-
 	public function print_app_config_form( Competition $competition ) {
 		$config_file       = __DIR__ . '/../data/store/CompetitionAppConfig.schema.json';
 		$jsoneditor_config = file_get_contents( $config_file );
@@ -285,130 +225,11 @@ class CompetitionSettings {
 	}
 
 	public function print_group_fee_configuration_form( Competition $competition ) {
-		$fee_calculators        = [
-			CompetingParticipantFeeCalculator::class => "Betala per tävlande",
-			PersonTypeFeeCalculator::class           => "Betala beroende på roll",
-			FixedFeeCalculator::class                => "Fast avgift"
-		];
-		$fee_calculator_classes = array_keys( $fee_calculators );
-
-		/**
-		 * $jsoneditor_config will look something like this:
-		 *
-		 *  {
-		 *    "type": "object",
-		 *      "properties": {
-		 *        "type": {
-		 *          "title": "Avgiftsmodell",
-		 *          "type": "string",
-		 *          "default": "PersonTypeFeeCalculator",
-		 *          "enum": [
-		 *            "PersonTypeFeeCalculator",
-		 *            "FixedFeeCalculator"
-		 *          ]
-		 *        },
-		 *        ...
-		 *        "config_FixedFeeCalculator": {
-		 *          "type": "object",
-		 *          "title": "Inst\u00e4llningar f\u00f6r FixedFeeCalculator",
-		 *          "options": {
-		 *            "dependencies": {
-		 *              "type": "FixedFeeCalculator"
-		 *            }
-		 *          },
-		 *          "properties": {
-		 *            "fee": {
-		 *              "title": "Avgift",
-		 *              "type": "integer",
-		 *              "format": "number"
-		 *            }
-		 *            ...
-		 *          }
-		 *        }
-		 *      }
-		 *    }
-		 *  }
-		 *
-		 */
-		$jsoneditor_config = [
-			"type"       => "object",
-			"properties" => array_merge(
-				[
-					"type" => [
-						"title"   => "Avgiftsmodell",
-						"type"    => "string",
-						"default" => $fee_calculator_classes[0],
-						"enum"    => $fee_calculator_classes,
-						"options" => [
-							"enum_titles" => array_values( $fee_calculators )
-						]
-					]
-				],
-				array_combine( array_map( function ( $class_name ) {
-					return "config_" . $class_name;
-				}, $fee_calculator_classes ), array_map( function ( $class_name ) use ( $fee_calculators ) {
-					return array_merge(
-						[
-							"type"    => "object",
-							"title"   => 'Inställningar för ' . $fee_calculators[ $class_name ],
-							"options" => [
-								"dependencies" => [
-									"type" => $class_name
-								]
-							]
-						],
-						( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_config_json_schema()
-					);
-				}, $fee_calculator_classes ) ) )
-		];
-
-
-		/**
-		 * $default_values will look something like this:
-		 *
-		 *  {
-		 *    "type": "PersonTypeFeeCalculator",
-		 *    "config_PersonTypeFeeCalculator": {
-		 *      "fee_leader": 0,
-		 *      "fee_regular": 0,
-		 *      "fee_supervisor": 0,
-		 *      "fee_admin": 0
-		 *    },
-		 *    "config_FixedFeeCalculator": {
-		 *      "fee": 0
-		 *    }
-		 *  }
-		 *
-		 */
-		$default_values = array_merge(
-			[
-				"type" => ( new \ReflectionClass( $competition->get_group_fee_calculator() ) )->getName()
-			],
-			array_combine(
-				array_map( function ( $class_name ) {
-					return "config_" . $class_name;
-				}, $fee_calculator_classes ),
-				array_map( function ( $class_name ) {
-					return ( ( new \ReflectionClass( $class_name ) )->newInstance() )->get_default_config();
-				}, $fee_calculator_classes ) ) );
-
-		$stored_values = [
-			"config_" . ( new \ReflectionClass( $competition->get_group_fee_calculator() ) )->getName() => $competition->get_group_fee_calculator()->get_config()
-		];
-
-		$jsoneditor_values = array_merge(
-			$default_values,
-			$stored_values // Overrides any default values, including which fee calculator is actually used.
+		return AdminUtils::print_fee_configuration_form(
+			$competition->fee_calculator,
+			'tuja_competition_settings_fee_calculator',
+			false
 		);
-
-		return sprintf( '
-				<div class="tuja-admin-formgenerator-form" 
-					data-schema="%s" 
-					data-values="%s" 
-					data-field-id="tuja_competition_settings_fee_calculator"
-					data-root-name="tuja_competition_settings_fee_calculator"></div>',
-			htmlentities( json_encode( $jsoneditor_config ) ),
-			htmlentities( json_encode( $jsoneditor_values ) ) );
 	}
 
 	public function print_payment_options_configuration_form( Competition $competition ) {
@@ -541,66 +362,6 @@ class CompetitionSettings {
 		}
 	}
 
-	public function competition_settings_save_groups( Competition $competition ) {
-		$category_dao = new GroupCategoryDao();
-
-		$categories = $category_dao->get_all_in_competition( $competition->id );
-
-		$preexisting_ids = array_map( function ( $category ) {
-			return $category->id;
-		}, $categories );
-
-		$submitted_ids = $this->submitted_list_item_ids( 'groupcategory' );
-
-		$updated_ids = array_intersect( $preexisting_ids, $submitted_ids );
-		$deleted_ids = array_diff( $preexisting_ids, $submitted_ids );
-		$created_ids = array_diff( $submitted_ids, $preexisting_ids );
-
-		$category_map = array_combine( array_map( function ( $category ) {
-			return $category->id;
-		}, $categories ), $categories );
-
-		foreach ( $created_ids as $id ) {
-			try {
-				$category                 = new GroupCategory();
-				$category->competition_id = $competition->id;
-				$category->name           = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
-				$category->set_rules( new GroupCategoryRules( json_decode( stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'rules' ) ] ), true ) ) );
-
-				$new_category_id = $category_dao->create( $category );
-			} catch ( ValidationException $e ) {
-				AdminUtils::printException( $e );
-			} catch ( Exception $e ) {
-				AdminUtils::printException( $e );
-			}
-		}
-
-		foreach ( $updated_ids as $id ) {
-			if ( isset( $category_map[ $id ] ) ) {
-				try {
-					$category_map[ $id ]->name = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
-					$category_map[ $id ]->set_rules( new GroupCategoryRules( json_decode( stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'rules' ) ] ), true ) ) );
-
-					$affected_rows = $category_dao->update( $category_map[ $id ] );
-				} catch ( ValidationException $e ) {
-					AdminUtils::printException( $e );
-				} catch ( Exception $e ) {
-					AdminUtils::printException( $e );
-				}
-			}
-		}
-
-		foreach ( $deleted_ids as $id ) {
-			if ( isset( $category_map[ $id ] ) ) {
-				$delete_successful = $category_dao->delete( $id );
-				if ( ! $delete_successful ) {
-					global $wpdb;
-					AdminUtils::printError( 'Could not delete category' . $wpdb->last_error );
-				}
-			}
-		}
-	}
-
 	public function competition_settings_save_other( Competition $competition ) {
 		try {
 			$competition->event_start          = DateUtils::from_date_local_value( $_POST['tuja_event_start'] );
@@ -609,10 +370,7 @@ class CompetitionSettings {
 			$competition->app_config           = json_decode(stripslashes($_POST['tuja_competition_settings_appconfig']));
 
 			// Fee calculator
-			$fee_calculator_cfg = json_decode( stripslashes( $_POST['tuja_competition_settings_fee_calculator'] ), true );
-			$fee_calculator     = ( new \ReflectionClass( $fee_calculator_cfg['type'] ) )->newInstance();
-			$fee_calculator->configure( $fee_calculator_cfg[ 'config_' . $fee_calculator_cfg['type'] ] );
-			$competition->fee_calculator = $fee_calculator;
+			$competition->fee_calculator = AdminUtils::get_fee_configuration_object('tuja_competition_settings_fee_calculator');
 
 			// Payment methods
 			$payment_options_cfg          = json_decode( stripslashes( $_POST['tuja_competition_settings_payment_options'] ), true );

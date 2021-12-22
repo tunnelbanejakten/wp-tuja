@@ -3,6 +3,7 @@
 namespace tuja\data\store;
 
 use ReflectionClass;
+use ReflectionException;
 use tuja\data\model\GroupCategory;
 use tuja\data\model\ValidationException;
 use tuja\util\Database;
@@ -27,14 +28,16 @@ class GroupCategoryDao extends AbstractDao {
 		$affected_rows = $this->wpdb->insert(
 			$this->table,
 			array(
-				'competition_id'      => $category->competition_id,
-				'name'                => $category->name,
-				'rules_configuration' => json_encode( $category->get_rules()->get_values() ),
+				'competition_id'       => $category->competition_id,
+				'name'                 => $category->name,
+				'payment_instructions' => self::serialize_payment_instructions( $category->fee_calculator, array() ),
+				'rules_configuration'  => json_encode( $category->get_rules()->get_values() ),
 			),
 			array(
 				'%d',
 				'%s',
 				'%s',
+				'%s'
 			)
 		);
 		$success       = $affected_rows !== false && $affected_rows === 1;
@@ -52,8 +55,9 @@ class GroupCategoryDao extends AbstractDao {
 		return $this->wpdb->update(
 			$this->table,
 			array(
-				'name'                => $category->name,
-				'rules_configuration' => json_encode( $category->get_rules()->get_values() ),
+				'name'                 => $category->name,
+				'payment_instructions' => self::serialize_payment_instructions( $category->fee_calculator, array() ),
+				'rules_configuration'  => json_encode( $category->get_rules()->get_values() ),
 			),
 			array(
 				'id' => $category->id,
@@ -140,6 +144,9 @@ class GroupCategoryDao extends AbstractDao {
 				)
 			);
 		}
+
+		list ($fee_calculator, ) = self::deserialize_payment_instructions( $result->payment_instructions );
+		$gc->fee_calculator      = $fee_calculator;
 
 		return $gc;
 	}

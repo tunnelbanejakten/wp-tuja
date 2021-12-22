@@ -113,12 +113,10 @@ class Groups {
 		$groups_data = [];
 		$groups      = $db_groups->get_all_in_competition( $competition->id, true );
 
-		$fee_calculator = $competition->get_group_fee_calculator();
-
 		foreach ( $groups as $group ) {
 			$group_data          = [];
 			$group_data['model'] = $group;
-			$group_data['fee']   = number_format_i18n( $fee_calculator->calculate_fee( $group, new DateTime() ), 0 );
+			$group_data['fee']   = number_format_i18n( $group->effective_fee_calculator->calculate_fee( $group, new DateTime() ), 0 );
 
 			$registration_evaluation = $group->evaluate_registration();
 

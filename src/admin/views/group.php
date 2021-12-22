@@ -9,10 +9,11 @@ use tuja\util\rules\RuleResult;
 AdminUtils::printTopMenu( $competition );
 ?>
 
-<form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
-    <h3>Grupp <?= htmlspecialchars( $group->name ) ?> (id: <code><?= htmlspecialchars( $group->random_id ) ?></code>)
-    </h3>
+<h3>Grupp <?= htmlspecialchars( $group->name ) ?> (id: <code><?= htmlspecialchars( $group->random_id ) ?></code>)</h3>
 
+<?php printf( '<p><a id="tuja_group_back" href="%s">« Tillbaka till grupplistan</a></p>', $back_url ); ?>
+
+<form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
 	<?php
 	if ( ! empty( $group->note ) ) {
 		printf( '<p>Meddelande från laget: <em>%s</em></p>', $group->note );
@@ -23,9 +24,20 @@ AdminUtils::printTopMenu( $competition );
 		printf( '<p>Ort: <em>%s</em></p>', $group->city );
 	}
 	?>
-    <p>
+
+	<h3>Länkar</h3>
+
+	<p>
         Länk till lagportal:
+		<?= sprintf( '<a href="%s">%s</a>', $group_home_link, $group_home_link ) ?>
+    </p>
+    <p>
+        Länk för att ändra lagets namn och tävlingsklass:
 		<?= sprintf( '<a href="%s">%s</a>', $group_editor_link, $group_editor_link ) ?>
+    </p>
+    <p>
+        Länk för att ändra deltagare:
+		<?= sprintf( '<a href="%s">%s</a>', $group_people_editor_link, $group_people_editor_link ) ?>
     </p>
     <p>
         Länk för att checka in:
@@ -41,6 +53,36 @@ AdminUtils::printTopMenu( $competition );
         Länk för att logga in i appen:
 		<?= sprintf( '<a href="%s">%s</a>', $app_link, $app_link ) ?>
     </p>
+
+	<h3>Redigera grupp</h3>
+
+	<h4>Anmälningsavgift</h4>
+
+	<div id="tuja-group-payment">
+		<?= $this->print_fee_configuration_form(); ?>
+	</div>
+
+	<?php
+	$group_categories_settings_url = add_query_arg( array(
+		'tuja_competition' => $competition->id,
+		'tuja_view'        => 'CompetitionSettingsGroupCategories'
+	) );
+	$competition_settings_url = add_query_arg( array(
+		'tuja_competition' => $competition->id,
+		'tuja_view'        => 'CompetitionSettings'
+	) );
+	printf( '<p><em>Anmälningsavgift kan konfigureras per enskilt lag, per <a href="%s">gruppkategori</a> eller för <a href="%s">tävlingen generellt</a>. Den mest specifika inställningen används.</em></p>', 
+		$group_categories_settings_url,
+		$competition_settings_url );
+	?>
+
+	<button class="button button-primary" type="submit" name="tuja_points_action" value="save_group">
+        Spara
+    </button>
+
+	<p>
+		<?php printf('Faktisk: %s', $group->effective_fee_calculator->description()); ?>
+	</p>
 
     <h3>Tidsbegränsade frågor som visats</h3>
 
