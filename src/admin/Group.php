@@ -196,6 +196,7 @@ class Group {
 			'jsoneditor.min.js',
 			'admin-group.js',
 			'admin-review-component.js',
+			'qrious-4.0.2.min.js',
 		);
 	}
 
@@ -281,18 +282,22 @@ class Group {
 		$group_form_links = array_map(
 			function ( \tuja\data\model\Form $form ) use ( $group ) {
 				if ( $group->get_category()->get_rules()->is_crew() ) {
+					$link = PointsOverrideInitiator::link( $group, $form->id );
 					return sprintf(
-						'<p>Länk för att rapportering in poäng för formulär %s: <a href="%s">%s</a></p>',
+						'<tr><td>Länk för att rapportering in poäng för formulär %s:</td><td><a href="%s">%s</a></td><td>%s</td></tr>',
 						$form->name,
-						PointsOverrideInitiator::link( $group, $form->id ),
-						PointsOverrideInitiator::link( $group, $form->id )
+						$link,
+						$link,
+						AdminUtils::qr_code_button( $link )
 					);
 				} else {
+					$link = FormInitiator::link( $group, $form );
 					return sprintf(
-						'<p>Länk för att svara på formulär %s: <a href="%s">%s</a></p>',
+						'<tr><td>Länk för att svara på formulär %s:</td><td><a href="%s">%s</a></td><td>%s</td></tr>',
 						$form->name,
-						FormInitiator::link( $group, $form ),
-						FormInitiator::link( $group, $form )
+						$link,
+						$link,
+						AdminUtils::qr_code_button( $link )
 					);
 				}
 			},

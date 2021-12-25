@@ -26,33 +26,41 @@ AdminUtils::printTopMenu( $competition );
 	?>
 
 	<h3>Länkar</h3>
-
-	<p>
-        Länk till lagportal:
-		<?= sprintf( '<a href="%s">%s</a>', $group_home_link, $group_home_link ) ?>
-    </p>
-    <p>
-        Länk för att ändra lagets namn och tävlingsklass:
-		<?= sprintf( '<a href="%s">%s</a>', $group_editor_link, $group_editor_link ) ?>
-    </p>
-    <p>
-        Länk för att ändra deltagare:
-		<?= sprintf( '<a href="%s">%s</a>', $group_people_editor_link, $group_people_editor_link ) ?>
-    </p>
-    <p>
-        Länk för att checka in:
-		<?= sprintf( '<a href="%s">%s</a>', $group_checkin_link, $group_checkin_link ) ?>
-    </p>
-    <p>
-        Länk för att anmäla nya till laget:
-		<?= sprintf( '<a href="%s">%s</a>', $group_signup_link, $group_signup_link ) ?>
-    </p>
-	<?= join( $group_form_links ) ?>
-
-    <p>
-        Länk för att logga in i appen:
-		<?= sprintf( '<a href="%s">%s</a>', $app_link, $app_link ) ?>
-    </p>
+	<table class="tuja-table">
+		<tbody>
+			<tr>
+				<td>Länk till lagportal:</td>
+				<td><?= sprintf( '<a href="%s">%s</a>', $group_home_link, $group_home_link ) ?></td>
+				<td><?= AdminUtils::qr_code_button( $group_home_link ) ?></td>
+			</tr>
+			<tr>
+				<td>Länk för att ändra lagets namn och tävlingsklass:</td>
+				<td><?= sprintf( '<a href="%s">%s</a>', $group_editor_link, $group_editor_link ) ?></td>
+				<td><?= AdminUtils::qr_code_button( $group_editor_link ) ?></td>
+			</tr>
+			<tr>
+				<td>Länk för att ändra deltagare:</td>
+				<td><?= sprintf( '<a href="%s">%s</a>', $group_people_editor_link, $group_people_editor_link ) ?></td>
+				<td><?= AdminUtils::qr_code_button( $group_people_editor_link ) ?></td>
+			</tr>
+			<tr>
+				<td>Länk för att checka in:</td>
+				<td><?= sprintf( '<a href="%s">%s</a>', $group_checkin_link, $group_checkin_link ) ?></td>
+				<td><?= AdminUtils::qr_code_button( $group_checkin_link ) ?></td>
+			</tr>
+			<tr>
+				<td>Länk för att anmäla nya till laget:</td>
+				<td><?= sprintf( '<a href="%s">%s</a>', $group_signup_link, $group_signup_link ) ?></td>
+				<td><?= AdminUtils::qr_code_button( $group_signup_link ) ?></td>
+			</tr>
+			<?= join( $group_form_links ) ?>
+			<tr>
+				<td>Länk för att logga in i appen:</td>
+				<td><?= sprintf( '<a href="%s">%s</a>', $app_link, $app_link ) ?></td>
+				<td><?= AdminUtils::qr_code_button( $app_link ) ?></td>
+			</tr>
+		</tbody>
+	</table>
 
 	<h3>Redigera grupp</h3>
 

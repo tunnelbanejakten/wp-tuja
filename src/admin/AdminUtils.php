@@ -359,4 +359,10 @@ class AdminUtils {
 		);
 	}
 
+	public static function qr_code_button( $value ) {
+		$id = uniqid();
+		return sprintf( '
+			<a title="QR-kod" href="#TB_inline?&width=300&height=300&inlineId=tuja-qr-code-viewer-%s" class="thickbox" data-qr-value="%s" data-target-id="tuja-qr-code-image-%s">Visa QR-kod</a>
+			<span id="tuja-qr-code-viewer-%s" style="display: none"><span><img src="" id="tuja-qr-code-image-%s"></span></span>', $id, htmlentities( $value ), $id, $id, $id );
+	}
 }
