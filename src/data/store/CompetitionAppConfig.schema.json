@@ -52,7 +52,7 @@
     },
     "views": {
       "type": "object",
-      "title": "Sidor",
+      "title": "Sidor som visas i appen",
       "properties": {
         "answer": {
           "title": "Svara",
@@ -73,6 +73,29 @@
           "title": "Info",
           "type": "boolean",
           "format": "checkbox"
+        }
+      }
+    },
+    "answer": {
+      "type": "object",
+      "title": "Svara-sidan",
+      "properties": {
+        "question_grouping": {
+          "title": "Gruppera frågor",
+          "type": "string",
+          "format": "radio",
+          "enum": [
+            "",
+            "by_group",
+            "by_question"
+          ],
+          "options": {
+            "enum_titles": [
+              "Ingen gruppering",
+              "Per frågegrupp",
+              "Per fråga"
+            ]
+          } 
         }
       }
     }

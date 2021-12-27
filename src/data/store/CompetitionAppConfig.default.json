@@ -17,5 +17,8 @@
         "map": true,
         "device_test": true,
         "info": true
+    },
+    "answer": {
+        "question_grouping": ""
     }
 }

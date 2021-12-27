@@ -176,7 +176,8 @@ class FormUtils {
 
 		if ( $question instanceof ImagesQuestion ) {
 			// Enrich data about images with thumbnail URLs (thumbnails will be generated if missing).
-			$images        = @$response['response']['current_value']['images'];
+			$current_value = @$response['response']['current_value'] ?? array();
+			$images        = @$current_value['images'] ?? array();
 			$image_manager = new ImageManager();
 			foreach ( $images as $index => $image_id ) {
 				$url = $image_manager->get_resized_image_url( $image_id, 40000, $this->group->random_id );
