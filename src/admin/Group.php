@@ -304,7 +304,7 @@ class Group {
 			$this->form_dao->get_all_in_competition( $competition->id )
 		);
 
-		$token = JwtUtils::create_token( $competition->id, $group->id );
+		$token = JwtUtils::create_token( $competition->id, $group->id, $group->random_id );
 
 		$view_question_events = array_filter(
 			$db_event->get_by_group( $group->id ),

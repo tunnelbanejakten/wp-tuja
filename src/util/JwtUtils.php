@@ -22,10 +22,11 @@ class JwtUtils {
 		return $jwt_secret;
 	}
 
-	public static function create_token( int $competition_id, int $group_id ) {
+	public static function create_token( int $competition_id, int $group_id, string $group_key ) {
 		$jwt_secret = self::jwt_secret();
 		$payload    = array(
 			'group_id'       => $group_id,
+			'group_key'      => $group_key,
 			'competition_id' => $competition_id,
 		);
 		return JWT::encode( $payload, $jwt_secret, self::ALGORITHM );

@@ -23,7 +23,7 @@ class Auth extends AbstractRestEndpoint {
 		}
 
 		return array(
-			'token' => JwtUtils::create_token( $group->competition_id, $group->id ),
+			'token' => JwtUtils::create_token( $group->competition_id, $group->id, $group->random_id ),
 		);
 	}
 }
