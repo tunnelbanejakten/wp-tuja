@@ -2,7 +2,9 @@
 
 namespace tuja;
 
+use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
+use tuja\frontend\router\GroupHomeInitiator;
 use tuja\util\JwtUtils;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -19,11 +21,19 @@ class Profile extends AbstractRestEndpoint {
 		if ( $group === false ) {
 			return self::create_response( 404 );
 		}
+		$category_dao = new GroupCategoryDao();
+		$category     = $category_dao->get( $group->category_id );
+		if ( $category === false ) {
+			return self::create_response( 404 );
+		}
 
 		return array(
 			'id'                 => $group->id,
 			'key'                => $group->random_id,
 			'name'               => $group->name,
+			'category_name'      => $category->name,
+
+			'portal_link'        => GroupHomeInitiator::link( $group ),
 
 			'count_competing'    => $group->count_competing,
 			'count_follower'     => $group->count_follower,
