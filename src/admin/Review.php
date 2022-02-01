@@ -10,7 +10,7 @@ use tuja\data\model\Response;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
-use tuja\data\store\PointsDao;
+use tuja\data\store\QuestionPointsOverrideDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;

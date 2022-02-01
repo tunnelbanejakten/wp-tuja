@@ -7,10 +7,12 @@ use tuja\data\model\Event;
 use tuja\data\model\Group;
 use tuja\data\store\EventDao;
 use tuja\data\store\GroupDao;
-use tuja\data\store\PointsDao;
+use tuja\data\store\QuestionPointsOverrideDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
+use tuja\data\store\StationDao;
+use tuja\data\store\StationPointsDao;
 
 class ScoreCalculator {
 
@@ -19,7 +21,8 @@ class ScoreCalculator {
 	private $competition_id;
 	private $response_dao;
 	private $group_dao;
-	private $points_dao;
+	private $question_points_override_dao;
+	private $station_points_dao;
 	private $event_dao;
 	private $question_groups;
 	private $questions;
@@ -30,16 +33,19 @@ class ScoreCalculator {
 		QuestionGroupDao $question_group_dao,
 		ResponseDao $response_dao,
 		GroupDao $group_dao,
-		PointsDao $points_dao,
+		QuestionPointsOverrideDao $question_points_override_dao,
+		StationPointsDao $station_points_dao,
 		EventDao $event_dao
 	) {
-		$this->competition_id  = $competition_id;
-		$this->response_dao    = $response_dao;
-		$this->group_dao       = $group_dao;
-		$this->points_dao      = $points_dao;
-		$this->event_dao       = $event_dao;
-		$this->question_groups = $question_group_dao->get_all_in_competition( $competition_id );
-		$this->questions       = $question_dao->get_all_in_competition( $competition_id );
+		$this->competition_id               = $competition_id;
+		$this->response_dao                 = $response_dao;
+		$this->group_dao                    = $group_dao;
+		$this->question_points_override_dao = $question_points_override_dao;
+		$this->station_points_dao           = $station_points_dao;
+		$this->event_dao                    = $event_dao;
+		$this->question_groups              = $question_group_dao->get_all_in_competition( $competition_id );
+		$this->questions                    = $question_dao->get_all_in_competition( $competition_id );
+		$this->stations                     = ( new StationDao() )->get_all_in_competition( $competition_id );
 	}
 
 	public static function score_combined( $response, AbstractQuestion $question, $override, Group $group, ?Event $first_view_event ): ScoreQuestionResult {
@@ -159,7 +165,7 @@ class ScoreCalculator {
 
 	private function score_per_question( Group $group ) {
 		$group_id             = $group->id;
-		$points               = $this->points_dao->get_by_group( $group_id );
+		$points               = $this->question_points_override_dao->get_by_group( $group_id );
 		$points_overrides     = array_combine(
 			array_map(
 				function ( $points ) {

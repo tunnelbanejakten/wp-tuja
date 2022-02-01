@@ -11,10 +11,12 @@ use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\MessageDao;
 use tuja\data\store\PersonDao;
-use tuja\data\store\PointsDao;
+use tuja\data\store\QuestionPointsOverrideDao;
+use tuja\data\store\StationPointsDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
+use tuja\data\store\StationDao;
 use tuja\frontend\router\FormInitiator;
 use tuja\frontend\router\GroupCheckinInitiator;
 use tuja\frontend\router\GroupEditorInitiator;
@@ -215,7 +217,9 @@ class Group {
 		$db_question_group = new QuestionGroupDao();
 		$db_response       = new ResponseDao();
 		$db_groups         = new GroupDao();
-		$db_points         = new PointsDao();
+		$db_points         = new QuestionPointsOverrideDao();
+		$db_station_points = new StationPointsDao();
+		$db_stations       = new StationDao();
 		$db_message        = new MessageDao();
 		$db_event          = new EventDao();
 
@@ -239,12 +243,13 @@ class Group {
 			$db_response,
 			$db_groups,
 			$db_points,
+			$db_station_points,
 			$db_event
 		);
 		$score_result     = $score_calculator->score( $group );
 
-		$responses                     = $db_response->get_latest_by_group( $group->id );
-		$response_per_question         = array_combine(
+		$responses             = $db_response->get_latest_by_group( $group->id );
+		$response_per_question = array_combine(
 			array_map(
 				function ( $response ) {
 					return $response->form_question_id;
@@ -253,6 +258,7 @@ class Group {
 			),
 			array_values( $responses )
 		);
+		// TODO: Remove $points_overrides?
 		$points_overrides              = $db_points->get_by_group( $group->id );
 		$points_overrides_per_question = array_combine(
 			array_map(
@@ -269,7 +275,8 @@ class Group {
 
 		$registration_evaluation = $group->evaluate_registration();
 
-		$groups = $db_groups->get_all_in_competition( $competition->id, true );
+		$groups   = $db_groups->get_all_in_competition( $competition->id, true );
+		$stations = $db_stations->get_all_in_competition( $competition->id );
 
 		$group_home_link          = GroupHomeInitiator::link( $group );
 		$group_signup_link        = GroupSignupInitiator::link( $group );

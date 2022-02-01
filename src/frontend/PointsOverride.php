@@ -7,7 +7,7 @@ use Exception;
 use tuja\data\model\Group;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupCategoryDao;
-use tuja\data\store\PointsDao;
+use tuja\data\store\QuestionPointsOverrideDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\Frontend;
@@ -38,7 +38,7 @@ class PointsOverride extends AbstractGroupView {
 		$this->competition_id     = $this->form->competition_id;
 		$this->question_dao       = new QuestionDao();
 		$this->question_group_dao = new QuestionGroupDao();
-		$this->points_dao         = new PointsDao();
+		$this->points_dao         = new QuestionPointsOverrideDao();
 		$this->category_dao       = new GroupCategoryDao();
 	}
 
@@ -251,6 +251,7 @@ class PointsOverride extends AbstractGroupView {
 
 	// TODO: Use LockValuesList to prevent concurrent edits
 	private function get_optimistic_lock_value( array $keys ) {
+		// Also for stations!?
 		$current_points = $this->points_dao->get_by_competition( $this->competition_id );
 		$points_by_key  = array_combine(
 			array_map( function ( $points ) {
