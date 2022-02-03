@@ -2,6 +2,7 @@
 namespace tuja\admin;
 
 use tuja\data\model\Person;
+use tuja\data\model\Station;
 use tuja\data\store\ResponseDao;
 use tuja\frontend\router\PersonEditorInitiator;
 use tuja\util\rules\RuleResult;
@@ -136,7 +137,7 @@ AdminUtils::printTopMenu( $competition );
     </div>
 
     <h3>Svar och poäng</h3>
-    <p>
+    <p id="tuja-group-score" data-total-final="<?= $score_result->total_final ?>">
         <strong>Totalt <?= $score_result->total_final ?> poäng.</strong>
 		<?php
 		if ( $score_result->total_without_question_group_max_limits != $score_result->total_final ) {
@@ -174,6 +175,18 @@ AdminUtils::printTopMenu( $competition );
     <button class="button button-primary" type="submit" name="tuja_points_action" value="save">
         Spara manuella poäng och markera svar som kontrollerade
     </button>
+
+	<p><strong>Stationer</strong></p>
+	<table class="tuja-table">
+		<tbody>	
+		<?php
+		array_walk($stations, function(Station $station) use ($score_result) {
+			$points = @$score_result->stations[$station->id]->final ?? 0;
+			printf('<tr><td>%s</td><td>%s p</td></tr>', $station->name, $points);
+		});
+		?>
+		</tbody>
+	</table>
 
     <h3>Deltagare</h3>
     <table>

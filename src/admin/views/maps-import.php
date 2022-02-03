@@ -1,12 +1,6 @@
 <?php namespace tuja\admin;
 
 use tuja\data\model\question\AbstractQuestion;
-use tuja\data\store\GroupCategoryDao;
-use tuja\data\store\GroupDao;
-use tuja\data\store\PointsDao;
-use tuja\data\store\QuestionDao;
-use tuja\data\store\ResponseDao;
-use tuja\util\score\ScoreCalculator;
 
 AdminUtils::printTopMenu( $competition );
 ?>

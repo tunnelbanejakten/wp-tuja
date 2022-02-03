@@ -49,12 +49,22 @@ class Stations {
 	public function output() {
 		$this->handle_post();
 
-		$station_dao   = new StationDao();
+		$station_dao = new StationDao();
 
 		$competition = $this->competition;
 
-		$stations  = $station_dao->get_all_in_competition( $competition->id );
+		$stations = $station_dao->get_all_in_competition( $competition->id );
 
+		$ticketing_url = add_query_arg(
+			array(
+				'tuja_view' => 'StationsTicketing',
+			)
+		);
+		$points_url    = add_query_arg(
+			array(
+				'tuja_view' => 'StationsPoints',
+			)
+		);
 		include( 'views/stations.php' );
 	}
 }

@@ -65,7 +65,7 @@ class BootstrapCompetitionController {
 			$sample_form_id  = $form->id;
 		}
 		if ( $params->create_sample_stations ) {
-			$this->create_stations( $competition );
+			$sample_station_ids = $this->create_stations( $competition );
 		}
 		if ( $params->create_sample_maps ) {
 			$sample_map_id = $this->create_maps( $competition );
@@ -74,11 +74,12 @@ class BootstrapCompetitionController {
 			$this->create_common_sendout_templates( $competition );
 		}
 		return array(
-			'competition'     => $competition,
-			'crew_group_key'  => $crew_group_key ?: null,
-			'sample_form_key' => $sample_form_key ?: null,
-			'sample_form_id'  => $sample_form_id ?: null,
-			'sample_map_id'   => $sample_map_id ?: null,
+			'competition'        => $competition,
+			'crew_group_key'     => $crew_group_key ?: null,
+			'sample_form_key'    => $sample_form_key ?: null,
+			'sample_form_id'     => $sample_form_id ?: null,
+			'sample_map_id'      => $sample_map_id ?: null,
+			'sample_station_ids' => $sample_station_ids ?: array(),
 		);
 	}
 
@@ -239,19 +240,28 @@ class BootstrapCompetitionController {
 	}
 
 	private function create_stations( Competition $competition ) {
-		foreach ( array( '1:a stationen', '2:a stationen', '3:e stationen' ) as $name ) {
-			$props                          = new Station();
-			$props->name                    = $name;
-			$props->competition_id          = $competition->id;
-			$props->location_gps_coord_lat  = null;
-			$props->location_gps_coord_long = null;
-			$props->location_description    = null;
+		return array_map(
+			function ( $name ) use ( $competition ) {
+				$props                          = new Station();
+				$props->name                    = $name;
+				$props->competition_id          = $competition->id;
+				$props->location_gps_coord_lat  = null;
+				$props->location_gps_coord_long = null;
+				$props->location_description    = null;
 
-			$station_id = $this->station_dao->create( $props );
-			if ( $station_id === false ) {
-				throw new Exception( 'Could not create station.' );
-			}
-		}
+				$station_id = $this->station_dao->create( $props );
+				if ( false === $station_id ) {
+					throw new Exception( 'Could not create station.' );
+				}
+				return $station_id;
+			},
+			array(
+				'Hornstull',
+				'Slussen',
+				'Mariatorget',
+				'Skanstull',
+			)
+		);
 	}
 
 	private function create_maps( Competition $competition ) {

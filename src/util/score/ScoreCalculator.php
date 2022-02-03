@@ -90,6 +90,7 @@ class ScoreCalculator {
 	public function score( Group $group ): ScoreResult {
 		$result            = new ScoreResult();
 		$result->questions = $this->score_per_question( $group );
+		$result->stations  = $this->score_per_station( $group );
 
 		$result->total_final = $this->calculate_total_final( $result );
 
@@ -104,7 +105,10 @@ class ScoreCalculator {
 				function ( ScoreQuestionResult $question_result ) {
 					return $question_result->final;
 				},
-				$result->questions
+				array_merge(
+					array_values( $result->questions ),
+					array_values( $result->stations )
+				)
 			)
 		);
 	}
@@ -137,6 +141,11 @@ class ScoreCalculator {
 		$sum = 0;
 		foreach ( $sum_per_question_group as $question_group_id => $group_sum ) {
 			$sum += min( $group_sum, $question_group_max[ $question_group_id ] );
+		}
+
+		// ...and then also add the points for all the stations.
+		foreach ( $result->stations as $score ) {
+			$sum += $score->final;
 		}
 
 		return $sum;
@@ -190,6 +199,35 @@ class ScoreCalculator {
 				$group,
 				$first_view_event
 			);
+		}
+
+		return $scores;
+	}
+
+	private function score_per_station( Group $group ) {
+		$group_id         = $group->id;
+		$points           = $this->station_points_dao->get_by_group( $group_id );
+		$points_overrides = array_combine(
+			array_map(
+				function ( $points ) {
+					return $points->station_id;
+				},
+				$points
+			),
+			$points
+		);
+		$scores           = array();
+
+		foreach ( $this->stations as $station ) {
+			$override       = @$points_overrides[ $station->id ];
+			$station_result = new ScoreQuestionResult();
+
+			$station_result->auto            = null;
+			$station_result->auto_confidence = null;
+			$station_result->override        = @$override->points ?? null;
+			$station_result->final           = $station_result->override ?? 0;
+
+			$scores[ $station->id ] = $station_result;
 		}
 
 		return $scores;

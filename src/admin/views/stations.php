@@ -1,12 +1,5 @@
 <?php namespace tuja\admin;
 
-use tuja\data\store\GroupCategoryDao;
-use tuja\data\store\GroupDao;
-use tuja\data\store\PointsDao;
-use tuja\data\store\QuestionDao;
-use tuja\data\store\ResponseDao;
-use tuja\util\score\ScoreCalculator;
-
 AdminUtils::printTopMenu( $competition );
 ?>
 
@@ -25,9 +18,7 @@ AdminUtils::printTopMenu( $competition );
         Skapa
     </button>
 	<?php
-	$ticketing_url = add_query_arg( array(
-		'tuja_view' => 'StationsTicketing'
-	) );
 	printf( '<p><a href="%s">Biljettsystem</a></p>', $ticketing_url );
+	printf( '<p><a href="%s">Poäng</a></p>', $points_url );
 	?>
 </form>

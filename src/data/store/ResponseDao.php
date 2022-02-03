@@ -236,7 +236,7 @@ class ResponseDao extends AbstractDao
 			}, self::TABLE_COLUMNS_FORMS ) ),
 			self::QUESTION_FILTERS[ $question_filter ]['sql_from'],
 			join( ' AND ', self::QUESTION_FILTERS[ $question_filter ]['sql_where'] ),
-			count( $group_ids ) > 0 ? sprintf( ' AND r.team_id IN (%s)', join( ', ', $group_ids ) ) : ''
+			count( $group_ids ) > 0 ? sprintf( ' AND (r.team_id IS NULL OR r.team_id IN (%s))', join( ', ', $group_ids ) ) : ''
 		);
 
 		// CONVERT RAW DATA TO OBJECTS
