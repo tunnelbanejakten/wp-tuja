@@ -52,6 +52,7 @@ class CompetitionBootstrap {
 						'<a href="%s"
 							id="tuja_bootstrapped_competition_link"
 							data-crew-group-key="%s"
+							data-crew-person-key="%s"
 							data-form-key="%s"
 							data-form-id="%s"
 							data-map-id="%s"
@@ -60,6 +61,7 @@ class CompetitionBootstrap {
 							data-competition-key="%s">Tävling %s</a> har skapats.',
 						$url,
 						$bootstrap_result['crew_group_key'],
+						$bootstrap_result['crew_person_key'],
 						$bootstrap_result['sample_form_key'],
 						$bootstrap_result['sample_form_id'],
 						$bootstrap_result['sample_map_id'],

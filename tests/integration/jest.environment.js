@@ -13,6 +13,7 @@ class CustomEnvironment extends PuppeteerEnvironment {
       process.env.competitionKey = competitionData.key
       process.env.competitionName = competitionData.name
       process.env.crewGroupKey = competitionData.crewGroupKey
+      process.env.crewPersonKey = competitionData.crewPersonKey
       process.env.formKey = competitionData.formKey
       process.env.formId = competitionData.formId
       process.env.mapId = competitionData.mapId
@@ -23,6 +24,7 @@ class CustomEnvironment extends PuppeteerEnvironment {
     this.global.competitionKey = process.env.competitionKey
     this.global.competitionName = process.env.competitionName
     this.global.crewGroupKey = process.env.crewGroupKey
+    this.global.crewPersonKey = process.env.crewPersonKey
     this.global.formKey = process.env.formKey
     this.global.formId = process.env.formId
     this.global.mapId = process.env.mapId

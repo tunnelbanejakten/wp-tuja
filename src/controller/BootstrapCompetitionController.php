@@ -9,6 +9,7 @@ use tuja\data\model\GroupCategory;
 use tuja\data\model\Map;
 use tuja\data\model\Marker;
 use tuja\data\model\MessageTemplate;
+use tuja\data\model\Person;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\question\ImagesQuestion;
 use tuja\data\model\question\NumberQuestion;
@@ -23,6 +24,7 @@ use tuja\data\store\GroupDao;
 use tuja\data\store\MapDao;
 use tuja\data\store\MarkerDao;
 use tuja\data\store\MessageTemplateDao;
+use tuja\data\store\PersonDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\StationDao;
@@ -38,6 +40,7 @@ class BootstrapCompetitionController {
 		$this->competition_dao      = new CompetitionDao();
 		$this->category_dao         = new GroupCategoryDao();
 		$this->group_dao            = new GroupDao();
+		$this->person_dao           = new PersonDao();
 		$this->form_dao             = new FormDao();
 		$this->question_group_dao   = new QuestionGroupDao();
 		$this->question_dao         = new QuestionDao();
@@ -50,7 +53,7 @@ class BootstrapCompetitionController {
 	function bootstrap_competition( BootstrapCompetitionParams $params ) {
 		$competition = $this->create_competition( $params->name, $params->initial_group_status );
 		if ( $params->create_default_group_categories ) {
-			$crew_group_key = $this->create_group_categories( $competition, $params->create_default_crew_groups );
+			list ($crew_group_key, $crew_person_key) = $this->create_group_categories( $competition, $params->create_default_crew_groups );
 		}
 		if ( $params->create_sample_form ) {
 			$form           = $this->create_form( $competition );
@@ -76,6 +79,7 @@ class BootstrapCompetitionController {
 		return array(
 			'competition'        => $competition,
 			'crew_group_key'     => $crew_group_key ?: null,
+			'crew_person_key'    => $crew_person_key ?: null,
 			'sample_form_key'    => $sample_form_key ?: null,
 			'sample_form_id'     => $sample_form_id ?: null,
 			'sample_map_id'      => $sample_map_id ?: null,
@@ -97,8 +101,9 @@ class BootstrapCompetitionController {
 	}
 
 	private function create_group_categories( Competition $competition, bool $create_default_crew_groups ) {
-		$crew_group_key = null;
-		$rule_sets      = array(
+		$crew_group_key  = null;
+		$crew_person_key = null;
+		$rule_sets       = array(
 			'The Crew'           => new CrewMembersRuleSet(),
 			'Young Participants' => new YoungParticipantsRuleSet(),
 			'Old Participants'   => new OlderParticipantsRuleSet(),
@@ -127,11 +132,25 @@ class BootstrapCompetitionController {
 					if ( $crew_group_id !== false ) {
 						$crew_group     = $this->group_dao->get( $crew_group_id );
 						$crew_group_key = $crew_group->random_id;
+
+						$new_person           = new Person();
+						$new_person->group_id = $crew_group_id;
+						$new_person->email    = 'c.rew@example.com';
+						$new_person->name     = 'C. Rew';
+						$new_person->phone    = '070-123 45 67';
+						$new_person->set_status( Person::DEFAULT_STATUS );
+						$new_person->set_type( Person::PERSON_TYPE_REGULAR );
+
+						$crew_person_id = $this->person_dao->create( $new_person );
+						if ( false !== $crew_person_id ) {
+							$crew_person     = $this->person_dao->get( $crew_person_id );
+							$crew_person_key = $crew_person->random_id;
+						}
 					}
 				}
 			}
 		}
-		return $crew_group_key;
+		return array( $crew_group_key, $crew_person_key );
 	}
 
 	private function create_form( Competition $competition, string $name = 'Ett formulär' ) : Form {

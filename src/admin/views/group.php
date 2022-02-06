@@ -5,6 +5,7 @@ use tuja\data\model\Person;
 use tuja\data\model\Station;
 use tuja\data\store\ResponseDao;
 use tuja\frontend\router\PersonEditorInitiator;
+use tuja\frontend\router\ReportPointsInitiator;
 use tuja\util\rules\RuleResult;
 
 AdminUtils::printTopMenu( $competition );
@@ -203,6 +204,7 @@ AdminUtils::printTopMenu( $competition );
             <th>Telefon</th>
             <th>E-post</th>
             <th>Länk för att redigera</th>
+            <th>Länk för att rapportera poäng</th>
         </tr>
         </thead>
 		<?php if ( ! empty( $people ) ) { ?>
@@ -228,6 +230,7 @@ AdminUtils::printTopMenu( $competition );
 		<?php
 		print join( '', array_map( function ( Person $person ) use ( $group ) {
 			$person_edit_link = PersonEditorInitiator::link( $group, $person );
+			$report_points_link = ReportPointsInitiator::link_all( $person );
 
 			return sprintf( '<tr class="tuja-person-status-%s">' .
 			                '<td><input type="checkbox" name="tuja_group_people[]" value="%d" id="tuja_group_people__person_%d"></td>' .
@@ -240,6 +243,7 @@ AdminUtils::printTopMenu( $competition );
 			                '<td>%s</td>' .
 			                '<td>%s</td>' .
 			                '<td><a href="mailto:%s">%s</a></td>' .
+			                '<td><a href="%s">%s</a></td>' .
 			                '<td><a href="%s">%s</a></td>' .
 			                '</tr>',
 				$person->get_status(),
@@ -257,7 +261,9 @@ AdminUtils::printTopMenu( $competition );
 				$person->email,
 				$person->email,
 				$person_edit_link,
-				$person_edit_link );
+				$person_edit_link,
+				$report_points_link,
+				$report_points_link );
 		}, $people ) );
 		?>
         </tbody>
