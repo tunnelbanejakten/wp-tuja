@@ -4,7 +4,9 @@ namespace tuja\frontend;
 
 
 use Exception;
+use tuja\data\model\Group;
 use tuja\data\model\question\AbstractQuestion;
+use tuja\data\model\QuestionGroup;
 use tuja\data\store\FormDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\QuestionPointsOverrideDao;
@@ -156,24 +158,11 @@ class PointsOverride extends AbstractCrewMemberView {
 	}
 
 	public function render_filter_dropdown() {
-		$questions = $this->question_group_dao->get_all_in_form( $this->form->id );
-		$groups    = $this->get_participant_groups();
-
-		$question_option_values = array_map(
-			function ( $q ) {
-				return $q->id;
-			},
-			$questions
-		);
-		$question_option_labels = array_map(
-			function ( $q ) {
-				return $q->text;
-			},
-			$questions
-		);
-		$question_options       = join(
+		$question_options = join(
 			array_map(
-				function ( $value, $label ) {
+				function ( QuestionGroup $qg ) {
+					$value = $qg->id;
+					$label = $qg->text;
 					return sprintf(
 						'<option value="%s"%s>%s</option>',
 						$value,
@@ -181,26 +170,15 @@ class PointsOverride extends AbstractCrewMemberView {
 						htmlspecialchars( $label )
 					);
 				},
-				$question_option_values,
-				$question_option_labels
+				$this->question_group_dao->get_all_in_form( $this->form->id )
 			)
 		);
 
-		$group_option_values = array_map(
-			function ( $group ) {
-				return $group->id;
-			},
-			$groups
-		);
-		$group_option_labels = array_map(
-			function ( $group ) {
-				return $group->name;
-			},
-			$groups
-		);
-		$group_options       = join(
+		$group_options = join(
 			array_map(
-				function ( $value, $label ) {
+				function ( Group $group ) {
+					$value = $group->id;
+					$label = $group->name;
 					return sprintf(
 						'<option value="%s" %s>%s</option>',
 						$value,
@@ -208,20 +186,21 @@ class PointsOverride extends AbstractCrewMemberView {
 						htmlspecialchars( $label )
 					);
 				},
-				$group_option_values,
-				$group_option_labels
+				$this->get_participant_groups()
 			)
 		);
 
 		ob_start();
 		// TODO: Extract to strings.ini
 		?>
-		<select id="<?php echo self::FILTER_QUESTIONS; ?>" name="<?php echo self::FILTER_QUESTIONS; ?>"
+		<select id="<?php echo self::FILTER_QUESTIONS; ?>"
+				name="<?php echo self::FILTER_QUESTIONS; ?>"
 				class="tuja-fieldchoices tuja-fieldchoices-longlist">
 			<option value="">Välj kontroll</option>
 			<?php echo $question_options; ?>
 		</select>
-		<select id="<?php echo self::FILTER_GROUPS; ?>" name="<?php echo self::FILTER_GROUPS; ?>"
+		<select id="<?php echo self::FILTER_GROUPS; ?>"
+				name="<?php echo self::FILTER_GROUPS; ?>"
 				class="tuja-fieldchoices tuja-fieldchoices-longlist">
 			<option value="">Välj grupp</option>
 			<?php echo $group_options; ?>
