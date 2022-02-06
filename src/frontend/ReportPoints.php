@@ -14,7 +14,6 @@ use tuja\util\concurrency\LockValuesList;
 use tuja\view\FieldNumber;
 
 class ReportPoints extends AbstractCrewMemberView {
-	const ACTION_FIELD_NAME    = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'action';
 	const STATION_FIELD_PREFIX = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'station';
 
 	private $points_dao;
@@ -29,7 +28,7 @@ class ReportPoints extends AbstractCrewMemberView {
 
 	function output() {
 		$form = $this->get_form_html();
-		include( 'views/points-override.php' );
+		include( 'views/report-points.php' );
 	}
 
 	private function get_station() {
@@ -42,21 +41,13 @@ class ReportPoints extends AbstractCrewMemberView {
 	public function get_form_html(): string {
 		$html_sections = array();
 
-		// Save points
-		if ( isset( $_POST[ self::ACTION_FIELD_NAME ] ) && $_POST[ self::ACTION_FIELD_NAME ] == 'update' ) {
-			$errors = $this->update_points();
-			if ( empty( $errors ) ) {
-				$html_sections[] = sprintf( '<p class="tuja-message tuja-message-success">%s</p>', 'Poängen har sparats.' ); // TODO: Extract to strings.ini
-			} else {
-				$html_sections[] = sprintf( '<p class="tuja-message tuja-message-error">%s</p>', join( '. ', $errors ) );
-			}
-		}
+		$html_sections[] = $this->handle_post();
 
 		$station = $this->get_station();
 
 		// If a station and question station has been selected, display the questions with current points and a save button
 		if ( $station ) {
-			$groups          = $this->get_participant_groups();
+			$groups = $this->get_participant_groups();
 
 			$current_points = $this->points_dao->get_by_competition( $this->competition_id );
 			$current_points = array_combine(
@@ -79,7 +70,7 @@ class ReportPoints extends AbstractCrewMemberView {
 
 			$html_sections[] = $this->html_optimistic_lock();
 
-			$html_sections[] = sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="update">Spara</button></div>', self::ACTION_FIELD_NAME ); // TODO: Extract to strings.ini
+			$html_sections[] = $this->html_save_button();
 
 			$html_sections[] = sprintf( '<a href="%s">Tillbaka</a>', ReportPointsInitiator::link_all( $this->person ) );
 		} else {

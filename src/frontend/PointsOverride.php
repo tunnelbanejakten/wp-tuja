@@ -21,7 +21,6 @@ class PointsOverride extends AbstractCrewMemberView {
 	private $form;
 	private $question_group_dao;
 
-	const ACTION_FIELD_NAME     = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'action';
 	const FILTER_DROPDOWN_NAME  = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'filter';
 	const FILTER_GROUPS         = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'filter-groups';
 	const FILTER_QUESTIONS      = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'filter-questions';
@@ -49,15 +48,7 @@ class PointsOverride extends AbstractCrewMemberView {
 
 		$html_sections = array();
 
-		// Save points
-		if ( isset( $_POST[ self::ACTION_FIELD_NAME ] ) && $_POST[ self::ACTION_FIELD_NAME ] == 'update' ) {
-			$errors = $this->update_points();
-			if ( empty( $errors ) ) {
-				$html_sections[] = sprintf( '<p class="tuja-message tuja-message-success">%s</p>', 'Poängen har sparats.' ); // TODO: Extract to strings.ini
-			} else {
-				$html_sections[] = sprintf( '<p class="tuja-message tuja-message-error">%s</p>', join( '. ', $errors ) );
-			}
-		}
+		$html_sections[] = $this->handle_post();
 
 		$html_sections[] = sprintf( '<p>%s</p>', $this->get_filter_field() );
 
@@ -79,7 +70,7 @@ class PointsOverride extends AbstractCrewMemberView {
 			$current_points = array_combine(
 				array_map(
 					function ( $points ) {
-						return $points->form_question_id . self::FIELD_NAME_PART_SEP . $points->group_id;
+						return self::key( $points->form_question_id, $points->group_id );
 					},
 					$current_points
 				),
@@ -93,17 +84,17 @@ class PointsOverride extends AbstractCrewMemberView {
 
 			$html_sections[] = $this->html_optimistic_lock();
 
-			$html_sections[] = sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="update">Spara</button></div>', self::ACTION_FIELD_NAME ); // TODO: Extract to strings.ini
+			$html_sections[] = $this->html_save_button();
 		}
 
 		return join( $html_sections );
 	}
 
 	private function render_points_field( $text, $max_score, $question_id, $group_id, $current_points ): string {
-		$key        = $question_id . self::FIELD_NAME_PART_SEP . $group_id;
+		$key        = self::key( $question_id, $group_id );
 		$points     = isset( $current_points[ $key ] ) ? $current_points[ $key ]->points : null;
 		$field      = new FieldNumber( $text, sprintf( 'Max %d poäng.', $max_score ) ); // TODO: Extract to strings.ini
-		$field_name = self::QUESTION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $question_id . self::FIELD_NAME_PART_SEP . $group_id;
+		$field_name = self::QUESTION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $key;
 
 		return $field->render( $field_name, $points );
 	}

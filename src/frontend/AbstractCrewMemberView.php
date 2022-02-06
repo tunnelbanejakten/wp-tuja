@@ -18,6 +18,7 @@ abstract class AbstractCrewMemberView extends FrontendView {
 
 	const FIELD_NAME_PART_SEP        = '__';
 	const FORM_PREFIX                = 'tuja_crewview';
+	const ACTION_FIELD_NAME          = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'action';
 	const OPTIMISTIC_LOCK_FIELD_NAME = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'optimistic_lock';
 
 	protected $competition_id = null;
@@ -110,6 +111,8 @@ abstract class AbstractCrewMemberView extends FrontendView {
 				throw new Exception( 'Bara funktionärer får använda detta formulär.' ); // TODO: Extract to strings.ini
 			}
 
+			$this->handle_post();
+
 			return parent::get_content();
 		} catch ( Exception $e ) {
 			return $this->get_exception_message_html( $e );
@@ -120,7 +123,29 @@ abstract class AbstractCrewMemberView extends FrontendView {
 		return $this->title;
 	}
 
+	function handle_post():string {
+		if ( $this->is_save_request() ) {
+			$errors = $this->update_points();
+			if ( empty( $errors ) ) {
+				return sprintf( '<p class="tuja-message tuja-message-success">%s</p>', 'Poängen har sparats.' ); // TODO: Extract to strings.ini
+			} else {
+				return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', join( '. ', $errors ) );
+			}
+		}
+		return '';
+	}
+
 	abstract function get_optimistic_lock(): LockValuesList;
+
+	abstract function update_points(): array;
+
+	protected function html_save_button(): string {
+		return sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="update">Spara</button></div>', self::ACTION_FIELD_NAME ); // TODO: Extract to strings.ini
+	}
+
+	private function is_save_request(): bool {
+		return isset( $_POST[ self::ACTION_FIELD_NAME ] ) && $_POST[ self::ACTION_FIELD_NAME ] == 'update';
+	}
 
 	protected function html_optimistic_lock(): string {
 		$current_optimistic_lock = $this->get_optimistic_lock();
