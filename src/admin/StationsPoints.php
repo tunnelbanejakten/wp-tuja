@@ -41,35 +41,39 @@ class StationsPoints {
 		}
 
 		if ( self::ACTION_SAVE === $_POST['tuja_action'] ) {
+			$this->handle_action_save();
 			try {
-				$station_dao        = new StationDao();
-				$group_dao          = new GroupDao();
-				$station_points_dao = new StationPointsDao();
-
-				$stations = $station_dao->get_all_in_competition( $this->competition->id );
-				$groups   = $group_dao->get_all_in_competition( $this->competition->id );
-
-				array_walk(
-					$stations,
-					function ( Station $station ) use ( $station_points_dao, $groups ) {
-						array_walk(
-							$groups,
-							function ( Group $group ) use ( $station_points_dao, $station ) {
-								$key = self::get_field_key( $station->id, $group->id );
-								if ( isset( $_POST[ $key ] ) && is_numeric( $_POST[ $key ] ) ) {
-									$points = intval( $_POST[ $key ] );
-									$station_points_dao->set( $group->id, $station->id, $points );
-								} else {
-									 $station_points_dao->set( $group->id, $station->id, null );
-								}
-							}
-						);
-					}
-				);
 			} catch ( Exception $e ) {
 				AdminUtils::printException( $e );
 			}
 		}
+	}
+
+	private function handle_action_save() {
+		$station_dao        = new StationDao();
+		$group_dao          = new GroupDao();
+		$station_points_dao = new StationPointsDao();
+
+		$stations = $station_dao->get_all_in_competition( $this->competition->id );
+		$groups   = $group_dao->get_all_in_competition( $this->competition->id );
+
+		array_walk(
+			$stations,
+			function ( Station $station ) use ( $station_points_dao, $groups ) {
+				array_walk(
+					$groups,
+					function ( Group $group ) use ( $station_points_dao, $station ) {
+						$key = self::get_field_key( $station->id, $group->id );
+						if ( isset( $_POST[ $key ] ) && is_numeric( $_POST[ $key ] ) ) {
+							$points = intval( $_POST[ $key ] );
+							$station_points_dao->set( $group->id, $station->id, $points );
+						} else {
+							$station_points_dao->set( $group->id, $station->id, null );
+						}
+					}
+				);
+			}
+		);
 	}
 
 	private static function get_field_key( $station_id, $group_id ) {
