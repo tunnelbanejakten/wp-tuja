@@ -58,7 +58,7 @@ abstract class AbstractCrewMemberView extends FrontendView {
 				throw new Exception( Strings::get( 'group.is_deleted' ) );
 			}
 		} else {
-			throw new Exception( 'Oj, inget lag eller användare angivet.' );
+			throw new Exception( Strings::get( 'crew_view.no_group_or_person_specified' ) );
 		}
 	}
 
@@ -108,10 +108,8 @@ abstract class AbstractCrewMemberView extends FrontendView {
 			// Validate group category
 			$group_category = $this->get_group()->get_category();
 			if ( isset( $group_category ) && ! $group_category->get_rules()->is_crew() ) {
-				throw new Exception( 'Bara funktionärer får använda detta formulär.' ); // TODO: Extract to strings.ini
+				throw new Exception( Strings::get( 'crew_view.crew_members_only' ) );
 			}
-
-			$this->handle_post();
 
 			return parent::get_content();
 		} catch ( Exception $e ) {
@@ -127,7 +125,7 @@ abstract class AbstractCrewMemberView extends FrontendView {
 		if ( $this->is_save_request() ) {
 			$errors = $this->update_points();
 			if ( empty( $errors ) ) {
-				return sprintf( '<p class="tuja-message tuja-message-success">%s</p>', 'Poängen har sparats.' ); // TODO: Extract to strings.ini
+				return sprintf( '<p class="tuja-message tuja-message-success">%s</p>', Strings::get( 'crew_view.points_have_been_updated' ) );
 			} else {
 				return sprintf( '<p class="tuja-message tuja-message-error">%s</p>', join( '. ', $errors ) );
 			}
@@ -140,7 +138,7 @@ abstract class AbstractCrewMemberView extends FrontendView {
 	abstract function update_points(): array;
 
 	protected function html_save_button(): string {
-		return sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="update">Spara</button></div>', self::ACTION_FIELD_NAME ); // TODO: Extract to strings.ini
+		return sprintf( '<div class="tuja-buttons"><button type="submit" name="%s" value="update">%s</button></div>', self::ACTION_FIELD_NAME, Strings::get( 'crew_view.update_button' ) );
 	}
 
 	private function is_save_request(): bool {
@@ -158,13 +156,7 @@ abstract class AbstractCrewMemberView extends FrontendView {
 		$submitted_optimistic_lock = LockValuesList::from_string( stripslashes( $_POST[ self::OPTIMISTIC_LOCK_FIELD_NAME ] ) );
 
 		if ( count( $current_optimistic_lock->get_invalid_ids( $submitted_optimistic_lock ) ) > 0 ) {
-			// TODO: Extract to strings.ini
-			throw new Exception(
-				'Någon annan har hunnit rapportera in andra poäng för dessa frågor/lag sedan du ' .
-				'laddade den här sidan. För att undvika att du av misstag skriver över andra ' .
-				'funktionärers poäng så sparades inte poängen du angav. De senast inrapporterade ' .
-				'poängen visas istället för de du rapporterade in.'
-			);
+			throw new Exception( Strings::get( 'crew_view.concurrent_update_error' ) );
 		}
 	}
 

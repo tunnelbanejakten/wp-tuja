@@ -23,8 +23,6 @@ use tuja\view\FieldText;
 
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix.
 class CompetitionSignup extends FrontendView {
-	const ROLE_LABEL_GROUP_LEADER = 'Jag kommer vara med och tävla'; // TODO: Extract to strings.ini
-	const ROLE_LABEL_EXTRA_CONTACT = 'Jag administrerar bara lagets anmälan'; // TODO: Extract to strings.ini
 	private $competition_key;
 	private $competition_dao;
 
@@ -174,12 +172,12 @@ class CompetitionSignup extends FrontendView {
 			Strings::get( 'competition_signup.form.role.hint' ),
 			false,
 			[
-				self::ROLE_LABEL_GROUP_LEADER,
-				self::ROLE_LABEL_EXTRA_CONTACT
+				Strings::get('competition_signup.role_label.group_leader'),
+				Strings::get('competition_signup.role_label.extra_contact')
 			],
 			false );
 
-		$html_sections[] = $this->render_field( $reporter_role, self::FIELD_PERSON_ROLE, @$errors[ self::FIELD_PERSON_ROLE ], @$_POST[ self::FIELD_PERSON_ROLE ] ?: self::ROLE_LABEL_GROUP_LEADER );
+		$html_sections[] = $this->render_field( $reporter_role, self::FIELD_PERSON_ROLE, @$errors[ self::FIELD_PERSON_ROLE ], @$_POST[ self::FIELD_PERSON_ROLE ] ?: Strings::get('competition_signup.role_label.group_leader') );
 
 		$html_sections[] = $this->get_recaptcha_html();
 
@@ -201,8 +199,8 @@ class CompetitionSignup extends FrontendView {
 					$person_label,
 					$person_form->render( $temp_person ) );
 			}, [ Person::PERSON_TYPE_LEADER, Person::PERSON_TYPE_ADMIN ], [
-				self::ROLE_LABEL_GROUP_LEADER,
-				self::ROLE_LABEL_EXTRA_CONTACT
+				Strings::get('competition_signup.role_label.group_leader'),
+				Strings::get('competition_signup.role_label.extra_contact')
 			] ) );
 		}, $this->get_available_group_categories() ) );
 
@@ -311,7 +309,7 @@ class CompetitionSignup extends FrontendView {
 		$new_person = new Person();
 		$new_person->set_status( Person::DEFAULT_STATUS );
 		$new_person->email = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $new_person ) ];
-		if ( @$_POST[ self::FIELD_PERSON_ROLE ] == self::ROLE_LABEL_EXTRA_CONTACT ) {
+		if ( @$_POST[ self::FIELD_PERSON_ROLE ] == Strings::get('competition_signup.role_label.extra_contact') ) {
 			$new_person->name = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $new_person ) ];
 			$new_person->set_type( Person::PERSON_TYPE_ADMIN );
 		} else {

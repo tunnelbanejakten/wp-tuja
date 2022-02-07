@@ -16,6 +16,7 @@ use tuja\Frontend;
 use tuja\frontend\AbstractCrewMemberView;
 use tuja\util\concurrency\LockValuesList;
 use tuja\view\FieldNumber;
+use tuja\util\Strings;
 
 class PointsOverride extends AbstractCrewMemberView {
 	private $question_dao;
@@ -95,7 +96,7 @@ class PointsOverride extends AbstractCrewMemberView {
 	private function render_points_field( $text, $max_score, $question_id, $group_id, $current_points ): string {
 		$key        = self::key( $question_id, $group_id );
 		$points     = isset( $current_points[ $key ] ) ? $current_points[ $key ]->points : null;
-		$field      = new FieldNumber( $text, sprintf( 'Max %d poäng.', $max_score ) ); // TODO: Extract to strings.ini
+		$field      = new FieldNumber( $text, sprintf( Strings::get( 'crew_view.max_points', $max_score ) ) );
 		$field_name = self::QUESTION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $key;
 
 		return $field->render( $field_name, $points );
@@ -130,7 +131,7 @@ class PointsOverride extends AbstractCrewMemberView {
 				$question                           = $this->question_dao->get( $question_id );
 
 				if ( $question->score_max < $field_value ) {
-					throw new Exception( 'För hög poäng. Max poäng är ' . $question->score_max ); // TODO: Extract to strings.ini
+					throw new Exception( sprintf( Strings::get( 'crew_view.max_points', $question->score_max ) ) );
 				}
 
 				$this->points_dao->set( $group_id, $question_id, is_numeric( $field_value ) ? intval( $field_value ) : null );
@@ -146,12 +147,12 @@ class PointsOverride extends AbstractCrewMemberView {
 	public function get_filter_field() {
 		$render_id = self::FILTER_DROPDOWN_NAME;
 		// TODO: Show user if the assigned points will actually be counted or if the use has provided a new answer to the question which in effect nullifies the points assigned here.
-		$hint = sprintf( '<small class="tuja-question-hint">%s</small>', 'Kom ihåg att spara innan du byter.' ); // TODO: Extract to strings.ini
+		$hint = sprintf( '<small class="tuja-question-hint">%s</small>', Strings::get( 'crew_view.remember_to_save_changes' ) );
 
 		return sprintf(
 			'<div class="tuja-field"><label for="%s">%s%s</label>%s</div>',
 			$render_id,
-			'Vad vill du rapportera för?', // TODO: Extract to strings.ini
+			Strings::get( 'crew_view.choose_filter' ),
 			$hint,
 			$this->render_filter_dropdown()
 		);
@@ -191,18 +192,17 @@ class PointsOverride extends AbstractCrewMemberView {
 		);
 
 		ob_start();
-		// TODO: Extract to strings.ini
 		?>
 		<select id="<?php echo self::FILTER_QUESTIONS; ?>"
 				name="<?php echo self::FILTER_QUESTIONS; ?>"
 				class="tuja-fieldchoices tuja-fieldchoices-longlist">
-			<option value="">Välj kontroll</option>
+			<option value=""><?php echo Strings::get( 'crew_view.choose_question' ); ?></option>
 			<?php echo $question_options; ?>
 		</select>
 		<select id="<?php echo self::FILTER_GROUPS; ?>"
 				name="<?php echo self::FILTER_GROUPS; ?>"
 				class="tuja-fieldchoices tuja-fieldchoices-longlist">
-			<option value="">Välj grupp</option>
+			<option value=""><?php echo Strings::get( 'crew_view.choose_group' ); ?></option>
 			<?php echo $group_options; ?>
 		</select>
 		<?php
