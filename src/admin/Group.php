@@ -286,9 +286,11 @@ class Group {
 
 		$app_link = AppUtils::group_link( $group );
 
+		$is_crew_group = $group->get_category()->get_rules()->is_crew();
+
 		$group_form_links = array_map(
-			function ( \tuja\data\model\Form $form ) use ( $group ) {
-				if ( $group->get_category()->get_rules()->is_crew() ) {
+			function ( \tuja\data\model\Form $form ) use ( $group, $is_crew_group ) {
+				if ( $is_crew_group ) {
 					$link = PointsOverrideInitiator::link( $group, $form->id );
 					return sprintf(
 						'<tr><td>Länk för att rapportering in poäng för formulär %s:</td><td><a href="%s">%s</a></td><td>%s</td></tr>',

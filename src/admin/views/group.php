@@ -204,7 +204,7 @@ AdminUtils::printTopMenu( $competition );
             <th>Telefon</th>
             <th>E-post</th>
             <th>Länk för att redigera</th>
-            <th>Länk för att rapportera poäng</th>
+            <th><?php if ($is_crew_group)  { ?>Länk för att rapportera poäng<?php } ?></th>
         </tr>
         </thead>
 		<?php if ( ! empty( $people ) ) { ?>
@@ -228,9 +228,9 @@ AdminUtils::printTopMenu( $competition );
 		<?php } ?>
         <tbody>
 		<?php
-		print join( '', array_map( function ( Person $person ) use ( $group ) {
+		print join( '', array_map( function ( Person $person ) use ( $group, $is_crew_group ) {
 			$person_edit_link = PersonEditorInitiator::link( $group, $person );
-			$report_points_link = ReportPointsInitiator::link_all( $person );
+			$report_points_link = $is_crew_group ? ReportPointsInitiator::link_all( $person ) : '';
 
 			return sprintf( '<tr class="tuja-person-status-%s">' .
 			                '<td><input type="checkbox" name="tuja_group_people[]" value="%d" id="tuja_group_people__person_%d"></td>' .
