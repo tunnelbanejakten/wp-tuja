@@ -8,7 +8,8 @@ use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\ResponseDao;
 use tuja\data\store\EventDao;
-use tuja\data\store\PointsDao;
+use tuja\data\store\QuestionPointsOverrideDao;
+use tuja\data\store\StationPointsDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\util\score\ScoreCalculator;
@@ -120,7 +121,8 @@ class Scoreboard {
 			new QuestionGroupDao(),
 			new ResponseDao(),
 			new GroupDao(),
-			new PointsDao(),
+			new QuestionPointsOverrideDao(),
+			new StationPointsDao(),
 			new EventDao()
 		);
 		$score_board = $calculator->score_board();

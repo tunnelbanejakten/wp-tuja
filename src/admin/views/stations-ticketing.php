@@ -2,12 +2,6 @@
 
 use tuja\data\model\Station;
 use tuja\data\model\StationWeight;
-use tuja\data\store\GroupCategoryDao;
-use tuja\data\store\GroupDao;
-use tuja\data\store\PointsDao;
-use tuja\data\store\QuestionDao;
-use tuja\data\store\ResponseDao;
-use tuja\util\score\ScoreCalculator;
 
 AdminUtils::printTopMenu( $competition );
 ?>
@@ -105,7 +99,7 @@ AdminUtils::printTopMenu( $competition );
                                 name="tuja_ticketcouponweight__%d__%d" 
                                 data-twin-field="tuja_ticketcouponweight__%d__%d">
                             </td>',
-						$weights_map[ $station->id . '__' . $to_station->id ],
+						@$weights_map[ $station->id . '__' . $to_station->id ] ?? '',
 						$station->id, $to_station->id,
 						$station->id, $to_station->id,
 						$to_station->id, $station->id
@@ -122,7 +116,7 @@ AdminUtils::printTopMenu( $competition );
 				$station->id,
 				$station->random_id,
 				$station->name,
-				$design->on_complete_password,
+				@$design->on_complete_password,
 				$station->id,
 				$inputs );
 		}, $stations ) ); ?>

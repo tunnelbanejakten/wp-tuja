@@ -7,6 +7,21 @@ class AdminPageWrapper extends PageWrapper {
     super(browser)
   }
 
+  async addTeam () {
+    const name = 'Team ' + Math.random().toFixed(5).substring(2) // "Team" and 5 random digits
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Groups&tuja_competition=${competitionId}`)
+
+    await this.type('input[name=tuja_new_group_name]', name)
+
+    await this.clickLink('button[name="tuja_action"][value="group_create"]')
+
+    const groupId = await this.$eval(`span#tuja_new_group_message`, node => node.dataset.groupId)
+
+    return {
+      id: groupId
+    }
+  }
+
   async configurePaymentDetails (competitionId) {
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 

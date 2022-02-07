@@ -1,10 +1,11 @@
 <?php
 
 use tuja\frontend\CompetitionSignup;
+use tuja\util\Strings;
 
 ?>
 <?= $intro ?>
-<form method="post" data-role-group-leader-label="<?= htmlentities(CompetitionSignup::ROLE_LABEL_GROUP_LEADER) ?>">
+<form method="post" data-role-group-leader-label="<?= htmlentities(Strings::get('competition_signup.role_label.group_leader')) ?>">
 	<?= $errors_overall ?>
 
 	<?= $form ?>

@@ -7,10 +7,12 @@ use tuja\data\model\Event;
 use tuja\data\model\Group;
 use tuja\data\store\EventDao;
 use tuja\data\store\GroupDao;
-use tuja\data\store\PointsDao;
+use tuja\data\store\QuestionPointsOverrideDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
+use tuja\data\store\StationDao;
+use tuja\data\store\StationPointsDao;
 
 class ScoreCalculator {
 
@@ -19,7 +21,8 @@ class ScoreCalculator {
 	private $competition_id;
 	private $response_dao;
 	private $group_dao;
-	private $points_dao;
+	private $question_points_override_dao;
+	private $station_points_dao;
 	private $event_dao;
 	private $question_groups;
 	private $questions;
@@ -30,16 +33,19 @@ class ScoreCalculator {
 		QuestionGroupDao $question_group_dao,
 		ResponseDao $response_dao,
 		GroupDao $group_dao,
-		PointsDao $points_dao,
+		QuestionPointsOverrideDao $question_points_override_dao,
+		StationPointsDao $station_points_dao,
 		EventDao $event_dao
 	) {
-		$this->competition_id  = $competition_id;
-		$this->response_dao    = $response_dao;
-		$this->group_dao       = $group_dao;
-		$this->points_dao      = $points_dao;
-		$this->event_dao       = $event_dao;
-		$this->question_groups = $question_group_dao->get_all_in_competition( $competition_id );
-		$this->questions       = $question_dao->get_all_in_competition( $competition_id );
+		$this->competition_id               = $competition_id;
+		$this->response_dao                 = $response_dao;
+		$this->group_dao                    = $group_dao;
+		$this->question_points_override_dao = $question_points_override_dao;
+		$this->station_points_dao           = $station_points_dao;
+		$this->event_dao                    = $event_dao;
+		$this->question_groups              = $question_group_dao->get_all_in_competition( $competition_id );
+		$this->questions                    = $question_dao->get_all_in_competition( $competition_id );
+		$this->stations                     = ( new StationDao() )->get_all_in_competition( $competition_id );
 	}
 
 	public static function score_combined( $response, AbstractQuestion $question, $override, Group $group, ?Event $first_view_event ): ScoreQuestionResult {
@@ -84,6 +90,7 @@ class ScoreCalculator {
 	public function score( Group $group ): ScoreResult {
 		$result            = new ScoreResult();
 		$result->questions = $this->score_per_question( $group );
+		$result->stations  = $this->score_per_station( $group );
 
 		$result->total_final = $this->calculate_total_final( $result );
 
@@ -98,7 +105,10 @@ class ScoreCalculator {
 				function ( ScoreQuestionResult $question_result ) {
 					return $question_result->final;
 				},
-				$result->questions
+				array_merge(
+					array_values( $result->questions ),
+					array_values( $result->stations )
+				)
 			)
 		);
 	}
@@ -133,6 +143,11 @@ class ScoreCalculator {
 			$sum += min( $group_sum, $question_group_max[ $question_group_id ] );
 		}
 
+		// ...and then also add the points for all the stations.
+		foreach ( $result->stations as $score ) {
+			$sum += $score->final;
+		}
+
 		return $sum;
 	}
 
@@ -159,7 +174,7 @@ class ScoreCalculator {
 
 	private function score_per_question( Group $group ) {
 		$group_id             = $group->id;
-		$points               = $this->points_dao->get_by_group( $group_id );
+		$points               = $this->question_points_override_dao->get_by_group( $group_id );
 		$points_overrides     = array_combine(
 			array_map(
 				function ( $points ) {
@@ -184,6 +199,35 @@ class ScoreCalculator {
 				$group,
 				$first_view_event
 			);
+		}
+
+		return $scores;
+	}
+
+	private function score_per_station( Group $group ) {
+		$group_id         = $group->id;
+		$points           = $this->station_points_dao->get_by_group( $group_id );
+		$points_overrides = array_combine(
+			array_map(
+				function ( $points ) {
+					return $points->station_id;
+				},
+				$points
+			),
+			$points
+		);
+		$scores           = array();
+
+		foreach ( $this->stations as $station ) {
+			$override       = @$points_overrides[ $station->id ];
+			$station_result = new ScoreQuestionResult();
+
+			$station_result->auto            = null;
+			$station_result->auto_confidence = null;
+			$station_result->override        = @$override->points ?? null;
+			$station_result->final           = $station_result->override ?? 0;
+
+			$scores[ $station->id ] = $station_result;
 		}
 
 		return $scores;

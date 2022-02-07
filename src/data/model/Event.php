@@ -6,6 +6,7 @@ namespace tuja\data\model;
 class Event {
 
 	const EVENT_VIEW           = 'VIEW';
+	const EVENT_SET_POINTS     = 'SET_POINTS';
 	const OBJECT_TYPE_QUESTION = 'QUESTION';
 
 	public $id;

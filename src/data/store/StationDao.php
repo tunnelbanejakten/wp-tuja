@@ -64,7 +64,18 @@ class StationDao extends AbstractDao {
 				return self::to_station( $row );
 			},
 			'SELECT * FROM ' . $this->table . ' WHERE id = %d',
-			$id );
+			$id
+		);
+	}
+
+	function get_by_key( $key ) {
+		return $this->get_object(
+			function ( $row ) {
+				return self::to_station( $row );
+			},
+			'SELECT * FROM ' . $this->table . ' WHERE random_id = %s',
+			$key
+		);
 	}
 
 	function get_all_in_competition( $competition_id ) {

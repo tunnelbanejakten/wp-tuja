@@ -14,7 +14,7 @@ use tuja\data\model\Group;
 use tuja\data\model\Response;
 use tuja\data\store\AbstractDao;
 use tuja\data\store\GroupDao;
-use tuja\data\store\PointsDao;
+use tuja\data\store\QuestionPointsOverrideDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
@@ -44,7 +44,7 @@ class ReviewComponent {
 
 	public function __construct( Competition $competition ) {
 		$this->response_dao       = new ResponseDao();
-		$this->points_dao         = new PointsDao();
+		$this->points_dao         = new QuestionPointsOverrideDao();
 		$this->question_dao       = new QuestionDao();
 		$this->question_group_dao = new QuestionGroupDao();
 		$this->group_dao          = new GroupDao();

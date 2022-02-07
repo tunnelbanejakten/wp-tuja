@@ -82,8 +82,19 @@ class Groups {
 
 				try {
 					$db_groups = new GroupDao();
-					$db_groups->create( $props );
-				} catch ( Exception $e ) {
+					$group_id = $db_groups->create( $props );
+
+					AdminUtils::printSuccess(
+						sprintf(
+							'<span
+								id="tuja_new_group_message"
+								data-group-id="%s"
+								>Gruppen har skapats</span>',
+							$group_id
+						)
+					);
+	
+					} catch ( Exception $e ) {
 					AdminUtils::printException( $e );
 				}
 				break;

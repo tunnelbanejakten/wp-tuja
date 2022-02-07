@@ -19,6 +19,9 @@ class PageWrapper {
 
   async type (selector, value) {
     const el = await this._page.$(selector)
+    if (!el) {
+      throw new Error(`Could not find ${selector}`)
+    }
     await el.evaluate(el => el.value = '')
     await el.type(value)
   }

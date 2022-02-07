@@ -44,27 +44,11 @@ describe('Tickets', () => {
 
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Stations&tuja_competition=${competitionId}`)
 
-      await adminPage.type('#tuja_station_name', 'Hornstull')
-      await adminPage.clickLink('#tuja_station_create_button')
-
-      await adminPage.type('#tuja_station_name', 'Slussen')
-      await adminPage.clickLink('#tuja_station_create_button')
-
-      await adminPage.type('#tuja_station_name', 'Mariatorget')
-      await adminPage.clickLink('#tuja_station_create_button')
-
-      await adminPage.type('#tuja_station_name', 'Skanstull')
-      await adminPage.clickLink('#tuja_station_create_button')
-
       //
       // Configure ticketing
       //
 
-      stationsProps = await adminPage.page.$$eval('form.tuja a[data-key]', nodes => nodes.map(node => ({
-        id: node.dataset.id,
-        key: node.dataset.key,
-        name: node.textContent
-      })))
+      stationsProps = await global.stationIds.map(id => ({ id }))
 
       stationsProps[0].word = 'BLUEBERRY'
       stationsProps[1].word = 'RASPBERRY'

@@ -199,6 +199,6 @@ class Slideshow extends FrontendView {
 	}
 
 	function get_title() {
-		return sprintf( 'Bilder från %s', $this->get_competition()->name );
+		return sprintf( 'Bilder från %s', $this->get_competition()->name ); // TODO: Extract to strings.ini
 	}
 }

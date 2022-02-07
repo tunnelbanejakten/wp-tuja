@@ -13,11 +13,11 @@ use Exception;
 use tuja\util\Database;
 
 abstract class Plugin {
-	const VERSION = '1.0.0';
-	const SLUG = 'tuja';
-	const TABLE_PREFIX = 'tuja_';
-	const FILE = __FILE__;
-	const PATH = __DIR__;
+	const VERSION       = '1.0.0';
+	const SLUG          = 'tuja';
+	const TABLE_PREFIX  = 'tuja_';
+	const FILE          = __FILE__;
+	const PATH          = __DIR__;
 	const EMAIL_ADDRESS = '';
 
 	static public function get_url() {
@@ -32,8 +32,8 @@ abstract class Plugin {
 		spl_autoload_register( array( $this, 'autoloader' ) );
 
 		// Composer
-		if(!@include_once(self::PATH . '/vendor/autoload.php')) {
-			die('Composer is not initialized.');
+		if ( ! @include_once( self::PATH . '/vendor/autoload.php' ) ) {
+			die( 'Composer is not initialized.' );
 		}
 
 		add_action( 'wp_ajax_tuja_upload_images', array( 'tuja\util\ImageManager', 'handle_image_upload' ) );
@@ -224,6 +224,15 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'station_points' ) . ' (
+				station_id       INTEGER NOT NULL,
+				team_id          INTEGER NOT NULL,
+				points           INTEGER,
+				created_at       INTEGER,
+				PRIMARY KEY (station_id, team_id)
+			) ' . $charset;
+
+		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'message' ) . ' (
 				id                INTEGER AUTO_INCREMENT NOT NULL,
 				form_question_id  INTEGER,
@@ -326,37 +335,40 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$keys = array(
-			[ 'competition', 'message_template_new_team_admin', 'message_template', 'RESTRICT' ], // No longer used
-			[ 'competition', 'message_template_new_team_reporter', 'message_template', 'RESTRICT' ], // No longer used
-			[ 'competition', 'message_template_new_crew_member', 'message_template', 'RESTRICT' ], // No longer used
-			[ 'competition', 'message_template_new_noncrew_member', 'message_template', 'RESTRICT' ], // No longer used
+			array( 'competition', 'message_template_new_team_admin', 'message_template', 'RESTRICT' ), // No longer used
+			array( 'competition', 'message_template_new_team_reporter', 'message_template', 'RESTRICT' ), // No longer used
+			array( 'competition', 'message_template_new_crew_member', 'message_template', 'RESTRICT' ), // No longer used
+			array( 'competition', 'message_template_new_noncrew_member', 'message_template', 'RESTRICT' ), // No longer used
 
-			[ 'team', 'map_id', 'map', 'RESTRICT' ],
-			[ 'team', 'competition_id', 'competition', 'CASCADE' ],
-			[ 'team_properties', 'team_id', 'team', 'CASCADE' ],
-			[ 'team_properties', 'category_id', 'team_category', 'RESTRICT' ],
+			array( 'team', 'map_id', 'map', 'RESTRICT' ),
+			array( 'team', 'competition_id', 'competition', 'CASCADE' ),
+			array( 'team_properties', 'team_id', 'team', 'CASCADE' ),
+			array( 'team_properties', 'category_id', 'team_category', 'RESTRICT' ),
 
-			[ 'person_properties', 'person_id', 'person', 'CASCADE' ],
-			[ 'person_properties', 'team_id', 'team', 'CASCADE' ],
+			array( 'person_properties', 'person_id', 'person', 'CASCADE' ),
+			array( 'person_properties', 'team_id', 'team', 'CASCADE' ),
 
-			[ 'form', 'competition_id', 'competition', 'CASCADE' ],
+			array( 'form', 'competition_id', 'competition', 'CASCADE' ),
 
-			[ 'form_question_group', 'form_id', 'form', 'CASCADE' ],
+			array( 'form_question_group', 'form_id', 'form', 'CASCADE' ),
 
-			[ 'form_question', 'question_group_id', 'form_question_group', 'CASCADE' ],
+			array( 'form_question', 'question_group_id', 'form_question_group', 'CASCADE' ),
 
-			[ 'form_question_response', 'form_question_id', 'form_question', 'RESTRICT' ],
-			[ 'form_question_response', 'team_id', 'team', 'CASCADE' ],
+			array( 'form_question_response', 'form_question_id', 'form_question', 'RESTRICT' ),
+			array( 'form_question_response', 'team_id', 'team', 'CASCADE' ),
 
-			[ 'form_question_points', 'form_question_id', 'form_question', 'RESTRICT' ],
-			[ 'form_question_points', 'team_id', 'team', 'CASCADE' ],
+			array( 'form_question_points', 'form_question_id', 'form_question', 'RESTRICT' ),
+			array( 'form_question_points', 'team_id', 'team', 'CASCADE' ),
 
-			[ 'message', 'form_question_id', 'form_question', 'RESTRICT' ],
-			[ 'message', 'team_id', 'team', 'CASCADE' ],
+			array( 'station_points', 'station_id', 'station', 'RESTRICT' ),
+			array( 'station_points', 'team_id', 'team', 'CASCADE' ),
 
-			[ 'team_category', 'competition_id', 'competition', 'CASCADE' ],
+			array( 'message', 'form_question_id', 'form_question', 'RESTRICT' ),
+			array( 'message', 'team_id', 'team', 'CASCADE' ),
 
-			[ 'message_template', 'competition_id', 'competition', 'CASCADE' ],
+			array( 'team_category', 'competition_id', 'competition', 'CASCADE' ),
+
+			array( 'message_template', 'competition_id', 'competition', 'CASCADE' ),
 
 			array( 'event', 'competition_id', 'competition', 'CASCADE' ),
 			array( 'event', 'person_id', 'person', 'CASCADE' ),
@@ -372,11 +384,11 @@ abstract class Plugin {
 			array( 'marker', 'link_question_group_id', 'form_question_group', 'CASCADE' ),
 			array( 'marker', 'link_station_id', 'station', 'CASCADE' ),
 
-			[ 'ticket', 'team_id', 'team', 'CASCADE' ],
-			[ 'ticket', 'station_id', 'station', 'CASCADE' ],
-			[ 'ticket_station_config', 'station_id', 'station', 'CASCADE' ],
-			[ 'ticket_coupon_weight', 'from_station_id', 'station', 'CASCADE' ],
-			[ 'ticket_coupon_weight', 'to_station_id', 'station', 'CASCADE' ]
+			array( 'ticket', 'team_id', 'team', 'CASCADE' ),
+			array( 'ticket', 'station_id', 'station', 'CASCADE' ),
+			array( 'ticket_station_config', 'station_id', 'station', 'CASCADE' ),
+			array( 'ticket_coupon_weight', 'from_station_id', 'station', 'CASCADE' ),
+			array( 'ticket_coupon_weight', 'to_station_id', 'station', 'CASCADE' ),
 		);
 
 		foreach ( $tables as $table ) {

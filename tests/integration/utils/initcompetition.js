@@ -14,7 +14,6 @@ const createCompetition = async (adminPage) => {
   await adminPage.type('#tuja_competition_name', competitionName)
   await adminPage.click('#tuja_competition_initial_group_status-accepted')
   await adminPage.click('#tuja_create_common_group_state_transition_sendout_templates')
-  await adminPage.click('#tuja_create_sample_stations')
   await adminPage.clickLink('#tuja_competition_bootstrap_button')
 
   const continueLink = await adminPage.page.$('#tuja_bootstrapped_competition_link')
@@ -22,17 +21,21 @@ const createCompetition = async (adminPage) => {
     id: node.dataset.competitionId,
     key: node.dataset.competitionKey,
     crewGroupKey: node.dataset.crewGroupKey,
+    crewPersonKey: node.dataset.crewPersonKey,
     formKey: node.dataset.formKey,
     formId: node.dataset.formId,
-    mapId: node.dataset.mapId
+    mapId: node.dataset.mapId,
+    stationIds: node.dataset.stationIds
   }))
   return ({
     id: ids.id,
     key: ids.key,
     crewGroupKey: ids.crewGroupKey,
+    crewPersonKey: ids.crewPersonKey,
     formKey: ids.formKey,
     formId: ids.formId,
     mapId: ids.mapId,
+    stationIds: ids.stationIds,
     name: competitionName
   })
 }
