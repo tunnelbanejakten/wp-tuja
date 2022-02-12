@@ -8,7 +8,9 @@ use tuja\data\store\ResponseDao;
 use tuja\data\model\Marker;
 use tuja\data\model\Form as ModelForm;
 use tuja\data\model\Group;
+use tuja\data\model\Points;
 use tuja\data\store\FormDao;
+use tuja\data\store\StationPointsDao;
 use tuja\util\FormUtils;
 use tuja\util\FormView;
 use WP_REST_Request;
@@ -116,9 +118,22 @@ class Map extends AbstractRestEndpoint {
 		$response_dao = new ResponseDao();
 		$responses    = $response_dao->get_latest_by_group( $group_id );
 
+		$station_points_dao = new StationPointsDao();
+		$station_points_raw = $station_points_dao->get_by_group( $group_id );
+
+		$station_points = array_combine(
+			array_map(
+				function ( Points $points ) {
+					return $points->station_id;
+				},
+				$station_points_raw
+			),
+			$station_points_raw
+		);
+
 		return array_values(
 			array_map(
-				function ( Marker $marker ) use ( $responses ) {
+				function ( Marker $marker ) use ( $responses, $station_points ) {
 					return array(
 						'type'                   => $marker->type,
 						'latitude'               => $marker->gps_coord_lat,
@@ -129,7 +144,7 @@ class Map extends AbstractRestEndpoint {
 						'link_form_question_id'  => isset( $marker->link_form_question_id ) ? intval( $marker->link_form_question_id ) : null,
 						'link_question_group_id' => isset( $marker->link_question_group_id ) ? intval( $marker->link_question_group_id ) : null,
 						'link_station_id'        => isset( $marker->link_station_id ) ? intval( $marker->link_station_id ) : null,
-						'is_response_submitted'  => isset( $responses[ $marker->link_form_question_id ] ),
+						'is_response_submitted'  => isset( $responses[ $marker->link_form_question_id ] ) || isset( $station_points[ $marker->link_station_id ] ),
 					);
 				},
 				self::get_markers_to_return( $group )
