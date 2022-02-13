@@ -4,7 +4,6 @@ namespace tuja;
 
 use tuja\util\JwtUtils;
 use Exception;
-use GuzzleHttp\Psr7\Request;
 use WP_Error;
 
 class API extends Plugin {
@@ -104,6 +103,26 @@ class API extends Plugin {
 			array(
 				'methods'             => 'GET',
 				'callback'            => $this->callback( 'Map', 'get_markers' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			'tuja/v1',
+			'/tickets',
+			array(
+				'methods'             => 'GET',
+				'callback'            => $this->callback( 'Tickets', 'get_tickets' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			'tuja/v1',
+			'/tickets/request',
+			array(
+				'methods'             => 'POST',
+				'callback'            => $this->callback( 'Tickets', 'redeem_password' ),
 				'permission_callback' => '__return_true',
 			)
 		);
