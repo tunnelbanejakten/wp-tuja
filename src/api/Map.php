@@ -140,14 +140,14 @@ class Map extends AbstractRestEndpoint {
 			array_map(
 				function ( Marker $marker ) use ( $responses, $station_points, $tickets ) {
 					$link_station_id       = isset( $marker->link_station_id ) ? intval( $marker->link_station_id ) : null;
-					$linked_station_ticket = isset( $marker->link_station_id ) ? current(
+					$linked_station_ticket = isset( $marker->link_station_id ) ? ( current(
 						array_filter(
 							$tickets,
 							function ( Ticket $ticket ) use ( $marker ) {
 								return $ticket->station->id === $marker->link_station_id;
 							}
 						)
-					) : null;
+					) ?: null ) : null;
 					return array(
 						'type'                   => $marker->type,
 						'latitude'               => $marker->gps_coord_lat,
