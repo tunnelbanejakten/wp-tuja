@@ -16,6 +16,7 @@
         "answer": true,
         "map": true,
         "device_test": true,
+        "tickets": true,
         "info": true
     },
     "answer": {

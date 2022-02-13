@@ -46,9 +46,10 @@ class CouponToTicketTsl2020 implements CouponToTicket {
 	 * @return array
 	 */
 	function get_tickets_from_coupon_code( Group $group, string $coupon_code ): array {
+		$coupon_code = TicketDao::normalize_string( $coupon_code );
 		$station = $this->ticket_dao->get_station( $group->competition_id, $coupon_code );
 		if ( $station === false ) {
-			throw new Exception( sprintf( 'The password %s is not correct', $coupon_code ) );
+			throw new Exception( sprintf( 'The password %s is not correct', $coupon_code ), CouponToTicket::ERROR_CODE_INVALID_COUPON );
 		}
 		$all_station_weights = $this->ticket_dao->get_station_weights( $group->competition_id );
 		$station_weights     = array_filter( $all_station_weights, function ( StationWeight $station_weight ) use ( $station ) {
@@ -57,8 +58,8 @@ class CouponToTicketTsl2020 implements CouponToTicket {
 		$team_tickets        = $this->ticket_dao->get_group_tickets( $group );
 
 		foreach ( $team_tickets as $team_ticket ) {
-			if ( $team_ticket->on_complete_password_used == $coupon_code ) {
-				throw new Exception( sprintf( 'Cannot use %s twice', $coupon_code ) );
+			if ( TicketDao::normalize_string( $team_ticket->on_complete_password_used ) == $coupon_code ) {
+				throw new Exception( sprintf( 'Cannot use %s twice', $coupon_code ), CouponToTicket::ERROR_CODE_COUPON_ALREADY_USED );
 			}
 		}
 
@@ -91,7 +92,7 @@ class CouponToTicketTsl2020 implements CouponToTicket {
 		if ( count( $next_station_ids ) > 0 ) {
 			foreach ( $next_station_ids as $next_station_id ) {
 				if ( ! $this->ticket_dao->grant_ticket( $group->id, $next_station_id, $coupon_code ) ) {
-					throw new Exception( sprintf( 'Failed to grant ticket to station %d for team %d', $next_station_id, $group->random_id ) );
+					throw new Exception( sprintf( 'Failed to grant ticket to station %d for team %d', $next_station_id, $group->random_id ), CouponToTicket::ERROR_CODE_GENERIC );
 				}
 			}
 		}

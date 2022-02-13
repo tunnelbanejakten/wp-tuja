@@ -69,6 +69,11 @@
           "type": "boolean",
           "format": "checkbox"
         },
+        "tickets": {
+          "title": "Biljetter",
+          "type": "boolean",
+          "format": "checkbox"
+        },
         "info": {
           "title": "Info",
           "type": "boolean",
