@@ -40,28 +40,30 @@ AdminUtils::printTopMenu( $competition );
 		</thead>
 		<tbody>
 			<?php
-			foreach ( $questions as $question ) {
-				printf(
-					'<tr><td><span class="tuja-maps-question">%s</span></td>%s</tr>',
-					$question->text,
-					join(
-						array_map(
-							function ( $map ) use ( $question, $markers ) {
-								$key   = sprintf( '%s__%s', $map->id, $question->id );
-								$value = '';
-								if ( isset( $markers[ $key ] ) ) {
-									$value = sprintf( '%s %s %s', $markers[ $key ]->gps_coord_lat, $markers[ $key ]->gps_coord_long, $markers[ $key ]->name );
-								}
-								return sprintf( 
-									'<td><input type="text" class="tuja-marker-raw-field" name="%s" id="%s" value="%s" /></td>', 
-									'tuja_marker_raw__' . $key, 
-									'tuja_marker_raw__' . $key, 
-									$value );
-							},
-							$maps
-						)
-					)
-				);
+			$render_fields = function ( $fields ) {
+				foreach ( $fields as $name => $value ) {
+					printf(
+						'<td><input type="text" class="tuja-marker-raw-field" name="%s" id="%s" value="%s" /></td>',
+						$name,
+						$name,
+						$value
+					);
+				}
+			};
+			printf( '<tr><td><span class="tuja-maps-question">%s</span></td>', 'Startplats' );
+			$render_fields( $start_position_fields );
+			printf( '</tr>' );
+			printf( '<tr><th>Frågor:</th></tr>' );
+			foreach ( $questions_fields as $question_fields ) {
+				printf( '<tr><td><span class="tuja-maps-question">%s</span></td>', $question_fields['label'] );
+				$render_fields( $question_fields['fields'] );
+				printf( '</tr>' );
+			}
+			printf( '<tr><th>Stationer:</th></tr>' );
+			foreach ( $stations_fields as $station_fields ) {
+				printf( '<tr><td><span class="tuja-maps-question">%s</span></td>', $station_fields['label'] );
+				$render_fields( $station_fields['fields'] );
+				printf( '</tr>' );
 			}
 			?>
 		</tbody>
