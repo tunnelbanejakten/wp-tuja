@@ -46,6 +46,7 @@ class CouponToTicketTsl2020 implements CouponToTicket {
 	 * @return array
 	 */
 	function get_tickets_from_coupon_code( Group $group, string $coupon_code ): array {
+		$coupon_code = TicketDao::normalize_string( $coupon_code );
 		$station = $this->ticket_dao->get_station( $group->competition_id, $coupon_code );
 		if ( $station === false ) {
 			throw new Exception( sprintf( 'The password %s is not correct', $coupon_code ), CouponToTicket::ERROR_CODE_INVALID_COUPON );
@@ -57,7 +58,7 @@ class CouponToTicketTsl2020 implements CouponToTicket {
 		$team_tickets        = $this->ticket_dao->get_group_tickets( $group );
 
 		foreach ( $team_tickets as $team_ticket ) {
-			if ( $team_ticket->on_complete_password_used == $coupon_code ) {
+			if ( TicketDao::normalize_string( $team_ticket->on_complete_password_used ) == $coupon_code ) {
 				throw new Exception( sprintf( 'Cannot use %s twice', $coupon_code ), CouponToTicket::ERROR_CODE_COUPON_ALREADY_USED );
 			}
 		}
