@@ -48,7 +48,7 @@ class Maps {
 			$props->name           = $_POST['tuja_map_name'];
 			$props->competition_id = $this->competition->id;
 			try {
-				$new_map_id = $this->station_dao->create( $props );
+				$new_map_id = $this->map_dao->create( $props );
 				if ( $new_map_id !== false ) {
 					AdminUtils::printSuccess(
 						sprintf(
@@ -64,7 +64,7 @@ class Maps {
 		} elseif ( substr( $_POST['tuja_action'], 0, strlen( self::ACTION_NAME_DELETE_PREFIX ) ) == self::ACTION_NAME_DELETE_PREFIX ) {
 			$map_id = intval( substr( $_POST['tuja_action'], strlen( self::ACTION_NAME_DELETE_PREFIX ) ) );
 			try {
-				$affected_rows = $this->station_dao->delete( $map_id );
+				$affected_rows = $this->map_dao->delete( $map_id );
 				$success       = $affected_rows !== false && $affected_rows === 1;
 				if ( $success ) {
 					AdminUtils::printSuccess( 'Kartan togs bort.' );
