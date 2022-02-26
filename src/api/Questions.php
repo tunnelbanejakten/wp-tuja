@@ -35,14 +35,8 @@ class Questions extends AbstractRestEndpoint {
 			return self::create_response( 404 );
 		}
 
-		$response_dao = new ResponseDao();
-		$responses    = $response_dao->get_latest_by_group( $group_id );
-
-		$event_dao = new EventDao();
-		$events    = $event_dao->get_by_group( $group->id );
-
 		$form_utils = new FormUtils( $group );
-		return $form_utils->get_question_response( $question, $events, $responses );
+		return $form_utils->get_question_response( $question );
 	}
 
 	public static function get_all_questions( WP_REST_Request $request ) {
@@ -107,10 +101,8 @@ class Questions extends AbstractRestEndpoint {
 		$errors       = $form_handler->update_answers( $group->id );
 
 		if ( count( $errors ) === 0 ) {
-			$response_dao = new ResponseDao();
-			$responses    = $response_dao->get_latest_by_group( $group->id );
 			$form_utils   = new FormUtils( $group );
-			return $form_utils->get_question_response( $question, array(), $responses );
+			return $form_utils->get_question_response( $question );
 		} else {
 			return self::create_response( 400 );
 		}

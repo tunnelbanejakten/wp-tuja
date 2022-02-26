@@ -48,6 +48,8 @@ class FormUtils {
 	private $marker_dao;
 	private $event_dao;
 	private $competition_markers;
+	private $group_events_cache    = null;
+	private $group_responses_cache = null;
 
 	function __construct( Group $group ) {
 		$this->question_dao       = new QuestionDao();
@@ -90,17 +92,12 @@ class FormUtils {
 			)
 		);
 
-		// Enrich with "time limit" properties.
-		$responses = $this->response_dao->get_latest_by_group( $this->group->id );
-
-		$events = $this->event_dao->get_by_group( $this->group->id );
-
 		$questions_list = array_values(
 			array_map(
-				function ( AbstractQuestion $question ) use ( $events, $responses, $question_response_spec ) {
+				function ( AbstractQuestion $question ) use ( $question_response_spec ) {
 					return array_merge(
 						$question_response_spec === self::RETURN_API_QUESTION_OBJECT
-							? $this->get_question_response( $question, $events, $responses )
+							? $this->get_question_response( $question )
 							: array(),
 						$question_response_spec === self::RETURN_DATABASE_QUESTION_OBJECT
 							? array( 'obj' => $question )
@@ -137,12 +134,21 @@ class FormUtils {
 		return count( $matches ) > 0;
 	}
 
-	public function get_question_response(
-		AbstractQuestion $question,
-		array $all_group_events,
-		array $all_responses
-	) {
+	private function get_group_events() {
+		if ( null === $this->group_events_cache ) {
+			$this->group_events_cache = $this->event_dao->get_by_group( $this->group->id );
+		}
+		return $this->group_events_cache;
+	}
 
+	private function get_group_responses() {
+		if ( null === $this->group_responses_cache ) {
+			$this->group_responses_cache = $this->response_dao->get_latest_by_group( $this->group->id );
+		}
+		return $this->group_responses_cache;
+	}
+
+	public function get_question_response( AbstractQuestion $question ) {
 		$form_key     = 'N/A';
 		$form_handler = new FrontendForm( 'url', $this->group->random_id, $form_key );
 
@@ -150,6 +156,7 @@ class FormUtils {
 		$optimistic_lock_value = $form_handler->get_optimistic_lock_value( array( $question->id ) );
 
 		$response_field = $form_handler->get_response_field( $question->id );
+		$all_responses  = $this->get_group_responses();
 		$answer_object  = @$all_responses[ $question->id ]->submitted_answer ?: null;
 
 		$tracked_answers_field = FrontendForm::TRACKED_ANSWERS_FIELD_NAME;
@@ -191,7 +198,7 @@ class FormUtils {
 		$is_view_event_required = $time_limit_adjusted > 0;
 		$response['view_event'] = array( 'is_required' => $is_view_event_required );
 		if ( $is_view_event_required ) {
-			$all_events = $all_group_events;
+			$all_events = $this->get_group_events();
 			$events     = array_filter(
 				$all_events,
 				function ( Event $event ) use ( $question ) {
