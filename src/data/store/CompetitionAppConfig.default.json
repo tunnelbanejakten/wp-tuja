@@ -1,5 +1,6 @@
 {
     "positioning": {
+        "show_unavailable_stations": false,
         "high_accuracy_threshold": 100,
         "high_accuracy_timeout": 30
     },

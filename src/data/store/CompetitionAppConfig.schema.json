@@ -5,6 +5,11 @@
       "type": "object",
       "title": "Positionering",
       "properties": {
+        "show_unavailable_stations": {
+          "title": "Visa även stationer som laget saknar biljetter för",
+          "type": "boolean",
+          "format": "checkbox"
+        },
         "high_accuracy_threshold": {
           "title": "Önskad noggrannhet (meter)",
           "type": "integer",
