@@ -2,6 +2,8 @@
 
 namespace tuja\view;
 
+use tuja\data\model\Group;
+
 class FieldNumber extends FieldText {
 	public function __construct( $label, $hint = null, bool $read_only = false ) {
 		parent::__construct( $label, $hint, $read_only, [
@@ -10,7 +12,7 @@ class FieldNumber extends FieldText {
 		);
 	}
 
-	public function get_data( string $field_name, $stored_posted_answer ) {
+	public function get_data( string $field_name, $stored_posted_answer, Group $group ) {
 		if ( isset( $_POST[ $field_name ] ) ) {
 			$raw = $_POST[ $field_name ];
 		} else {

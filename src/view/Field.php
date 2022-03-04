@@ -30,5 +30,5 @@ abstract class Field {
 	 *
 	 * @return mixed
 	 */
-	abstract function get_data( string $field_name, $stored_posted_answer );
+	abstract function get_data( string $field_name, $stored_posted_answer, Group $group );
 }

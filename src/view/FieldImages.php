@@ -12,20 +12,41 @@ class FieldImages extends Field {
 	private $image_manager;
 	private $max_files_count;
 
+	const DATA_URI_PREFIX_JPEG = 'data:image/jpeg;base64,';
+
 	function __construct( $label, $hint = null, $read_only = false, $max_files_count = 2 ) {
 		parent::__construct( $label, $hint, $read_only );
 		$this->image_manager   = new ImageManager();
 		$this->max_files_count = $max_files_count;
 	}
 
-	public function get_data( string $field_name, $stored_posted_answer ) {
+	public function get_data( string $field_name, $stored_posted_answer, Group $group ) {
 		if ( isset( $_POST[ $field_name ] ) ) {
 			$data = sanitize_post( $_POST[ $field_name ] );
 
-			return [
-				'images'  => @$data['images'] ?: [],
-				'comment' => @$data['comment'] ?: ''
-			];
+			$images = array_reduce(
+				@$data['images'] ?: array(),
+				function ( array $res, string $image ) use ( $group ) {
+					if ( self::DATA_URI_PREFIX_JPEG === substr( $image, 0, strlen( self::DATA_URI_PREFIX_JPEG ) ) ) {
+						$save_result = $this->image_manager->save_base64encoded_file(
+							substr( $image, strlen( self::DATA_URI_PREFIX_JPEG ) ),
+							$group
+						);
+						if ( ! $save_result['error'] ) {
+							$res[] = $save_result['image'];
+							return $res;
+						}
+					}
+					$res[] = $image;
+					return $res;
+				},
+				array()
+			);
+
+			return array(
+				'images'  => $images,
+				'comment' => @$data['comment'] ?: '',
+			);
 		}
 
 		if ( is_array( $stored_posted_answer ) && ! @is_array( $stored_posted_answer[0] ) && ! empty( $stored_posted_answer[0] ) ) {
@@ -33,10 +54,10 @@ class FieldImages extends Field {
 			$stored_posted_answer = json_decode( $stored_posted_answer[0], true );
 		}
 
-		return [
-			'images'  => @$stored_posted_answer['images'] ?: [],
-			'comment' => @$stored_posted_answer['comment'] ?: ''
-		];
+		return array(
+			'images'  => @$stored_posted_answer['images'] ?: array(),
+			'comment' => @$stored_posted_answer['comment'] ?: '',
+		);
 	}
 
 	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' ) {
@@ -46,7 +67,7 @@ class FieldImages extends Field {
 			'<div class="tuja-field tuja-fieldimages"><label>%s%s</label>%s%s</div>',
 			$this->is_formatted_label ? $this->formatted_label : $this->label,
 			$hint,
-			$this->render_image_upload( $field_name, $group->random_id, $this->get_data($field_name, $answer_object) ),
+			$this->render_image_upload( $field_name, $group->random_id, $this->get_data( $field_name, $answer_object, $group ) ),
 			! empty( $error_message ) ? sprintf( '<div class="tuja-message tuja-message-error">%s</div>', $error_message ) : ''
 		);
 	}

@@ -80,8 +80,8 @@ class NumberQuestion extends AbstractQuestion {
 	 * Gathers data from $_POST about the current question. The response from this function
 	 * can be sent to score(...) and can be stored in the database.
 	 */
-	function get_answer_object( string $field_name, $stored_posted_answer ) {
-		return $this->create_field()->get_data( $field_name, $stored_posted_answer );
+	function get_answer_object( string $field_name, $stored_posted_answer, Group $group ) {
+		return $this->create_field()->get_data( $field_name, $stored_posted_answer, $group );
 	}
 
 	private function create_field( $is_read_only = false ) {

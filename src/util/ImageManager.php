@@ -11,7 +11,7 @@ use tuja\util\concurrency\LockValuesList;
 
 class ImageManager {
 	const DEFAULT_THUMBNAIL_PIXEL_COUNT = 200 * 200;
-	const DEFAULT_LARGE_PIXEL_COUNT = 1000 * 1000;
+	const DEFAULT_LARGE_PIXEL_COUNT     = 1000 * 1000;
 
 	private $directory;
 	private $public_url_directory;
@@ -191,6 +191,57 @@ class ImageManager {
 				return false;
 			}
 		}
+	}
+
+	public function save_base64encoded_file( string $encoded_file, Group $group ) {
+		Strings::init( $group->competition_id );
+
+		$upload_dir = '/tuja/group-' . $group->random_id;
+		add_filter(
+			'upload_dir',
+			function ( $dirs ) use ( $upload_dir ) {
+				$dirs['subdir'] = $upload_dir;
+				$dirs['path']   = $dirs['basedir'] . $upload_dir;
+				$dirs['url']    = $dirs['baseurl'] . $upload_dir;
+
+				if ( ! file_exists( $dirs['basedir'] . $upload_dir ) ) {
+					mkdir( $dirs['basedir'] . $upload_dir, 0755, true );
+				}
+
+				return $dirs;
+			}
+		);
+
+		$file_content = base64_decode( $encoded_file );
+
+		$upload_dir = wp_upload_dir();
+
+		$file_path = $upload_dir['path'] . '/' . md5( $file_content ) . '.png';
+
+		$bytes_written = file_put_contents( $file_path, $file_content );
+
+		if ( false !== $bytes_written && $bytes_written > 0 ) {
+			$filename = explode( '/', $file_path );
+			$filename = array_pop( $filename );
+
+			$resized_image_url = ( new ImageManager() )->get_resized_image_url(
+				$filename,
+				self::DEFAULT_THUMBNAIL_PIXEL_COUNT,
+				$group->random_id
+			);
+
+			return array(
+				'error'         => false,
+				'image'         => $filename,
+				'thumbnail_url' => $resized_image_url,
+				'http_status'   => 200,
+			);
+		}
+
+		return array(
+			'error'       => Strings::get( 'image_manager.unknown_error' ),
+			'http_status' => 500,
+		);
 	}
 
 	private static function save_uploaded_file( $file_upload_object, Group $group, string $question_id, string $lock_value ) {

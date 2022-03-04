@@ -6,7 +6,7 @@ use tuja\data\model\Group;
 
 class FieldTextMulti extends Field {
 
-	public function get_data( string $field_name, $stored_posted_answer ) {
+	public function get_data( string $field_name, $stored_posted_answer, Group $group ) {
 		if ( isset( $_POST[ $field_name ] ) ) {
 			return preg_split( "/[\s,]+/", $_POST[ $field_name ] ) ?: [];
 		} else {
@@ -22,7 +22,7 @@ class FieldTextMulti extends Field {
 		$render_id = $field_name ?: uniqid();
 		$hint      = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
 
-		$data = $this->get_data( $field_name, $answer_object );
+		$data = $this->get_data( $field_name, $answer_object, $group );
 
 		return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label><textarea name="%s" id="%s" class="tuja-%s" %s>%s</textarea>%s</div>',
 			$render_id,

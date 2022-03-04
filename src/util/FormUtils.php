@@ -161,7 +161,7 @@ class FormUtils {
 
 		$tracked_answers_field = FrontendForm::TRACKED_ANSWERS_FIELD_NAME;
 		$form_user_changes     = new FormUserChanges();
-		$form_user_changes->track_answer( $question, $question->get_answer_object( $response_field, $answer_object ) );
+		$form_user_changes->track_answer( $question, $question->get_answer_object( $response_field, $answer_object, $this->group ) );
 		$tracked_answers_value = $form_user_changes->get_tracked_answers_string();
 
 		$response = array(
