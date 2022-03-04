@@ -101,6 +101,7 @@ class ImageManager {
 
 		$dst_width  = sqrt( ( $pixels * $width ) / $height );
 		$dst_height = $dst_width * ( $height / $width );
+		$image_editor->set_quality( 100 );
 		$image_editor->resize( $dst_width, $dst_height, false );
 		$saved = $image_editor->save( $dst_path );
 		if ( is_wp_error( $saved ) ) {
@@ -200,11 +201,10 @@ class ImageManager {
 		$upload_dir = wp_upload_dir();
 
 		$file_content = base64_decode( $encoded_file );
-		$file_path    = $upload_dir['path'] . '/' . md5( $file_content ) . '.png';
+		$file_path    = $upload_dir['path'] . '/' . md5( $file_content ) . '.jpg';
 
 		$bytes_written = file_put_contents( $file_path, $file_content );
 
-		// TODO: DRY
 		if ( false !== $bytes_written && $bytes_written > 0 ) {
 			return self::resize_and_return( $file_path, $group->random_id );
 		}
