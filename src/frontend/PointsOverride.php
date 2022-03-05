@@ -99,7 +99,7 @@ class PointsOverride extends AbstractCrewMemberView {
 		$field      = new FieldNumber( $text, sprintf( Strings::get( 'crew_view.max_points', $max_score ) ) );
 		$field_name = self::QUESTION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $key;
 
-		return $field->render( $field_name, $points );
+		return $field->render( $field_name, $points, new Group() );
 	}
 
 	public function update_points(): array {

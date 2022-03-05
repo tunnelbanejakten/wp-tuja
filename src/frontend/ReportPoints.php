@@ -96,7 +96,7 @@ class ReportPoints extends AbstractCrewMemberView {
 		$field      = new FieldNumber( $text );
 		$field_name = self::STATION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $key;
 
-		return $field->render( $field_name, $points );
+		return $field->render( $field_name, $points, new Group() );
 	}
 
 	public function update_points(): array {
