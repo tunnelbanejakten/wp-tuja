@@ -17,7 +17,7 @@ class FieldText extends Field {
 		$this->compact    = $compact;
 	}
 
-	public function get_data( string $field_name, $stored_posted_answer ) {
+	public function get_data( string $field_name, $stored_posted_answer, Group $group ) {
 		if ( isset( $_POST[ $field_name ] ) ) {
 			return [ $_POST[ $field_name ] ];
 		} else {
@@ -38,7 +38,7 @@ class FieldText extends Field {
 		$render_id = $field_name ?: uniqid();
 		$hint      = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
 
-		$value = $this->get_data( $field_name, $answer_object )[0];
+		$value = $this->get_data( $field_name, $answer_object, $group )[0];
 
 		$additional_html_props = join( array_map( function ( $prop, $value ) {
 			return sprintf( '%s="%s"', $prop, htmlentities( $value ) );

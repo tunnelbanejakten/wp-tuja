@@ -3,6 +3,7 @@
 namespace tuja\data\store;
 
 use DateTime;
+use tuja\data\model\Group;
 use tuja\data\model\Response;
 use tuja\util\Database;
 
@@ -287,7 +288,7 @@ class ResponseDao extends AbstractDao
 			$data = null;
 			if ( isset( $entry['response'] ) ) {
 
-				$score = $entry['question']->score( $entry['question']->get_answer_object( 'dummy', $entry['response']->submitted_answer ) );
+				$score = $entry['question']->score( $entry['question']->get_answer_object( 'dummy', $entry['response']->submitted_answer, new Group() ) );
 
 				$score_confidence_threshold = @self::QUESTION_FILTERS[ $question_filter ]['score_confidence_threshold'] ?: 1.0;
 				if ( $score->confidence <= $score_confidence_threshold ) {

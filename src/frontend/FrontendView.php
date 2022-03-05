@@ -4,6 +4,7 @@ namespace tuja\frontend;
 
 use Throwable;
 use tuja\data\model\GroupCategory;
+use tuja\data\model\Group;
 use tuja\data\store\GroupCategoryDao;
 use tuja\Frontend;
 use tuja\util\Recaptcha;
@@ -97,7 +98,7 @@ abstract class FrontendView {
 		if ( is_scalar( $answer_object ) ) {
 			$answer_object = [ $answer_object ];
 		}
-		$html = $field->render( $field_name, $answer_object, null, $error_message );
+		$html = $field->render( $field_name, $answer_object, new Group(), $error_message );
 
 		return sprintf( '<div class="tuja-question %s">%s</div>',
 			! empty( $error_message ) ? 'tuja-field-error' : '',

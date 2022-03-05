@@ -11,7 +11,7 @@ use tuja\util\concurrency\LockValuesList;
 
 class ImageManager {
 	const DEFAULT_THUMBNAIL_PIXEL_COUNT = 200 * 200;
-	const DEFAULT_LARGE_PIXEL_COUNT = 1000 * 1000;
+	const DEFAULT_LARGE_PIXEL_COUNT     = 1000 * 1000;
 
 	private $directory;
 	private $public_url_directory;
@@ -101,6 +101,7 @@ class ImageManager {
 
 		$dst_width  = sqrt( ( $pixels * $width ) / $height );
 		$dst_height = $dst_width * ( $height / $width );
+		$image_editor->set_quality( 100 );
 		$image_editor->resize( $dst_width, $dst_height, false );
 		$saved = $image_editor->save( $dst_path );
 		if ( is_wp_error( $saved ) ) {
@@ -151,7 +152,7 @@ class ImageManager {
 	}
 
 	/**
-	 * Handles image uploads from FromShortcode via AJAX.
+	 * Handles image uploads from FormShortcode via AJAX.
 	 */
 	public static function handle_image_upload() {
 		if ( ! empty( $_FILES['file'] ) && ( ! empty( $_POST['group'] ) || ! empty( $_POST['token'] ) ) && ! empty( $_POST['question'] ) ) {
@@ -193,6 +194,27 @@ class ImageManager {
 		}
 	}
 
+	public function save_base64encoded_file( string $encoded_file, Group $group ) {
+		Strings::init( $group->competition_id );
+
+		self::init_wp_upload_dir( $group->random_id );
+		$upload_dir = wp_upload_dir();
+
+		$file_content = base64_decode( $encoded_file );
+		$file_path    = $upload_dir['path'] . '/' . md5( $file_content ) . '.jpg';
+
+		$bytes_written = file_put_contents( $file_path, $file_content );
+
+		if ( false !== $bytes_written && $bytes_written > 0 ) {
+			return self::resize_and_return( $file_path, $group->random_id );
+		}
+
+		return array(
+			'error'       => Strings::get( 'image_manager.unknown_error' ),
+			'http_status' => 500,
+		);
+	}
+
 	private static function save_uploaded_file( $file_upload_object, Group $group, string $question_id, string $lock_value ) {
 		$question = (int) $question_id;
 		Strings::init( $group->competition_id );
@@ -212,21 +234,7 @@ class ImageManager {
 			);
 		}
 
-		$upload_dir = '/tuja/group-' . $group->random_id;
-		add_filter(
-			'upload_dir',
-			function ( $dirs ) use ( $upload_dir ) {
-				$dirs['subdir'] = $upload_dir;
-				$dirs['path']   = $dirs['basedir'] . $upload_dir;
-				$dirs['url']    = $dirs['baseurl'] . $upload_dir;
-
-				if ( ! file_exists( $dirs['basedir'] . $upload_dir ) ) {
-					mkdir( $dirs['basedir'] . $upload_dir, 0755, true );
-				}
-
-				return $dirs;
-			}
-		);
+		self::init_wp_upload_dir( $group->random_id );
 
 		// Normalizes file uploads. $file_upload_object is an associative array where each elements value can be either a string or an array of
 		// multiple strings. wp_handle_upload expects each value to be a string and returns an error otherwise, so if the values are
@@ -253,26 +261,48 @@ class ImageManager {
 		$movefile = wp_handle_upload( $file, $upload_overrides );
 
 		if ( $movefile && ! isset( $movefile['error'] ) ) {
-			$filename = explode( '/', $movefile['file'] );
-			$filename = array_pop( $filename );
-
-			$resized_image_url = ( new ImageManager() )->get_resized_image_url(
-				$filename,
-				self::DEFAULT_THUMBNAIL_PIXEL_COUNT,
-				$group->random_id
-			);
-
-			return array(
-				'error'         => false,
-				'image'         => $filename,
-				'thumbnail_url' => $resized_image_url,
-				'http_status'   => 200,
-			);
+			return self::resize_and_return( $movefile['file'], $group->random_id );
 		}
 
 		return array(
 			'error'       => Strings::get( 'image_manager.unknown_error' ),
 			'http_status' => 500,
+		);
+	}
+
+	private static function resize_and_return( string $file_path, string $group_key ) {
+		$filename = explode( '/', $file_path );
+		$filename = array_pop( $filename );
+
+		$resized_image_url = ( new ImageManager() )->get_resized_image_url(
+			$filename,
+			self::DEFAULT_THUMBNAIL_PIXEL_COUNT,
+			$group_key
+		);
+
+		return array(
+			'error'         => false,
+			'image'         => $filename,
+			'thumbnail_url' => $resized_image_url,
+			'http_status'   => 200,
+		);
+	}
+
+	private static function init_wp_upload_dir( string $group_key ) {
+		$upload_dir = '/tuja/group-' . $group_key;
+		add_filter(
+			'upload_dir',
+			function ( $dirs ) use ( $upload_dir ) {
+				$dirs['subdir'] = $upload_dir;
+				$dirs['path']   = $dirs['basedir'] . $upload_dir;
+				$dirs['url']    = $dirs['baseurl'] . $upload_dir;
+
+				if ( ! file_exists( $dirs['basedir'] . $upload_dir ) ) {
+					mkdir( $dirs['basedir'] . $upload_dir, 0755, true );
+				}
+
+				return $dirs;
+			}
 		);
 	}
 }

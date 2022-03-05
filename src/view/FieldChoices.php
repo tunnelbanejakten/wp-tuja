@@ -19,7 +19,7 @@ class FieldChoices extends Field {
 		$this->submit_on_change = $submit_on_change;
 	}
 
-	public function get_data( string $field_name, $stored_posted_answer ) {
+	public function get_data( string $field_name, $stored_posted_answer, Group $group ) {
 		if ( $this->is_multichoice ) {
 			if ( isset( $_POST[ $field_name ] ) && is_array( $_POST[ $field_name ] ) ) {
 				return $_POST[ $field_name ]; // Already array because of [] trick in field name.
@@ -48,7 +48,7 @@ class FieldChoices extends Field {
 				: '';
 		$label_and_hint = ! empty( $label ) || ! empty( $hint ) ? sprintf( '<label for="%s">%s%s</label>', $render_id, $label, $hint ) : '';
 
-		$data = $this->get_data( $field_name, $answer_object );
+		$data = $this->get_data( $field_name, $answer_object, $group );
 
 		return sprintf( '<div class="tuja-field">%s%s%s</div>',
 			$label_and_hint,

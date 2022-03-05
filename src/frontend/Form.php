@@ -196,7 +196,7 @@ class Form extends AbstractGroupView {
 					unset( $_POST[ $field_name ] );
 				}
 				$answer_object = @$responses[ $question->id ]->submitted_answer ?: null;
-				$form_user_changes->track_answer( $question, $question->get_answer_object( $field_name, $answer_object ) );
+				$form_user_changes->track_answer( $question, $question->get_answer_object( $field_name, $answer_object, $group ) );
 
 				$html_field = $question->get_html(
 					$field_name,
@@ -270,7 +270,7 @@ class Form extends AbstractGroupView {
 				function ( AbstractQuestion $question ) use ( $responses ) {
 					$answer_object = @$responses[ $question->id ]->submitted_answer ?: null;
 
-					return $question->get_answer_object( self::get_response_field( $question->id ), $answer_object );
+					return $question->get_answer_object( self::get_response_field( $question->id ), $answer_object, $this->get_group() );
 				},
 				$questions
 			)
