@@ -194,36 +194,40 @@ class FormUtils {
 			}
 		}
 
-		$time_limit_adjusted    = $question->get_adjusted_time_limit( $this->group );
-		$is_view_event_required = $time_limit_adjusted > 0;
-		$response['view_event'] = array( 'is_required' => $is_view_event_required );
-		if ( $is_view_event_required ) {
-			$all_events = $this->get_group_events();
-			$events     = array_filter(
+		$time_limit_adjusted = $question->get_adjusted_time_limit( $this->group );
+		$is_timed_question   = $time_limit_adjusted > 0;
+		$view_event          = array( 'is_required' => $is_timed_question );
+		if ( $is_timed_question ) {
+			$all_events             = $this->get_group_events();
+			$start_countdown_events = array_filter(
 				$all_events,
 				function ( Event $event ) use ( $question ) {
-					return $event->event_name === Event::EVENT_VIEW &&
-						$event->object_type === Event::OBJECT_TYPE_QUESTION &&
-						$event->object_id === $question->id;
+					return Event::EVENT_VIEW === $event->event_name &&
+					Event::OBJECT_TYPE_QUESTION === $event->object_type &&
+					$event->object_id === $question->id;
 				}
 			);
 
-			$is_view_event_found                = count( $events ) > 0;
-			$response['view_event']['is_found'] = $is_view_event_found;
-			$response['limit_time_max']         = $time_limit_adjusted;
-			if ( $is_view_event_found ) {
-				$view_event                       = current( $events );
-				$time_passed                      = ( new DateTime( 'now' ) )->getTimestamp() - $view_event->created_at->getTimestamp();
-				$time_remaining_error_margin      = ScoreCalculator::VIEW_EVENT_ERROR_MARGIN_SECONDS / 2; // To account for network delays and such.
-				$time_remaining                   = $time_limit_adjusted - $time_passed + $time_remaining_error_margin;
-				$response['limit_time_remaining'] = max( 0, $time_remaining ); // No point in returing negative values.
-				$response['config']               = $question->get_public_properties();
+			$time_limit             = array( 'duration' => $time_limit_adjusted );
+			$is_countdown_started   = count( $start_countdown_events ) > 0;
+			$view_event['is_found'] = $is_countdown_started;
+			if ( $is_countdown_started ) {
+				$start_countdown_event               = current( $start_countdown_events );
+				$now_timestamp                       = ( new DateTime( 'now' ) )->getTimestamp();
+				$event_timestamp                     = $start_countdown_event->created_at->getTimestamp();
+				$time_limit['started_at']            = $event_timestamp;
+				$time_limit['ends_at']               = $event_timestamp + $time_limit_adjusted;
+				$time_limit['duration_error_margin'] = ScoreCalculator::VIEW_EVENT_ERROR_MARGIN_SECONDS / 2; // To account for network delays and such.
+				$time_limit['current_time']          = $now_timestamp;
+				$response['config']                  = $question->get_public_properties();
 			} else {
 				$response['config'] = null;
 			}
+			$response['time_limit'] = $time_limit;
 		} else {
 			$response['config'] = $question->get_public_properties();
 		}
+		$response['view_event'] = $view_event;
 
 		if ( isset( $response['config']['text'] ) ) {
 			// Parse Markdown texts into HTML.
