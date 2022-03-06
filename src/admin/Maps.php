@@ -173,7 +173,8 @@ class Maps {
 				$key         = self::key( $marker->map_id, $marker->type, $marker->link_form_question_id ?: 0, $marker->link_station_id ?: 0 );
 				$res[ $key ] = $marker;
 				return $res;
-			}
+			},
+			array()
 		);
 	}
 
