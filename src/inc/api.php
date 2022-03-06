@@ -2,6 +2,7 @@
 
 namespace tuja;
 
+use DateTime;
 use tuja\util\JwtUtils;
 use Exception;
 use WP_Error;
@@ -16,17 +17,33 @@ class API extends Plugin {
 		'/tuja/v1',
 	);
 
+	const HEADER_TUJA_TIMING_REQUEST_START = 'Tuja-Timing-Request-Start';
+	const HEADER_TUJA_TIMING_REQUEST_END   = 'Tuja-Timing-Request-End';
+
 	public function init() {
 		add_action( 'rest_api_init', array( $this, 'setup_rest_routes' ) );
 		add_filter( 'rest_pre_dispatch', array( $this, 'auth' ), 10, 3 );
+		add_filter( 'rest_pre_dispatch', array( $this, 'set_request_started_header' ), 1, 3 );
+		add_filter( 'rest_post_dispatch', array( $this, 'set_request_ended_header' ), 10, 3 );
 
 		remove_filter( 'rest_pre_serve_request', 'rest_send_cors_headers' );
 		add_filter(
 			'rest_pre_serve_request',
 			function( $value ) {
+				$extra_headers = implode(
+					', ',
+					array(
+						'Accept-Language',
+						'Content-Type',
+						'User-Agent',
+						self::HEADER_TUJA_TIMING_REQUEST_START,
+						self::HEADER_TUJA_TIMING_REQUEST_END,
+					)
+				);
 				header( 'Access-Control-Allow-Origin: *' );
 				header( 'Access-Control-Allow-Methods: OPTIONS, GET, POST, PUT' );
-				header( 'Access-Control-Allow-Headers: Accept-Language, Content-Type, User-Agent' );
+				header( 'Access-Control-Allow-Headers: ' . $extra_headers );
+				header( 'Access-Control-Expose-Headers: ' . $extra_headers );
 				header( 'Access-Control-Allow-Credentials: true' );
 				header( 'Access-Control-Expose-Headers: Link', false );
 
@@ -51,6 +68,25 @@ class API extends Plugin {
 			$request->set_param( 'token_decoded', $decoded );
 		} catch ( Exception $e ) {
 			return new WP_Error( 'not_authenticated', 'The provided credentials are invalid.', array( 'status' => 401 ) );
+		}
+
+		return $res;
+	}
+
+	private static function get_current_timestamp_ms() {
+		return round( microtime( true ) * 1000 );
+	}
+
+	public function set_request_started_header( $res, $server, \WP_REST_Request $request ) {
+		$request->set_param( self::HEADER_TUJA_TIMING_REQUEST_START, self::get_current_timestamp_ms() );
+
+		return $res;
+	}
+
+	public function set_request_ended_header( $res, $server, \WP_REST_Request $request ) {
+		if ( $res instanceof \WP_REST_Response ) {
+			$res->header( self::HEADER_TUJA_TIMING_REQUEST_START, $request->get_param( self::HEADER_TUJA_TIMING_REQUEST_START ) );
+			$res->header( self::HEADER_TUJA_TIMING_REQUEST_END, self::get_current_timestamp_ms() );
 		}
 
 		return $res;
