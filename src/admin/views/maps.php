@@ -54,7 +54,12 @@ AdminUtils::printTopMenu( $competition );
 			$render_fields( $start_position_fields );
 			printf( '</tr>' );
 			printf( '<tr><th>Frågor:</th></tr>' );
+			$last_header = null;
 			foreach ( $questions_fields as $question_fields ) {
+				if ( $question_fields['question_group'] !== $last_header ) {
+					printf( '<tr><td>%s</td></tr>', $question_fields['question_group'] );
+					$last_header = $question_fields['question_group'];
+				}
 				printf( '<tr><td><span class="tuja-maps-question">%s</span></td>', $question_fields['label'] );
 				$render_fields( $question_fields['fields'] );
 				printf( '</tr>' );

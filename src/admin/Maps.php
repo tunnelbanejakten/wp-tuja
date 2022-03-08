@@ -7,11 +7,13 @@ use tuja\data\model\Map;
 use tuja\data\model\Marker;
 use tuja\data\model\Station;
 use tuja\data\model\question\AbstractQuestion;
+use tuja\data\model\QuestionGroup;
 use tuja\data\store\MapDao;
 use tuja\data\store\CompetitionDao;
 use tuja\data\model\ValidationException;
 use tuja\data\store\MarkerDao;
 use tuja\data\store\QuestionDao;
+use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\StationDao;
 
 class Maps {
@@ -21,12 +23,13 @@ class Maps {
 	private $competition;
 
 	public function __construct() {
-		$db_competition     = new CompetitionDao();
-		$this->question_dao = new QuestionDao();
-		$this->map_dao      = new MapDao();
-		$this->marker_dao   = new MarkerDao();
-		$this->station_dao  = new StationDao();
-		$this->competition  = $db_competition->get( $_GET['tuja_competition'] );
+		$db_competition           = new CompetitionDao();
+		$this->question_dao       = new QuestionDao();
+		$this->question_group_dao = new QuestionGroupDao();
+		$this->map_dao            = new MapDao();
+		$this->marker_dao         = new MarkerDao();
+		$this->station_dao        = new StationDao();
+		$this->competition        = $db_competition->get( $_GET['tuja_competition'] );
 		if ( ! $this->competition ) {
 			print 'Could not find competition';
 
@@ -216,7 +219,15 @@ class Maps {
 		);
 
 		$maps                  = $this->map_dao->get_all_in_competition( $competition->id );
-		$questions             = $this->question_dao->get_all_in_competition( $this->competition->id );
+		$questions             = $this->question_dao->get_all_in_competition( $competition->id );
+		$question_groups       = array_reduce(
+			$this->question_group_dao->get_all_in_competition( $competition->id ),
+			function ( array $res, QuestionGroup $qg ) {
+				$res[ $qg->id ] = $qg->text;
+				return $res;
+			},
+			array()
+		);
 		$markers               = $this->get_markers();
 		$start_position_fields = self::get_html_fields_values(
 			array_map(
@@ -228,10 +239,11 @@ class Maps {
 			$markers
 		);
 		$questions_fields      = array_map(
-			function ( AbstractQuestion $question ) use ( $maps, $markers ) {
+			function ( AbstractQuestion $question ) use ( $maps, $markers, $question_groups ) {
 				return array(
-					'label'  => $question->text,
-					'fields' => self::get_html_fields_values(
+					'label'          => $question->text,
+					'question_group' => $question_groups[ $question->question_group_id ] ?? sprintf( 'Namnlös grupp %s', $question->question_group_id ),
+					'fields'         => self::get_html_fields_values(
 						array_map(
 							function ( Map $map ) use ( $question ) {
 								return self::key( $map->id, Marker::MARKER_TYPE_TASK, $question->id, 0 );
@@ -244,8 +256,14 @@ class Maps {
 			},
 			$questions
 		);
-		$stations              = $this->station_dao->get_all_in_competition( $this->competition->id );
-		$stations_fields       = array_map(
+		usort(
+			$questions_fields,
+			function ( $questions_field_1, $questions_field_2 ) {
+				return strcmp( $questions_field_1['question_group'], $questions_field_2['question_group'] );
+			}
+		);
+		$stations        = $this->station_dao->get_all_in_competition( $this->competition->id );
+		$stations_fields = array_map(
 			function ( Station $station ) use ( $maps, $markers ) {
 				return array(
 					'label'  => $station->name,
