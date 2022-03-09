@@ -57,6 +57,24 @@ class CouponToTicketTsl2020 implements CouponToTicket {
 		} );
 		$team_tickets        = $this->ticket_dao->get_group_tickets( $group );
 
+		$is_ticket_missing = empty(
+			array_filter(
+				$team_tickets,
+				function( Ticket $ticket ) use ( $station ) {
+					return $ticket->station->id === $station->id;
+				}
+			)
+		);
+		if ( $is_ticket_missing ) {
+			// Coupon code belongs to a station for which the team does not have a ticket.
+			// This is either a sign that the team has cheated or that they have been allowed
+			// to compete at the station without having a ticket. We will assume good intention
+			// and retroactively grant the missing ticket so that the team is not "accidentally"
+			// granted a ticket to this station later in the competition.
+			$this->ticket_dao->grant_ticket( $group->id, $station->id, $coupon_code );
+			$team_tickets = $this->ticket_dao->get_group_tickets( $group );
+		}
+
 		foreach ( $team_tickets as $team_ticket ) {
 			if ( TicketDao::normalize_string( $team_ticket->on_complete_password_used ) == $coupon_code ) {
 				throw new Exception( sprintf( 'Cannot use %s twice', $coupon_code ), CouponToTicket::ERROR_CODE_COUPON_ALREADY_USED );
