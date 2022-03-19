@@ -57,6 +57,12 @@ class CouponToTicketTsl2020 implements CouponToTicket {
 		} );
 		$team_tickets        = $this->ticket_dao->get_group_tickets( $group );
 
+		foreach ( $team_tickets as $team_ticket ) {
+			if ( TicketDao::normalize_string( $team_ticket->on_complete_password_used ) == $coupon_code ) {
+				throw new Exception( sprintf( 'Cannot use %s twice', $coupon_code ), CouponToTicket::ERROR_CODE_COUPON_ALREADY_USED );
+			}
+		}
+
 		$is_ticket_missing = empty(
 			array_filter(
 				$team_tickets,
@@ -73,12 +79,6 @@ class CouponToTicketTsl2020 implements CouponToTicket {
 			// granted a ticket to this station later in the competition.
 			$this->ticket_dao->grant_ticket( $group->id, $station->id, $coupon_code );
 			$team_tickets = $this->ticket_dao->get_group_tickets( $group );
-		}
-
-		foreach ( $team_tickets as $team_ticket ) {
-			if ( TicketDao::normalize_string( $team_ticket->on_complete_password_used ) == $coupon_code ) {
-				throw new Exception( sprintf( 'Cannot use %s twice', $coupon_code ), CouponToTicket::ERROR_CODE_COUPON_ALREADY_USED );
-			}
 		}
 
 		$team_ticket_station_ids = array_map( function ( Ticket $ticket ) {
