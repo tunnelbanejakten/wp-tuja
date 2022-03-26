@@ -42,6 +42,11 @@ class Form extends AbstractGroupView {
 		return self::RESPONSE_FIELD_NAME_PREFIX . $question_id;
 	}
 
+	public static function has_optimistic_lock_error_for_question ($question_id, $errors) {
+		$specific_error = @$errors[ self::get_response_field( $question_id ) ];
+		return Strings::get( 'form.optimistic_lock_error' ) === $specific_error;
+	}
+
 	protected function get_form(): \tuja\data\model\Form {
 		if ( ! $this->form ) {
 

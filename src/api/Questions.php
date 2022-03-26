@@ -22,14 +22,14 @@ class Questions extends AbstractRestEndpoint {
 
 		$group_dao = new GroupDao();
 		$group     = $group_dao->get( $group_id );
-		if ( $group === false ) {
+		if ( false === $group ) {
 			return self::create_response( 404 );
 		}
 
 		$question_id  = $request->get_param( 'id' );
 		$question_dao = new QuestionDao();
 		$question     = $question_dao->get( $question_id );
-		if ( $question === false ) {
+		if ( false === $question ) {
 			return self::create_response( 404 );
 		}
 
@@ -44,7 +44,7 @@ class Questions extends AbstractRestEndpoint {
 
 		$group_dao = new GroupDao();
 		$group     = $group_dao->get( $group_id );
-		if ( $group === false ) {
+		if ( false === $group ) {
 			return self::create_response( 404 );
 		}
 
@@ -77,14 +77,14 @@ class Questions extends AbstractRestEndpoint {
 
 		$group_dao = new GroupDao();
 		$group     = $group_dao->get( $group_id );
-		if ( $group === false ) {
+		if ( false === $group ) {
 			return self::create_response( 404 );
 		}
 
 		$question_id  = $request->get_param( 'id' );
 		$question_dao = new QuestionDao();
 		$question     = $question_dao->get( $question_id );
-		if ( $question === false ) {
+		if ( false === $question ) {
 			return self::create_response( 404 );
 		}
 
@@ -102,7 +102,10 @@ class Questions extends AbstractRestEndpoint {
 			$form_utils = new FormUtils( $group );
 			return $form_utils->get_question_response( $question );
 		} else {
-			return self::create_response( 400 );
+			return self::create_response(
+				FrontendForm::has_optimistic_lock_error_for_question( $question->id, $errors ) ? 409 : 400,
+				$errors
+			);
 		}
 	}
 
@@ -113,14 +116,14 @@ class Questions extends AbstractRestEndpoint {
 
 		$group_dao = new GroupDao();
 		$group     = $group_dao->get( $group_id );
-		if ( $group === false ) {
+		if ( false === $group ) {
 			return self::create_response( 404 );
 		}
 
 		$question_id  = $request->get_param( 'id' );
 		$question_dao = new QuestionDao();
 		$question     = $question_dao->get( $question_id );
-		if ( $question === false ) {
+		if ( false === $question ) {
 			return self::create_response( 404 );
 		}
 
@@ -136,7 +139,7 @@ class Questions extends AbstractRestEndpoint {
 		$event->object_id      = $question->id;
 
 		$result = $event_dao->create( $event );
-		if ( $result === false ) {
+		if ( false === $result ) {
 			return self::create_response( 500 );
 		}
 
