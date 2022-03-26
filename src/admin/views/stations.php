@@ -3,6 +3,8 @@
 AdminUtils::printTopMenu( $competition );
 ?>
 
+<h3>Stationer</h3>
+
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
 	<?php
 	foreach ( $stations as $station ) {
@@ -19,8 +21,11 @@ AdminUtils::printTopMenu( $competition );
 	<button type="submit" class="button" name="tuja_action" value="station_create" id="tuja_station_create_button">
 		Skapa
 	</button>
-	<?php
-	printf( '<p><a href="%s">Biljettsystem</a></p>', $ticketing_url );
-	printf( '<p><a href="%s">Poäng</a></p>', $points_url );
-	?>
 </form>
+
+<h3>Biljetter och poäng</h3>
+
+<?php
+printf( '<p><a href="%s">Dela ut poäng</a></p>', $points_url );
+printf( '<p><a href="%s">Hantera biljetter</a></p>', $manage_tickets_url );
+printf( '<p><a href="%s">Konfigurera biljettsystem</a></p>', $ticketing_url );

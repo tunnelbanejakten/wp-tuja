@@ -106,6 +106,13 @@ class StationsPoints {
 			}
 		);
 
+		$back_url    = add_query_arg(
+			array(
+				'tuja_competition' => $competition->id,
+				'tuja_view'        => 'Stations',
+			)
+		);
+
 		$save_button = sprintf(
 			'
 			<div class="tuja-buttons">

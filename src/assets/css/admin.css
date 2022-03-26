@@ -420,3 +420,13 @@ div.progress-bar {
     background-color: #aaa;
     height: 1em;
 }
+div.tuja-ticketmanagement-ticket {
+    border: 1px solid #aaa;
+    background-color: white;
+    margin: 0em;
+    padding: 0.5em;
+    border-radius: 5px;
+}
+div.tuja-ticket-password-used {
+    margin-bottom: 0.5em;
+}

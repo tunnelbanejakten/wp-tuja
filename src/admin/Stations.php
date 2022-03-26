@@ -65,6 +65,11 @@ class Stations {
 				'tuja_view' => 'StationsPoints',
 			)
 		);
+		$manage_tickets_url    = add_query_arg(
+			array(
+				'tuja_view' => 'StationsManageTickets',
+			)
+		);
 		include( 'views/stations.php' );
 	}
 }

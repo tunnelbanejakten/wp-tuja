@@ -7,13 +7,17 @@ use tuja\data\model\StationWeight;
 AdminUtils::printTopMenu( $competition );
 ?>
 
+<h3>Poäng</h3>
+
+<?php printf( '<p><a id="tuja_station_back" href="%s">« Tillbaka till stationslistan</a></p>', $back_url ); ?>
+
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
     <table>
         <thead>
         <tr>
-            <th></th>
+            <th>Lag</th>
 			<?= join( array_map( function ( Station $station ) {
-				return sprintf( '<td>%s</td>', $station->name );
+				return sprintf( '<th>Station %s</th>', $station->name );
 			}, $stations ) ); ?>
         </tr>
         </thead>

@@ -6,7 +6,6 @@ namespace tuja\data\store;
 
 use tuja\data\model\Competition;
 use tuja\data\model\Group;
-use tuja\data\model\Station;
 use tuja\data\model\StationWeight;
 use tuja\data\model\Ticket;
 use tuja\data\model\TicketDesign;
@@ -43,8 +42,6 @@ class TicketDao extends AbstractDao {
 		$db_results = $this->wpdb->get_results( $this->wpdb->prepare( $query, [
 			$competition_id
 		] ), OBJECT );
-//		var_dump($competition_id);
-//		var_dump($db_results);
 		$results = [];
 		foreach ( $db_results as $result ) {
 			$results[] = new StationWeight(
@@ -77,28 +74,36 @@ class TicketDao extends AbstractDao {
 				[ $station_weight->from_station_id, $station_weight->to_station_id, $station_weight->weight ]
 			) );
 		} );
+	}
 
-		foreach ( $station_weights as $station_id => $weight ) {
-		}
+	public function get_competition_tickets( Competition $competition ) {
+		return $this->get_tickets('competition_id', $competition->id);
 	}
 
 	public function get_group_tickets( Group $group ) {
+		return $this->get_tickets('id', $group->id);
+	}
+
+	private function get_tickets( string $group_prop, int $prop_value ) {
 		$query      = '
 			SELECT 
-	        	tsd.*, s.*, t.*
-			FROM ' . Database::get_table( 'ticket' ) . ' AS t
+				tsd.*, s.*, t.*
+			FROM ' . Database::get_table( 'team' ) . ' AS team
+				INNER JOIN ' . Database::get_table( 'ticket' ) . ' AS t 
+				ON team.id = t.team_id 
 				INNER JOIN ' . Database::get_table( 'station' ) . ' AS s 
 				ON t.station_id = s.id 
 				INNER JOIN ' . Database::get_table( 'ticket_station_config' ) . ' AS tsd 
 				ON t.station_id = tsd.station_id 
 			WHERE 
-				t.team_id = %d';
+				team.' . $group_prop . ' = %d';
 		$db_results = $this->wpdb->get_results( $this->wpdb->prepare( $query, [
-			$group->id
+			$prop_value
 		] ), OBJECT );
 
 		return array_map( function ( $result ) {
 			$ticket                            = new Ticket();
+			$ticket->group_id                  = $result->team_id;
 			$ticket->on_complete_password_used = $result->on_complete_password_used;
 			$ticket->colour                    = $result->colour;
 			$ticket->word                      = $result->word;
@@ -163,6 +168,19 @@ class TicketDao extends AbstractDao {
 			$group_id,
 			$station_id,
 			self::normalize_string( $on_complete_password_used )
+		] ) );
+
+		return $affected_rows === 1;
+	}
+
+	public function revoke_ticket (int $group_id, int $station_id) {
+		$reset_query   = '
+				DELETE FROM ' . Database::get_table( 'ticket' ) . ' 
+				WHERE team_id = %d AND station_id = %d
+				';
+		$affected_rows = $this->wpdb->query( $this->wpdb->prepare( $reset_query, [
+			$group_id,
+			$station_id
 		] ) );
 
 		return $affected_rows === 1;

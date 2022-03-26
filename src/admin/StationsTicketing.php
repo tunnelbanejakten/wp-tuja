@@ -111,6 +111,13 @@ class StationsTicketing {
 
 		$station_weights = $ticket_dao->get_station_weights( $competition->id );
 
+		$back_url    = add_query_arg(
+			array(
+				'tuja_competition' => $competition->id,
+				'tuja_view'        => 'Stations',
+			)
+		);
+
 		$save_button = sprintf( '
 			<div class="tuja-buttons">
         		<button type="submit" class="button" name="tuja_action" value="%s">Spara</button>
