@@ -70,6 +70,10 @@ class Form extends AbstractGroupView {
 
 		$updates = $this->get_updated_answers();
 
+		if ( empty( $updates ) ) {
+			return array( '__' => Strings::get( 'form.no_updates_submitted' ) );
+		}
+
 		$updated_question_ids = array_keys( $updates );
 
 		// Remove POSTed data associated with questions which the user did NOT updated. This ensured that, when the
@@ -276,9 +280,12 @@ class Form extends AbstractGroupView {
 			)
 		);
 
-		$updates = FormUserChanges::get_updated_answer_objects( $_POST[ self::TRACKED_ANSWERS_FIELD_NAME ], $user_answers );
-
-		return $updates;
+		if ( isset( $_POST[ self::TRACKED_ANSWERS_FIELD_NAME ] ) ) {
+			return FormUserChanges::get_updated_answer_objects( $_POST[ self::TRACKED_ANSWERS_FIELD_NAME ], $user_answers );
+		} else {
+			error_log( 'Request lacks information about which questions to update.' );
+			return array();
+		}
 	}
 
 	/**

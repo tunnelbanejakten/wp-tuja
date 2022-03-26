@@ -9,8 +9,6 @@ use tuja\data\store\FormDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
-use tuja\data\store\ResponseDao;
-use tuja\frontend\FormUserChanges;
 use tuja\frontend\Form as FrontendForm;
 use tuja\util\FormUtils;
 use WP_REST_Request;
@@ -101,7 +99,7 @@ class Questions extends AbstractRestEndpoint {
 		$errors       = $form_handler->update_answers( $group->id );
 
 		if ( count( $errors ) === 0 ) {
-			$form_utils   = new FormUtils( $group );
+			$form_utils = new FormUtils( $group );
 			return $form_utils->get_question_response( $question );
 		} else {
 			return self::create_response( 400 );
