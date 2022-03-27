@@ -19,12 +19,12 @@ class FieldText extends Field {
 
 	public function get_data( string $field_name, $stored_posted_answer, Group $group ) {
 		if ( isset( $_POST[ $field_name ] ) ) {
-			return [ $_POST[ $field_name ] ];
+			return array( stripslashes( $_POST[ $field_name ] ) );
 		} else {
 			if ( is_array( $stored_posted_answer ) && isset( $stored_posted_answer[0] ) ) {
 				return $stored_posted_answer;
 			} else {
-				return [ '' ];
+				return array( '' );
 			}
 		}
 	}

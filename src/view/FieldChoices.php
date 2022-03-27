@@ -22,22 +22,22 @@ class FieldChoices extends Field {
 	public function get_data( string $field_name, $stored_posted_answer, Group $group ) {
 		if ( $this->is_multichoice ) {
 			if ( isset( $_POST[ $field_name ] ) && is_array( $_POST[ $field_name ] ) ) {
-				return $_POST[ $field_name ]; // Already array because of [] trick in field name.
+				return array_map( 'stripslashes', $_POST[ $field_name ] ); // Already array because of [] trick in field name.
 			} elseif ( is_array( $stored_posted_answer ) ) {
 				return $stored_posted_answer;
 			}
 		} else {
 			if ( isset( $_POST[ $field_name ] ) && ! is_array( $_POST[ $field_name ] ) ) {
-				return [ $_POST[ $field_name ] ];
+				return array( stripslashes( $_POST[ $field_name ] ) );
 			} else {
-				return @$stored_posted_answer[0] ? [ $stored_posted_answer[0] ] : [];
+				return @$stored_posted_answer[0] ? array( $stored_posted_answer[0] ) : array();
 			}
 		}
 
 		// Handle special case when user has not selected any of the options to a multi-choice question.
 		// We still need to store an empty array to explicitly state that the user no longer has selected
 		// anything in case an option was previously selected by the user.
-		return [];
+		return array();
 	}
 
 	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' ) {

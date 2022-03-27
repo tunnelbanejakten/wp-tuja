@@ -45,7 +45,7 @@ class FieldImages extends Field {
 
 			return array(
 				'images'  => $images,
-				'comment' => @$data['comment'] ?: '',
+				'comment' => stripslashes( @$data['comment'] ?: '' ),
 			);
 		}
 

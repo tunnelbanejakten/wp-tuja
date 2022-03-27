@@ -8,12 +8,12 @@ class FieldTextMulti extends Field {
 
 	public function get_data( string $field_name, $stored_posted_answer, Group $group ) {
 		if ( isset( $_POST[ $field_name ] ) ) {
-			return preg_split( "/[\s,]+/", $_POST[ $field_name ] ) ?: [];
+			return preg_split( '/[\s,]+/', stripslashes( $_POST[ $field_name ] ) ) ?: array();
 		} else {
 			if ( is_array( $stored_posted_answer ) ) {
 				return $stored_posted_answer;
 			} else {
-				return [];
+				return array();
 			}
 		}
 	}

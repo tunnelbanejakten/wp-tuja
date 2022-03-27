@@ -14,7 +14,7 @@ class FieldNumber extends FieldText {
 
 	public function get_data( string $field_name, $stored_posted_answer, Group $group ) {
 		if ( isset( $_POST[ $field_name ] ) ) {
-			$raw = $_POST[ $field_name ];
+			$raw = stripslashes( $_POST[ $field_name ] );
 		} else {
 			if ( is_array( $stored_posted_answer ) && isset( $stored_posted_answer[0] ) ) {
 				$raw = $stored_posted_answer[0];
@@ -23,9 +23,9 @@ class FieldNumber extends FieldText {
 			}
 		}
 		if ( is_numeric( $raw ) ) {
-			return [ floatval( $raw ) ];
+			return array( floatval( $raw ) );
 		} else {
-			return [ $raw ];
+			return array( $raw );
 		}
 	}
 }
