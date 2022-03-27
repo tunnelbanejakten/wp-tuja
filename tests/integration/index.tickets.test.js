@@ -117,12 +117,17 @@ describe('Tickets', () => {
       await clickLink('#tuja_validate_ticket_button')
 
       await expectSuccessMessage('Ni har fått 2 nya biljetter.')
-      await expectElementCount('div.tuja-ticket', 2)
-      const initialTicketWordsForTeamBob = await $$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      await expectElementCount('div.tuja-ticket-unused', 2)
+      await expectElementCount('div.tuja-ticket-used', 1)
+      const initialTicketWordsForTeamBob = await $$eval('div.tuja-ticket-unused div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
       expect(initialTicketWordsForTeamBob).toHaveLength(2)
       expect(initialTicketWordsForTeamBob.includes(stationsProps[0].word)).toBeFalsy()
       expect(initialTicketWordsForTeamBob.includes(stationsProps[1].word)).toBeTruthy()
-      expect(initialTicketWordsForTeamBob.includes(stationsProps[2].word) ? !initialTicketWordsForTeamBob.includes(stationsProps[3].word) : initialTicketWordsForTeamBob.includes(stationsProps[3].word)).toBeTruthy()
+      expect(
+        initialTicketWordsForTeamBob.includes(stationsProps[2].word)
+          ? !initialTicketWordsForTeamBob.includes(stationsProps[3].word)
+          : initialTicketWordsForTeamBob.includes(stationsProps[3].word)
+      ).toBeTruthy()
 
       //
       // Bob's team tried to cheat and use their first password once more.
@@ -132,8 +137,9 @@ describe('Tickets', () => {
       await type('#tuja_ticket_password', stationsProps[0].password)
       await clickLink('#tuja_validate_ticket_button')
       await expectErrorMessage(`Cannot use ${stationsProps[0].password} twice`)
-      await expectElementCount('div.tuja-ticket', 2)
-      const ticketWordsAfterRetry = await $$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      await expectElementCount('div.tuja-ticket-unused', 2)
+      await expectElementCount('div.tuja-ticket-used', 1)
+      const ticketWordsAfterRetry = await $$eval('div.tuja-ticket-unused div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
       expect(ticketWordsAfterRetry).toEqual(initialTicketWordsForTeamBob)
 
       //
@@ -145,12 +151,17 @@ describe('Tickets', () => {
       await type('#tuja_ticket_password', stationsProps[0].password)
       await clickLink('#tuja_validate_ticket_button')
       await expectSuccessMessage('Ni har fått 2 nya biljetter.')
-      await expectElementCount('div.tuja-ticket', 2)
-      const initialTicketWordsForTeamAlice = await $$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
+      await expectElementCount('div.tuja-ticket-unused', 2)
+      await expectElementCount('div.tuja-ticket-used', 1)
+      const initialTicketWordsForTeamAlice = await $$eval('div.tuja-ticket-unused div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
       expect(initialTicketWordsForTeamAlice).toHaveLength(2)
       expect(initialTicketWordsForTeamAlice.includes(stationsProps[0].word)).toBeFalsy()
       expect(initialTicketWordsForTeamAlice.includes(stationsProps[1].word)).toBeTruthy()
-      expect(initialTicketWordsForTeamAlice.includes(stationsProps[2].word) ? !initialTicketWordsForTeamAlice.includes(stationsProps[3].word) : initialTicketWordsForTeamAlice.includes(stationsProps[3].word)).toBeTruthy()
+      expect(
+        initialTicketWordsForTeamAlice.includes(stationsProps[2].word)
+          ? !initialTicketWordsForTeamAlice.includes(stationsProps[3].word)
+          : initialTicketWordsForTeamAlice.includes(stationsProps[3].word)
+      ).toBeTruthy()
 
       //
       // Bob's team uses their second password and gets the final two tickets.
@@ -159,7 +170,7 @@ describe('Tickets', () => {
       await goto(`http://localhost:8080/${groupBobProps.key}/biljetter`)
       await type('#tuja_ticket_password', stationsProps[1].password)
       await clickLink('#tuja_validate_ticket_button')
-      await expectSuccessMessage('Ni har fått 2 nya biljetter.')
+      await expectSuccessMessage('Ni har fått en ny biljett.')
       const finalTicketWords = await $$eval('div.tuja-ticket-word', nodes => nodes.map(node => node.textContent))
       expect(finalTicketWords).toHaveLength(4)
       expect(finalTicketWords.includes(stationsProps[0].word)).toBeTruthy()
@@ -183,11 +194,12 @@ describe('Tickets', () => {
       expect(finalRetryTicketWords.includes(stationsProps[3].word)).toBeTruthy()
 
       //
-      // Verify that Alice's team (still) has two tickets.
+      // Verify that Alice's team (still) has two (unused) tickets.
       //
 
       await goto(`http://localhost:8080/${groupAliceProps.key}/biljetter`)
-      await expectElementCount('div.tuja-ticket', 2)
+      await expectElementCount('div.tuja-ticket-unused', 2)
+      await expectElementCount('div.tuja-ticket-used', 1)
     })
 
     it('should not care about capitalization of password', async () => {

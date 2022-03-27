@@ -148,6 +148,11 @@ class Map extends AbstractRestEndpoint {
 							}
 						)
 					) ?: null ) : null;
+					$is_question_answered  = isset( $responses[ $marker->link_form_question_id ] );
+					// $is_station_points_submitted and $is_ticket_used SHOULD have the same value but COULD be different,
+					// for example if a crew member has submitted points for a team even though the team didn't have a ticket.
+					$is_station_points_submitted = isset( $station_points[ $marker->link_station_id ] );
+					$is_ticket_used              = isset( $linked_station_ticket ) ? $linked_station_ticket->is_used : false;
 					return array(
 						'type'                   => $marker->type,
 						'latitude'               => $marker->gps_coord_lat,
@@ -159,7 +164,7 @@ class Map extends AbstractRestEndpoint {
 						'link_question_group_id' => isset( $marker->link_question_group_id ) ? intval( $marker->link_question_group_id ) : null,
 						'link_station_id'        => $link_station_id,
 						'link_station_ticket'    => $linked_station_ticket,
-						'is_response_submitted'  => isset( $responses[ $marker->link_form_question_id ] ) || isset( $station_points[ $marker->link_station_id ] ),
+						'is_done'                => $is_question_answered || $is_station_points_submitted || $is_ticket_used,
 					);
 				},
 				self::get_markers_to_return( $group )

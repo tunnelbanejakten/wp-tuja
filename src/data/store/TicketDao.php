@@ -87,7 +87,25 @@ class TicketDao extends AbstractDao {
 	private function get_tickets( string $group_prop, int $prop_value ) {
 		$query      = '
 			SELECT 
-				tsd.*, s.*, t.*
+				tsd.*,
+				s.*,
+				t.*,
+				(
+					EXISTS (
+						SELECT 1 
+						FROM ' . Database::get_table( 'station_points' ) . ' AS inner_sp 
+						WHERE 
+							inner_sp.station_id = s.id 
+							AND inner_sp.team_id = t.team_id
+						)
+					OR EXISTS (
+						SELECT 1 
+						FROM ' . Database::get_table( 'ticket' ) . ' AS inner_t 
+						WHERE 
+							inner_t.on_complete_password_used = tsd.on_complete_password 
+							AND inner_t.team_id = t.team_id
+						)
+				) AS is_used
 			FROM ' . Database::get_table( 'team' ) . ' AS team
 				INNER JOIN ' . Database::get_table( 'ticket' ) . ' AS t 
 				ON team.id = t.team_id 
@@ -105,6 +123,7 @@ class TicketDao extends AbstractDao {
 			$ticket                            = new Ticket();
 			$ticket->group_id                  = $result->team_id;
 			$ticket->on_complete_password_used = $result->on_complete_password_used;
+			$ticket->is_used                   = '1' === $result->is_used;
 			$ticket->colour                    = $result->colour;
 			$ticket->word                      = $result->word;
 			$ticket->symbol                    = $result->symbol;
