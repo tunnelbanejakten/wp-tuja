@@ -153,6 +153,7 @@ if ( ! empty( $action_result ) ) {
 			$template_parameters = $result['template_parameters'];
 			$message             = $result['message'];
 			$message_css_class   = $result['message_css_class'];
+			$message_to          = $result['message_to'];
 			$is_plain_text_body  = $result['is_plain_text_body'];
 
 			$variables_values_html = join( array_map( function ( $variable ) use ( $template_parameters ) {
@@ -166,12 +167,13 @@ if ( ! empty( $action_result ) ) {
 
 			return sprintf(
 				'<tr>' .
-				'  <td valign="top">%s</td>' .
+				'  <td valign="top">%s (%s)</td>' .
 				'  <td valign="top"><span class="tuja-admin-review-autoscore %s">%s</span></td>' .
 				'  %s' .
 				'  <td valign="top">%s</td>' .
 				'</tr>',
 				$person_name,
+				$message_to,
 				$message_css_class,
 				$message,
 				$variables_values_html,

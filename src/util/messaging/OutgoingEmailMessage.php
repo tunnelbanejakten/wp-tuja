@@ -27,10 +27,15 @@ class OutgoingEmailMessage extends AbstractOutgoingMessage {
 		$mail_result = $this->message_sender->send_mail(
 			$this->recipient->email,
 			$this->subject,
-			$this->body );
+			$this->body
+		);
 
 		if ( ! $mail_result ) {
 			throw new Exception( 'Ett fel uppstod. Vi vet tyvärr inte riktigt varför.' );
 		}
+	}
+
+	function recipient_description(): string {
+		return $this->recipient->email;
 	}
 }

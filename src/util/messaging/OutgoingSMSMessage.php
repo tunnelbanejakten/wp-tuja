@@ -35,6 +35,11 @@ class OutgoingSMSMessage extends AbstractOutgoingMessage {
 
 		$this->message_sender->send_sms(
 			Phone::fix_phone_number( $this->recipient->phone ),
-			$this->body );
+			$this->body
+		);
+	}
+
+	function recipient_description(): string {
+		return Phone::fix_phone_number( $this->recipient->phone );
 	}
 }

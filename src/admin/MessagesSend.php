@@ -105,6 +105,7 @@ class MessagesSend {
 						'template_parameters' => $template_parameters,
 						'success'             => $success,
 						'message'             => $message,
+						'message_to'          => $outgoing_message->recipient_description(),
 						'message_css_class'   => $message_css_class,
 						'person_id'           => $person->id,
 						'person_name'         => $person->name,

@@ -3,6 +3,7 @@
 namespace tuja\data\model;
 
 use Exception;
+use tuja\util\messaging\AbstractOutgoingMessage;
 use tuja\util\messaging\EventMessageSender;
 use tuja\util\messaging\MessageSender;
 use tuja\util\messaging\OutgoingEmailMessage;
@@ -79,7 +80,7 @@ class MessageTemplate {
 		}
 	}
 
-	public function to_message( Person $contact, $template_parameters ) {
+	public function to_message( Person $contact, $template_parameters ) : AbstractOutgoingMessage {
 		switch ( $this->delivery_method ) {
 			case self::SMS:
 				return new OutgoingSMSMessage(
