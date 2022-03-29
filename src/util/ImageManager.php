@@ -73,10 +73,13 @@ class ImageManager {
 	}
 
 	public function get_resized_image_url( $filename, $pixels, $group_key = null ) {
-		list ( $file_id, $ext ) = explode( '.', $filename );
-		$dst_filename           = "$file_id-$pixels.$ext";
-		$sub_directory          = isset( $group_key ) ? "group-$group_key/" : '';
-		$dst_path               = $this->directory . $sub_directory . $dst_filename;
+		@list ( $file_id, $ext ) = explode( '.', $filename );
+		if ( empty( $file_id ) || empty( $ext ) ) {
+			return false;
+		}
+		$dst_filename  = "$file_id-$pixels.$ext";
+		$sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
+		$dst_path      = $this->directory . $sub_directory . $dst_filename;
 		if ( file_exists( $dst_path ) ) {
 			return $this->public_url_directory . $sub_directory . $dst_filename;
 		}
@@ -194,14 +197,14 @@ class ImageManager {
 		}
 	}
 
-	public function save_base64encoded_file( string $encoded_file, Group $group ) {
+	public function save_base64encoded_file( string $encoded_file, int $image_type, Group $group ) {
 		Strings::init( $group->competition_id );
 
 		self::init_wp_upload_dir( $group->random_id );
 		$upload_dir = wp_upload_dir();
 
 		$file_content = base64_decode( $encoded_file );
-		$file_path    = $upload_dir['path'] . '/' . md5( $file_content ) . '.jpg';
+		$file_path    = $upload_dir['path'] . '/' . md5( $file_content ) . ( IMG_PNG === $image_type ? '.png' : '.jpg' );
 
 		$bytes_written = file_put_contents( $file_path, $file_content );
 

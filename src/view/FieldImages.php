@@ -2,7 +2,7 @@
 
 namespace tuja\view;
 
-
+use Exception;
 use tuja\data\model\Group;
 use tuja\Frontend;
 use tuja\util\ImageManager;
@@ -12,7 +12,9 @@ class FieldImages extends Field {
 	private $image_manager;
 	private $max_files_count;
 
-	const DATA_URI_PREFIX_JPEG = 'data:image/jpeg;base64,';
+	const DATA_URI_PATTERN = '/data:(?<mimetype>[a-z]+\\/[a-z]+);base64,(?<data>.*)/';
+	const MIME_TYPE_JPEG   = 'image/jpeg';
+	const MIME_TYPE_PNG    = 'image/png';
 
 	function __construct( $label, $hint = null, $read_only = false, $max_files_count = 2 ) {
 		parent::__construct( $label, $hint, $read_only );
@@ -27,18 +29,30 @@ class FieldImages extends Field {
 			$images = array_reduce(
 				@$data['images'] ?: array(),
 				function ( array $res, string $image ) use ( $group ) {
-					if ( self::DATA_URI_PREFIX_JPEG === substr( $image, 0, strlen( self::DATA_URI_PREFIX_JPEG ) ) ) {
-						$save_result = $this->image_manager->save_base64encoded_file(
-							substr( $image, strlen( self::DATA_URI_PREFIX_JPEG ) ),
-							$group
-						);
-						if ( ! $save_result['error'] ) {
-							$res[] = $save_result['image'];
-							return $res;
+					$matches = array();
+					preg_match( self::DATA_URI_PATTERN, $image, $matches );
+					if ( isset( $matches['mimetype'] ) && isset( $matches['data'] ) ) {
+						$is_jpeg = self::MIME_TYPE_JPEG === $matches['mimetype'];
+						$is_png  = self::MIME_TYPE_PNG === $matches['mimetype'];
+						if ( $is_jpeg || $is_png ) {
+							$save_result = $this->image_manager->save_base64encoded_file(
+								$matches['data'],
+								$is_png ? IMG_PNG : IMG_JPG,
+								$group
+							);
+							if ( ! $save_result['error'] ) {
+								$res[] = $save_result['image'];
+								return $res;
+							} else {
+								throw new Exception( $save_result['error'] );
+							}
+						} else {
+							throw new Exception( Strings::get( 'field_images.unsupported_file_format' ) );
 						}
+					} else {
+						$res[] = $image;
+						return $res;
 					}
-					$res[] = $image;
-					return $res;
 				},
 				array()
 			);
@@ -79,7 +93,7 @@ class FieldImages extends Field {
 			'<textarea rows="3" id="%s" name="%s[comment]" placeholder="%s" %s>%s</textarea>',
 			$field_name . '-comment',
 			$field_name,
-			Strings::get('field_images.comment.placeholder'),
+			Strings::get( 'field_images.comment.placeholder' ),
 			$this->read_only ? ' disabled="disabled"' : '',
 			$comment
 		);
@@ -94,7 +108,7 @@ class FieldImages extends Field {
 		Frontend::use_script( 'tuja-upload.js' );
 		Frontend::use_stylesheet( 'tuja-dropzone.min.css' );
 
-		$images = [];
+		$images = array();
 		if ( isset( $data ) && isset( $data['images'] ) ) {
 			if ( ! empty( $data['images'] ) ) {
 				foreach ( $data['images'] as $filename ) {
@@ -102,36 +116,37 @@ class FieldImages extends Field {
 					$resized_image_url = $this->image_manager->get_resized_image_url(
 						$filename,
 						ImageManager::DEFAULT_THUMBNAIL_PIXEL_COUNT,
-						$group_key );
+						$group_key
+					);
 
-					$images[] = [
+					$images[] = array(
 						'filename'        => $filename,
-						'resizedImageUrl' => $resized_image_url ? basename( $resized_image_url ) : ''
-					];
+						'resizedImageUrl' => $resized_image_url ? basename( $resized_image_url ) : '',
+					);
 				}
 			}
 		}
 
 		ob_start();
 		?>
-        <div class="tuja-image"
-             data-upload-url="<?= admin_url( 'admin-ajax.php' ) ?>"
-             data-base-image-url="<?= wp_get_upload_dir()['baseurl'] . '/tuja/' ?>"
-             data-field-name="<?= $field_name ?>[images][]"
-             data-max-files-count="<?= $this->max_files_count ?>"
-             data-preexisting="<?= htmlspecialchars( json_encode( $images ) ) ?>">
-            <div>
-                <div class="tuja-image-select dropzone"></div>
+		<div class="tuja-image"
+			 data-upload-url="<?php echo admin_url( 'admin-ajax.php' ); ?>"
+			 data-base-image-url="<?php echo wp_get_upload_dir()['baseurl'] . '/tuja/'; ?>"
+			 data-field-name="<?php echo $field_name; ?>[images][]"
+			 data-max-files-count="<?php echo $this->max_files_count; ?>"
+			 data-preexisting="<?php echo htmlspecialchars( json_encode( $images ) ); ?>">
+			<div>
+				<div class="tuja-image-select dropzone"></div>
 
-                <div class="tuja-item-buttons">
-                    <button type="button" class="tuja-image-add">Lägg till bild</button>
-                    <span class="tuja-fieldimages-counter"></span>
-                </div>
-            </div>
-            <div class="tuja-image-options">
+				<div class="tuja-item-buttons">
+					<button type="button" class="tuja-image-add">Lägg till bild</button>
+					<span class="tuja-fieldimages-counter"></span>
+				</div>
+			</div>
+			<div class="tuja-image-options">
 				<?php echo $this->render_comment_field( $field_name, isset( $data ) ? $data['comment'] : '' ); ?>
-            </div>
-        </div>
+			</div>
+		</div>
 		<?php
 
 		return ob_get_clean();

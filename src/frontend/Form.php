@@ -73,7 +73,11 @@ class Form extends AbstractGroupView {
 	public function update_answers( $group_id ): array {
 		$errors = array();
 
-		$updates = $this->get_updated_answers();
+		try {
+			$updates = $this->get_updated_answers();
+		} catch ( Exception $e ) {
+			return array( '__' => $e->getMessage() );
+		}
 
 		if ( empty( $updates ) ) {
 			return array( '__' => Strings::get( 'form.no_updates_submitted' ) );

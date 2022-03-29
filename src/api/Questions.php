@@ -2,6 +2,7 @@
 
 namespace tuja;
 
+use Exception;
 use tuja\data\model\Event;
 use tuja\data\model\Form as ModelForm;
 use tuja\data\store\EventDao;
@@ -88,24 +89,28 @@ class Questions extends AbstractRestEndpoint {
 			return self::create_response( 404 );
 		}
 
-		$question_group_dao = new QuestionGroupDao();
-		$question_group     = $question_group_dao->get( $question->question_group_id );
+		try {
+			$question_group_dao = new QuestionGroupDao();
+			$question_group     = $question_group_dao->get( $question->question_group_id );
 
-		$form_dao = new FormDao();
-		$form     = $form_dao->get( $question_group->form_id );
-		$form_key = $form->random_id;
+			$form_dao = new FormDao();
+			$form     = $form_dao->get( $question_group->form_id );
+			$form_key = $form->random_id;
 
-		$form_handler = new FrontendForm( 'url', $group->random_id, $form_key );
-		$errors       = $form_handler->update_answers( $group->id );
+			$form_handler = new FrontendForm( 'url', $group->random_id, $form_key );
+			$errors       = $form_handler->update_answers( $group->id );
 
-		if ( count( $errors ) === 0 ) {
-			$form_utils = new FormUtils( $group );
-			return $form_utils->get_question_response( $question );
-		} else {
-			return self::create_response(
-				FrontendForm::has_optimistic_lock_error_for_question( $question->id, $errors ) ? 409 : 400,
-				$errors
-			);
+			if ( count( $errors ) === 0 ) {
+				$form_utils = new FormUtils( $group );
+				return $form_utils->get_question_response( $question );
+			} else {
+				return self::create_response(
+					FrontendForm::has_optimistic_lock_error_for_question( $question->id, $errors ) ? 409 : 400,
+					$errors
+				);
+			}
+		} catch ( Exception $e ) {
+			return self::create_response( 500, array( 'error' => $e->getMessage() ) );
 		}
 	}
 
