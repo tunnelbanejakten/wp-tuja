@@ -12,6 +12,7 @@ use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\CompetitionDao;
 use tuja\util\ReflectionUtils;
+use tuja\util\QuestionNameGenerator;
 
 class FormQuestions {
 	const FORM_FIELD_NAME_PREFIX = 'tuja-question';
@@ -144,7 +145,7 @@ class FormQuestions {
 				$success = false;
 			}
 
-			$success === 1 ? AdminUtils::printSuccess('Fråga skapad!') : AdminUtils::printError('Kunde inte skapa fråga.');
+			$success === true ? AdminUtils::printSuccess('Fråga skapad!') : AdminUtils::printError('Kunde inte skapa fråga.');
 		} elseif (substr($_POST['tuja_action'], 0, strlen(self::ACTION_NAME_DELETE_PREFIX)) == self::ACTION_NAME_DELETE_PREFIX) {
 			$question_id_to_delete = substr( $_POST['tuja_action'], strlen( self::ACTION_NAME_DELETE_PREFIX ) );
 			$affected_rows = $this->db_question->delete( $question_id_to_delete );
@@ -159,6 +160,8 @@ class FormQuestions {
 				}
 			}
 		}
+
+		QuestionNameGenerator::update_competition_questions( $this->form->competition_id );
 	}
 
 	public function get_scripts(): array {
