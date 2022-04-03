@@ -12,6 +12,7 @@ class TextQuestionTest extends AbstractQuestionTest {
 	 */
 	public function grade_type_one_of( $answer, $expected_score, $expected_confidence ) {
 		$question = new TextQuestion(
+			null,
 			'Testing one-of grading type',
 			null,
 			0,
@@ -47,6 +48,7 @@ class TextQuestionTest extends AbstractQuestionTest {
 	 */
 	public function grade_type_one_of_with_invalid_answers( $answer, $expected_score, $expected_confidence ) {
 		$question = new TextQuestion(
+			null,
 			'Boat or ship?',
 			null,
 			0,
@@ -81,6 +83,7 @@ class TextQuestionTest extends AbstractQuestionTest {
 	 */
 	public function grade_type_ordered_percent_of( $answer, $expected_score, $expected_confidence ) {
 		$question = new TextQuestion(
+			null,
 			'Testing ordered-precent-of grading type',
 			null,
 			0,
@@ -117,6 +120,7 @@ class TextQuestionTest extends AbstractQuestionTest {
 	 */
 	public function grade_type_unordered_percent_of( $answer, $expected_score, $expected_confidence ) {
 		$question = new TextQuestion(
+			null,
 			'Testing unordered-percent-of grading type',
 			null,
 			0,
@@ -158,6 +162,7 @@ class TextQuestionTest extends AbstractQuestionTest {
 	 */
 	public function grade_type_all_of( $answer, $expected_score, $expected_confidence ) {
 		$question = new TextQuestion(
+			null,
 			'Testing all-of grading type',
 			null,
 			0,

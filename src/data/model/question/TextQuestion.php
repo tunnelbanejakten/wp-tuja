@@ -88,6 +88,7 @@ class TextQuestion extends AbstractQuestion {
 	 * @param array     $incorrect_answers
 	 */
 	public function __construct(
+		$name,
 		$text,
 		$text_hint = null,
 		$id = 0,
@@ -101,6 +102,7 @@ class TextQuestion extends AbstractQuestion {
 		$incorrect_answers = array()
 		) {
 		parent::__construct(
+			$name,
 			$text,
 			$text_hint,
 			$id,

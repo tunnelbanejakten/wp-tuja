@@ -11,6 +11,7 @@ class NumberQuestion extends AbstractQuestion {
 	public $correct_answer = 0;
 
 	public function __construct(
+		$name,
 		$text,
 		$text_hint,
 		$id,
@@ -21,6 +22,7 @@ class NumberQuestion extends AbstractQuestion {
 		$correct_answer
 	) {
 		parent::__construct(
+			$name,
 			$text,
 			$text_hint,
 			$id,

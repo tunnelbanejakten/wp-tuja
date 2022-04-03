@@ -188,6 +188,7 @@ class BootstrapCompetitionController {
 
 	private function create_text_question( QuestionGroup $question_group ): AbstractQuestion {
 		$question_props = new TextQuestion(
+			null,
 			'Vad heter den utomjordiske superhjälten som jobbar på en tidningsredaktion?',
 			'En ledtråd',
 			0,
@@ -205,6 +206,7 @@ class BootstrapCompetitionController {
 
 	private function create_number_question( QuestionGroup $question_group ): AbstractQuestion {
 		$question_props = new NumberQuestion(
+			null,
 			'Vad är svaret på den yttersta frågan om livet, universum och allting?',
 			'En ledtråd',
 			0,
@@ -219,6 +221,7 @@ class BootstrapCompetitionController {
 
 	private function create_images_question( QuestionGroup $question_group, $text ): AbstractQuestion {
 		$question_props = new ImagesQuestion(
+			null,
 			$text,
 			'En ledtråd',
 			0,
@@ -233,6 +236,7 @@ class BootstrapCompetitionController {
 
 	private function create_options_question( QuestionGroup $question_group ): AbstractQuestion {
 		$question_props = new OptionsQuestion(
+			null,
 			'Vilken är en huvudstad?',
 			'En ledtråd',
 			0,

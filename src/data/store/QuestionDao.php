@@ -21,29 +21,29 @@ class QuestionDao extends AbstractDao {
 
 	private static function get_answer_config( AbstractQuestion $question ) {
 		if ( $question instanceof TextQuestion ) {
-			return [
+			return array(
 				'score_max'      => $question->score_max,
 				'score_type'     => $question->score_type,
 				'values'         => $question->correct_answers,
-				'invalid_values' => $question->incorrect_answers
-			];
+				'invalid_values' => $question->incorrect_answers,
+			);
 		} elseif ( $question instanceof OptionsQuestion ) {
-			return [
+			return array(
 				'score_max'  => $question->score_max,
 				'score_type' => $question->score_type,
 				'options'    => $question->possible_answers,
-				'values'     => $question->correct_answers
-			];
+				'values'     => $question->correct_answers,
+			);
 		} elseif ( $question instanceof ImagesQuestion ) {
-			return [
-				'score_max' => $question->score_max,
-				'max_files_count' => $question->max_files_count
-			];
+			return array(
+				'score_max'       => $question->score_max,
+				'max_files_count' => $question->max_files_count,
+			);
 		} elseif ( $question instanceof NumberQuestion ) {
-			return [
+			return array(
 				'score_max' => $question->score_max,
-				'value'     => $question->correct_answer
-			];
+				'value'     => $question->correct_answer,
+			);
 		} else {
 			throw new Exception( 'Unsupported type of question: ' . get_class( $question ) );
 		}
@@ -76,6 +76,7 @@ class QuestionDao extends AbstractDao {
                 random_id,
                 question_group_id,
                 type,
+                name,
                 answer,
                 text,
                 sort_order,
@@ -87,14 +88,17 @@ class QuestionDao extends AbstractDao {
                 %s,
                 %s,
                 %s,
+                %s,
                 %d,
                 %d,
                 %s 
 			)';
-		$query          = $this->wpdb->prepare( $query_template,
+		$query          = $this->wpdb->prepare(
+			$query_template,
 			$this->id->random_string(),
 			$question->question_group_id,
 			self::get_db_type( $question ),
+			$question->name,
 			$answer_config,
 			$question->text,
 			$question->sort_order,
@@ -104,7 +108,7 @@ class QuestionDao extends AbstractDao {
 
 		$affected_rows = $this->wpdb->query( $query );
 
-		$success       = $affected_rows !== false && $affected_rows === 1;
+		$success = $affected_rows !== false && $affected_rows === 1;
 
 		return $success ? $this->wpdb->insert_id : false;
 	}
@@ -125,6 +129,7 @@ class QuestionDao extends AbstractDao {
 		$query_template = '
             UPDATE ' . $this->table . ' SET
                 type = %s,
+                name = %s,
                 answer = %s,
                 text = %s,
                 sort_order = %d,
@@ -133,14 +138,19 @@ class QuestionDao extends AbstractDao {
                 WHERE 
                 id = %d';
 
-		return $this->wpdb->query( $this->wpdb->prepare( $query_template,
-			self::get_db_type( $question ),
-			$answer_config,
-			$question->text,
-			$question->sort_order,
-			$question->limit_time > 0 ? $question->limit_time : null,
-			$question->text_hint,
-			$question->id ) );
+		return $this->wpdb->query(
+			$this->wpdb->prepare(
+				$query_template,
+				self::get_db_type( $question ),
+				$question->name,
+				$answer_config,
+				$question->text,
+				$question->sort_order,
+				$question->limit_time > 0 ? $question->limit_time : null,
+				$question->text_hint,
+				$question->id
+			)
+		);
 	}
 
 	public function get( $question_id ) {
@@ -154,7 +164,8 @@ class QuestionDao extends AbstractDao {
                 WHERE q.id = %d
 				ORDER BY q.sort_order, q.id
 			',
-			$question_id );
+			$question_id
+		);
 
 		return current( $objects );
 	}
@@ -168,9 +179,9 @@ class QuestionDao extends AbstractDao {
 				SELECT q.* 
                 FROM ' . $this->table . ' AS q
                 WHERE q.random_id = %s
-				ORDER BY q.sort_order, q.id
 			',
-			$question_key );
+			$question_key
+		);
 
 		return current( $objects );
 	}
@@ -185,8 +196,14 @@ class QuestionDao extends AbstractDao {
                 FROM ' . $this->table . ' AS q 
                     INNER JOIN ' . Database::get_table( 'form_question_group' ) . ' AS grp ON q.question_group_id = grp.id
                 WHERE grp.form_id = %d
-                ORDER BY grp.sort_order, q.sort_order, q.id',
-			$form_id );
+                ORDER BY 
+					grp.form_id,
+					grp.sort_order, 
+					grp.id, 
+					q.sort_order, 
+					q.id',
+			$form_id
+		);
 	}
 
 	function get_all_in_group( $group_id ) {
@@ -199,7 +216,8 @@ class QuestionDao extends AbstractDao {
                 FROM ' . $this->table . ' AS q 
 				WHERE q.question_group_id = %d
                 ORDER BY q.sort_order, q.id',
-			$group_id );
+			$group_id
+		);
 	}
 
 	function get_all_in_competition( $competition_id ) {
@@ -213,7 +231,13 @@ class QuestionDao extends AbstractDao {
                     INNER JOIN ' . Database::get_table( 'form_question_group' ) . ' AS grp ON q.question_group_id = grp.id
                     INNER JOIN ' . Database::get_table( 'form' ) . ' AS f ON grp.form_id = f.id
                 WHERE f.competition_id = %d
-                ORDER BY grp.sort_order, q.sort_order, q.id',
-			$competition_id );
+				ORDER BY 
+					grp.form_id,
+					grp.sort_order, 
+					grp.id, 
+					q.sort_order, 
+					q.id',
+			$competition_id
+		);
 	}
 }
