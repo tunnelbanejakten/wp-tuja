@@ -221,7 +221,10 @@ class FormUtils {
 				$time_limit['current_time']          = $now_timestamp;
 				$response['config']                  = $question->get_public_properties();
 			} else {
-				$response['config'] = null;
+				$public_props       = $question->get_public_properties();
+				$response['config'] = array(
+					'name' => @$public_props['name'] ?: null,
+				);
 			}
 			$response['time_limit'] = $time_limit;
 		} else {

@@ -84,6 +84,7 @@ abstract class AbstractQuestion {
 		return array(
 			'text_hint'  => $this->text_hint,
 			'text'       => $this->text,
+			'name'       => $this->name,
 			'sort_order' => $this->sort_order,
 			'limit_time' => $this->limit_time,
 			'score_max'  => $this->score_max,
