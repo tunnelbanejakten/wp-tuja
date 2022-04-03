@@ -85,6 +85,7 @@ class ResponseDao extends AbstractDao
 		'id',
 		'form_id',
 		'type',
+		'name',
 		'answer',
 		'text',
 		'sort_order',

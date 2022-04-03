@@ -10,6 +10,7 @@ use tuja\data\store\QuestionGroupDao;
 use tuja\util\DateUtils;
 use tuja\data\store\CompetitionDao;
 use tuja\util\ReflectionUtils;
+use tuja\util\QuestionNameGenerator;
 
 class Form {
 	const FORM_FIELD_NAME_PREFIX = 'tuja-question';
@@ -91,6 +92,8 @@ class Form {
 				}
 			}
 		}
+
+		QuestionNameGenerator::update_competition_questions( $this->form->competition_id );
 	}
 
 	public function get_scripts(): array {

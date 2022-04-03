@@ -18,7 +18,7 @@ class FormUserChangesTest extends TestCase {
 		$user_changes = new FormUserChanges( 1 );
 
 		foreach ( $old_values as $question_id => $answer_object ) {
-			$user_changes->track_answer( new TextQuestion( 'question', null, $question_id ), $answer_object );
+			$user_changes->track_answer( new TextQuestion( null, 'question', null, $question_id ), $answer_object );
 		}
 
 		// act

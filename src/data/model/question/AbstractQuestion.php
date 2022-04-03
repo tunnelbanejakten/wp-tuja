@@ -14,6 +14,7 @@ abstract class AbstractQuestion {
 
 	// TODO: Do these properties need to be public?
 	public $id                = - 1;
+	public $name              = null;
 	public $question_group_id = - 1;
 	public $text_hint         = 'A subtle hint';
 	public $text              = 'Who? What? When?';
@@ -32,8 +33,9 @@ abstract class AbstractQuestion {
 	 * @param $limit_time
 	 * @param $score_max
 	 */
-	public function __construct( $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max ) {
+	public function __construct( $name, $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max ) {
 		$this->id                = $id;
+		$this->name              = $name;
 		$this->question_group_id = $question_group_id;
 		$this->text_hint         = $text_hint;
 		$this->text              = $text;
@@ -82,6 +84,7 @@ abstract class AbstractQuestion {
 		return array(
 			'text_hint'  => $this->text_hint,
 			'text'       => $this->text,
+			'name'       => $this->name,
 			'sort_order' => $this->sort_order,
 			'limit_time' => $this->limit_time,
 			'score_max'  => $this->score_max,

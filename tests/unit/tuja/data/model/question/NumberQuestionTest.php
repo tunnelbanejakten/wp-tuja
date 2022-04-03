@@ -14,11 +14,13 @@ class NumberQuestionTest extends AbstractQuestionTest {
 		$question = new NumberQuestion(
 			null,
 			null,
+			null,
 			0,
 			0,
 			0,
 			10,
-			100 );
+			100,
+			null);
 
 		$this->assert_score( $question, $answer, $expected_score, $expected_confidence );
 	}

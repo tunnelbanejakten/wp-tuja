@@ -20,8 +20,7 @@ AdminUtils::printTopMenu( $competition );
 	if ( AdminUtils::is_admin_mode() ) {
 		?>
         <input type="text" name="tuja_form_name" id="tuja_form_name"/>
-        <button type="submit" class="button" name="tuja_action" value="form_create" id="tuja_form_create_button">Skapa
-        </button>
+        <button type="submit" class="button" name="tuja_action" value="form_create" id="tuja_form_create_button">Skapa</button>
 		<?php
 	}
 	?>

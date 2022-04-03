@@ -56,6 +56,7 @@ class OptionsQuestion extends AbstractQuestion {
 	 * @param bool   $submit_on_change
 	 */
 	public function __construct(
+		$name,
 		$text,
 		$text_hint = null,
 		$id = 0,
@@ -70,6 +71,7 @@ class OptionsQuestion extends AbstractQuestion {
 		$submit_on_change = true
 	) {
 		parent::__construct(
+			$name,
 			$text,
 			$text_hint,
 			$id,

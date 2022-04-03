@@ -72,7 +72,7 @@ class MapsImport {
 		$question_dao = new QuestionDao();
 		$questions    = $question_dao->get_all_in_competition( $this->competition->id );
 
-		$pseudo_question_no_linking = new TextQuestion( '(Koppla inte)', null, self::MAGIC_NUMBER_NO_LINKING );
+		$pseudo_question_no_linking = new TextQuestion( null, '(Koppla inte)', null, self::MAGIC_NUMBER_NO_LINKING );
 
 		return array_merge( array( $pseudo_question_no_linking ), $questions );
 	}

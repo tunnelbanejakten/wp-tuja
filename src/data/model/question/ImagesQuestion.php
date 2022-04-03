@@ -14,6 +14,7 @@ class ImagesQuestion extends AbstractQuestion {
 	public $max_files_count;
 
 	public function __construct(
+		$name,
 		$text,
 		$text_hint,
 		$id,
@@ -24,6 +25,7 @@ class ImagesQuestion extends AbstractQuestion {
 		$max_files_count = self::DEFAULT_FILE_COUNT_LIMIT
 	) {
 		parent::__construct(
+			$name,
 			$text,
 			$text_hint,
 			$id,

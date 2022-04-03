@@ -85,6 +85,7 @@ class AbstractDao {
 			case self::QUESTION_TYPE_TEXT_MULTI:
 			case self::QUESTION_TYPE_TEXT:
 				$q = new TextQuestion(
+					$result->name,
 					$result->text,
 					$result->text_hint,
 					$result->id,
@@ -102,6 +103,7 @@ class AbstractDao {
 			case self::QUESTION_TYPE_PICK_ONE:
 			case self::QUESTION_TYPE_PICK_MULTI:
 				$q = new OptionsQuestion(
+					$result->name,
 					$result->text,
 					$result->text_hint,
 					$result->id,
@@ -119,6 +121,7 @@ class AbstractDao {
 				return $q;
 			case self::QUESTION_TYPE_IMAGES:
 				$q = new ImagesQuestion(
+					$result->name,
 					$result->text,
 					$result->text_hint,
 					$result->id,
@@ -132,6 +135,7 @@ class AbstractDao {
 				return $q;
 			case self::QUESTION_TYPE_NUMBER:
 				$q = new NumberQuestion(
+					$result->name,
 					$result->text,
 					$result->text_hint,
 					$result->id,

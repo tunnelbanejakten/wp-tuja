@@ -167,6 +167,7 @@ abstract class Plugin {
 				form_id            INTEGER,
 				question_group_id  INTEGER,
 				type               VARCHAR(100) NOT NULL,
+				name               VARCHAR(100),
 				answer             TEXT,
 				text               TEXT         NOT NULL,
 				sort_order         SMALLINT,

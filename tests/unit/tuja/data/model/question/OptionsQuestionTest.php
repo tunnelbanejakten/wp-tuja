@@ -16,6 +16,7 @@ class OptionsQuestionTest extends AbstractQuestionTest {
 		$question = new OptionsQuestion(
 			null,
 			null,
+			null,
 			0,
 			0,
 			10,
@@ -53,6 +54,7 @@ class OptionsQuestionTest extends AbstractQuestionTest {
 	 */
 	public function grading_all_of( $answer, $expected_score, $expected_confidence ) {
 		$question = new OptionsQuestion(
+			null,
 			null,
 			null,
 			0,
