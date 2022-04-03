@@ -293,9 +293,7 @@ class ReviewComponent {
 
 				$question                  = $question_entry['question'];
 				$question_group_text       = $question_groups[ $question->question_group_id ]->text;
-				$question_text             = $question_group_text
-					? $question_group_text . " : " . $question->text
-					: $question->text;
+				$question_text             = join( ': ', array_filter( array( $question->name, $question_group_text, $question->text ) ) );
 				$answer_html               = $question->get_correct_answer_html();
 				$is_correct_answer_defined = ! empty( $answer_html );
 				$rowspan                   = $is_correct_answer_defined ? 2 : 1;
