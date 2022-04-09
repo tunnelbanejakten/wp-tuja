@@ -3,11 +3,11 @@ const puppeteer = require('puppeteer')
 
 class AdminPageWrapper extends PageWrapper {
 
-  constructor (browser) {
+  constructor(browser) {
     super(browser)
   }
 
-  async addTeam () {
+  async addTeam() {
     const name = 'Team ' + Math.random().toFixed(5).substring(2) // "Team" and 5 random digits
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Groups&tuja_competition=${competitionId}`)
 
@@ -22,7 +22,7 @@ class AdminPageWrapper extends PageWrapper {
     }
   }
 
-  async configurePaymentDetails (competitionId) {
+  async configurePaymentDetails(competitionId) {
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
     await this.click('#tuja_tab_payment')
@@ -33,7 +33,7 @@ class AdminPageWrapper extends PageWrapper {
     await this.clickLink('#tuja_save_competition_settings_button')
   }
 
-  async configureDefaultGroupStatus (competitionId, status) {
+  async configureDefaultGroupStatus(competitionId, status) {
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
     await this.click('#tuja_tab_groups')
@@ -43,7 +43,7 @@ class AdminPageWrapper extends PageWrapper {
     await this.clickLink('#tuja_save_competition_settings_button')
   }
 
-  async configureEventDateLimits (competitionId, startMinutes, endMinutes) {
+  async configureEventDateLimits(competitionId, startMinutes, endMinutes) {
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
     await this.setDateInput('#tuja_event_start', startMinutes * 60)
@@ -52,23 +52,25 @@ class AdminPageWrapper extends PageWrapper {
     await this.clickLink('#tuja_save_competition_settings_button')
   }
 
-  async configureGroupCategoryDateLimits (competitionId, isYoungParticipantsCategoryOpenNow, isOldParticipantsCategoryOpenNow) {
+  async configureGroupCategoryDateLimits(competitionId, isYoungParticipantsCategoryOpenNow, isOldParticipantsCategoryOpenNow) {
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettingsGroupCategories&tuja_competition=${competitionId}`)
 
     const setGroupCategoryDateRange = async (categoryName, includeNow, isNinOptional) => {
       const categoryId = await this.$eval('input[type="text"][value="' + categoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
 
       await this.$eval('#groupcategory__rules__' + categoryId, (node, includeNow, isNinOptional) => {
-        const nowDate = new Date()
-        const localTzOffsetSeconds = nowDate.getTimezoneOffset() * 60
-        const nowSeconds = Math.round(nowDate.getTime() / 1000) - localTzOffsetSeconds
+        const now = new Date()
+        const todayDateString = now.toISOString().substring(0, 10)
+        const localTzOffsetSeconds = now.getTimezoneOffset() * 60
+        const todayTimestamp = Date.parse(todayDateString) / 1000
+        const todaySeconds = todayTimestamp - localTzOffsetSeconds
         const oneDay = 24 * 60 * 60
 
         const original = JSON.parse(node.value)
         node.value = JSON.stringify({
           ...original,
-          create_registration_period_start: nowSeconds + (includeNow ? -1 : -2) * oneDay,
-          create_registration_period_end: nowSeconds + (includeNow ? 1 : -1) * oneDay,
+          create_registration_period_start: todaySeconds + (includeNow ? -1 : -2) * oneDay,
+          create_registration_period_end: todaySeconds + (includeNow ? 0 : -1) * oneDay,
           leader_nin: 'nin_or_date_' + (isNinOptional ? 'optional' : 'required')
         })
       }, includeNow, isNinOptional)
@@ -80,7 +82,7 @@ class AdminPageWrapper extends PageWrapper {
     await this.clickLink('#tuja_save_competition_settings_button')
   }
 
-  async configureFormDateLimits (competitionId, formId, startMinutes, endMinutes) {
+  async configureFormDateLimits(competitionId, formId, startMinutes, endMinutes) {
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
 
     await this.setDateInput('#tuja-submit-response-start', startMinutes * 60)
@@ -89,7 +91,7 @@ class AdminPageWrapper extends PageWrapper {
     await this.clickLink('button[name="tuja_action"][value="form_update"]')
   }
 
-  async init () {
+  async init() {
     await super.init()
 
     // Device emulator list: https://github.com/puppeteer/puppeteer/blob/master/lib/DeviceDescriptors.js

@@ -298,8 +298,16 @@ class GroupCategoryRules {
 
 	private function get_date_range( string $slug ): DateRange {
 		return new DateRange(
-			self::from_unix_date( @$this->values[ $slug . '_start' ] ),
-			self::from_unix_date( @$this->values[ $slug . '_end' ] )
+			self::from_unix_date(
+				isset( $this->values[ $slug . '_start' ] )
+				? $this->values[ $slug . '_start' ]
+				: null
+			),
+			self::from_unix_date(
+				isset( $this->values[ $slug . '_end' ] )
+				? ( $this->values[ $slug . '_end' ] + ( 24 * 60 * 60 ) )
+				: null
+			)
 		);
 	}
 
