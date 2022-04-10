@@ -223,7 +223,8 @@ class FormUtils {
 			} else {
 				$public_props       = $question->get_public_properties();
 				$response['config'] = array(
-					'name' => @$public_props['name'] ?: null,
+					'name'      => @$public_props['name'] ?: null,
+					'score_max' => @$public_props['score_max'] ?: null,
 				);
 			}
 			$response['time_limit'] = $time_limit;
