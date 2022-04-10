@@ -11,6 +11,7 @@ use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\frontend\Form as FrontendForm;
+use tuja\util\Strings;
 use tuja\util\FormUtils;
 use WP_REST_Request;
 
@@ -55,7 +56,7 @@ class Questions extends AbstractRestEndpoint {
 		$available_forms = array_filter(
 			$forms,
 			function( ModelForm $form ) {
-				return $form->is_submit_allowed();
+				return $form->is_opened();
 			}
 		);
 
@@ -95,6 +96,12 @@ class Questions extends AbstractRestEndpoint {
 
 			$form_dao = new FormDao();
 			$form     = $form_dao->get( $question_group->form_id );
+
+			if ( ! $form->is_submit_allowed() ) {
+				Strings::init( $form->competition_id );
+				return self::create_response( 403, array( 'error' => Strings::get( 'form.read_only' ) ) );
+			}
+
 			$form_key = $form->random_id;
 
 			$form_handler = new FrontendForm( 'url', $group->random_id, $form_key );
