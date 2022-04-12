@@ -16,7 +16,7 @@ class OutgoingEmailMessage extends AbstractOutgoingMessage {
 	}
 
 	function validate() {
-		if ( empty( trim( $this->recipient->email ) ) ) {
+		if ( empty( trim( $this->recipient->email ?? '') ) ) {
 			throw new Exception( 'Saknar e-postadress.' );
 		}
 	}
@@ -36,6 +36,6 @@ class OutgoingEmailMessage extends AbstractOutgoingMessage {
 	}
 
 	function recipient_description(): string {
-		return $this->recipient->email;
+		return $this->recipient->email ?? '';
 	}
 }

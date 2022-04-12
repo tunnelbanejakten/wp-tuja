@@ -21,7 +21,7 @@ class OutgoingSMSMessage extends AbstractOutgoingMessage {
 		if ( $length > 160 ) {
 			throw new Exception( sprintf( 'Meddelande %d tecken för långt.', $length - 160 ) );
 		}
-		$phone_number = Phone::fix_phone_number( $this->recipient->phone );
+		$phone_number = Phone::fix_phone_number( $this->recipient->phone ?? '' );
 		if ( empty( $phone_number ) ) {
 			throw new Exception( 'Saknar telefonnummer.' );
 		}
@@ -34,12 +34,12 @@ class OutgoingSMSMessage extends AbstractOutgoingMessage {
 		$this->validate();
 
 		$this->message_sender->send_sms(
-			Phone::fix_phone_number( $this->recipient->phone ),
+			Phone::fix_phone_number( $this->recipient->phone ?? '' ),
 			$this->body
 		);
 	}
 
 	function recipient_description(): string {
-		return Phone::fix_phone_number( $this->recipient->phone );
+		return Phone::fix_phone_number( $this->recipient->phone ?? '' );
 	}
 }
