@@ -26,11 +26,13 @@ use tuja\util\Template;
 class FormView {
 	public $id;
 	public $name;
+	public $is_read_only;
 	public $question_groups;
 
-	public function __construct( $id, $name, $question_groups ) {
+	public function __construct( $id, $name, $is_read_only, $question_groups ) {
 		$this->id              = $id;
 		$this->name            = $name;
+		$this->is_read_only    = $is_read_only;
 		$this->question_groups = $question_groups;
 	}
 }
@@ -71,6 +73,7 @@ class FormUtils {
 		return new FormView(
 			intval( $form->id ),
 			$form->name,
+			! $form->is_submit_allowed(),
 			array_map(
 				function ( QuestionGroup $question_group ) use ( $question_response_spec, $exclude_objects_with_marker ) {
 					return $this->get_question_group_view( $question_group, $question_response_spec, $exclude_objects_with_marker );
@@ -166,7 +169,6 @@ class FormUtils {
 
 		$response = array(
 			'type'            => ( new \ReflectionClass( $question ) )->getShortName(),
-			'is_read_only'    => null,
 			'response'        => array(
 				'field_name'    => $response_field,
 				'current_value' => $answer_object,
