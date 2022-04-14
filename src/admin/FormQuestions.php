@@ -15,13 +15,13 @@ use tuja\util\ReflectionUtils;
 use tuja\util\QuestionNameGenerator;
 
 class FormQuestions {
-	const FORM_FIELD_NAME_PREFIX = 'tuja-question';
+	const FORM_FIELD_NAME_PREFIX    = 'tuja-question';
 	const ACTION_NAME_DELETE_PREFIX = 'question_delete__';
 	const ACTION_NAME_CREATE_PREFIX = 'question_create__';
 
-	const ACTION_NAME_CREATE_TEXT = self::ACTION_NAME_CREATE_PREFIX . 'text';
-	const ACTION_NAME_CREATE_NUMBER = self::ACTION_NAME_CREATE_PREFIX . 'number';
-	const ACTION_NAME_CREATE_IMAGES = self::ACTION_NAME_CREATE_PREFIX . 'images';
+	const ACTION_NAME_CREATE_TEXT    = self::ACTION_NAME_CREATE_PREFIX . 'text';
+	const ACTION_NAME_CREATE_NUMBER  = self::ACTION_NAME_CREATE_PREFIX . 'number';
+	const ACTION_NAME_CREATE_IMAGES  = self::ACTION_NAME_CREATE_PREFIX . 'images';
 	const ACTION_NAME_CREATE_CHOICES = self::ACTION_NAME_CREATE_PREFIX . 'choices';
 
 	private $form;
@@ -164,6 +164,21 @@ class FormQuestions {
 		QuestionNameGenerator::update_competition_questions( $this->form->competition_id );
 	}
 
+	private function get_preview_url() {
+		$short_name = substr( FormQuestionsPreview::class, strrpos( FormQuestionsPreview::class, '\\' ) + 1 );
+		return add_query_arg(
+			array(
+				'action'              => 'tuja_questions_preview',
+				'tuja_question_group' => $this->question_group->id,
+				'tuja_view'           => $short_name,
+				'TB_iframe'           => 'true',
+				'width'               => '400',
+				'height'              => '800',
+			),
+			admin_url( 'admin.php' )
+		);
+	}
+
 	public function get_scripts(): array {
 		return [
 			'admin-formgenerator.js',
@@ -174,18 +189,21 @@ class FormQuestions {
 
 	public function output() {
 		$this->handle_post();
-		
+
 		$db_competition = new CompetitionDao();
-		$competition    = $db_competition->get($this->form->competition_id);
-		$questions = $this->db_question->get_all_in_group($this->question_group->id);
+		$competition    = $db_competition->get( $this->form->competition_id );
+		$questions      = $this->db_question->get_all_in_group( $this->question_group->id );
+		$preview_url    = $this->get_preview_url();
 
-		$back_url = add_query_arg( array(
-			'tuja_competition' => $competition->id,
-			'tuja_form'        => $this->question_group->form_id,
-			'tuja_view'        => 'Form'
-		) );
+		$back_url = add_query_arg(
+			array(
+				'tuja_competition' => $competition->id,
+				'tuja_form'        => $this->question_group->form_id,
+				'tuja_view'        => 'Form',
+			)
+		);
 
-		include('views/form-questions.php');
+		include( 'views/form-questions.php' );
 	}
 
 }

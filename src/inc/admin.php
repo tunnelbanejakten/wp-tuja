@@ -20,6 +20,7 @@ class Admin extends Plugin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'add_thickbox' ) );
 		add_action( 'admin_action_tuja_report', array( $this, 'render_report' ) );
+		add_action( 'admin_action_tuja_questions_preview', array( $this, 'render_questions_preview' ) );
 		add_action( 'admin_action_tuja_markdown', array( $this, 'render_markdown' ) );
 
 		Strings::init( intval( @$_GET['tuja_competition'] ?: 0 ) );
@@ -36,6 +37,16 @@ class Admin extends Plugin {
 		if ( $_GET['tuja_report_format'] != 'csv' ) {
 			iframe_footer();
 		}
+		exit;
+	}
+
+	function render_questions_preview() {
+		define( 'IFRAME_REQUEST', true );
+		iframe_header();
+
+		$this->route_questions_preview( );
+
+		iframe_footer();
 		exit;
 	}
 
@@ -66,6 +77,9 @@ class Admin extends Plugin {
 	public function assets() {
 		if ( @$_REQUEST['action'] === 'tuja_report' ) {
 			wp_enqueue_style( 'tuja-admin-report', static::get_url() . '/assets/css/admin-report.css' );
+		} elseif ( @$_REQUEST['action'] === 'tuja_questions_preview' ) {
+			wp_enqueue_style( 'tuja-default', static::get_url() . '/assets/css/wp.css' );
+			wp_enqueue_style( 'tuja-admin-questions-preview', static::get_url() . '/assets/css/admin-questions-preview.css' );
 		} else {
 			wp_enqueue_style( 'tuja-admin-theme', static::get_url() . '/assets/css/admin.css' );
 			wp_enqueue_style( 'tuja-admin-templateeditor', static::get_url() . '/assets/css/admin-templateeditor.css' );
@@ -98,6 +112,10 @@ class Admin extends Plugin {
 
 	public function route_report() {
 		$this->render_view( @$_GET['tuja_view'] );
+	}
+
+	public function route_questions_preview() {
+		$this->render_view( 'FormQuestionsPreview' );
 	}
 
 	private function render_view( $view_name ) {

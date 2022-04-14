@@ -13,9 +13,19 @@ AdminUtils::printTopMenu( $competition );
 printf( '<p><a id="tuja_form_questions_back" href="%s">« Tillbaka till grupp</a></p>', $back_url );
 ?>
 
+<div class="tuja-buttons">
+	<a href="<?php echo $preview_url; ?>"
+		title="Förhandsgranskning"
+		class="thickbox button"
+		target="_blank">
+		Förhandsgranskning
+	</a>
+	<em>Glöm inte att spara innan du förhandsgranskar.</em>
+</div>
+
 <form method="post">
-    <p><strong>Frågor</strong></p>
-    <?php
+	<p><strong>Frågor</strong></p>
+	<?php
     if(empty($questions)) {
 		echo '<p><i>Inga frågor än. Klicka på "Ny fråga" för att lägga till en.';
 		echo '<div class="clear"></div>';
