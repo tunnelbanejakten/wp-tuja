@@ -3,22 +3,23 @@
 namespace tuja\util;
 
 use tuja\data\model\Competition;
+use tuja\data\model\Group;
+use tuja\data\model\Marker;
+use tuja\data\model\Person;
+use tuja\data\store\MapDao;
+use tuja\data\store\MarkerDao;
 use tuja\frontend\router\CompetitionSignupInitiator;
 use tuja\frontend\router\GroupCancelSignupInitiator;
 use tuja\frontend\router\GroupCheckinInitiator;
 use tuja\frontend\router\GroupEditorInitiator;
 use tuja\frontend\router\GroupHomeInitiator;
+use tuja\frontend\router\GroupPaymentInitiator;
 use tuja\frontend\router\GroupPeopleEditorInitiator;
 use tuja\frontend\router\GroupSignupInitiator;
 use tuja\frontend\router\GroupStatusInitiator;
 use tuja\frontend\router\GroupTicketsInitiator;
 use tuja\frontend\router\PersonEditorInitiator;
 use tuja\util\formattedtext\FormattedText;
-use tuja\data\model\Group;
-use tuja\data\model\Person;
-use tuja\data\model\Marker;
-use tuja\data\store\MarkerDao;
-use tuja\data\store\MapDao;
 use tuja\util\rules\RuleResult;
 
 class Template {
@@ -106,6 +107,7 @@ class Template {
 			'group_name'                             => $group->name,
 			'group_key'                              => $group->random_id,
 			'group_home_link'                        => GroupHomeInitiator::link( $group ),
+			'group_payment_link'                     => GroupPaymentInitiator::link( $group ),
 			'group_app_link'                         => AppUtils::group_link( $group ),
 			'group_map_name'                         => $group_map_name,
 			'group_map_start_coord'                  => $group_map_start_coord,
