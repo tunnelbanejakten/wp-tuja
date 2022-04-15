@@ -8,6 +8,17 @@ AdminUtils::printTopMenu( $competition );
 ?>
 
 <h3>Formulär <?= $this->form->name ?></h3>
+
+<div class="tuja-buttons">
+	<a href="<?php echo $preview_url; ?>"
+		title="Förhandsgranskning"
+		class="thickbox button"
+		target="_blank">
+		Förhandsgranskning
+	</a>
+	<em>Glöm inte att spara innan du förhandsgranskar.</em>
+</div>
+
 <form method="post">
 
     <p><strong>Inställningar</strong></p>

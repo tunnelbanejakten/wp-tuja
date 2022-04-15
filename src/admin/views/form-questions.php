@@ -10,7 +10,7 @@ AdminUtils::printTopMenu( $competition );
 <h3>Formulär <?= $this->form->name ?> - Grupp "<?= $this->question_group->text ?: $this->question_group->id; ?>"</h3>
 
 <?php
-printf( '<p><a id="tuja_form_questions_back" href="%s">« Tillbaka till grupp</a></p>', $back_url );
+printf( '<p><a id="tuja_form_questions_back" href="%s">« Tillbaka till formuläret</a></p>', $back_url );
 ?>
 
 <div class="tuja-buttons">

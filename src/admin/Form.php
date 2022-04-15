@@ -97,21 +97,37 @@ class Form {
 	}
 
 	public function get_scripts(): array {
-		return [
+		return array(
 			'admin-formgenerator.js',
 			'admin-forms.js',
-			'jsoneditor.min.js'
-		];
+			'jsoneditor.min.js',
+		);
+	}
+
+	private function get_preview_url() {
+		$short_name = substr( FormQuestionsPreview::class, strrpos( FormQuestionsPreview::class, '\\' ) + 1 );
+		return add_query_arg(
+			array(
+				'action'    => 'tuja_questions_preview',
+				'tuja_form' => $this->form->id,
+				'tuja_view' => $short_name,
+				'TB_iframe' => 'true',
+				'width'     => '400',
+				'height'    => '800',
+			),
+			admin_url( 'admin.php' )
+		);
 	}
 
 	public function output() {
 		$this->handle_post();
-		
-		$db_competition = new CompetitionDao();
-		$competition    = $db_competition->get($this->form->competition_id);
-		$question_groups = $this->db_question_group->get_all_in_form($this->form->id);
 
-		include('views/form.php');
+		$db_competition  = new CompetitionDao();
+		$competition     = $db_competition->get( $this->form->competition_id );
+		$question_groups = $this->db_question_group->get_all_in_form( $this->form->id );
+		$preview_url     = $this->get_preview_url();
+
+		include( 'views/form.php' );
 	}
 
 }

@@ -2,7 +2,7 @@ body {
     margin: 0;
     padding: 10px;
 }
-.tuja-field label img {
+img {
     max-width: 100%;
     max-height: 40vh;
 }
