@@ -187,6 +187,19 @@ class ResponseDao extends AbstractDao {
 			);
 		};
 
+		$where_conditions = array_merge(
+			self::QUESTION_FILTERS[ $question_filter ]['sql_where'],
+			count( $group_ids ) > 0
+				? array(
+					sprintf(
+						'(r.team_id IS NULL OR r.team_id IN (%s))',
+						join( ', ', $group_ids )
+					),
+				)
+				: array(),
+			array( 'f.competition_id = ' . (int) $competition_id )
+		);
+
 		$query = sprintf(
 			'
 			SELECT 
@@ -208,14 +221,11 @@ class ResponseDao extends AbstractDao {
 				INNER JOIN ' . Database::get_table( 'form' ) . ' f ON fqg.form_id = f.id 
 			WHERE 
 				%s
-				%s
-				AND f.competition_id = %%d
 			ORDER BY
 				f.id, q.id, r.team_id
 			',
 			self::QUESTION_FILTERS[ $question_filter ]['sql_from'],
-			join( ' AND ', self::QUESTION_FILTERS[ $question_filter ]['sql_where'] ),
-			count( $group_ids ) > 0 ? sprintf( ' AND (r.team_id IS NULL OR r.team_id IN (%s))', join( ', ', $group_ids ) ) : ''
+			join( ' AND ', $where_conditions ),
 		);
 
 		// CONVERT RAW DATA TO OBJECTS
@@ -264,8 +274,7 @@ class ResponseDao extends AbstractDao {
 					'form'     => $form,
 				);
 			},
-			$query,
-			(int) $competition_id
+			$query
 		);
 
 		$result = array();
