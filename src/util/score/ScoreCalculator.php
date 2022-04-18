@@ -5,6 +5,7 @@ namespace tuja\util\score;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\Event;
 use tuja\data\model\Group;
+use tuja\data\model\Response;
 use tuja\data\store\EventDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionPointsOverrideDao;
@@ -48,6 +49,17 @@ class ScoreCalculator {
 		$this->stations                     = ( new StationDao() )->get_all_in_competition( $competition_id );
 	}
 
+	public static function is_submitted_in_time( Response $response, AbstractQuestion $question, Group $group ) {
+		$time_limit_adjusted = $question->get_adjusted_time_limit( $group );
+		if ( $time_limit_adjusted > 0 && isset( $response->view_event_time_elapsed ) ) {
+			$answer_time     = $response->view_event_time_elapsed;
+			$max_answer_time = $time_limit_adjusted + self::VIEW_EVENT_ERROR_MARGIN_SECONDS;
+			return $answer_time <= $max_answer_time;
+		} else {
+			return true;
+		}
+	}
+
 	public static function score_combined( $response, AbstractQuestion $question, $override, Group $group, ?Event $first_view_event ): ScoreQuestionResult {
 		$question_result = new ScoreQuestionResult();
 		$response_exists = isset( $response );
@@ -59,17 +71,9 @@ class ScoreCalculator {
 				$question_result->auto            = $auto_score_result->score;
 				$question_result->auto_confidence = $auto_score_result->confidence;
 
-				$time_limit_adjusted = $question->get_adjusted_time_limit( $group );
-				if ( $time_limit_adjusted > 0 && isset( $first_view_event ) ) {
-					$view_event_time = $first_view_event->created_at->getTimestamp();
-					$submit_time     = $response->created->getTimestamp();
-
-					$answer_time     = $submit_time - $view_event_time;
-					$max_answer_time = $time_limit_adjusted + self::VIEW_EVENT_ERROR_MARGIN_SECONDS;
-					if ( $answer_time > $max_answer_time ) {
-						$question_result->auto            = 0;
-						$question_result->auto_confidence = 1.0;
-					}
+				if ( ! self::is_submitted_in_time( $response, $question, $group ) ) {
+					$question_result->auto            = 0;
+					$question_result->auto_confidence = 1.0;
 				}
 				$question_result->final = $question_result->auto ?: 0;
 			}

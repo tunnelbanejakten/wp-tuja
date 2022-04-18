@@ -139,6 +139,11 @@ abstract class AbstractQuestion {
 
 		return $answers_percent_correct;
 	}
+
+	public function is_timed() : bool {
+		return is_numeric( $this->limit_time ) && $this->limit_time > 0;
+	}
+
 	public function get_adjusted_time_limit( Group $group ) {
 		$time_limit_multiplier = $group->get_category()->get_rules()->get_time_limit_multiplier();
 		$time_limit_adjusted   = round( $this->limit_time * 0.01 * $time_limit_multiplier );
