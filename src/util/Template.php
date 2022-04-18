@@ -19,6 +19,7 @@ use tuja\frontend\router\GroupSignupInitiator;
 use tuja\frontend\router\GroupStatusInitiator;
 use tuja\frontend\router\GroupTicketsInitiator;
 use tuja\frontend\router\PersonEditorInitiator;
+use tuja\frontend\router\ReportPointsInitiator;
 use tuja\util\formattedtext\FormattedText;
 use tuja\util\rules\RuleResult;
 
@@ -64,13 +65,14 @@ class Template {
 
 	public static function person_parameters( Person $person, Group $group ) {
 		return [
-			'person_key'       => $person->random_id,
-			'person_name'      => $person->name,
-			'person_phone'     => $person->phone,
-			'person_email'     => $person->email,
-			'person_food'      => $person->food,
-			'person_pno'       => $person->pno,
-			'person_edit_link' => PersonEditorInitiator::link( $group, $person )
+			'person_key'                => $person->random_id,
+			'person_name'               => $person->name,
+			'person_phone'              => $person->phone,
+			'person_email'              => $person->email,
+			'person_food'               => $person->food,
+			'person_pno'                => $person->pno,
+			'person_edit_link'          => PersonEditorInitiator::link( $group, $person ),
+			'person_report_points_link' => ReportPointsInitiator::link_all( $person ),
 		];
 	}
 
