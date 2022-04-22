@@ -153,13 +153,16 @@ class Group {
 		$this->status->clear_status_changes();
 	}
 
-	public function is_edit_allowed(): bool {
+	public function is_edit_allowed( bool $update_requested = true, bool $delete_requested = false ): bool {
 		if ( $this->is_always_editable ) {
 			return true;
 		}
 
 		try {
-			return $this->get_category()->get_rules()->is_update_registration_allowed();
+			$rules = $this->get_category()->get_rules();
+			$is_update_registration_allowed = $rules->is_update_registration_allowed();
+			$is_delete_registration_allowed = $rules->is_delete_registration_allowed();
+			return ( ( ! $update_requested || $is_update_registration_allowed ) && ( ! $delete_requested || $is_delete_registration_allowed ) );
 		} catch ( Exception $e ) {
 			return false;
 		}

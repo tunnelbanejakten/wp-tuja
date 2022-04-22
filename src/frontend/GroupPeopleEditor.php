@@ -243,15 +243,11 @@ class GroupPeopleEditor extends AbstractGroupView {
 		$deleted_ids = array_diff( $preexisting_ids, $submitted_ids );
 		$created_ids = array_diff( $submitted_ids, $preexisting_ids );
 
-		if ( ! $this->is_edit_allowed( $group ) ) {
+		$update_requested = ! empty( $created_ids ) || ! empty( $updated_ids );
+		$delete_requested = ! empty( $deleted_ids );
+
+		if ( ! $this->is_edit_allowed( $group, $update_requested, $delete_requested ) ) {
 			throw new RuleEvaluationException( 'Det går inte att ändra anmälan nu' );
-		}
-		$real_category = $group->get_category();
-		if ( isset( $real_category ) && ! empty( $deleted_ids ) ) {
-			$delete_group_member_allowed = $real_category->get_rules()->is_delete_group_member_allowed();
-			if ( ! $delete_group_member_allowed ) {
-				throw new RuleEvaluationException( 'Det går inte att avanmäla från ' . $real_category->name );
-			}
 		}
 
 		// SAVE CHANGES

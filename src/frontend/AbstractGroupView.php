@@ -46,7 +46,7 @@ abstract class AbstractGroupView extends FrontendView {
 			}
 			$this->group = $group;
 
-			Strings::init($group->competition_id);
+			Strings::init( $group->competition_id );
 		}
 
 		if ( $this->group->get_status() == Group::STATUS_DELETED ) {
@@ -73,8 +73,8 @@ abstract class AbstractGroupView extends FrontendView {
 		}
 	}
 
-	protected function is_edit_allowed( Group $group ): bool {
-		return $group->is_edit_allowed();
+	protected function is_edit_allowed( Group $group, bool $update_requested = true, bool $delete_requested = false ): bool {
+		return $group->is_edit_allowed( $update_requested, $delete_requested );
 	}
 
 	protected function init_posted_person( $id = null ): Person {
