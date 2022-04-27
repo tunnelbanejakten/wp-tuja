@@ -149,20 +149,26 @@ class MessagesSend {
 				'label'    => 'Alla',
 				'selector' => function ( Person $person ) {
 					return true;
-				}
+				},
 			),
 			'contacts' => array(
-				'label'    => 'Kontaktpersoner',
+				'label'    => 'Kontaktpersoner under tävlingen',
 				'selector' => function ( Person $person ) {
-					return $person->is_contact() && ! $person->is_adult_supervisor();
-				}
+					return $person->is_contact() && $person->is_attending();
+				},
+			),
+			'non_competitors' => array(
+				'label'    => 'Medföljare och administratörer',
+				'selector' => function ( Person $person ) {
+					return ! $person->is_competing();
+				},
 			),
 			'contacts_and_non_competitors' => array(
-				'label'    => 'Kontaktpersoner och medföljare',
+				'label'    => 'Alla kontakter (tävlande eller ej)',
 				'selector' => function ( Person $person ) {
 					return $person->is_contact();
-				}
-			)
+				},
+			),
 		);
 		$specific_recipients = [];
 		if ( isset( $_POST['tuja_messages_specificrecipients'] ) ) {
