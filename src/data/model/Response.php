@@ -11,6 +11,7 @@ class Response
     public $submitted_answer;
     public $created;
     public $is_reviewed;
+    public $view_event_time_elapsed; // Seconds since the first registred "view event" for this group for this question.
 
     public function __construct($submitted_answer = null)
     {
