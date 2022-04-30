@@ -6,25 +6,50 @@
       "type": "string",
       "format": "radio",
       "enum": [
-        "leaders_supervisors_admins",
+        "everyone",
         "all_competing",
-        "everyone"
-      ]
+        "leaders_supervisors_admins",
+        "crew"
+      ],
+      "options": {
+        "enum_titles": [
+          "Alla",
+          "Alla tävlande",
+          "Lagledare, medföljande vuxna och administratörer",
+          "Funktionärer"
+        ]
+      }
     },
     "tuja_reports_people_properties": {
       "title": "Kolumner",
       "type": "array",
       "uniqueItems": true,
       "format": "checkbox",
-      "default": ["name"],
+      "default": [
+        "name"
+      ],
       "items": {
         "type": "string",
         "enum": [
           "name",
           "pno",
           "email",
-          "phone"
-        ]
+          "phone",
+          "role",
+          "group_category",
+          "group_name"
+        ],
+        "options": {
+          "enum_titles": [
+            "Namn",
+            "Personnummer",
+            "Epost",
+            "Telefon",
+            "Roll",
+            "Gruppkategori",
+            "Grupp"
+          ]
+        }
       }
     }
   }

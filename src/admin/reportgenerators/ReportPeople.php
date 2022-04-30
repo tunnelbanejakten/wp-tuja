@@ -36,6 +36,17 @@ class ReportPeople extends AbstractListReport {
 
 		$people_filter     = $_GET['tuja_reports_people_filter'];
 		$people_properties = $_GET['tuja_reports_people_properties'] ?? array( 'name' );
+		$groups_data       = array_reduce(
+			$active_groups,
+			function ( array $res, Group $group ) {
+				$res[ $group->id ] = array(
+					'group_category' => $group->get_category()->name,
+					'group_name'     => $group->name,
+				);
+				return $res;
+			},
+			array()
+		);
 
 		switch ( $people_filter ) {
 			case 'leaders_supervisors_admins':
@@ -58,6 +69,27 @@ class ReportPeople extends AbstractListReport {
 					)
 				);
 				break;
+			case 'crew':
+				$crew_group_ids  = array_map(
+					function ( Group $group ) {
+						return $group->id;
+					},
+					array_filter(
+						$active_groups,
+						function ( Group $group ) {
+							return $group->get_category()->get_rules()->is_crew();
+						}
+					)
+				);
+				$selected_people = array_values(
+					array_filter(
+						$all_people_in_active_groups,
+						function ( Person $person ) use ( $crew_group_ids ) {
+							return in_array( intval( $person->group_id ), $crew_group_ids, true );
+						}
+					)
+				);
+				break;
 			case 'everyone':
 			default:
 				$selected_people = $all_people_in_active_groups;
@@ -65,12 +97,24 @@ class ReportPeople extends AbstractListReport {
 		}
 
 		$rows = array_map(
-			function( Person $person ) use ( $people_properties ) {
+			function( Person $person ) use ( $people_properties, $groups_data ) {
 				return array_combine(
 					$people_properties,
 					array_map(
-						function( string $prop ) use ( $person ) {
-							return $person->{$prop};
+						function( string $prop ) use ( $person, $groups_data ) {
+							switch ( $prop ) {
+								case 'name':
+								case 'pno':
+								case 'email':
+								case 'phone':
+									return $person->{$prop};
+								case 'role':
+									return $person->get_type();
+								case 'group_category':
+								case 'group_name':
+									$props = $groups_data[ intval( $person->group_id ) ];
+									return $props[ $prop ];
+							}
 						},
 						$people_properties,
 					)
