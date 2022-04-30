@@ -127,7 +127,7 @@ class Groups {
 		foreach ( $groups as $group ) {
 			$group_data          = [];
 			$group_data['model'] = $group;
-			$group_data['fee']   = number_format_i18n( $group->effective_fee_calculator->calculate_fee( $group, new DateTime() ), 0 );
+			$group_data['fee']   = $group->effective_fee_calculator->calculate_fee( $group, new DateTime() );
 
 			$registration_evaluation = $group->evaluate_registration();
 

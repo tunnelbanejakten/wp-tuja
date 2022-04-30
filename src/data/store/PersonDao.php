@@ -3,6 +3,7 @@
 namespace tuja\data\store;
 
 use DateTime;
+use DateTimeInterface;
 use Exception;
 use tuja\data\model\Group;
 use tuja\util\Anonymizer;
@@ -95,7 +96,7 @@ class PersonDao extends AbstractDao {
 		return $affected_rows !== false && $affected_rows === 1;
 	}
 
-	function get( $id, DateTime $date = null ) {
+	function get( $id, DateTimeInterface $date = null ) {
 		return $this->get_object(
 			function ( $row ) {
 				return self::to_person( $row );

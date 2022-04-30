@@ -3,7 +3,7 @@
 namespace tuja\view;
 
 
-use DateTime;
+use DateTimeInterface;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\FormDao;
 
@@ -35,7 +35,7 @@ class CountdownShortcode
     }
 
     // The PHP and Javascript implementations of "fuzzy time" are very similar but not identical
-    private function to_fuzzy_time(DateTime $other, string $pasteTenseFormat, string $futureTenseFormat)
+    private function to_fuzzy_time(DateTimeInterface $other, string $pasteTenseFormat, string $futureTenseFormat)
     {
         $now = new DateTime();
         $diff = $now->diff($other);

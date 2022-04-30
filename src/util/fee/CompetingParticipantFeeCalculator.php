@@ -4,7 +4,7 @@
 namespace tuja\util\fee;
 
 
-use DateTime;
+use DateTimeInterface;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\store\PersonDao;
@@ -20,7 +20,7 @@ class CompetingParticipantFeeCalculator implements GroupFeeCalculator {
 		$this->person_dao = new PersonDao();
 	}
 
-	function calculate_fee( Group $group, DateTime $date ): int {
+	function calculate_fee( Group $group, DateTimeInterface $date ): int {
 		$is_crew = $group->get_category()->get_rules()->is_crew();
 		if ( $is_crew ) {
 			return 0;

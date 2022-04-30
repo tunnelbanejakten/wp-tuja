@@ -4,13 +4,13 @@
 namespace tuja\util\fee;
 
 
-use DateTime;
+use DateTimeInterface;
 use tuja\data\model\Group;
 
 interface GroupFeeCalculator {
 	const DEFAULT = CompetingParticipantFeeCalculator::class;
 
-	function calculate_fee( Group $group, DateTime $date ): int;
+	function calculate_fee( Group $group, DateTimeInterface $date ): int;
 
 	function description(): string;
 

@@ -3,6 +3,7 @@
 namespace tuja\data\store;
 
 use DateTime;
+use DateTimeInterface;
 use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
@@ -148,7 +149,7 @@ class GroupDao extends AbstractDao {
 	}
 
 
-	function generate_query( $where, DateTime $date = null ) {
+	function generate_query( $where, DateTimeInterface $date = null ) {
 		return '
 			SELECT
 				g.*,
@@ -179,7 +180,7 @@ class GroupDao extends AbstractDao {
 			function ( $row ) use ( $date ) {
 				return self::to_group( $row, $date );
 			},
-			$this->generate_query( [ 'g.id = %d' ] ),
+			$this->generate_query( [ 'g.id = %d' ], $date ),
 			$id );
 	}
 
@@ -188,7 +189,7 @@ class GroupDao extends AbstractDao {
 			function ( $row ) use ( $date ) {
 				return self::to_group( $row, $date );
 			},
-			$this->generate_query( [ 'g.random_id = %s' ] ),
+			$this->generate_query( [ 'g.random_id = %s' ], $date ),
 			$key );
 	}
 
@@ -197,7 +198,7 @@ class GroupDao extends AbstractDao {
 			function ( $row ) use ( $date ) {
 				return self::to_group( $row, $date );
 			},
-			$this->generate_query( [ 'g.competition_id = %d' ] ),
+			$this->generate_query( [ 'g.competition_id = %d' ], $date ),
 			$competition_id );
 
 		return $include_deleted ? $objects : array_filter( $objects, function ( Group $group ) {

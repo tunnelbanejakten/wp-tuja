@@ -2,7 +2,7 @@
   "type": "object",
   "properties": {
     "tuja_reports_date": {
-      "title": "Datum",
+      "title": "Inkludera enbart lag och deltagare anmälda fram till detta datum:",
       "type": "integer",
       "format": "date"
     }
