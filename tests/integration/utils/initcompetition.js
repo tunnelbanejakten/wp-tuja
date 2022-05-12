@@ -6,7 +6,7 @@ const querystring = require('querystring')
 
 const createCompetition = async (adminPage) => {
   // Go to Tuja page in Admin console
-  await adminPage.goto('http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionBootstrap')
+  await adminPage.goto('http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionBootstrap')
 
   // Create new competition
   const competitionName = 'Test ' + new Date().toLocaleString('se-SV', { timeZone: 'UTC' })

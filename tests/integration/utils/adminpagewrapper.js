@@ -9,7 +9,7 @@ class AdminPageWrapper extends PageWrapper {
 
   async addTeam() {
     const name = 'Team ' + Math.random().toFixed(5).substring(2) // "Team" and 5 random digits
-    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Groups&tuja_competition=${competitionId}`)
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Groups&tuja_competition=${competitionId}`)
 
     await this.type('input[name=tuja_new_group_name]', name)
 
@@ -23,7 +23,7 @@ class AdminPageWrapper extends PageWrapper {
   }
 
   async configurePaymentDetails(competitionId) {
-    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
     await this.click('#tuja_tab_payment')
 
@@ -34,7 +34,7 @@ class AdminPageWrapper extends PageWrapper {
   }
 
   async configureDefaultGroupStatus(competitionId, status) {
-    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
     await this.click('#tuja_tab_groups')
 
@@ -44,7 +44,7 @@ class AdminPageWrapper extends PageWrapper {
   }
 
   async configureEventDateLimits(competitionId, startMinutes, endMinutes) {
-    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
 
     await this.setDateInput('#tuja_event_start', startMinutes * 60)
     await this.setDateInput('#tuja_event_end', endMinutes * 60)
@@ -53,7 +53,7 @@ class AdminPageWrapper extends PageWrapper {
   }
 
   async configureGroupCategoryDateLimits(competitionId, isYoungParticipantsCategoryOpenNow, isOldParticipantsCategoryOpenNow) {
-    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettingsGroupCategories&tuja_competition=${competitionId}`)
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettingsGroupCategories&tuja_competition=${competitionId}`)
 
     const setGroupCategoryDateRange = async (categoryName, includeNow, isNinOptional) => {
       const categoryId = await this.$eval('input[type="text"][value="' + categoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
@@ -83,7 +83,7 @@ class AdminPageWrapper extends PageWrapper {
   }
 
   async configureFormDateLimits(competitionId, formId, startMinutes, endMinutes) {
-    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${formId}`)
 
     await this.setDateInput('#tuja-submit-response-start', startMinutes * 60)
     await this.setDateInput('#tuja-submit-response-end', endMinutes * 60)

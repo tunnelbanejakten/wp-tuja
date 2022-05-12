@@ -11,8 +11,6 @@ use tuja\util\fee\PersonTypeFeeCalculator;
 use tuja\util\fee\FixedFeeCalculator;
 
 class AdminUtils {
-	private static $is_admin_mode = false;
-
 	const INHERIT = 'inherit';
 
 	/**
@@ -48,25 +46,18 @@ class AdminUtils {
 		printf( '<h1>%s</h1>', $competition->name );
 
 		$menu_config = array(
-			'Groups'     => 'Grupper',
-			'Scoreboard' => 'Poängställning',
-			'Review'     => 'Svar att rätta',
-			'Messages'   => 'Meddelanden',
-			'Reports'    => 'Rapporter',
+			'Groups'              => 'Grupper',
+			'Scoreboard'          => 'Poängställning',
+			'Review'              => 'Svar att rätta',
+			'Messages'            => 'Meddelanden',
+			'Competition'         => 'Formulär',
+			'Stations'            => 'Stationer',
+			'Maps'                => 'Kartor',
+			'Reports'             => 'Rapporter',
+			'Shortcodes'          => 'Länkar',
+			'CompetitionSettings' => 'Inställningar',
+			'CompetitionDelete'   => 'Rensa',
 		);
-		if ( self::is_admin_mode() ) {
-			$menu_config = array_merge(
-				$menu_config,
-				array(
-					'Competition'         => 'Formulär',
-					'Stations'            => 'Stationer',
-					'Maps'                => 'Kartor',
-					'CompetitionSettings' => 'Inställningar',
-					'Shortcodes'          => 'Shortcodes',
-					'CompetitionDelete'   => 'Rensa',
-				)
-			);
-		}
 
 		$menu = array();
 		foreach ( $menu_config as $view => $label ) {
@@ -144,14 +135,6 @@ class AdminUtils {
 		);
 
 		return join( '<br>', $lines );
-	}
-
-	public static function set_admin_mode( $is_admin ) {
-		self::$is_admin_mode = $is_admin;
-	}
-
-	public static function is_admin_mode() {
-		return self::$is_admin_mode;
 	}
 
 	public static function get_initial_group_status_selector( string $preselected_status, string $field_name ) {
@@ -361,8 +344,15 @@ class AdminUtils {
 
 	public static function qr_code_button( $value ) {
 		$id = uniqid();
-		return sprintf( '
+		return sprintf(
+			'
 			<a title="QR-kod" href="#TB_inline?&width=300&height=300&inlineId=tuja-qr-code-viewer-%s" class="thickbox" data-qr-value="%s" data-target-id="tuja-qr-code-image-%s">Visa QR-kod</a>
-			<span id="tuja-qr-code-viewer-%s" style="display: none"><span><img src="" id="tuja-qr-code-image-%s"></span></span>', $id, htmlentities( $value ), $id, $id, $id );
+			<span id="tuja-qr-code-viewer-%s" style="display: none"><span><img src="" id="tuja-qr-code-image-%s"></span></span>',
+			$id,
+			htmlentities( $value ),
+			$id,
+			$id,
+			$id
+		);
 	}
 }
