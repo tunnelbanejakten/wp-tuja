@@ -5,11 +5,9 @@ use tuja\util\Strings;
 use tuja\util\TemplateEditor;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
-
-<h3>Appen</h3>
-
-<?php printf( '<p><a id="tuja_competition_settings_app_back" href="%s">« Tillbaka till övriga inställningar</a></p>', $back_url ); ?>
 
 <form method="post" class="tuja">
 

@@ -2,11 +2,9 @@
 namespace tuja\admin;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
-
-<h3>Avgifter</h3>
-
-<?php printf( '<p><a id="tuja_competition_settings_fees_back" href="%s">« Tillbaka till övriga inställningar</a></p>', $back_url ); ?>
 
 <form method="post" class="tuja" id="tuja-tab-payment">
 

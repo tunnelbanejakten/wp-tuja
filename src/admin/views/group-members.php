@@ -6,16 +6,12 @@ use tuja\frontend\router\PersonEditorInitiator;
 use tuja\frontend\router\ReportPointsInitiator;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
-
-<h3>Grupp <?php echo htmlspecialchars( $group->name ); ?> (id: <code><?php echo htmlspecialchars( $group->random_id ); ?></code>)</h3>
-
-<?php printf( '<p><a id="tuja_group_back" href="%s">« Tillbaka till grupplistan</a></p>', $back_url ); ?>
-<?php $this->print_menu(); ?>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
 
-<h3>Deltagare</h3>
 	<table>
 		<thead>
 		<tr>

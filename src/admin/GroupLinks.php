@@ -66,13 +66,6 @@ class GroupLinks extends AbstractGroup {
 			$this->form_dao->get_all_in_competition( $competition->id )
 		);
 
-		$back_url = add_query_arg(
-			array(
-				'tuja_competition' => $competition->id,
-				'tuja_view'        => 'Groups',
-			)
-		);
-
 		include 'views/group-links.php';
 	}
 }

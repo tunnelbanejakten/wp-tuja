@@ -15,7 +15,7 @@ use tuja\util\rules\PassthroughRuleSet;
 use tuja\util\rules\YoungParticipantsRuleSet;
 use tuja\util\fee\GroupFeeCalculator;
 
-class CompetitionSettingsGroupCategories {
+class CompetitionSettingsGroupCategories extends AbstractCompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	const RULE_SETS = array(
@@ -30,8 +30,7 @@ class CompetitionSettingsGroupCategories {
 			return;
 		}
 
-		$competition_dao = new CompetitionDao();
-		$competition     = $competition_dao->get( $_GET['tuja_competition'] );
+		$competition = $this->competition_dao->get( $_GET['tuja_competition'] );
 
 		if ( ! $competition ) {
 			throw new Exception( 'Could not find competition' );
@@ -59,14 +58,15 @@ class CompetitionSettingsGroupCategories {
 	public function output() {
 		$this->handle_post();
 
-		$competition_dao = new CompetitionDao();
-		$competition     = $competition_dao->get( $_GET['tuja_competition'] );
-		$category_dao    = new GroupCategoryDao();
+		$competition  = $this->competition_dao->get( $_GET['tuja_competition'] );
+		$category_dao = new GroupCategoryDao();
 
-		$back_url = add_query_arg( array(
-			'tuja_competition' => $competition->id,
-			'tuja_view'        => 'CompetitionSettings'
-		) );
+		$back_url = add_query_arg(
+			array(
+				'tuja_competition' => $competition->id,
+				'tuja_view'        => 'CompetitionSettings',
+			)
+		);
 
 		include 'views/competition-settings-group-categories.php';
 	}

@@ -30,32 +30,79 @@ class AbstractGroup {
 	}
 
 	public function print_menu() {
-		$items   = array(
+		$current_view_name = $_GET['tuja_view'];
+
+		//
+		// First level
+		//
+
+		$groups_start_page_link = add_query_arg(
+			array(
+				'tuja_competition' => $this->competition->id,
+				'tuja_view'        => 'Groups',
+			)
+		);
+
+		//
+		// Second level
+		//
+
+		$groups_current = null;
+		$groups_links   = array();
+		$dao            = new GroupDao();
+		$groups         = $dao->get_all_in_competition( $this->competition->id );
+		foreach ( $groups as $group ) {
+			if ( $group->id === $this->group->id ) {
+				$groups_current = $group->name;
+			} else {
+				$link           = add_query_arg(
+					array(
+						'tuja_competition' => $this->competition->id,
+						'tuja_view'        => $current_view_name,
+						'tuja_group'       => $group->id,
+					)
+				);
+				$groups_links[] = BreadcrumbsMenu::item( $group->name, $link );
+			}
+		}
+
+		//
+		// Third level
+		//
+
+		$group_page_current = null;
+		$group_page_links   = array();
+		$items              = array(
 			Group::class        => 'Allmänt',
 			GroupLinks::class   => 'Länkar',
 			GroupEvents::class  => 'Tidsbegränsade frågor som visats',
 			GroupScore::class   => 'Svar och poäng',
 			GroupMembers::class => 'Deltagare',
 		);
-		$current = $_GET['tuja_view'];
-		$links   = array_map(
-			function ( $full_view_name, $title ) use ( $current ) {
-				$short_view_name = substr( $full_view_name, strrpos( $full_view_name, '\\' ) + 1 );
-				if ( $short_view_name === $current ) {
-					return sprintf( '<strong>%s</strong>', $title );
-				} else {
-					$link = add_query_arg(
-						array(
-							'tuja_competition' => $this->competition->id,
-							'tuja_view'        => $short_view_name,
-						)
-					);
-					return sprintf( '<a href="%s">%s</a>', $link, $title );
-				}
-			},
-			array_keys( $items ),
-			array_values( $items )
-		);
-		printf( '<div>%s</div>', join( ' | ', $links ) );
+		foreach ( $items as $full_view_name => $title ) {
+			$short_view_name = substr( $full_view_name, strrpos( $full_view_name, '\\' ) + 1 );
+			if ( $short_view_name === $current_view_name ) {
+				$group_page_current = $title;
+			} else {
+				$link               = add_query_arg(
+					array(
+						'tuja_competition' => $this->competition->id,
+						'tuja_view'        => $short_view_name,
+					)
+				);
+				$group_page_links[] = BreadcrumbsMenu::item( $title, $link );
+			}
+		}
+
+		print BreadcrumbsMenu::create(
+		)->add(
+			BreadcrumbsMenu::item( 'Grupper', $groups_start_page_link )
+		)->add(
+			BreadcrumbsMenu::item( $groups_current ),
+			...$groups_links,
+		)->add(
+			BreadcrumbsMenu::item( $group_page_current ),
+			...$group_page_links,
+		)->render();
 	}
 }

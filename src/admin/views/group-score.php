@@ -5,16 +5,12 @@ use tuja\data\model\Station;
 use tuja\data\store\ResponseDao;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
-
-<h3>Grupp <?php echo htmlspecialchars( $group->name ); ?> (id: <code><?php echo htmlspecialchars( $group->random_id ); ?></code>)</h3>
-
-<?php printf( '<p><a id="tuja_group_back" href="%s">« Tillbaka till grupplistan</a></p>', $back_url ); ?>
-<?php $this->print_menu(); ?>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
 
-<h3>Svar och poäng</h3>
 	<p id="tuja-group-score" data-total-final="<?php echo $score_result->total_final; ?>">
 		<strong>Totalt <?php echo $score_result->total_final; ?> poäng.</strong>
 		<?php

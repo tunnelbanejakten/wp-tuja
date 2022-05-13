@@ -9,7 +9,7 @@ use tuja\data\store\CompetitionDao;
 use tuja\util\DateUtils;
 use tuja\util\Strings;
 
-class CompetitionSettings {
+class CompetitionSettings extends AbstractCompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	public function handle_post() {

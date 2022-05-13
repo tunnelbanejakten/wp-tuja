@@ -1,6 +1,8 @@
 <?php namespace tuja\admin;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
 
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">

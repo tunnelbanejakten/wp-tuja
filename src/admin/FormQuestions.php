@@ -14,7 +14,7 @@ use tuja\data\store\CompetitionDao;
 use tuja\util\ReflectionUtils;
 use tuja\util\QuestionNameGenerator;
 
-class FormQuestions {
+class FormQuestions extends AbstractForm {
 	const FORM_FIELD_NAME_PREFIX    = 'tuja-question';
 	const ACTION_NAME_DELETE_PREFIX = 'question_delete__';
 	const ACTION_NAME_CREATE_PREFIX = 'question_create__';
@@ -24,26 +24,6 @@ class FormQuestions {
 	const ACTION_NAME_CREATE_IMAGES  = self::ACTION_NAME_CREATE_PREFIX . 'images';
 	const ACTION_NAME_CREATE_CHOICES = self::ACTION_NAME_CREATE_PREFIX . 'choices';
 
-	private $form;
-	private $db_form;
-	private $db_question;
-	private $db_question_group;
-
-	public function __construct() {
-		$this->db_form           = new FormDao();
-		$this->db_question       = new QuestionDao();
-		$this->db_question_group = new QuestionGroupDao();
-
-		$this->question_group    = $this->db_question_group->get($_GET['tuja_question_group']);
-		$this->form              = $this->db_form->get( $this->question_group->form_id );
-
-		if(!$this->form) {
-			print 'Could not find form';
-			return;
-		}
-	}
-
-
 	public function handle_post() {
 		global $wpdb;
 
@@ -52,7 +32,7 @@ class FormQuestions {
 		if($_POST['tuja_action'] == 'questions_update') {
 			$wpdb->show_errors();
 		
-			$questions = $this->db_question->get_all_in_group($this->question_group->id);
+			$questions = $this->question_dao->get_all_in_group($this->question_group->id);
 
 			$success = true;
 			foreach ( $questions as $question ) {
@@ -61,7 +41,7 @@ class FormQuestions {
 					$question->set_properties_from_json_string(stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question->id ] ));
 
 					try {
-						$affected_rows = $this->db_question->update( $question );
+						$affected_rows = $this->question_dao->update( $question );
 						$success       = $success && $affected_rows !== false;
 					} catch ( Exception $e ) {
 						$success = false;
@@ -139,7 +119,7 @@ class FormQuestions {
 						break;
 				}
 
-				$new_id = $this->db_question->create( $props );
+				$new_id = $this->question_dao->create( $props );
 				$success = $new_id !== false;
 			} catch ( Exception $e ) {
 				$success = false;
@@ -148,7 +128,7 @@ class FormQuestions {
 			$success === true ? AdminUtils::printSuccess('Fråga skapad!') : AdminUtils::printError('Kunde inte skapa fråga.');
 		} elseif (substr($_POST['tuja_action'], 0, strlen(self::ACTION_NAME_DELETE_PREFIX)) == self::ACTION_NAME_DELETE_PREFIX) {
 			$question_id_to_delete = substr( $_POST['tuja_action'], strlen( self::ACTION_NAME_DELETE_PREFIX ) );
-			$affected_rows = $this->db_question->delete( $question_id_to_delete );
+			$affected_rows = $this->question_dao->delete( $question_id_to_delete );
 			$success       = $affected_rows !== false && $affected_rows === 1;
 			
 			if($success) {
@@ -192,7 +172,7 @@ class FormQuestions {
 
 		$db_competition = new CompetitionDao();
 		$competition    = $db_competition->get( $this->form->competition_id );
-		$questions      = $this->db_question->get_all_in_group( $this->question_group->id );
+		$questions      = $this->question_dao->get_all_in_group( $this->question_group->id );
 		$preview_url    = $this->get_preview_url();
 
 		$back_url = add_query_arg(

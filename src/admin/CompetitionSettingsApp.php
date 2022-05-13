@@ -6,7 +6,7 @@ use Exception;
 use tuja\data\model\Competition;
 use tuja\data\store\CompetitionDao;
 
-class CompetitionSettingsApp {
+class CompetitionSettingsApp extends AbstractCompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	public function handle_post() {
@@ -14,21 +14,14 @@ class CompetitionSettingsApp {
 			return;
 		}
 
-		$competition_dao = new CompetitionDao();
-		$competition     = $competition_dao->get( $_GET['tuja_competition'] );
-
-		if ( ! $competition ) {
-			throw new Exception( 'Could not find competition' );
-		}
-
 		if ( $_POST['tuja_competition_settings_action'] === 'save' ) {
-			$this->competition_settings_save( $competition );
+			$this->competition_settings_save( $this->competition );
 		}
 	}
 
 	public function competition_settings_save( Competition $competition ) {
 		try {
-			$competition->app_config           = json_decode(stripslashes($_POST['tuja_competition_settings_appconfig']));
+			$competition->app_config = json_decode( stripslashes( $_POST['tuja_competition_settings_appconfig'] ) );
 
 			$dao = new CompetitionDao();
 			$dao->update( $competition );
@@ -39,23 +32,24 @@ class CompetitionSettingsApp {
 	}
 
 	public function get_scripts(): array {
-		return [
+		return array(
 			'admin-formgenerator.js',
 			'jsoneditor.min.js',
 			'admin-competition-app.js',
-		];
+		);
 	}
 
 	public function output() {
 		$this->handle_post();
 
-		$competition_dao      = new CompetitionDao();
-		$competition          = $competition_dao->get( $_GET['tuja_competition'] );
+		$competition = $this->competition_dao->get( $_GET['tuja_competition'] );
 
-		$back_url = add_query_arg( array(
-			'tuja_competition' => $competition->id,
-			'tuja_view'        => 'CompetitionSettings'
-		) );
+		$back_url = add_query_arg(
+			array(
+				'tuja_competition' => $competition->id,
+				'tuja_view'        => 'CompetitionSettings',
+			)
+		);
 
 		include( 'views/competition-settings-app.php' );
 	}
@@ -68,7 +62,8 @@ class CompetitionSettingsApp {
 
 		$field_name = 'tuja_competition_settings_appconfig';
 
-		return sprintf( '
+		return sprintf(
+			'
 			<div class="tuja-appconfig-form" id="tuja-tab-appconfig">
 				<input type="hidden" name="%s" id="%s" value="%s">
 				<div class="tuja-admin-formgenerator-form" 

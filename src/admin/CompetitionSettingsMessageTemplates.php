@@ -15,7 +15,7 @@ use tuja\util\messaging\EventMessageSender;
 use tuja\util\Strings;
 use tuja\util\TemplateEditor;
 
-class CompetitionSettingsMessageTemplates {
+class CompetitionSettingsMessageTemplates extends AbstractCompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	public function handle_post() {
@@ -23,12 +23,7 @@ class CompetitionSettingsMessageTemplates {
 			return;
 		}
 
-		$competition_dao = new CompetitionDao();
-		$competition     = $competition_dao->get( $_GET['tuja_competition'] );
-
-		if ( ! $competition ) {
-			throw new Exception( 'Could not find competition' );
-		}
+		$competition = $this->competition_dao->get( $_GET['tuja_competition'] );
 
 		if ( $_POST['tuja_competition_settings_action'] === 'save' ) {
 			$this->competition_settings_save_message_templates( $competition );
@@ -36,10 +31,10 @@ class CompetitionSettingsMessageTemplates {
 	}
 
 	public function get_scripts(): array {
-		return [
+		return array(
 			'admin-competition-message-templates.js',
-			'admin-templateeditor.js'
-		];
+			'admin-templateeditor.js',
+		);
 	}
 
 	public function output() {
@@ -74,8 +69,8 @@ class CompetitionSettingsMessageTemplates {
 							' ',
 							array_map(
 								function ( $key, $value ) {
-					return 'data-' . $key . '="' . htmlentities( $value ) . '"';
-			},
+									return 'data-' . $key . '="' . htmlentities( $value ) . '"';
+								},
 								array_keys( $config ),
 								array_values( $config )
 							)
@@ -88,10 +83,12 @@ class CompetitionSettingsMessageTemplates {
 			)
 		);
 
-		$back_url = add_query_arg( array(
-			'tuja_competition' => $competition->id,
-			'tuja_view'        => 'CompetitionSettings'
-		) );
+		$back_url = add_query_arg(
+			array(
+				'tuja_competition' => $competition->id,
+				'tuja_view'        => 'CompetitionSettings',
+			)
+		);
 
 		include( 'views/competition-settings-messagetemplates.php' );
 	}
@@ -105,17 +102,23 @@ class CompetitionSettingsMessageTemplates {
 	public function submitted_list_item_ids( $list_name ): array {
 		$prefix = $list_name . self::FIELD_SEPARATOR;
 		// $person_prop_field_names are the keys in $_POST which correspond to form values for the group members.
-		$person_prop_field_names = array_filter( array_keys( $_POST ), function ( $key ) use ( $prefix ) {
-			return substr( $key, 0, strlen( $prefix ) ) === $prefix;
-		} );
+		$person_prop_field_names = array_filter(
+			array_keys( $_POST ),
+			function ( $key ) use ( $prefix ) {
+				return substr( $key, 0, strlen( $prefix ) ) === $prefix;
+			}
+		);
 
 		// $all_ids will include duplicates (one for each of the name, email and phone fields).
 		// $all_ids will include empty strings because of the fields in the hidden template for new participant are submitted.
-		$all_ids = array_map( function ( $key ) {
-			list( , , $id ) = explode( self::FIELD_SEPARATOR, $key );
+		$all_ids = array_map(
+			function ( $key ) {
+				list( , , $id ) = explode( self::FIELD_SEPARATOR, $key );
 
-			return $id;
-		}, $person_prop_field_names );
+				return $id;
+			},
+			$person_prop_field_names
+		);
 
 		return array_filter( array_unique( $all_ids ) /* No callback to outer array_filter means that empty strings will be skipped.*/ );
 	}
@@ -127,7 +130,8 @@ class CompetitionSettingsMessageTemplates {
 
 		$delivery_method_options = $this->get_delivery_method_options( $message_template );
 
-		return sprintf( '
+		return sprintf(
+			'
 			<div class="tuja-messagetemplate-form">
 				<input type="text" placeholder="Mallens namn" size="50" name="%s" value="%s" class="tuja-messagetemplate-name" style="width: 100%%"><br>
 				<div class="tuja-messagetemplate-collapsible tuja-messagetemplate-collapsed">
@@ -177,7 +181,8 @@ class CompetitionSettingsMessageTemplates {
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_recipient' ),
 			$auto_send_recipient_options,
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_trigger' ),
-			$auto_send_trigger_options );
+			$auto_send_trigger_options
+		);
 	}
 
 
@@ -186,9 +191,12 @@ class CompetitionSettingsMessageTemplates {
 
 		$message_templates = $message_template_dao->get_all_in_competition( $competition->id );
 
-		$preexisting_ids = array_map( function ( $template ) {
-			return $template->id;
-		}, $message_templates );
+		$preexisting_ids = array_map(
+			function ( $template ) {
+				return $template->id;
+			},
+			$message_templates
+		);
 
 		$submitted_ids = $this->submitted_list_item_ids( 'messagetemplate' );
 
@@ -196,9 +204,15 @@ class CompetitionSettingsMessageTemplates {
 		$deleted_ids = array_diff( $preexisting_ids, $submitted_ids );
 		$created_ids = array_diff( $submitted_ids, $preexisting_ids );
 
-		$message_template_map = array_combine( array_map( function ( $message_template ) {
-			return $message_template->id;
-		}, $message_templates ), $message_templates );
+		$message_template_map = array_combine(
+			array_map(
+				function ( $message_template ) {
+					return $message_template->id;
+				},
+				$message_templates
+			),
+			$message_templates
+		);
 
 		foreach ( $created_ids as $id ) {
 			try {
@@ -253,38 +267,50 @@ class CompetitionSettingsMessageTemplates {
 	}
 
 	private function get_auto_send_recipient_options( MessageTemplate $message_template ): string {
-		$to                          = [
+		$to                          = array(
 			EventMessageSender::RECIPIENT_ADMIN         => 'Tuko',
 			EventMessageSender::RECIPIENT_GROUP_CONTACT => 'Gruppledaren',
-			EventMessageSender::RECIPIENT_SELF          => 'Personen det gäller'
-		];
-		$auto_send_recipient_options = join( '', array_map(
-			function ( $key, $value ) use ( $message_template ) {
-				return sprintf( '<option value="%s" %s>Skicka till %s</option>',
-					htmlspecialchars( $key ),
-					$message_template->auto_send_recipient == $key ? 'selected="selected"' : '',
-					$value );
-			},
-			array_keys( $to ),
-			array_values( $to ) ) );
+			EventMessageSender::RECIPIENT_SELF          => 'Personen det gäller',
+		);
+		$auto_send_recipient_options = join(
+			'',
+			array_map(
+				function ( $key, $value ) use ( $message_template ) {
+					return sprintf(
+						'<option value="%s" %s>Skicka till %s</option>',
+						htmlspecialchars( $key ),
+						$message_template->auto_send_recipient == $key ? 'selected="selected"' : '',
+						$value
+					);
+				},
+				array_keys( $to ),
+				array_values( $to )
+			)
+		);
 
 		return $auto_send_recipient_options;
 	}
 
 	private function get_delivery_method_options( MessageTemplate $message_template ): string {
-		$delivery_methods        = [
+		$delivery_methods        = array(
 			MessageTemplate::EMAIL => 'Skicka som e-post',
-			MessageTemplate::SMS   => 'Skicka som SMS'
-		];
-		$delivery_method_options = join( '', array_map(
-			function ( $key, $value ) use ( $message_template ) {
-				return sprintf( '<option value="%s" %s>%s</option>',
-					htmlspecialchars( $key ),
-					$message_template->delivery_method == $key ? 'selected="selected"' : '',
-					$value );
-			},
-			array_keys( $delivery_methods ),
-			array_values( $delivery_methods ) ) );
+			MessageTemplate::SMS   => 'Skicka som SMS',
+		);
+		$delivery_method_options = join(
+			'',
+			array_map(
+				function ( $key, $value ) use ( $message_template ) {
+					return sprintf(
+						'<option value="%s" %s>%s</option>',
+						htmlspecialchars( $key ),
+						$message_template->delivery_method == $key ? 'selected="selected"' : '',
+						$value
+					);
+				},
+				array_keys( $delivery_methods ),
+				array_values( $delivery_methods )
+			)
+		);
 
 		return $delivery_method_options;
 	}
@@ -292,15 +318,21 @@ class CompetitionSettingsMessageTemplates {
 	private function get_auto_send_trigger_options( MessageTemplate $message_template ): string {
 		$event_options = $this->get_event_options();
 
-		$auto_send_trigger_options = join( '', array_map(
-			function ( $key, $value ) use ( $message_template ) {
-				return sprintf( '<option value="%s" %s>%s</option>',
-					htmlspecialchars( $key ),
-					$message_template->auto_send_trigger == $key ? 'selected="selected"' : '',
-					$value );
-			},
-			array_keys( $event_options ),
-			array_values( $event_options ) ) );
+		$auto_send_trigger_options = join(
+			'',
+			array_map(
+				function ( $key, $value ) use ( $message_template ) {
+					return sprintf(
+						'<option value="%s" %s>%s</option>',
+						htmlspecialchars( $key ),
+						$message_template->auto_send_trigger == $key ? 'selected="selected"' : '',
+						$value
+					);
+				},
+				array_keys( $event_options ),
+				array_values( $event_options )
+			)
+		);
 
 		return $auto_send_trigger_options;
 	}

@@ -126,13 +126,6 @@ class Group extends AbstractGroup {
 
 		$token = JwtUtils::create_token( $competition->id, $group->id, $group->random_id );
 
-		$back_url = add_query_arg(
-			array(
-				'tuja_competition' => $competition->id,
-				'tuja_view'        => 'Groups',
-			)
-		);
-
 		include 'views/group.php';
 	}
 }

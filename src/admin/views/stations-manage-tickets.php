@@ -4,11 +4,11 @@ use tuja\data\model\Station;
 use tuja\data\model\Group;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
 
 <h3>Hantera biljetter</h3>
-
-<?php printf( '<p><a id="tuja_station_back" href="%s">« Tillbaka till stationslistan</a></p>', $back_url ); ?>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
     <div>

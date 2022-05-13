@@ -6,11 +6,9 @@ use tuja\util\rules\GroupCategoryRules;
 use tuja\util\rules\PassthroughRuleSet;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
-
-<h3>Grupptyper</h3>
-
-<?php printf( '<p><a id="tuja_competition_settings_group_categories_back" href="%s">« Tillbaka till övriga inställningar</a></p>', $back_url ); ?>
 
 <form method="post" class="tuja">
 		<p>

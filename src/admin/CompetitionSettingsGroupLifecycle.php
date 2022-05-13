@@ -7,7 +7,7 @@ use tuja\data\model\Competition;
 use tuja\data\store\CompetitionDao;
 use tuja\util\StateMachine;
 
-class CompetitionSettingsGroupLifecycle {
+class CompetitionSettingsGroupLifecycle extends AbstractCompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	public function handle_post() {
@@ -15,8 +15,7 @@ class CompetitionSettingsGroupLifecycle {
 			return;
 		}
 
-		$competition_dao = new CompetitionDao();
-		$competition     = $competition_dao->get( $_GET['tuja_competition'] );
+		$competition     = $this->competition_dao->get( $_GET['tuja_competition'] );
 
 		if ( ! $competition ) {
 			throw new Exception( 'Could not find competition' );

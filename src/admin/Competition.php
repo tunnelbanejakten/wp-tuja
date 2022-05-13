@@ -3,28 +3,10 @@
 namespace tuja\admin;
 
 use tuja\data\model\Form;
-use tuja\data\model\Group;
-use tuja\util\score\ScoreCalculator;
-use tuja\data\store\FormDao;
-use tuja\data\store\GroupDao;
-use tuja\data\store\CompetitionDao;
 use tuja\data\model\ValidationException;
 use tuja\util\QuestionNameGenerator;
 
-class Competition {
-
-	private $competition;
-
-	public function __construct() {
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
-	}
-
+class Competition extends AbstractForm {
 
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {
@@ -36,8 +18,7 @@ class Competition {
 			$props->name           = $_POST['tuja_form_name'];
 			$props->competition_id = $this->competition->id;
 			try {
-				$db_form = new FormDao();
-				$db_form->create( $props );
+				$this->form_dao->create( $props );
 
 				QuestionNameGenerator::update_competition_questions( $this->competition->id );
 			} catch ( ValidationException $e ) {
@@ -57,11 +38,9 @@ class Competition {
 	public function output() {
 		$this->handle_post();
 
-		$db_form = new FormDao();
-
 		$competition = $this->competition;
 
-		$forms = $db_form->get_all_in_competition( $competition->id );
+		$forms = $this->form_dao->get_all_in_competition( $competition->id );
 
 		include( 'views/competition.php' );
 	}

@@ -7,6 +7,8 @@ use tuja\util\Strings;
 use tuja\util\TemplateEditor;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
 
 <?php

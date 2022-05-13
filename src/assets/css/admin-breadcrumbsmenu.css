@@ -1,0 +1,59 @@
+nav.breadcrumb .drop-container {
+    position: relative;
+    padding-bottom: 10px;
+}
+
+nav.breadcrumb .drop-container:hover .drop {
+    display: block;
+}
+
+nav.breadcrumb .drop-container .drop {
+    display: none;
+    position: absolute;
+    background-color: white;
+    left: -10px;
+    top: 25px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    z-index: 1;
+}
+
+nav.breadcrumb .drop-container .drop a {
+    display: block;
+    padding: 0px 0px;
+    white-space: nowrap;
+}
+
+nav.breadcrumb .drop-container>span::after {
+    content: "\25BC";
+    margin: 0 0.3em;
+    color: #bbb;
+}
+
+nav.breadcrumb ol,
+nav.breadcrumb ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+nav.breadcrumb ol>li {
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+}
+
+nav.breadcrumb ul>li {
+    padding: 0;
+    margin: 5px 0;
+}
+
+nav.breadcrumb ol>li::after {
+    content: "/";
+    margin: 0 0.5em;
+}
+
+nav.breadcrumb ol>li:last-child:after {
+    content: ":";
+    margin: 0;
+}

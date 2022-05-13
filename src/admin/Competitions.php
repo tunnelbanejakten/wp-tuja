@@ -7,10 +7,10 @@ use tuja\data\store\CompetitionDao;
 
 class Competitions {
 
-	private $db_competition;
+	private $competition_dao;
 
 	public function __construct() {
-		$this->db_competition = new CompetitionDao();
+		$this->competition_dao = new CompetitionDao();
 	}
 
 	public function handle_post() {
@@ -21,7 +21,7 @@ class Competitions {
 		if ( $_POST['tuja_action'] === 'competition_create' ) {
 			$props       = new Competition();
 			$props->name = $_POST['tuja_competition_name'];
-			$this->db_competition->create( $props );
+			$this->competition_dao->create( $props );
 		}
 	}
 
@@ -33,7 +33,7 @@ class Competitions {
 	public function output() {
 		$this->handle_post();
 
-		$competitions = $this->db_competition->get_all();
+		$competitions = $this->competition_dao->get_all();
 
 		include( 'views/index.php' );
 	}

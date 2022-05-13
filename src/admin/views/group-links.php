@@ -2,15 +2,11 @@
 namespace tuja\admin;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
 
-<h3>Grupp <?= htmlspecialchars( $group->name ) ?> (id: <code><?= htmlspecialchars( $group->random_id ) ?></code>)</h3>
-
-<?php printf( '<p><a id="tuja_group_back" href="%s">« Tillbaka till grupplistan</a></p>', $back_url ); ?>
-<?php $this->print_menu(); ?>
-
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
-	<h3>Länkar</h3>
 	<table class="tuja-table">
 		<tbody>
 			<tr>

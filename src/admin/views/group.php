@@ -1,20 +1,12 @@
 <?php
 namespace tuja\admin;
 
-use tuja\data\model\Person;
-use tuja\data\model\Station;
-use tuja\data\store\ResponseDao;
-use tuja\frontend\router\PersonEditorInitiator;
-use tuja\frontend\router\ReportPointsInitiator;
 use tuja\util\rules\RuleResult;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
-
-<h3>Grupp <?= htmlspecialchars( $group->name ) ?> (id: <code><?= htmlspecialchars( $group->random_id ) ?></code>)</h3>
-
-<?php printf( '<p><a id="tuja_group_back" href="%s">« Tillbaka till grupplistan</a></p>', $back_url ); ?>
-<?php $this->print_menu(); ?>
 
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
 	<?php
@@ -78,8 +70,6 @@ AdminUtils::printTopMenu( $competition );
 				$allowed_next_state );
 		}, \tuja\data\model\Group::STATUS_TRANSITIONS[ $group->get_status() ] ) ) ?>
     </div>
-
-
 
     <p>Status för anmälan:</p>
 

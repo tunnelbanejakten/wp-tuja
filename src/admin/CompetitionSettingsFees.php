@@ -14,7 +14,7 @@ use tuja\util\paymentoption\OtherPaymentOption;
 use tuja\util\paymentoption\PaymentOption;
 use tuja\util\paymentoption\SwishPaymentOption;
 
-class CompetitionSettingsFees {
+class CompetitionSettingsFees extends AbstractCompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	public function handle_post() {
@@ -22,35 +22,35 @@ class CompetitionSettingsFees {
 			return;
 		}
 
-		$competition_dao = new CompetitionDao();
-		$competition     = $competition_dao->get( $_GET['tuja_competition'] );
-
-		if ( ! $competition ) {
-			throw new Exception( 'Could not find competition' );
-		}
-
 		if ( $_POST['tuja_competition_settings_action'] === 'save' ) {
-			$this->competition_settings_save( $competition );
+			$this->competition_settings_save( $this->competition );
 		}
 	}
 
 	public function competition_settings_save( Competition $competition ) {
 		try {
 			// Fee calculator
-			$competition->fee_calculator = AdminUtils::get_fee_configuration_object('tuja_competition_settings_fee_calculator');
+			$competition->fee_calculator = AdminUtils::get_fee_configuration_object( 'tuja_competition_settings_fee_calculator' );
 
 			// Payment methods
 			$payment_options_cfg          = json_decode( stripslashes( $_POST['tuja_competition_settings_payment_options'] ), true );
-			$enabled_payment_options_cfg  = array_filter( $payment_options_cfg, function ( $cfg ) {
-				return $cfg['enabled'] === true;
-			} );
-			$competition->payment_options = array_map( function ( string $key, $config ) {
-				$payment_option = ( new \ReflectionClass( $key ) )->newInstance();
-				unset( $config['enabled'] );
-				$payment_option->configure( $config );
+			$enabled_payment_options_cfg  = array_filter(
+				$payment_options_cfg,
+				function ( $cfg ) {
+					return $cfg['enabled'] === true;
+				}
+			);
+			$competition->payment_options = array_map(
+				function ( string $key, $config ) {
+					$payment_option = ( new \ReflectionClass( $key ) )->newInstance();
+					unset( $config['enabled'] );
+					$payment_option->configure( $config );
 
-				return $payment_option;
-			}, array_keys( $enabled_payment_options_cfg ), array_values( $enabled_payment_options_cfg ) );
+					return $payment_option;
+				},
+				array_keys( $enabled_payment_options_cfg ),
+				array_values( $enabled_payment_options_cfg )
+			);
 
 			$dao = new CompetitionDao();
 			$dao->update( $competition );
@@ -71,8 +71,7 @@ class CompetitionSettingsFees {
 	public function output() {
 		$this->handle_post();
 
-		$competition_dao = new CompetitionDao();
-		$competition     = $competition_dao->get( $_GET['tuja_competition'] );
+		$competition = $this->competition_dao->get( $_GET['tuja_competition'] );
 
 		$back_url = add_query_arg(
 			array(

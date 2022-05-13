@@ -52,13 +52,6 @@ class GroupEvents extends AbstractGroup {
 			}
 		);
 
-		$back_url = add_query_arg(
-			array(
-				'tuja_competition' => $competition->id,
-				'tuja_view'        => 'Groups',
-			)
-		);
-
 		include 'views/group-events.php';
 	}
 }

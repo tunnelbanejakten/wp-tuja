@@ -5,33 +5,10 @@ namespace tuja\admin;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\StationDao;
 
-class Station {
-
-	private $station;
-	private $competition;
-	private $station_dao;
+class Station extends AbstractStation {
 
 	const ACTION_DELETE = 'delete';
 	const ACTION_SAVE   = 'save';
-
-	public function __construct() {
-		$this->station_dao = new StationDao();
-		$this->station     = $this->station_dao->get( $_GET['tuja_station'] );
-		if ( ! $this->station ) {
-			print 'Could not find station';
-
-			return;
-		}
-
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $this->station->competition_id );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
-	}
-
 
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_station_action'] ) ) {
