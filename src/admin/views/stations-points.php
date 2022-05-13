@@ -5,11 +5,11 @@ use tuja\data\model\Group;
 use tuja\data\model\StationWeight;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
 
 <h3>Poäng</h3>
-
-<?php printf( '<p><a id="tuja_station_back" href="%s">« Tillbaka till stationslistan</a></p>', $back_url ); ?>
 
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
     <table>

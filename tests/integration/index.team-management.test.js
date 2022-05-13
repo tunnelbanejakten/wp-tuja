@@ -67,7 +67,7 @@ describe('Team Management', () => {
         await expectElementCount('div.entry-content p.tuja-message-warning', 1)
         await expectElementCount('div.entry-content p.tuja-message-error', 0)
 
-        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${toBeAcceptedGroup.id}`)
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${toBeAcceptedGroup.id}`)
         await adminPage.clickLink('button[name="tuja_points_action"][value="transition__accepted"]')
 
         await goto(toBeAcceptedGroup.portalUrl)
@@ -325,7 +325,7 @@ describe('Team Management', () => {
           await adminPage.click(`select[name="${idPrefix}_temp[type]"]`) // ...until we click on something, anything, else.
         }
         const configureGroupCategoryFeeCalculator = async () => {
-          await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=CompetitionSettingsGroupCategories&tuja_competition=${competitionId}`)
+          await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettingsGroupCategories&tuja_competition=${competitionId}`)
       
           const getCategoryId = async (categoryName) => await adminPage.$eval('input[type="text"][value="' + categoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
       
@@ -347,7 +347,7 @@ describe('Team Management', () => {
           await verifyFeePage.goto(`http://localhost:8080/${tempGroupProps.key}/betala`)
           await verifyFeePage.expectToContain('#tuja-payment-body', String(expectedFee) + ',00 kr')
 
-          await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Groups&tuja_competition=${competitionId}`)
+          await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Groups&tuja_competition=${competitionId}`)
           const actualFee = await adminPage.$eval(`#tuja-group-fee-${tempGroupProps.id}`, node => node.dataset.fee)
           expect(actualFee).toBe(String(expectedFee))
         }
@@ -416,7 +416,7 @@ describe('Team Management', () => {
         await expectSuccessMessage('Ändringarna har sparats.')
         await verifyGroupFee(8)
         
-        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${tempGroupProps.id}`)
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${tempGroupProps.id}`)
         await configurePerParticipantFee('tuja_group_fee_calculator', 2)
         await adminPage.clickLink('button[name="tuja_points_action"][value="save_group"]')
         await expectSuccessMessage('Ändringarna har sparats.')
@@ -664,7 +664,7 @@ describe('Team Management', () => {
       await expectElementCount('button', 0)
       await expectElementCount('input', 0)
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${tempGroupProps.id}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${tempGroupProps.id}`)
       await adminPage.clickLink('button[name="tuja_points_action"][value="transition__accepted"]')
       await adminPage.clickLink('button[name="tuja_points_action"][value="transition__awaiting_checkin"]')
 
@@ -699,7 +699,7 @@ describe('Team Management', () => {
 
       beforeAll(async () => {
         groupProps = await defaultPage.signUpTeam(adminPage, true)
-        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${groupProps.id}`)
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${groupProps.id}`)
         await adminPage.clickLink('button[name="tuja_points_action"][value="transition__deleted"]')
       })
 

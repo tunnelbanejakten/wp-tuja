@@ -3,12 +3,10 @@
 <div class="tuja tuja-view-index">
     <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
 		<?php
-		if ( AdminUtils::is_admin_mode() ) {
-			$url = add_query_arg( array(
-				'tuja_view' => 'Settings'
-				) );
-				printf( '<p><a href="%s">Inställningar</a></p>', $url );
-			}
+		$url = add_query_arg( array(
+			'tuja_view' => 'Settings'
+			) );
+		printf( '<p><a href="%s">Inställningar</a></p>', $url );
 		?>
         <h1>Tävlingar</h1>
 		<?php
@@ -21,12 +19,10 @@
 			}
 		?>
 		<?php
-			if ( AdminUtils::is_admin_mode() ) {
-			$url = add_query_arg( array(
-				'tuja_view' => 'CompetitionBootstrap'
-			) );
-			printf( '<p><a href="%s">Skapa ny tävling</a></p>', $url );
-		}
+		$url = add_query_arg( array(
+			'tuja_view' => 'CompetitionBootstrap'
+		) );
+		printf( '<p><a href="%s">Skapa ny tävling</a></p>', $url );
 		?>
     </form>
 </div>

@@ -11,10 +11,10 @@ class Admin extends Plugin {
 	static private $notices = array();
 
 
-	function add_thickbox () {
+	function add_thickbox() {
 		add_thickbox();
 	}
-	
+
 	public function init() {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu_item' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
@@ -44,7 +44,7 @@ class Admin extends Plugin {
 		define( 'IFRAME_REQUEST', true );
 		iframe_header();
 
-		$this->route_questions_preview( );
+		$this->route_questions_preview();
 
 		iframe_footer();
 		exit;
@@ -60,18 +60,16 @@ class Admin extends Plugin {
 
 
 	public function add_admin_menu_item() {
-		add_menu_page( 'Tunnelbanejakten', 'Tunnelbanejakten', 'edit_pages', static::SLUG, array(
-			$this,
-			'route_support'
-		) );
-		add_submenu_page( self::SLUG, 'För kundtjänst', 'För kundtjänst', 'edit_pages', static::SLUG, array(
-			$this,
-			'route_support'
-		) );
-		add_submenu_page( self::SLUG, 'För admin', 'För admin', 'edit_pages', static::SLUG . '_admin', array(
-			$this,
-			'route_admin'
-		) );
+		add_menu_page(
+			'Tunnelbanejakten',
+			'Tunnelbanejakten',
+			'edit_pages',
+			static::SLUG,
+			array(
+				$this,
+				'route',
+			)
+		);
 	}
 
 	public function assets() {
@@ -84,29 +82,20 @@ class Admin extends Plugin {
 			wp_enqueue_style( 'tuja-admin-theme', static::get_url() . '/assets/css/admin.css' );
 			wp_enqueue_style( 'tuja-admin-templateeditor', static::get_url() . '/assets/css/admin-templateeditor.css' );
 			wp_enqueue_style( 'tuja-admin-jsoneditor', static::get_url() . '/assets/css/admin-jsoneditor.css' );
+			wp_enqueue_style( 'tuja-admin-breadcrumbsmenu', static::get_url() . '/assets/css/admin-breadcrumbsmenu.css' );
 		}
 
 		// Load scripts based on screen->id
 		$screen = get_current_screen();
 
-		if ( ($screen->id === 'toplevel_page_tuja' || $screen->id === 'tunnelbanejakten_page_tuja_admin') && isset( $_GET['tuja_view'] ) ) {
+		if ( $screen->id === 'toplevel_page_tuja' && isset( $_GET['tuja_view'] ) ) {
 			foreach ( $this->list_scripts( $_GET['tuja_view'] ) as $script_file_name ) {
 				wp_enqueue_script( 'tuja-script-' . $script_file_name, static::get_url() . '/assets/js/' . $script_file_name );
 			}
 		}
 	}
 
-	public function route_support() {
-		$this->route( false );
-	}
-
-	public function route_admin() {
-		$this->route( true );
-	}
-
-	public function route( $is_admin ) {
-		AdminUtils::set_admin_mode( $is_admin );
-
+	public function route() {
 		$this->render_view( @$_GET['tuja_view'] ?: 'Competitions' );
 	}
 
@@ -121,9 +110,9 @@ class Admin extends Plugin {
 	private function render_view( $view_name ) {
 		$possible_class_names = array(
 			'tuja\\admin\\' . sanitize_text_field( $view_name ),
-			'tuja\\admin\\reportgenerators\\' . sanitize_text_field( $view_name )
+			'tuja\\admin\\reportgenerators\\' . sanitize_text_field( $view_name ),
 		);
-		foreach($possible_class_names as $view) {
+		foreach ( $possible_class_names as $view ) {
 			if ( class_exists( $view ) ) {
 				$view = new $view();
 				if ( method_exists( $view, 'output' ) ) {
@@ -133,7 +122,7 @@ class Admin extends Plugin {
 			}
 		}
 
-		AdminUtils::printError('View not found.');
+		AdminUtils::printError( 'View not found.' );
 	}
 
 	private function list_scripts( $view_name ) {
@@ -146,7 +135,7 @@ class Admin extends Plugin {
 			}
 		}
 
-		return [];
+		return array();
 	}
 }
 

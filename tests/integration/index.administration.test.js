@@ -28,7 +28,7 @@ describe('Administration', () => {
     })
 
     it('should be able to create a new form', async () => {
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Competition&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Competition&tuja_competition=${competitionId}`)
 
       const formName = 'New Form'
       await adminPage.type('#tuja_form_name', formName)
@@ -50,7 +50,7 @@ describe('Administration', () => {
 
       const { id, key } = formIds
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${id}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${id}`)
 
       await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
       await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
@@ -73,7 +73,7 @@ describe('Administration', () => {
     })
 
     it('should be possible to add and remove map', async () => {
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Maps&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Maps&tuja_competition=${competitionId}`)
 
       await adminPage.expectElementCount('input.tuja-map-name-field', 2)
       const fieldValuesBefore = await adminPage.$$eval('input.tuja-marker-raw-field', nodes => nodes.map(node => `${node.name}=${node.value}`))
@@ -104,7 +104,7 @@ describe('Administration', () => {
     })
 
     it('should be possible to rename map and edit markers', async () => {
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Maps&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Maps&tuja_competition=${competitionId}`)
 
       const fieldValuesBefore = await adminPage.$$eval('input.tuja-marker-raw-field', nodes => nodes.map(node => `${node.name}=${node.value}`))
 

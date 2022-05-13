@@ -5,9 +5,9 @@ use tuja\util\DateUtils;
 use tuja\util\ReflectionUtils;
 
 AdminUtils::printTopMenu( $competition );
-?>
 
-<h3>Formulär <?= $this->form->name ?></h3>
+$this->print_menu();
+?>
 
 <div class="tuja-buttons">
 	<a href="<?php echo $preview_url; ?>"

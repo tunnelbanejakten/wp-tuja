@@ -2,11 +2,9 @@
 namespace tuja\admin;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
-
-<h3>Station <?php echo htmlspecialchars( $station->name ); ?> (id: <code><?php echo htmlspecialchars( $station->random_id ); ?></code>)</h3>
-
-<?php printf( '<p><a id="tuja_station_back" href="%s">« Tillbaka till stationslistan</a></p>', $back_url ); ?>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
 	<div>

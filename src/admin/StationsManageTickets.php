@@ -11,8 +11,7 @@ use tuja\data\store\GroupDao;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\TicketDao;
 
-class StationsManageTickets {
-	private $competition;
+class StationsManageTickets extends AbstractStation {
 	private $ticket_dao;
 
 	const ACTION_GRANT  = 'grant_ticket';
@@ -22,13 +21,7 @@ class StationsManageTickets {
 	const INPUT_FIELD_ACTION   = 'tuja_ticket_action';
 
 	public function __construct() {
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
+		parent::__construct();
 
 		$this->ticket_dao = new TicketDao();
 	}

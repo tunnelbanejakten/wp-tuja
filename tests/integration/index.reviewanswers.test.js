@@ -16,7 +16,7 @@ describe('Review Answers', () => {
   const createNewUserPage = async () => (new UserPageWrapper(browser, competitionId, competitionKey)).init()
 
   const createNewForm = async (formName) => {
-    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Competition&tuja_competition=${competitionId}`)
+    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Competition&tuja_competition=${competitionId}`)
 
     await adminPage.type('#tuja_form_name', formName)
     await adminPage.clickLink('#tuja_form_create_button')
@@ -62,7 +62,7 @@ describe('Review Answers', () => {
     const createForm = async () => {
       const {id, key} = await createNewForm('The Form to Review')
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${id}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${id}`)
 
       await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
       await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
@@ -164,7 +164,7 @@ describe('Review Answers', () => {
 
     it('type manual score', async () => {
       const checkScores = async (...expectations) => {
-        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Scoreboard&tuja_competition=${competitionId}`)
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Scoreboard&tuja_competition=${competitionId}`)
         for (const { groupId, expectedScore } of expectations) {
           expect(await adminPage.$eval(`#tuja-scoreboard-group-${groupId}-points`, node => node.dataset.score)).toEqual(String(expectedScore))
         }
@@ -231,11 +231,11 @@ describe('Review Answers', () => {
         'Marie Andersson',
         // 1 out of 5 correct answers is missing (-2 p):
         'stockholm, copenhagen, oslo, helsinki')
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Scoreboard&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Scoreboard&tuja_competition=${competitionId}`)
 
       expect(await adminPage.$eval(`#tuja-scoreboard-group-${groupAliceProps.id}-points`, node => node.dataset.score)).toEqual('30')
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Review&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Review&tuja_competition=${competitionId}`)
 
       await adminPage.type(`#tuja_review_points__${choiceQuestionId}__${groupAliceProps.id}`, '5')
       await adminPage.type(`#tuja_review_points__${imagesQuestionId}__${groupBobProps.id}`, '1')

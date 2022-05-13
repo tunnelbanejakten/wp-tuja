@@ -42,7 +42,7 @@ describe('Tickets', () => {
       // Configure stations
       //
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=Stations&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Stations&tuja_competition=${competitionId}`)
 
       //
       // Configure ticketing
@@ -63,7 +63,7 @@ describe('Tickets', () => {
       stationsProps[2].password = 'abcåäö'
       stationsProps[3].password = 'winnings'
 
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja_admin&tuja_view=StationsTicketing&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=StationsTicketing&tuja_competition=${competitionId}`)
 
       await adminPage.page.$eval(`input[name="tuja_ticketdesign__${stationsProps[0].id}__colour"]`, (node, color) => node.value = color, stationsProps[0].colour)
       await adminPage.page.$eval(`input[name="tuja_ticketdesign__${stationsProps[1].id}__colour"]`, (node, color) => node.value = color, stationsProps[1].colour)

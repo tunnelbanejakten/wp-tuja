@@ -21,8 +21,8 @@ class MapsImport {
 	const MAGIC_NUMBER_NO_LINKING = -42;
 
 	private $competition;
-	private $db_map;
-	private $db_marker;
+	private $mao_dao;
+	private $marker_dao;
 
 	public function __construct() {
 		$db_competition    = new CompetitionDao();
@@ -33,9 +33,9 @@ class MapsImport {
 			return;
 		}
 
-		$this->db_map        = new MapDao();
+		$this->mao_dao       = new MapDao();
 		$this->existing_maps = array_reduce(
-			$this->db_map->get_all_in_competition( $this->competition->id ),
+			$this->mao_dao->get_all_in_competition( $this->competition->id ),
 			function ( $res, Map $map ) {
 				$res[ $map->name ] = $map;
 				return $res;
@@ -43,8 +43,8 @@ class MapsImport {
 			array()
 		);
 
-		$this->db_marker        = new MarkerDao();
-		$this->existing_markers = $this->db_marker->get_all_in_competition( $this->competition->id );
+		$this->marker_dao       = new MarkerDao();
+		$this->existing_markers = $this->marker_dao->get_all_in_competition( $this->competition->id );
 	}
 
 	// TODO: Make this function do something, or delete it.
@@ -93,7 +93,7 @@ class MapsImport {
 			$props->name           = $map_name;
 			$props->competition_id = $this->competition->id;
 			try {
-				$id = $this->db_map->create( $props );
+				$id = $this->mao_dao->create( $props );
 				if ( $id !== false ) {
 					return $id;
 				}
@@ -129,7 +129,7 @@ class MapsImport {
 			$props->type           = Marker::MARKER_TYPE_TASK;
 			$props->name           = $name;
 			try {
-				$id = $this->db_marker->create( $props );
+				$id = $this->marker_dao->create( $props );
 				if ( $id !== false ) {
 					return $id;
 				}
@@ -143,10 +143,10 @@ class MapsImport {
 	}
 
 	private function set_marker_question( int $marker_id, int $question_id ) {
-		$marker = $this->db_marker->get( $marker_id );
+		$marker = $this->marker_dao->get( $marker_id );
 		if ( $marker !== false ) {
 			$marker->link_form_question_id = $question_id;
-			$affected_rows                 = $this->db_marker->update( $marker );
+			$affected_rows                 = $this->marker_dao->update( $marker );
 			return $affected_rows <= 1; // No updated rows could just mean that the same KML file was imported twice in a row.
 		} else {
 			return false;

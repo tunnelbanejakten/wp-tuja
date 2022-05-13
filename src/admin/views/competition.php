@@ -1,6 +1,8 @@
 <?php namespace tuja\admin;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
 
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
@@ -17,11 +19,7 @@ AdminUtils::printTopMenu( $competition );
 			$form->random_id,
 			$form->name );
 	}
-	if ( AdminUtils::is_admin_mode() ) {
-		?>
-        <input type="text" name="tuja_form_name" id="tuja_form_name"/>
-        <button type="submit" class="button" name="tuja_action" value="form_create" id="tuja_form_create_button">Skapa</button>
-		<?php
-	}
 	?>
+	<input type="text" name="tuja_form_name" id="tuja_form_name"/>
+	<button type="submit" class="button" name="tuja_action" value="form_create" id="tuja_form_create_button">Skapa</button>
 </form>

@@ -4,11 +4,11 @@ use tuja\data\model\Station;
 use tuja\data\model\StationWeight;
 
 AdminUtils::printTopMenu( $competition );
+
+$this->print_menu();
 ?>
 
 <h3>Biljetternas utseende</h3>
-
-<?php printf( '<p><a id="tuja_station_back" href="%s">« Tillbaka till stationslistan</a></p>', $back_url ); ?>
 
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
     <p>Här fyller du i hur biljetterns ska se ut för respektive station.</p>

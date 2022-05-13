@@ -141,8 +141,7 @@ class Groups {
 
 			$group_data['details_link']     = add_query_arg( array(
 				'tuja_group'                                 => $group->id,
-				'tuja_view'                                  => 'Group',
-				\tuja\admin\Group::QUESTION_FILTER_URL_PARAM => ResponseDao::QUESTION_FILTER_ALL
+				'tuja_view'                                  => 'Group'
 			) );
 			$group_data['category'] = $group->get_category();
 

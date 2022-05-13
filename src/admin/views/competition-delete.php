@@ -6,7 +6,6 @@ AdminUtils::printTopMenu( $competition );
 ?>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
-<?php if ( AdminUtils::is_admin_mode() ) { ?>
 		<h3>Dataskydd</h3>
 
 		<p>Om du inte vill ta bort lagen men ändå vill skydda personuppgifterna så kan du använda verktyget för att
@@ -45,5 +44,4 @@ AdminUtils::printTopMenu( $competition );
 				Ta bort denna tävling
 			</button>
 		</div>
-	<?php } ?>
 </form>

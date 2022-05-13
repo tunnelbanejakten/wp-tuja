@@ -1,9 +1,9 @@
 <?php namespace tuja\admin;
 
 AdminUtils::printTopMenu( $competition );
-?>
 
-<h3>Stationer</h3>
+$this->print_menu();
+?>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
 	<?php
