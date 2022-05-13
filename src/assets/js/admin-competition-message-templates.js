@@ -12,27 +12,6 @@ var tujaCollapsibleControls = (function () {
   }
 })()
 
-var tujaStateGraph = (function () {
-  return {
-    init: function ($) {
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: 'neutral'
-      })
-
-      $('.tuja-stategraph').each(function () {
-        var container = this
-        var randomId = 'tuja-stategraph-' + Math.random().toString(36).substr(2, 9)
-        mermaid.render(randomId, this.dataset.definition, function (svgGraph) {
-          container.innerHTML = svgGraph
-          var width = container.firstChild.width.baseVal.value
-          container.firstChild.style.width = width * parseFloat(container.dataset.widthFactor)
-        })
-      })
-    }
-  }
-})()
-
 var tujaListItemsControls = (function () {
   return {
     init: function ($, listName) {
@@ -71,42 +50,10 @@ var tujaListItemsControls = (function () {
   }
 })()
 
-var tujaTabs = (function () {
-
-  function onTabHeaderClick ($, event) {
-
-    var clickedTabId = event.target.dataset.tabId
-    $(event.target).closest('.nav-tab-wrapper').find('.nav-tab').each(function () {
-      var isSelected = this.dataset.tabId === clickedTabId
-
-      $(document.getElementById(this.dataset.tabId)).toggle(isSelected)
-      $(this).toggleClass('nav-tab-active', isSelected)
-    })
-
-    return false
-  }
-
-  return {
-    init: function ($) {
-      var wrapper = $('div.nav-tab-wrapper')
-      wrapper.find('a.nav-tab').each(function () {
-        var tabHeader = $(this)
-        tabHeader.click(onTabHeaderClick.bind(null, $))
-        var isTabSelected = tabHeader.hasClass('nav-tab-active')
-        $(document.getElementById(this.dataset.tabId)).toggle(isTabSelected)
-      })
-    }
-  }
-})()
-
 jQuery.noConflict()
 
 jQuery(document).ready(function ($) {
   tujaListItemsControls.init($, 'messagetemplate')
   tujaCollapsibleControls.init($, $('#wpbody-content'))
-  tujaTabs.init($)
-  tujaStateGraph.init($)
-  tujaFormGenerator.init($, $('#tuja-tab-payment'))
-  tujaFormGenerator.init($, $('#tuja-tab-appconfig'))
 })
 

@@ -106,7 +106,7 @@ AdminUtils::printTopMenu( $competition );
 				<button class="button" type="submit" name="tuja_points_action" value="delete_event__%s">%s</button>
 				</p>
 				', 
-				$event->object_id, 
+				$event->object_id, // TODO: Also show name of question
 				$event->created_at->format('H:i P'),
 				$event->id, 
 				'Ta bort'

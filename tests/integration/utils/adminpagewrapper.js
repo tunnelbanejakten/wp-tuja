@@ -23,20 +23,16 @@ class AdminPageWrapper extends PageWrapper {
   }
 
   async configurePaymentDetails(competitionId) {
-    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
-
-    await this.click('#tuja_tab_payment')
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettingsFees&tuja_competition=${competitionId}`)
 
     await this.type('input[name*=fee]', '100') // The "change" event will not be triggered...
-    await this.click('#tuja_tab_payment') // ...until we click on something, anything, else.
+    await this.click('#wpbody-content') // ...until we click on something, anything, else.
 
     await this.clickLink('#tuja_save_competition_settings_button')
   }
 
   async configureDefaultGroupStatus(competitionId, status) {
-    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
-
-    await this.click('#tuja_tab_groups')
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettingsGroupLifecycle&tuja_competition=${competitionId}`)
 
     await this.click(`#tuja_competition_settings_initial_group_status-${status}`)
 

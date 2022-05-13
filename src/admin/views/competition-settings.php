@@ -15,19 +15,35 @@ AdminUtils::printTopMenu( $competition );
 		'tuja_view'        => 'CompetitionSettingsGroupCategories'
 	) );
 	printf( '<p><a href="%s">Gruppkategorier</a></p>', $group_categories_url );
+	$strings_url = add_query_arg( array(
+		'tuja_competition' => $competition->id,
+		'tuja_view'        => 'CompetitionSettingsStrings'
+	) );
+	printf( '<p><a href="%s">Texter</a></p>', $strings_url );
+	$app_url = add_query_arg( array(
+		'tuja_competition' => $competition->id,
+		'tuja_view'        => 'CompetitionSettingsApp'
+	) );
+	printf( '<p><a href="%s">Appen</a></p>', $app_url );
+	$payment_url = add_query_arg( array(
+		'tuja_competition' => $competition->id,
+		'tuja_view'        => 'CompetitionSettingsFees'
+	) );
+	printf( '<p><a href="%s">Avgifter</a></p>', $payment_url );
+	$lifecycle_url = add_query_arg( array(
+		'tuja_competition' => $competition->id,
+		'tuja_view'        => 'CompetitionSettingsGroupLifecycle'
+	) );
+	printf( '<p><a href="%s">Livscykel för grupper</a></p>', $lifecycle_url );
+	$message_templates_url = add_query_arg( array(
+		'tuja_competition' => $competition->id,
+		'tuja_view'        => 'CompetitionSettingsMessageTemplates'
+	) );
+	printf( '<p><a href="%s">Meddelandemallar</a></p>', $message_templates_url );
 ?>
 
 <form method="post" class="tuja">
-    <div class="nav-tab-wrapper">
-        <a class="nav-tab nav-tab-active" data-tab-id="tuja-tab-dates" id="tuja_tab_dates">Datum och tider</a>
-        <a class="nav-tab" data-tab-id="tuja-tab-messagetemplates" id="tuja_tab_messagetemplates">Meddelandemallar</a>
-        <a class="nav-tab" data-tab-id="tuja-tab-groups" id="tuja_tab_groups">Grupper</a>
-        <a class="nav-tab" data-tab-id="tuja-tab-payment" id="tuja_tab_payment">Avgifter</a>
-        <a class="nav-tab" data-tab-id="tuja-tab-appconfig" id="tuja_tab_appconfig">Appen</a>
-        <a class="nav-tab" data-tab-id="tuja-tab-strings" id="tuja_tab_strings">Texter</a>
-    </div>
-
-    <div class="tuja-tab" id="tuja-tab-dates">
+    <div>
         <div class="tuja-admin-question">
             <div>När är tävlingen?</div>
             <div class="tuja-admin-question-properties">
@@ -46,99 +62,6 @@ AdminUtils::printTopMenu( $competition );
             </div>
         </div>
     </div>
-    <div class="tuja-tab" id="tuja-tab-messagetemplates">
-        <div class="tuja-messagetemplate-existing">
-			<?= join( array_map( function ( $message_template ) {
-				return $this->print_message_template_form( $message_template );
-			}, $message_template_dao->get_all_in_competition( $competition->id ) ) ) ?>
-        </div>
-        <div class="tuja-messagetemplate-template">
-			<?= $this->print_message_template_form( new MessageTemplate() ) ?>
-        </div>
-        <button class="button tuja-add-messagetemplate" type="button">
-            Ny tom mall
-        </button>
-        <br>
-		<?= $default_message_templates ?>
-    </div>
-    <div class="tuja-tab" id="tuja-tab-groups">
-
-        <h4>Livscykel för grupp</h4>
-
-        <div 
-            class="tuja-stategraph" 
-            data-definition="<?= htmlentities( $group_status_transitions_definitions ) ?>"
-            data-width-factor="0.60"></div>
-
-        <div>
-            <label for="tuja_competition_settings_initial_group_status">
-                Status för nya grupper:
-            </label><br>
-			<?= AdminUtils::get_initial_group_status_selector($competition->initial_group_status, 'tuja_competition_settings_initial_group_status') ?>
-        </div>
-    </div>
-    <div class="tuja-tab" id="tuja-tab-payment">
-
-        <h4>Anmälningsavgift</h4>
-
-        <?= $this->print_group_fee_configuration_form($competition); ?>
-
-        <?php
-        $group_categories_settings_url = add_query_arg( array(
-            'tuja_competition' => $competition->id,
-            'tuja_view'        => 'CompetitionSettingsGroupCategories'
-        ) );
-        printf( '<p><em>Anmälningsavgift kan konfigureras per enskilt lag, per <a href="%s">gruppkategori</a> eller för tävlingen generellt. Den mest specifika inställningen används.</em></p>', 
-            $group_categories_settings_url );
-        ?>
-
-        <h4>Betalningsmetoder</h4>
-
-        <?= $this->print_payment_options_configuration_form($competition); ?>
-        <input type="hidden" name="tuja_competition_settings_payment_options" id="tuja_competition_settings_payment_options"/>
-
-    </div>
-    <div class="tuja-tab" id="tuja-tab-appconfig">
-        <?= $this->print_app_config_form( $competition ); ?>
-    </div>
-    <div class="tuja-tab" id="tuja-tab-strings">
-
-        <table style="width: 100%" class="tuja-table">
-            <tbody>
-			<?php
-			$final_list  = Strings::get_list();
-			$last_header = null;
-			foreach ( $final_list as $key => $value ) {
-				list ( $header ) = explode( '.', $key );
-				if ( $last_header != $header ) {
-					printf(
-						'<tr><td colspan="2"><h3>%s</h3></td></tr>',
-						$header
-					);
-				}
-				if ( Strings::is_markdown( $key ) ) {
-					printf(
-						'<tr><td style="width: auto; vertical-align: top">%s</td><td style="width: 100%%">%s</td></tr>',
-						$key,
-						TemplateEditor::render( CompetitionSettings::string_field_name( $key ), $value, Strings::get_sample_template_parameters( $key ) )
-					);
-
-				} else {
-					printf(
-						'<tr><td style="width: auto">%s</td><td style="width: 100%%"><input type="text" name="%s" style="width: 100%%" value="%s"></td></tr>',
-						$key,
-						CompetitionSettings::string_field_name( $key ),
-						$value
-					);
-				}
-				$last_header = $header;
-			}
-			?>
-            </tbody>
-        </table>
-
-    </div>
-
     <button class="button button-primary"
             type="submit"
             name="tuja_competition_settings_action"
