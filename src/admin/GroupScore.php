@@ -95,15 +95,6 @@ class GroupScore extends AbstractGroup {
 		$score_result     = $score_calculator->score( $group );
 
 		$responses             = $db_response->get_latest_by_group( $group->id );
-		$response_per_question = array_combine(
-			array_map(
-				function ( $response ) {
-					return $response->form_question_id;
-				},
-				$responses
-			),
-			array_values( $responses )
-		);
 		// TODO: Remove $points_overrides?
 		$points_overrides              = $db_points->get_by_group( $group->id );
 		$points_overrides_per_question = array_combine(

@@ -53,9 +53,9 @@ $question_filters = [
 	$review_component->render(
 		$selected_filter,
 		$selected_groups,
-		true );
+		true,
+		'tuja_review_action',
+		'save'
+	);
 	?>
-        <button class="button button-primary" type="submit" name="tuja_review_action" value="save">
-            Spara manuella poäng och markera svar som kontrollerade
-        </button>
 </form>

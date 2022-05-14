@@ -33,12 +33,14 @@ class ResponseDao extends AbstractDao {
 		self::QUESTION_FILTER_UNREVIEWED_ALL            => array(
 			'sql_from'  => 'wp_tuja_form_question_response AS r INNER JOIN wp_tuja_form_question AS q ON q.id = r.form_question_id',
 			'sql_where' => array(
+				'r.id IN (SELECT MAX(r2.id) FROM wp_tuja_form_question_response AS r2 GROUP BY r2.team_id, r2.form_question_id)',
 				'r.is_reviewed = FALSE',
 			),
 		),
 		self::QUESTION_FILTER_UNREVIEWED_IMAGES         => array(
 			'sql_from'  => 'wp_tuja_form_question_response AS r INNER JOIN wp_tuja_form_question AS q ON q.id = r.form_question_id',
 			'sql_where' => array(
+				'r.id IN (SELECT MAX(r2.id) FROM wp_tuja_form_question_response AS r2 GROUP BY r2.team_id, r2.form_question_id)',
 				'q.type = "' . QuestionDao::QUESTION_TYPE_IMAGES . '"',
 				'r.is_reviewed = FALSE',
 			),
@@ -46,6 +48,7 @@ class ResponseDao extends AbstractDao {
 		self::QUESTION_FILTER_UNREVIEWED_CHECKPOINT     => array(
 			'sql_from'  => 'wp_tuja_form_question_response AS r INNER JOIN wp_tuja_form_question AS q ON q.id = r.form_question_id',
 			'sql_where' => array(
+				'r.id IN (SELECT MAX(r2.id) FROM wp_tuja_form_question_response AS r2 GROUP BY r2.team_id, r2.form_question_id)',
 				'EXISTS (SELECT m.id FROM wp_tuja_marker AS m WHERE m.link_form_question_id = q.id OR m.link_question_group_id = q.question_group_id)', // TODO: Doesn't account for whole forms linked to a marker, only questions and question groups.
 				'r.is_reviewed = FALSE',
 			),
@@ -92,7 +95,7 @@ class ResponseDao extends AbstractDao {
 
 	function __construct() {
 		parent::__construct();
-		$this->table = Database::get_table('form_question_response');
+		$this->table = Database::get_table( 'form_question_response' );
 	}
 
 	function create( Response $response ) {
@@ -112,16 +115,19 @@ class ResponseDao extends AbstractDao {
             )';
 
 		$answer = json_encode( $response->submitted_answer );
-		$lock   = self::to_db_date(new DateTime());
+		$lock   = self::to_db_date( new DateTime() );
 
-		$result = $this->wpdb->query( $this->wpdb->prepare(
-			$query_template,
-			$response->form_question_id,
-			$response->group_id,
-			$answer,
-			$lock ) );
+		$result = $this->wpdb->query(
+			$this->wpdb->prepare(
+				$query_template,
+				$response->form_question_id,
+				$response->group_id,
+				$answer,
+				$lock
+			)
+		);
 
-		if(empty($result)) {
+		if ( empty( $result ) ) {
 			return false;
 		}
 
@@ -129,8 +135,9 @@ class ResponseDao extends AbstractDao {
 		return $response;
 	}
 
-	private function get_by_group( $group_id ) {
-		return $this->get_objects(
+	function get_latest_by_group( $group_id ) {
+		$latest_responses = array();
+		$all_responses    = $this->get_objects(
 			function ( $row ) {
 				return self::to_response( $row );
 			},
@@ -147,15 +154,19 @@ class ResponseDao extends AbstractDao {
 						evt.event_name = "' . Event::EVENT_VIEW . '"
 				) AS view_event_time_elapsed
 			FROM ' . $this->table . ' AS r
-			WHERE r.team_id = %d
+			WHERE
+				r.team_id = %d
+				AND r.id IN (
+					SELECT MAX(r2.id) 
+					FROM ' . Database::get_table( 'form_question_response' ) . ' AS r2 
+					WHERE r2.team_id = %d
+					GROUP BY r2.form_question_id
+				)
 			ORDER BY r.id',
+			$group_id,
 			$group_id
 		);
-	}
 
-	function get_latest_by_group( $group_id ) {
-		$latest_responses = [];
-		$all_responses    = $this->get_by_group( $group_id );
 		foreach ( $all_responses as $response ) {
 			$latest_responses[ $response->form_question_id ] = $response;
 		}
@@ -222,7 +233,7 @@ class ResponseDao extends AbstractDao {
 			WHERE 
 				%s
 			ORDER BY
-				f.id, q.id, r.team_id
+				f.id, q.id, r.team_id, r.id
 			',
 			self::QUESTION_FILTERS[ $question_filter ]['sql_from'],
 			join( ' AND ', $where_conditions ),

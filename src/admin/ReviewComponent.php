@@ -27,6 +27,8 @@ class ReviewComponent {
 
 	const FORM_FIELD_TIMESTAMP = 'tuja_review_timestamp';
 	const FORM_FIELD_OVERRIDE_PREFIX = 'tuja_review_points';
+	const RESPONSE_CONTAINER_PREFIX = 'tuja_review_response_container';
+	const AUTO_SCORE_CONTAINER_PREFIX = 'tuja_review_auto_score';
 	const FORM_FIELD_CHANGE_CORRECT_ANSWER_PREFIX = 'tuja_review_change_correct_answer';
 	const ACTION_SET_CORRECT = 'set_correct';
 	const ACTION_UNSET_CORRECT = 'unset_correct'; // TODO: Start using this feature
@@ -224,7 +226,7 @@ class ReviewComponent {
 		return $this->question_dao->update( $question );
 	}
 
-	public function render( $selected_filter, $selected_groups, $hide_groups_without_responses = false ) {
+	public function render( $selected_filter, $selected_groups, $hide_groups_without_responses, $button_name, $button_value ) {
 		$groups     = $this->group_dao->get_all_in_competition( $this->competition->id );
 		$groups_map = array_combine( array_map( function ( $group ) {
 			return $group->id;
@@ -273,7 +275,7 @@ class ReviewComponent {
 		$data = $this->get_data( $selected_filter, $selected_groups );
 
 		if ( empty( $data ) ) {
-			printf( '<p>Det finns inget att visa.</p>' );
+			printf( '<p class="tuja-admin-review-form-empty">Det finns inget att visa.</p>' );
 
 			return;
 		}
@@ -380,6 +382,16 @@ class ReviewComponent {
 					}
 					$score_field_value = isset( $score_question_result->override ) ? $score_question_result->override : '';
 
+					$response_html_container_id  = join( '__', [
+						self::RESPONSE_CONTAINER_PREFIX,
+						$question_id,
+						$group_id
+					] );
+					$auto_score_container_id  = join( '__', [
+						self::AUTO_SCORE_CONTAINER_PREFIX,
+						$question_id,
+						$group_id
+					] );
 					$manual_score_field_name  = join( '__', [
 						self::FORM_FIELD_OVERRIDE_PREFIX,
 						$response_id,
@@ -404,20 +416,23 @@ class ReviewComponent {
 					        '<tr class="tuja-admin-review-response-row">
 					          <td colspan="2"></td>
 					          <td valign="center"><a href="%s" class="tuja-admin-review-group-link">%s</a></td>
-					          <td valign="center">%s</td>
-					          <td valign="center"><div class="tuja-admin-review-change-autoscore-container">%s</div></td>
+					          <td valign="center"><span id="%s">%s</span></td>
+					          <td valign="center"><div id="%s" class="tuja-admin-review-change-autoscore-container">%s</div></td>
 					          <td valign="center">%s<input type="number" id="%s" name="%s" value="%s" size="5" min="0" max="%d"></td>
 					          <td valign="center"><span class="tuja-admin-review-final-score">n p</span></td>
 					        </tr>',
 						$group_url,
 						$groups_map[ $group_id ]->name,
+						$response_html_container_id,
 						$response_html,
+						$auto_score_container_id,
 						$auto_score_html,
 						join( ' ', $manual_score_presets ),
 						$manual_score_field_id,
 						$manual_score_field_name,
 						$score_field_value,
-						$question->score_max ?: 1000 );
+						$question->score_max ?: 1000
+					);
 					$limit = $limit - 1;
 				}
 				if ( $limit < 0 ) {
@@ -430,6 +445,16 @@ class ReviewComponent {
 			printf( '<p><em>Alla frågor visas inte.</em></p>' );
 		}
 		printf( '<input type="hidden" name="%s" value="%s">', self::FORM_FIELD_TIMESTAMP, AbstractDao::to_db_date( new DateTime() ) );
+
+		printf(
+			'
+			<button class="button button-primary" type="submit" name="%s" value="%s">
+				Spara manuella poäng och markera svar som kontrollerade
+			</button>
+			',
+			$button_name,
+			$button_value,
+		);
 	}
 
 	private function get_data( $selected_filter, $selected_groups ): array {

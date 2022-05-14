@@ -59,13 +59,11 @@ $this->print_menu();
 	$review_component->render(
 		@$_GET[ GroupScore::QUESTION_FILTER_URL_PARAM ] ?: GroupScore::DEFAULT_QUESTION_FILTER,
 		array( $group ),
-		false
+		false,
+		'tuja_points_action',
+		'save'
 	);
 	?>
-
-	<button class="button button-primary" type="submit" name="tuja_points_action" value="save">
-		Spara manuella poäng och markera svar som kontrollerade
-	</button>
 
 	<p><strong>Stationer</strong></p>
 	<table class="tuja-table">

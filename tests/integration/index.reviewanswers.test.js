@@ -60,7 +60,7 @@ describe('Review Answers', () => {
     let textQuestion2Id = 0
 
     const createForm = async () => {
-      const {id, key} = await createNewForm('The Form to Review')
+      const { id, key } = await createNewForm('The Form to Review')
 
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${id}`)
 
@@ -153,7 +153,7 @@ describe('Review Answers', () => {
 
       await adminPage.clickLink('button[name="tuja_action"][value="questions_update"]')
 
-      return ({id, key})
+      return ({ id, key })
     }
 
     beforeAll(async () => {
@@ -162,47 +162,47 @@ describe('Review Answers', () => {
       formId = formIds.id
     })
 
+    const checkScores = async (...expectations) => {
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Scoreboard&tuja_competition=${competitionId}`)
+      for (const { groupId, expectedScore } of expectations) {
+        expect(await adminPage.$eval(`#tuja-scoreboard-group-${groupId}-points`, node => node.dataset.score)).toEqual(String(expectedScore))
+      }
+    }
+
+    const submitAnswers = async (page,
+      groupKey,
+      numberQuestionAnswer = null,
+      choiceQuestionAnswer = null,
+      imagesQuestionAnswer = null,
+      textQuestion1Answer = null,
+      textQuestion2Answer = null) => {
+      await page.goto(`http://localhost:8080/${groupKey}/svara/${formKey}`, true)
+
+      if (numberQuestionAnswer != null) {
+        await page.type(`#tuja_formshortcode__response__${numberQuestionId}`, numberQuestionAnswer)
+      }
+      if (choiceQuestionAnswer != null) {
+        await page.page.select(`#tuja_formshortcode__response__${choiceQuestionId}`, ...choiceQuestionAnswer)
+      }
+      if (imagesQuestionAnswer != null) {
+        await page.chooseFiles(imagesQuestionAnswer)
+      }
+      if (textQuestion1Answer != null) {
+        await page.type(`#tuja_formshortcode__response__${textQuestion1Id}`, textQuestion1Answer)
+      }
+      if (textQuestion2Answer != null) {
+        await page.type(`#tuja_formshortcode__response__${textQuestion2Id}`, textQuestion2Answer)
+      }
+
+      await page.clickLink('button[name="tuja_formshortcode__action"][value="update"]')
+    }
+
     it('type manual score', async () => {
-      const checkScores = async (...expectations) => {
-        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Scoreboard&tuja_competition=${competitionId}`)
-        for (const { groupId, expectedScore } of expectations) {
-          expect(await adminPage.$eval(`#tuja-scoreboard-group-${groupId}-points`, node => node.dataset.score)).toEqual(String(expectedScore))
-        }
-      }
-
-      const submitAnswers = async (page,
-                                   groupKey,
-                                   numberQuestionAnswer,
-                                   choiceQuestionAnswer,
-                                   imagesQuestionAnswer,
-                                   textQuestion1Answer,
-                                   textQuestion2Answer) => {
-        await page.goto(`http://localhost:8080/${groupKey}/svara/${formKey}`, true)
-
-        if (numberQuestionAnswer != null) {
-          await page.type(`#tuja_formshortcode__response__${numberQuestionId}`, numberQuestionAnswer)
-        }
-        if (choiceQuestionAnswer != null) {
-          await page.page.select(`#tuja_formshortcode__response__${choiceQuestionId}`, ...choiceQuestionAnswer)
-        }
-        if (imagesQuestionAnswer != null) {
-          await page.chooseFiles(imagesQuestionAnswer)
-        }
-        if (textQuestion1Answer != null) {
-          await page.type(`#tuja_formshortcode__response__${textQuestion1Id}`, textQuestion1Answer)
-        }
-        if (textQuestion2Answer != null) {
-          await page.type(`#tuja_formshortcode__response__${textQuestion2Id}`, textQuestion2Answer)
-        }
-
-        await page.clickLink('button[name="tuja_formshortcode__action"][value="update"]')
-      }
-
       const alicePage = await createNewUserPage()
-      const groupAliceProps = await alicePage.signUpTeam( adminPage)
+      const groupAliceProps = await alicePage.signUpTeam(adminPage)
 
       const bobPage = await createNewUserPage()
-      const groupBobProps = await bobPage.signUpTeam( adminPage)
+      const groupBobProps = await bobPage.signUpTeam(adminPage)
 
       await submitAnswers(
         alicePage,
@@ -304,6 +304,91 @@ describe('Review Answers', () => {
     })
     it.skip('reviewed answers are only shown once', () => {
 
+    })
+    it('only latest answers are scored and reviewed', async () => {
+      const groupPage = await createNewUserPage()
+      const groupProps = await groupPage.signUpTeam(adminPage)
+
+      // Team submits incorrect answer
+      await submitAnswers(
+        groupPage,
+        groupProps.key,
+        '10000',
+      )
+      // Scoreboard shows 0 points, since the answer was incorrect.
+      await checkScores({
+        groupId: groupProps.id,
+        expectedScore: 0
+      })
+      // Team submits CORRECT answer
+      await submitAnswers(
+        groupPage,
+        groupProps.key,
+        '40075',
+      )
+      // Scoreboard shows 10 points, since the answer was correct this time.
+      // It doesn't matter that the response hasn't been reviewed.
+      await checkScores({
+        groupId: groupProps.id,
+        expectedScore: 10
+      })
+
+      // Verify that Review page shows the latest response from the team.
+      // And the correct score from the auto-correcter.
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Review&tuja_competition=${competitionId}`)
+      await adminPage.expectToContain(`#tuja_review_response_container__${numberQuestionId}__${groupProps.id}`, '40\xa0075')
+      await adminPage.expectToContain(`#tuja_review_auto_score__${numberQuestionId}__${groupProps.id} span.tuja-admin-review-autoscore`, '10')
+      await adminPage.clickLink('button[name="tuja_review_action"][value="save"]')
+
+      // Verify that page is cleared/empty after review is completed
+      await adminPage.expectElementCount('p.tuja-admin-review-form-empty', 1)
+      await adminPage.expectToContain('p.tuja-admin-review-form-empty', 'Det finns inget att visa.')
+      await adminPage.expectElementCount('button[name="tuja_review_action"][value="save"]', 0)
+
+      // Scoreboard (still) shows 10 points.
+      await checkScores({
+        groupId: groupProps.id,
+        expectedScore: 10
+      })
+      // Team changed their mind and submits INCORRECT answer
+      await submitAnswers(
+        groupPage,
+        groupProps.key,
+        '10001',
+      )
+      // Team chanes back to the CORRECT answer
+      await submitAnswers(
+        groupPage,
+        groupProps.key,
+        '40075',
+      )
+
+      // Verify that Review page shows the latest response from the team.
+      // And the correct score from the auto-correcter.
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Review&tuja_competition=${competitionId}`)
+      await adminPage.expectElementCount('p.tuja-admin-review-form-empty', 0)
+      await adminPage.expectToContain(`#tuja_review_response_container__${numberQuestionId}__${groupProps.id}`, '40\xa0075')
+      await adminPage.expectToContain(`#tuja_review_auto_score__${numberQuestionId}__${groupProps.id} span.tuja-admin-review-autoscore`, '10')
+      await adminPage.expectElementCount('button[name="tuja_review_action"][value="save"]', 1)
+
+      // Team changed their mind again and submits another INCORRECT answer
+      await submitAnswers(
+        groupPage,
+        groupProps.key,
+        '10002',
+      )
+
+      // Verify that Review page shows the latest response from the team.
+      // And the correct score from the auto-correcter.
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Review&tuja_competition=${competitionId}`)
+      await adminPage.expectToContain(`#tuja_review_response_container__${numberQuestionId}__${groupProps.id}`, '10\xa0002')
+      await adminPage.expectToContain(`#tuja_review_auto_score__${numberQuestionId}__${groupProps.id} span.tuja-admin-review-autoscore`, '0')
+
+      // Scoreboard shows 0 points, since the most recent answer was incorrect.
+      await checkScores({
+        groupId: groupProps.id,
+        expectedScore: 0
+      })
     })
   })
 
