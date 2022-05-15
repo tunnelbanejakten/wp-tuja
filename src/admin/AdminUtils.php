@@ -3,6 +3,7 @@
 namespace tuja\admin;
 
 use Exception;
+use tuja\Admin;
 use tuja\util\ImageManager;
 use tuja\data\model\Group;
 use tuja\data\model\Competition;
@@ -181,6 +182,8 @@ class AdminUtils {
 	}
 
 	public static function print_fee_configuration_form( $fee_calculator, string $target_field_name, bool $is_inherit_available ) {
+		wp_enqueue_style( 'tuja-admin-payment-options', Admin::get_url() . '/assets/css/admin-payment-options.css' );
+
 		$fee_calculators        = array(
 			CompetingParticipantFeeCalculator::class => 'Betala per tävlande',
 			PersonTypeFeeCalculator::class           => 'Betala beroende på roll',
@@ -326,7 +329,7 @@ class AdminUtils {
 		);
 
 		return sprintf(
-			'<div class="tuja-admin-formgenerator-form" 
+			'<div class="tuja-admin-formgenerator-form tuja-admin-payment-options-form" 
 				data-schema="%s" 
 				data-values="%s" 
 				data-field-id="%s"

@@ -18,9 +18,9 @@ $this->print_menu();
 		</p>
 
 	<table>
-		<thead>
+	<tbody>
 		<tr>
-		<th>Kategori:</th>
+		<th></th>
 		<?php
 			print join(
 				array_map(
@@ -41,62 +41,39 @@ $this->print_menu();
 				)
 			);
 			?>
-		<td>
+		<td rowspan="2" style="vertical-align: top;">
 			<input type="text" name="tuja_groupcategory_name" id="tuja_groupcategory_name" placeholder="Kategorinamn"/><br>
-			<button type="submit" class="button" name="tuja_action" value="tuja_groupcategory_create" id="tuja_groupcategory_create_button">
-				Lägg till
-			</button>
+			<div>
+				Förvalda regler:
+				<?php
+				$selected_ruleset = isset($_POST['tuja_groupcategory_ruleset']) ? stripslashes($_POST['tuja_groupcategory_ruleset']) : PassthroughRuleSet::class;
+				echo join(
+					array_map(
+						function ( $class_name, $label ) use ( $selected_ruleset ) {
+							return sprintf(
+								'<br><input type="radio" name="tuja_groupcategory_ruleset" value="%s" %s id="%s"><label for="%s">%s</label>',
+								$class_name,
+								$selected_ruleset === $class_name ? 'checked="checked"' : '',
+								'tuja_groupcategory_ruleset__' . crc32( $class_name ),
+								'tuja_groupcategory_ruleset__' . crc32( $class_name ),
+								$label
+							);
+						},
+						array_keys( self::RULE_SETS ),
+						array_values( self::RULE_SETS )
+					)
+				)
+				?>
+			</div>
+			
+			<div class="tuja-buttons">
+				<button type="submit" class="button" name="tuja_action" value="tuja_groupcategory_create" id="tuja_groupcategory_create_button">
+					Lägg till
+				</button>
+			</div>
+
 		</td>
 		</tr>
-		</thead>
-		<tbody>
-			<tr>
-                <td class="tuja-group-fee-configuration-form" rowspan="2">Avgift</td>
-				<?php
-				print join(
-					array_map(
-						function ( GroupCategory $category ) {
-							return $this->print_group_fee_configuration_form( $category );
-						},
-						$category_dao->get_all_in_competition( $competition->id )
-					)
-				);
-				?>
-				<td valign="top" rowspan="3">
-					Förvalda regler:
-					<?php
-					$selected_ruleset = isset($_POST['tuja_groupcategory_ruleset']) ? stripslashes($_POST['tuja_groupcategory_ruleset']) : PassthroughRuleSet::class;
-					echo join(
-						array_map(
-							function ( $class_name, $label ) use ( $selected_ruleset ) {
-								return sprintf(
-									'<br><input type="radio" name="tuja_groupcategory_ruleset" value="%s" %s id="%s"><label for="%s">%s</label>',
-									$class_name,
-									$selected_ruleset === $class_name ? 'checked="checked"' : '',
-									'tuja_groupcategory_ruleset__' . crc32( $class_name ),
-									'tuja_groupcategory_ruleset__' . crc32( $class_name ),
-									$label
-								);
-							},
-							array_keys( self::RULE_SETS ),
-							array_values( self::RULE_SETS )
-						)
-					)
-					?>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="3">
-				<?php
-				$competition_settings_url = add_query_arg( array(
-					'tuja_competition' => $competition->id,
-					'tuja_view'        => 'CompetitionSettings'
-				) );
-				printf( '<p><em>Anmälningsavgift kan konfigureras per enskilt lag, per gruppkategori eller för <a href="%s">tävlingen generellt</a>. Den mest specifika inställningen används.</em></p>', 
-					$competition_settings_url );
-				?>
-				</td>
-			</tr>
 			<tr>
 				<?php
 				printf(

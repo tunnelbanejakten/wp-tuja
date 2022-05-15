@@ -105,20 +105,6 @@ class CompetitionSettingsGroupCategories extends AbstractCompetitionSettings {
 		);
 	}
 
-	public function print_group_fee_configuration_form( GroupCategory $category ) {
-		return sprintf(
-			'
-		<td class="tuja-group-fee-configuration-form">
-			%s
-		</td>',
-			AdminUtils::print_fee_configuration_form(
-				$category->fee_calculator,
-				$this->list_item_field_name( 'groupcategory', $category->id, 'fee' ),
-				true
-			)
-		);
-	}
-
 	public function delete_category( int $id ) {
 		$category_dao      = new GroupCategoryDao();
 		$delete_successful = $category_dao->delete( $id );
@@ -154,9 +140,9 @@ class CompetitionSettingsGroupCategories extends AbstractCompetitionSettings {
 			$categories,
 			function ( GroupCategory $category ) use ( $category_dao ) {
 				try {
-					$id                       = $category->id;
-					$category->name           = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
-					$category->fee_calculator = AdminUtils::get_fee_configuration_object( $this->list_item_field_name( 'groupcategory', $id, 'fee' ) );
+					$id             = $category->id;
+					$category->name = $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'name' ) ];
+					// $category->fee_calculator = AdminUtils::get_fee_configuration_object( $this->list_item_field_name( 'groupcategory', $id, 'fee' ) );
 					$category->set_rules( new GroupCategoryRules( json_decode( stripslashes( $_POST[ $this->list_item_field_name( 'groupcategory', $id, 'rules' ) ] ), true ) ) );
 
 					$affected_rows = $category_dao->update( $category );

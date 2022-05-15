@@ -67,7 +67,7 @@ class SignupController {
 
 					if ( $this->get_competition()->initial_group_status !== null ) {
 						// Change status from CREATED to $initial_group_status. This might trigger messages to be sent.
-						$group->set_status( $this->get_competition()->initial_group_status );
+						$group->set_status( $this->get_competition()->initial_group_status ); // WORKFLOW TRIGGER (group member triggered action)!
 						$this->group_dao->update( $group );
 					}
 

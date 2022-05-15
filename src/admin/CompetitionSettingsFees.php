@@ -3,6 +3,7 @@
 namespace tuja\admin;
 
 use Exception;
+use tuja\data\model\ValidationException;
 use tuja\data\model\Competition;
 use tuja\data\store\CompetitionDao;
 use tuja\util\Strings;
@@ -13,9 +14,20 @@ use tuja\util\fee\GroupFeeCalculator;
 use tuja\util\paymentoption\OtherPaymentOption;
 use tuja\util\paymentoption\PaymentOption;
 use tuja\util\paymentoption\SwishPaymentOption;
+use tuja\data\model\GroupCategory;
+use tuja\data\model\Group;
+use tuja\data\store\GroupCategoryDao;
+use tuja\data\store\GroupDao;
 
 class CompetitionSettingsFees extends AbstractCompetitionSettings {
 	const FIELD_SEPARATOR = '__';
+
+	public function __construct() {
+		parent::__construct();
+
+		$this->group_category_dao = new GroupCategoryDao();
+		$this->group_dao          = new GroupDao();
+	}
 
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_competition_settings_action'] ) ) {
@@ -24,16 +36,60 @@ class CompetitionSettingsFees extends AbstractCompetitionSettings {
 
 		if ( $_POST['tuja_competition_settings_action'] === 'save' ) {
 			$this->competition_settings_save( $this->competition );
+
+			$categories = $this->group_category_dao->get_all_in_competition( $this->competition->id );
+			array_walk(
+				$categories,
+				function ( GroupCategory $group_category ) {
+					$this->group_category_settings_save( $group_category );
+				}
+			);
+
+			$groups = $this->group_dao->get_all_in_competition( $this->competition->id );
+			array_walk(
+				$groups,
+				function ( Group $group ) {
+					$this->group_settings_save( $group );
+				}
+			);
+		}
+	}
+
+	private function group_category_settings_save( GroupCategory $category ) {
+		try {
+			$id                       = $category->id;
+			$new_value                = AdminUtils::get_fee_configuration_object( $this->list_item_field_name( 'tuja_category_fee', $id ) );
+			$category->fee_calculator = $new_value;
+
+			$this->group_category_dao->update( $category );
+		} catch ( ValidationException $e ) {
+			AdminUtils::printException( $e );
+		} catch ( Exception $e ) {
+			AdminUtils::printException( $e );
+		}
+	}
+
+	private function group_settings_save( Group $group ) {
+		try {
+			$id                    = $group->id;
+			$new_value             = AdminUtils::get_fee_configuration_object( $this->list_item_field_name( 'tuja_group_fee', $id ) );
+			$group->fee_calculator = $new_value;
+
+			$this->group_dao->update( $group );
+		} catch ( ValidationException $e ) {
+			AdminUtils::printException( $e );
+		} catch ( Exception $e ) {
+			AdminUtils::printException( $e );
 		}
 	}
 
 	public function competition_settings_save( Competition $competition ) {
 		try {
 			// Fee calculator
-			$competition->fee_calculator = AdminUtils::get_fee_configuration_object( 'tuja_competition_settings_fee_calculator' );
+			$competition->fee_calculator = AdminUtils::get_fee_configuration_object( 'tuja_competition_fee' );
 
 			// Payment methods
-			$payment_options_cfg          = json_decode( stripslashes( $_POST['tuja_competition_settings_payment_options'] ), true );
+			$payment_options_cfg          = json_decode( stripslashes( $_POST['tuja_payment_options'] ), true );
 			$enabled_payment_options_cfg  = array_filter(
 				$payment_options_cfg,
 				function ( $cfg ) {
@@ -52,8 +108,7 @@ class CompetitionSettingsFees extends AbstractCompetitionSettings {
 				array_values( $enabled_payment_options_cfg )
 			);
 
-			$dao = new CompetitionDao();
-			$dao->update( $competition );
+			$this->competition_dao->update( $competition );
 		} catch ( Exception $e ) {
 			// TODO: Reuse this exception handling elsewhere?
 			AdminUtils::printException( $e );
@@ -73,6 +128,9 @@ class CompetitionSettingsFees extends AbstractCompetitionSettings {
 
 		$competition = $this->competition_dao->get( $_GET['tuja_competition'] );
 
+		$category_dao = new GroupCategoryDao();
+		$group_dao    = new GroupDao();
+
 		$back_url = add_query_arg(
 			array(
 				'tuja_competition' => $competition->id,
@@ -86,9 +144,29 @@ class CompetitionSettingsFees extends AbstractCompetitionSettings {
 	public function print_group_fee_configuration_form( Competition $competition ) {
 		return AdminUtils::print_fee_configuration_form(
 			$competition->fee_calculator,
-			'tuja_competition_settings_fee_calculator',
+			'tuja_competition_fee',
 			false
 		);
+	}
+
+	public function print_group_category_fee_override_configuration_form( GroupCategory $category ) {
+		return AdminUtils::print_fee_configuration_form(
+			$category->fee_calculator,
+			$this->list_item_field_name( 'tuja_category_fee', $category->id ),
+			true
+		);
+	}
+
+	public function print_group_fee_override_configuration_form( Group $group ) {
+		return AdminUtils::print_fee_configuration_form(
+			$group->fee_calculator,
+			$this->list_item_field_name( 'tuja_group_fee', $group->id ),
+			true
+		);
+	}
+
+	private function list_item_field_name( $list_name, $id ) {
+		return join( self::FIELD_SEPARATOR, array( $list_name, $id ) );
 	}
 
 	public function print_payment_options_configuration_form( Competition $competition ) {
@@ -159,8 +237,8 @@ class CompetitionSettingsFees extends AbstractCompetitionSettings {
 				<div class="tuja-admin-formgenerator-form" 
 					data-schema="%s" 
 					data-values="%s" 
-					data-field-id="tuja_competition_settings_payment_options"
-					data-root-name="tuja_competition_settings_payment_options"></div>',
+					data-field-id="tuja_payment_options"
+					data-root-name="tuja_payment_options"></div>',
 			htmlentities( json_encode( $jsoneditor_config ) ),
 			htmlentities( json_encode( $jsoneditor_values ) )
 		);

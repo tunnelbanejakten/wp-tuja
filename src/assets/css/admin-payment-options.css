@@ -1,0 +1,13 @@
+div.tuja-admin-payment-options-form label.je-form-input-label {
+    display: inline-block;
+    width: 200px; /* 200px is long enough for the string "Avgift för vuxen som följer med" */
+}
+
+div.tuja-admin-payment-options-form div.je-indented-panel h3 {
+    display: none;
+}
+
+div.tuja-admin-payment-options-form div.form-control select,
+div.tuja-admin-payment-options-form div.form-control input {
+    width: 200px; /* 200px is long enough for the string "Betala beroende på roll" */
+}

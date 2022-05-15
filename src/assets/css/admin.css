@@ -109,19 +109,19 @@ body.wp-admin th {
     margin: 0 0 10px 0;
 }
 
-div.tuja-messagetemplate-collapsible .tuja-messagetemplate-collapsecontrol > a > span:nth-child(1) {
+div.tuja-messagetemplate-collapsible .tuja-messagetemplate-collapsecontrol>a>span:nth-child(1) {
     display: none;
 }
 
-div.tuja-messagetemplate-collapsible .tuja-messagetemplate-collapsecontrol > a > span:nth-child(2) {
+div.tuja-messagetemplate-collapsible .tuja-messagetemplate-collapsecontrol>a>span:nth-child(2) {
     display: block;
 }
 
-div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messagetemplate-collapsecontrol > a > span:nth-child(1) {
+div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messagetemplate-collapsecontrol>a>span:nth-child(1) {
     display: block;
 }
 
-div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messagetemplate-collapsecontrol > a > span:nth-child(2) {
+div.tuja-messagetemplate-collapsible.tuja-messagetemplate-collapsed .tuja-messagetemplate-collapsecontrol>a>span:nth-child(2) {
     display: none;
 }
 
@@ -222,7 +222,8 @@ tr.tuja-admin-review-response-row.question-group td {
     font-weight: bold;
 }
 
-span.tuja-admin-review-autoscore, span.tuja-admin-groupstatus {
+span.tuja-admin-review-autoscore,
+span.tuja-admin-groupstatus {
     display: inline-block;
     border-radius: 5px;
     border-width: 1px;
@@ -341,7 +342,7 @@ div.tuja-admin-report-config h3 {
     display: none;
 }
 
-div.tuja-admin-report-config > div > div {
+div.tuja-admin-report-config>div>div {
     border: none !important;
     padding: 0 !important;
     margin: 0 !important;
@@ -360,16 +361,13 @@ tr.tuja-person-status-deleted td {
     text-decoration-line: line-through;
 }
 
-div#tuja-tab-appconfig label.je-form-input-label,
-div#tuja-tab-payment label.je-form-input-label {
+div#tuja-tab-appconfig label.je-form-input-label {
     display: inline-block;
     width: 15em;
 }
 
 div#tuja-tab-appconfig div.form-control select,
-div#tuja-tab-appconfig div.form-control input,
-div#tuja-tab-payment div.form-control select,
-div#tuja-tab-payment div.form-control input {
+div#tuja-tab-appconfig div.form-control input {
     width: 30em;
 }
 
@@ -377,9 +375,13 @@ div#tuja-tab-appconfig div.je-indented-panel div.je-indented-panel {
     margin-left: 20px !important;
 }
 
-div#tuja-tab-appconfig div.je-indented-panel div.row,
-div#tuja-tab-payment div.je-indented-panel div.row {
+div#tuja-tab-appconfig div.je-indented-panel div.row {
     line-height: 25px;
+}
+
+form#tuja-tab-payment table tbody td:first-child {
+    vertical-align: top;
+    padding-top: 8px;
 }
 
 div.tuja-ruleset-column div.form-control select,
@@ -404,6 +406,7 @@ div.tuja-ruleset-column {
     margin: 0 0 1em 0;
     white-space: nowrap;
 }
+
 span.tuja-group-city {
     display: inline-block;
     text-overflow: ellipsis;
@@ -411,6 +414,7 @@ span.tuja-group-city {
     overflow: hidden;
     white-space: nowrap;
 }
+
 span.tuja-maps-question {
     display: inline-block;
     text-overflow: ellipsis;
@@ -419,18 +423,16 @@ span.tuja-maps-question {
     white-space: nowrap;
 }
 
-td.tuja-group-fee-configuration-form {
-    vertical-align: top;    
-}
-
 div.progress-bar-wrapper {
     border: 1px solid #ccc;
     width: 5em;
 }
+
 div.progress-bar {
     background-color: #aaa;
     height: 1em;
 }
+
 div.tuja-ticketmanagement-ticket {
     border: 1px solid #aaa;
     background-color: white;
@@ -438,6 +440,7 @@ div.tuja-ticketmanagement-ticket {
     padding: 0.5em;
     border-radius: 5px;
 }
+
 div.tuja-ticket-password-used {
     margin-bottom: 0.5em;
 }

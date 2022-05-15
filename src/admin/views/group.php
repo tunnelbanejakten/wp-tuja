@@ -37,9 +37,6 @@ $this->print_menu();
 		'tuja_competition' => $competition->id,
 		'tuja_view'        => 'CompetitionSettings'
 	) );
-	printf( '<p><em>Anmälningsavgift kan konfigureras per enskilt lag, per <a href="%s">gruppkategori</a> eller för <a href="%s">tävlingen generellt</a>. Den mest specifika inställningen används.</em></p>', 
-		$group_categories_settings_url,
-		$competition_settings_url );
 	?>
 
 	<button class="button button-primary" type="submit" name="tuja_points_action" value="save_group">

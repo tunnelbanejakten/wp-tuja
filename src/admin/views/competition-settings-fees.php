@@ -1,6 +1,9 @@
 <?php
 namespace tuja\admin;
 
+use tuja\data\model\GroupCategory;
+use tuja\data\model\Group;
+
 AdminUtils::printTopMenu( $competition );
 
 $this->print_menu();
@@ -10,7 +13,59 @@ $this->print_menu();
 
 	<h3>Anmälningsavgift</h3>
 
-	<?php echo $this->print_group_fee_configuration_form( $competition ); ?>
+	<p>Anmälningsavgift kan konfigureras per enskilt lag, per gruppkategori eller för tävlingen generellt. Den mest specifika inställningen används.</p>
+
+	<table class="tuja-table">
+		<tbody>
+			<tr>
+				<th colspan="2">Tävlingen</th>
+			</tr>
+			<tr>
+				<td>Standardavgift</td>
+				<td>
+					<?php echo $this->print_group_fee_configuration_form( $competition ); ?>
+				</td>
+			</tr>
+			<tr>
+				<th colspan="2">Gruppkategorier</th>
+			</tr>
+
+			<?php
+				print join(
+					array_map(
+						function ( GroupCategory $category ) {
+							return sprintf(
+								'<tr><td data-category-name="%s" data-category-id="%d">%s</td><td>%s</td></tr>',
+								$category->name,
+								$category->id,
+								$category->name,
+								$this->print_group_category_fee_override_configuration_form( $category )
+							);
+						},
+						$category_dao->get_all_in_competition( $competition->id )
+					)
+				);
+				?>
+
+			<tr>
+				<th colspan="2">Grupper</th>
+			</tr>
+
+			<?php
+				print join(
+					array_map(
+						function ( Group $group ) {
+							return sprintf( '<tr><td>%s</td><td>%s</td></tr>', $group->name, $this->print_group_fee_override_configuration_form( $group ) );
+						},
+						$group_dao->get_all_in_competition( $competition->id )
+					)
+				);
+				?>
+
+		</tbody>
+	</table>
+
+	
 
 	<?php
 	$group_categories_settings_url = add_query_arg(
@@ -19,16 +74,12 @@ $this->print_menu();
 			'tuja_view'        => 'CompetitionSettingsGroupCategories',
 		)
 	);
-	printf(
-		'<p><em>Anmälningsavgift kan konfigureras per enskilt lag, per <a href="%s">gruppkategori</a> eller för tävlingen generellt. Den mest specifika inställningen används.</em></p>',
-		$group_categories_settings_url
-	);
 	?>
 
 	<h3>Betalningsmetoder</h3>
 
 	<?php echo $this->print_payment_options_configuration_form( $competition ); ?>
-	<input type="hidden" name="tuja_competition_settings_payment_options" id="tuja_competition_settings_payment_options"/>
+	<input type="hidden" name="tuja_payment_options" id="tuja_payment_options"/>
 
 	<button class="button button-primary"
 			type="submit"

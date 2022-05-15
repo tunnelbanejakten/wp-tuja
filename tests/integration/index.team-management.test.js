@@ -325,13 +325,13 @@ describe('Team Management', () => {
           await adminPage.click(`select[name="${idPrefix}_temp[type]"]`) // ...until we click on something, anything, else.
         }
         const configureGroupCategoryFeeCalculator = async () => {
-          await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettingsGroupCategories&tuja_competition=${competitionId}`)
+          await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettingsFees&tuja_competition=${competitionId}`)
       
-          const getCategoryId = async (categoryName) => await adminPage.$eval('input[type="text"][value="' + categoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
+          const getCategoryId = async (categoryName) => await adminPage.$eval('td[data-category-name="' + categoryName + '"]', node => node.dataset.categoryId)
       
           const youngCategoryId = await getCategoryId('Young Participants')
       
-          await configurePerParticipantFee(`groupcategory__fee__${youngCategoryId}`, 1)
+          await configurePerParticipantFee(`tuja_category_fee__${youngCategoryId}`, 1)
       
           await adminPage.clickLink('#tuja_save_competition_settings_button')
         }
