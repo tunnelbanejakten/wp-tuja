@@ -48,6 +48,7 @@ class AbstractCompetitionSettings {
 			$sub_page_current = null;
 			$sub_page_links   = array();
 			$items            = array(
+				CompetitionSettingsBasic::class            => 'Namn och tid',
 				CompetitionSettingsGroupCategories::class  => 'Gruppkategorier',
 				CompetitionSettingsStrings::class          => 'Texter',
 				CompetitionSettingsApp::class              => 'Appen',

@@ -12,6 +12,11 @@ $this->print_menu();
 ?>
 
 <?php
+	$basic_url = add_query_arg( array(
+		'tuja_competition' => $competition->id,
+		'tuja_view'        => 'CompetitionSettingsBasic'
+	) );
+	printf( '<p><a href="%s">Namn och tid</a></p>', $basic_url );
 	$group_categories_url = add_query_arg( array(
 		'tuja_competition' => $competition->id,
 		'tuja_view'        => 'CompetitionSettingsGroupCategories'
@@ -44,31 +49,3 @@ $this->print_menu();
 	printf( '<p><a href="%s">Meddelandemallar</a></p>', $message_templates_url );
 ?>
 
-<form method="post" class="tuja">
-    <div>
-        <div class="tuja-admin-question">
-            <div>När är tävlingen?</div>
-            <div class="tuja-admin-question-properties">
-                <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Start</label>
-                    <input type="datetime-local" name="tuja_event_start" id="tuja_event_start"
-                           placeholder="yyyy-mm-dd hh:mm"
-                           value="<?= DateUtils::to_date_local_value( $competition->event_start ) ?>"/>
-                </div>
-                <div class="tuja-admin-question-property tuja-admin-question-short">
-                    <label for="">Slut</label>
-                    <input type="datetime-local" name="tuja_event_end" id="tuja_event_end"
-                           placeholder="yyyy-mm-dd hh:mm"
-                           value="<?= DateUtils::to_date_local_value( $competition->event_end ) ?>"/>
-                </div>
-            </div>
-        </div>
-    </div>
-    <button class="button button-primary"
-            type="submit"
-            name="tuja_competition_settings_action"
-            id="tuja_save_competition_settings_button"
-            value="save">
-        Spara
-    </button>
-</form>
