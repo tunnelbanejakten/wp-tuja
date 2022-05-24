@@ -1,0 +1,22 @@
+div#search-container,
+div#search-result-pending {
+    margin-top: 1em;
+}
+
+div#search-result-container,
+div#search-result-pending {
+    display: none;
+}
+
+div#search-query-container input {
+    width: 100%;
+}
+
+div#search-container div.spinner {
+    float: none;
+    margin: 0;
+}
+
+div#search-result-empty {
+    font-style: italic;
+}

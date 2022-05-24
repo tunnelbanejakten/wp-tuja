@@ -317,7 +317,7 @@ describe('Team Management', () => {
         await expectElementCount('input[name^="tuja-person__note"]', 0)
       })
 
-      it('should evaluate registration rules for team size, and calculate participation fee', async () => {
+      it('should evaluate registration rules for team size, and calculate participation fee, and team members should be searchable', async () => {
         const configurePerParticipantFee = async (idPrefix, fee) => {
           await adminPage.page.select(`select[name="${idPrefix}_temp[type]"]`, 'tuja\\util\\fee\\CompetingParticipantFeeCalculator')
           await adminPage.page.waitForSelector(`input[name="${idPrefix}_temp[config_tuja\\\\util\\\\fee\\\\CompetingParticipantFeeCalculator][fee]"]`)
@@ -326,13 +326,13 @@ describe('Team Management', () => {
         }
         const configureGroupCategoryFeeCalculator = async () => {
           await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettingsFees&tuja_competition=${competitionId}`)
-      
+
           const getCategoryId = async (categoryName) => await adminPage.$eval('td[data-category-name="' + categoryName + '"]', node => node.dataset.categoryId)
-      
+
           const youngCategoryId = await getCategoryId('Young Participants')
-      
+
           await configurePerParticipantFee(`tuja_category_fee__${youngCategoryId}`, 1)
-      
+
           await adminPage.clickLink('#tuja_save_competition_settings_button')
         }
         await configureGroupCategoryFeeCalculator()
@@ -415,7 +415,7 @@ describe('Team Management', () => {
         await clickLink('button[name="tuja-action"]')
         await expectSuccessMessage('Ändringarna har sparats.')
         await verifyGroupFee(8)
-        
+
         await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${tempGroupProps.id}`)
         await configurePerParticipantFee('tuja_group_fee_calculator', 2)
         await adminPage.clickLink('button[name="tuja_points_action"][value="save_group"]')
@@ -423,6 +423,26 @@ describe('Team Management', () => {
         await verifyGroupFee(16)
 
         await verifyFeePage.close()
+
+        // Verify that search function on admin page can find by email address
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupsSearch&tuja_competition=${competitionId}`)
+        await adminPage.type('#search-input-field', tempGroupProps.emailAddress)
+        const waitForDisplayStyle = (selector, expectHidden) =>
+          adminPage.page.waitForFunction(
+            (selector, expectHidden) => (document.querySelector(selector).style.display === 'none') === expectHidden,
+            {},
+            selector, expectHidden)
+        // Wait for search to start
+        await waitForDisplayStyle('#search-result-pending', false)
+        // Wait for result container to appear
+        await waitForDisplayStyle('#search-result-container', false)
+        // Verify that we have "people result" and no "group result"
+        await waitForDisplayStyle('#search-result-people-container', false)
+        await waitForDisplayStyle('#search-result-groups-container', true)
+        // Verify that exactly one person is listed
+        await adminPage.expectElementCount('#search-result-people tr', 1)
+        // Verify that the "no results found" message is NOT shown
+        await waitForDisplayStyle('#search-result-empty', true)
       })
 
       it('should be possible to sign up as administrator and later add team leader', async () => {
@@ -434,7 +454,7 @@ describe('Team Management', () => {
         await expectElementCount('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person', 0)
         await expectElementCount('div.tuja-person-role-supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
         await expectElementCount('div.tuja-person-role-admin > div.tuja-people-existing > div.tuja-signup-person', 1)
-        await expectFormValue('div.tuja-person-role-admin > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', 'amber@example.com')
+        await expectFormValue('div.tuja-person-role-admin > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', tempGroupProps.emailAddress)
 
         const addLeaderTeamMember = async (name, birthDate, phone, email) => {
           await click('div.tuja-person-role-leader button.tuja-add-person')
@@ -465,7 +485,7 @@ describe('Team Management', () => {
         await expectElementCount('div.tuja-person-role-admin > div.tuja-people-existing > div.tuja-signup-person', 0)
 
         await expectFormValue('div.tuja-person-role-leader input[name^="tuja-person__name__"]', 'Amber')
-        await expectFormValue('div.tuja-person-role-leader input[name^="tuja-person__email__"]', 'amber@example.com')
+        await expectFormValue('div.tuja-person-role-leader input[name^="tuja-person__email__"]', tempGroupProps.emailAddress)
         await expectFormValue('div.tuja-person-role-leader input[name^="tuja-person__phone__"]', '+4670123456')
 
         //
@@ -631,15 +651,15 @@ describe('Team Management', () => {
           expectPno: false
         }
       ])('should display correct fields (sub-test %#)', async ({
-                                                   groupCategorySelector,
-                                                   userRoleSelector,
-                                                   expectEmail,
-                                                   expectPhone,
-                                                   expectName,
-                                                   expectFood,
-                                                   expectNote,
-                                                   expectPno
-                                                 }) => {
+        groupCategorySelector,
+        userRoleSelector,
+        expectEmail,
+        expectPhone,
+        expectName,
+        expectFood,
+        expectNote,
+        expectPno
+      }) => {
         await goto(`http://localhost:8080/${competitionKey}/anmal`)
         await click(groupCategorySelector)
         await click(userRoleSelector)

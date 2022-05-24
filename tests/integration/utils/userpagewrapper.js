@@ -74,7 +74,9 @@ class UserPageWrapper extends PageWrapper {
     if (isCitySpecified) {
       await this.type('#tuja-group__city', city)
     }
-    await this.type('#tuja-person__email__', 'amber@example.com')
+    const randomDigits = Math.random().toFixed(5).substring(2) // 5 random digits
+    const emailAddress = `amber-${randomDigits}@example.com`
+    await this.type('#tuja-person__email__', emailAddress)
     if (isGroupLeader) {
       await this.type('#tuja-person__name__', 'Amber')
       await this.type('#tuja-person__phone__', '070-123456')
@@ -96,7 +98,7 @@ class UserPageWrapper extends PageWrapper {
     const portalUrl = await groupPortalLinkNode.evaluate(node => node.href)
     const key = await groupPortalLinkNode.evaluate(node => node.dataset.groupKey)
     const id = await groupPortalLinkNode.evaluate(node => node.dataset.groupId)
-    return { key, id, portalUrl, name, city }
+    return { key, id, portalUrl, name, city, emailAddress }
   }
 
 }

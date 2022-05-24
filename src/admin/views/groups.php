@@ -3,6 +3,9 @@
 AdminUtils::printTopMenu( $competition );
 
 ?>
+
+<p><a href="<?= $search_url ?>">Sök</a></p>
+
 <p>Filter: <?= $filters ?>.</p>
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
     <table id="tuja_groups_list" class="tuja-table">

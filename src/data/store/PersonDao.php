@@ -220,6 +220,46 @@ class PersonDao extends AbstractDao {
 		} );
 	}
 
+	function search( $competition_id, string $query, $date = null ) {
+		$objects = $this->get_objects(
+			function ( $row ) {
+				return self::to_person( $row );
+			},
+			'
+			SELECT 
+				' . self::QUERY_COLUMNS . ' 
+			FROM 
+				' . $this->table . ' AS p 
+				INNER JOIN 
+				' . $this->props_table . ' AS pp 
+				ON p.id = pp.person_id
+				INNER JOIN 
+				' . Database::get_table( 'team' ) . ' AS t 
+				ON pp.team_id = t.id  
+			WHERE 
+				t.competition_id = %d
+				AND (
+					pp.name LIKE %s OR
+					pp.phone LIKE %s OR
+					pp.email LIKE %s OR
+					pp.pno LIKE %s
+				)
+				AND pp.id IN (
+					SELECT MAX(id) 
+					FROM ' . $this->props_table . ' 
+					WHERE created_at <= %d
+					GROUP BY person_id
+				)',
+			$competition_id,
+			"%${query}%",
+			"%${query}%",
+			"%${query}%",
+			"%${query}%",
+			self::to_db_date( $date ?: new DateTime() ) );
+
+		return $objects;
+	}
+
 	function anonymize( $group_ids = array(), $exclude_contacts = false ) {
 		$anonymizer = new Anonymizer();
 		$id         = new Id();
@@ -314,18 +354,18 @@ class PersonDao extends AbstractDao {
 
 	private static function to_person( $result ): Person {
 		$p                 = new Person();
-		$p->id             = $result->person_id;
+		$p->id             = intval( $result->person_id );
 		$p->random_id      = $result->random_id;
 		$p->name           = $result->name;
-		$p->group_id       = $result->team_id;
+		$p->group_id       = intval( $result->team_id );
 		$p->phone          = Phone::fix_phone_number( $result->phone ); // TODO: Should normalizing the phone number be something we do when we read it from the database? Why not when stored?
-		$p->phone_verified = $result->phone_verified;
+		$p->phone_verified = '1' === $result->phone_verified;
 		$p->email          = $result->email;
-		$p->email_verified = $result->email_verified;
+		$p->email_verified = '1' === $result->email_verified;
 		$p->note           = $result->note;
 		$p->food           = $result->food;
 		$p->pno            = $result->pno;
-		$p->age            = $result->age;
+		$p->age            = floatval( $result->age );
 		$p->set_status( $result->status );
 		$p->set_role_flags(
 			$result->is_competing != 0,

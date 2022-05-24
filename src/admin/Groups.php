@@ -211,10 +211,14 @@ class Groups {
 				array_keys( $filter_configs ),
 				array_values( $filter_configs ) ) );
 
-		$group_categories   = $db_group_categories->get_all_in_competition( $competition->id );
-		$group_category_map = $this->categories_by_id( $group_categories );
-		$maps               = $db_map->get_all_in_competition( $competition->id );
-		$map_map            = $this->maps_by_id( $maps );
+		$group_categories      = $db_group_categories->get_all_in_competition( $competition->id );
+		$group_category_map    = $this->categories_by_id( $group_categories );
+		$maps                  = $db_map->get_all_in_competition( $competition->id );
+		$map_map               = $this->maps_by_id( $maps );
+		$search_url            = add_query_arg( array(
+			'tuja_competition' => $this->competition->id,
+			'tuja_view'        => 'GroupsSearch'
+		) );
 
 		include( 'views/groups.php' );
 	}

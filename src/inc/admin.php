@@ -3,6 +3,8 @@
 namespace tuja;
 
 use tuja\admin\AdminUtils;
+use tuja\controller\SearchController;
+use tuja\data\store\CompetitionDao;
 use tuja\util\Strings;
 use tuja\util\TemplateEditor;
 
@@ -22,6 +24,7 @@ class Admin extends Plugin {
 		add_action( 'admin_action_tuja_report', array( $this, 'render_report' ) );
 		add_action( 'admin_action_tuja_questions_preview', array( $this, 'render_questions_preview' ) );
 		add_action( 'admin_action_tuja_markdown', array( $this, 'render_markdown' ) );
+		add_action( 'admin_action_tuja_search', array( $this, 'search' ) );
 
 		Strings::init( intval( @$_GET['tuja_competition'] ?: 0 ) );
 	}
@@ -58,6 +61,31 @@ class Admin extends Plugin {
 		exit;
 	}
 
+	// TODO: There must be a better, a more high-level, way to define a JSON REST endpoint...
+	function search() {
+		define( 'IFRAME_REQUEST', true );
+		header( 'Content-type: application/json' );
+
+		$competition_dao = new CompetitionDao();
+
+		$competition = null;
+		if ( isset( $_GET['tuja_competition'] ) ) {
+			$competition = $competition_dao->get( $_GET['tuja_competition'] );
+		}
+
+		if ( ! $competition ) {
+			print 'Could not find competition';
+
+			exit;
+		}
+		$controller = new SearchController( $competition );
+
+		$result = $controller->search( $_GET['query'] );
+
+		print json_encode( $result );
+		exit;
+	}
+
 
 	public function add_admin_menu_item() {
 		add_menu_page(
@@ -83,6 +111,7 @@ class Admin extends Plugin {
 			wp_enqueue_style( 'tuja-admin-templateeditor', static::get_url() . '/assets/css/admin-templateeditor.css' );
 			wp_enqueue_style( 'tuja-admin-jsoneditor', static::get_url() . '/assets/css/admin-jsoneditor.css' );
 			wp_enqueue_style( 'tuja-admin-breadcrumbsmenu', static::get_url() . '/assets/css/admin-breadcrumbsmenu.css' );
+			wp_enqueue_style( 'tuja-admin-search', static::get_url() . '/assets/css/admin-search.css' ); // TODO: Include this conditionally
 		}
 
 		// Load scripts based on screen->id

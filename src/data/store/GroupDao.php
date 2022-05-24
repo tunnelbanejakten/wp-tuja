@@ -149,20 +149,28 @@ class GroupDao extends AbstractDao {
 	}
 
 
-	function generate_query( $where, DateTimeInterface $date = null ) {
+	function generate_query( $where, DateTimeInterface $date = null, bool $core_data_only = false ) {
+		$columns = array(
+			'g.*',
+			'gp.*',
+		);
+		if (!$core_data_only) {
+			$columns[] = 'gc.payment_instructions AS gc_payment_instructions';
+			$columns[] = 'c.payment_instructions AS c_payment_instructions';
+		}
+		$tables = array(
+			$this->table . ' AS g',
+			$this->props_table . ' AS gp ON g.id = gp.team_id',
+		);
+		if (!$core_data_only) {
+			$tables[] = Database::get_table( 'competition' ) . ' AS c ON g.competition_id = c.id';
+			$tables[] = Database::get_table( 'team_category' ) . ' AS gc ON gp.category_id = gc.id';
+		}
 		return '
 			SELECT
-				g.*,
-				gp.*,
-				gc.payment_instructions AS gc_payment_instructions,
-				c.payment_instructions AS c_payment_instructions
+			'.join(', ', $columns).'
 			FROM 
-				' . $this->table . ' AS g 
-				INNER JOIN 
-				' . $this->props_table . ' AS gp 
-				ON g.id = gp.team_id 
-				INNER JOIN ' . Database::get_table( 'competition' ) . ' AS c ON g.competition_id = c.id
-				INNER JOIN ' . Database::get_table( 'team_category' ) . ' AS gc ON gp.category_id = gc.id
+				'.join(' INNER JOIN ', $tables).'
 			WHERE 
 				gp.id IN (
 					SELECT MAX(id)
@@ -206,59 +214,73 @@ class GroupDao extends AbstractDao {
 		} );
 	}
 
-	private static function to_group( $result, $date ): Group {
+	function search( $competition_id, string $query ) {
+		return $this->get_objects(
+			function ( $row ) {
+				return self::to_group( $row, null, true );
+			},
+			$this->generate_query( array( 'g.competition_id = %d', 'gp.name LIKE %s' ), null, true),
+			$competition_id,
+			"%${query}%",
+		);
+	}
+
+	private static function to_group( $result, $date, bool $core_data_only = false ): Group {
 		$g                     = new Group();
 		$g->id                 = isset($result->team_id) ? intval($result->team_id) : null;
 		$g->random_id          = $result->random_id;
 		$g->name               = $result->name;
-		$g->city               = $result->city;
-		$g->category_id        = isset($result->category_id) ? intval($result->category_id) : null;
-		$g->competition_id     = isset($result->competition_id) ? intval($result->competition_id) : null;
-		$g->map_id             = isset($result->map_id) ? intval($result->map_id) : null;
-		$g->is_always_editable = $result->is_always_editable;
-		$g->note               = $result->note;
-		$g->age_competing_avg  = null;
 		$g->set_status( $result->status );
-		list ($fee_calculator, )     = self::deserialize_payment_instructions($result->payment_instructions);
-		list ($fee_calculator_gc, )  = self::deserialize_payment_instructions($result->gc_payment_instructions);
-		list ($fee_calculator_c, )   = self::deserialize_payment_instructions($result->c_payment_instructions);
-		$g->fee_calculator           = $fee_calculator;
-		$g->effective_fee_calculator = $fee_calculator ?? $fee_calculator_gc ?? $fee_calculator_c ?? new CompetingParticipantFeeCalculator();
+		if ( ! $core_data_only ) {
+			$g->city               = $result->city;
+			$g->category_id        = isset($result->category_id) ? intval($result->category_id) : null;
+			$g->competition_id     = isset($result->competition_id) ? intval($result->competition_id) : null;
+			$g->map_id             = isset($result->map_id) ? intval($result->map_id) : null;
+			$g->is_always_editable = $result->is_always_editable;
+			$g->note               = $result->note;
+			$g->age_competing_avg  = null;
 
-		$people                    = ( new PersonDao() )->get_all_in_group( $g->id, false, $date );
-		$people_competing          = array_filter( $people, function ( Person $person ) {
-			return $person->is_competing();
-		} );
-		$people_competing_with_age = array_filter( $people, function ( Person $person ) {
-			return $person->is_competing() && $person->age > 0;
-		} );
+			list ($fee_calculator, )     = self::deserialize_payment_instructions($result->payment_instructions);
+			list ($fee_calculator_gc, )  = self::deserialize_payment_instructions($result->gc_payment_instructions);
+			list ($fee_calculator_c, )   = self::deserialize_payment_instructions($result->c_payment_instructions);
+			$g->fee_calculator           = $fee_calculator;
+			$g->effective_fee_calculator = $fee_calculator ?? $fee_calculator_gc ?? $fee_calculator_c ?? new CompetingParticipantFeeCalculator();
 
-		$ages = array_map(function ( Person $person ) { return $person->age; }, $people_competing_with_age );
-
-		if(count( $people_competing_with_age ) > 0) {
-			$g->age_competing_avg = array_sum( $ages ) / count( $people_competing_with_age );
+			$people                    = ( new PersonDao() )->get_all_in_group( $g->id, false, $date );
+			$people_competing          = array_filter( $people, function ( Person $person ) {
+				return $person->is_competing();
+			} );
+			$people_competing_with_age = array_filter( $people, function ( Person $person ) {
+				return $person->is_competing() && $person->age > 0;
+			} );
+	
+			$ages = array_map(function ( Person $person ) { return $person->age; }, $people_competing_with_age );
+	
+			if(count( $people_competing_with_age ) > 0) {
+				$g->age_competing_avg = array_sum( $ages ) / count( $people_competing_with_age );
+			}
+	
+			$g->age_competing_min = array_reduce(
+				$ages,
+				function ( $min, $age ) { return $min === null || $age < $min ? $age : $min; },
+				null
+			);
+			$g->age_competing_max = array_reduce(
+				$ages,
+				function ( $max, $age ) { return $max === null || $max < $age ? $age : $max; },
+				null
+			);
+	
+			$g->count_competing    = count( $people_competing );
+			$g->count_follower     = count(
+				array_filter( $people, function ( Person $person ) {
+					return $person->is_adult_supervisor();
+				} ) );
+			$g->count_team_contact = count(
+				array_filter( $people, function ( Person $person ) {
+					return $person->is_contact();
+				} ) );
 		}
-
-		$g->age_competing_min = array_reduce(
-			$ages,
-			function ( $min, $age ) { return $min === null || $age < $min ? $age : $min; },
-			null
-		);
-		$g->age_competing_max = array_reduce(
-			$ages,
-			function ( $max, $age ) { return $max === null || $max < $age ? $age : $max; },
-			null
-		);
-
-		$g->count_competing    = count( $people_competing );
-		$g->count_follower     = count(
-			array_filter( $people, function ( Person $person ) {
-				return $person->is_adult_supervisor();
-			} ) );
-		$g->count_team_contact = count(
-			array_filter( $people, function ( Person $person ) {
-				return $person->is_contact();
-			} ) );
 
 		return $g;
 	}

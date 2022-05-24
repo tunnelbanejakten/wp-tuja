@@ -40,7 +40,7 @@ class AdminPageWrapper extends PageWrapper {
   }
 
   async configureEventDateLimits(competitionId, startMinutes, endMinutes) {
-    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettings&tuja_competition=${competitionId}`)
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettingsBasic&tuja_competition=${competitionId}`)
 
     await this.setDateInput('#tuja_event_start', startMinutes * 60)
     await this.setDateInput('#tuja_event_end', endMinutes * 60)
