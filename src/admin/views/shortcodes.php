@@ -71,35 +71,6 @@ ol.breadcrumb > li:last-child:after {
 }
 </style>
 
-<!-- Credits: https://codepen.io/kkhenriquez/pen/PQxvaa -->
-<div class="grid">
-	<div class="container">
-		<ol class="breadcrumb">
-			<li><a href="#">Grupper</a></li>
-			<li class="relative drop-container">
-				<span href="#">Grupp Alice & Friends</span>
-				<div class="drop">
-					<ul class="list pl0">
-						<li><a href="#">Bob And His Builders</a></li>
-						<li><a href="#">Carol's Comrades</a></li>
-					</ul>
-				</div>
-			</li>
-			<li class="relative drop-container">
-				<span href="#">Allmänt</span>
-				<div class="drop">
-					<ul class="list pl0">
-						<li><a href="#">Länkar</a></li>
-						<li><a href="#">Tidsbegränsade frågor som visats</a></li>
-						<li><a href="#">Svar och poäng</a></li>
-						<li><a href="#">Deltagare</a></li>
-					</ul>
-				</div>
-			</li>
-		</ol>
-	</div>
-</div>
-
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
 	<p>
 		Anmäl lag:
