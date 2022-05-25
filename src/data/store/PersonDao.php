@@ -249,7 +249,9 @@ class PersonDao extends AbstractDao {
 					FROM ' . $this->props_table . ' 
 					WHERE created_at <= %d
 					GROUP BY person_id
-				)',
+				)
+			ORDER BY
+				pp.name',
 			$competition_id,
 			"%${query}%",
 			"%${query}%",
