@@ -71,6 +71,15 @@ class GroupMembers extends AbstractGroup {
 		$db_groups = new GroupDao();
 		$groups    = $db_groups->get_all_in_competition( $competition->id, true );
 
+		$add_member_url = add_query_arg(
+			array(
+				'tuja_competition' => $this->competition->id,
+				'tuja_view'        => 'GroupMember',
+				'tuja_group'       => $this->group->id,
+				'tuja_person'      => 'new',
+			)
+		);
+
 		include 'views/group-members.php';
 	}
 }

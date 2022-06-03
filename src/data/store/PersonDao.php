@@ -65,7 +65,7 @@ class PersonDao extends AbstractDao {
 				'created_at' => self::to_db_date( new DateTime() ),
 				'status'     => $status,
 
-				'name'            => $person->name,
+				'name'            => $person->name ?? '', // Database has not-null constraint.
 				'team_id'         => $person->group_id,
 				'phone'           => $person->phone,
 				'email'           => $person->email,

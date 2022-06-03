@@ -109,25 +109,29 @@ class Person {
 		if ( strlen( $this->email ) > 100 ) {
 			throw new ValidationException( 'email', 'E-postadress får bara vara 100 tecken lång.' );
 		}
-		$is_email_required = ! empty( trim( $this->email ) )
-							 || ( $this->is_regular_group_member() && $rules->is_contact_information_required_for_regular_group_member() )
-							 || $this->is_contact()
-							 || $this->is_adult_supervisor();
-		if ( $is_email_required && ! self::is_valid_email_address( $this->email ) ) {
+		$is_valid_email_required = (
+			! empty( trim( $this->email ) )
+			|| $rules->is_person_field_required( $this->get_type(), GroupCategoryRules::PERSON_PROP_EMAIL )
+		);
+		if ( $is_valid_email_required && ! self::is_valid_email_address( $this->email ) ) {
 			throw new ValidationException( 'email', 'E-postadressen ser konstig ut.' );
 		}
 		if ( strlen( $this->phone ) > 100 ) {
 			throw new ValidationException( 'phone', 'Telefonnumret får bara vara 100 tecken långt.' );
 		}
 
-		$is_phone_required = ! empty( trim( $this->phone ) )
-							 || ( $this->is_regular_group_member() && $rules->is_contact_information_required_for_regular_group_member() )
-							 || ( $this->is_contact() && $this->is_attending() )
-							 || $this->is_adult_supervisor();
-		if ( $is_phone_required && ! self::is_valid_phone_number( $this->phone ) ) {
+		$is_valid_phone_required = (
+			! empty( trim( $this->phone ) )
+			|| $rules->is_person_field_required( $this->get_type(), GroupCategoryRules::PERSON_PROP_PHONE )
+		);
+		if ( $is_valid_phone_required && ! self::is_valid_phone_number( $this->phone ) ) {
 			throw new ValidationException( 'phone', 'Telefonnummer ser konstigt ut.' );
 		}
-		if ( empty( trim( $this->name ) ) ) {
+		$is_name_required = $rules->is_person_field_required(
+			$this->get_type(),
+			GroupCategoryRules::PERSON_PROP_NAME
+		);
+		if ( $is_name_required && empty( trim( $this->name ) ) ) {
 			throw new ValidationException( 'name', 'Namnet måste fyllas i.' );
 		}
 		if ( strlen( $this->name ) > 100 ) {
@@ -224,6 +228,10 @@ class Person {
 		} else {
 			throw new Exception( 'Person cannot be mapped to one of the predefined types.' );
 		}
+	}
+
+	public function get_short_description() {
+		return $this->name ?: $this->get_type_label();
 	}
 
 	public function get_type_label(): string {

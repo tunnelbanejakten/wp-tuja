@@ -310,7 +310,6 @@ class CompetitionSignup extends FrontendView {
 		$new_person->set_status( Person::DEFAULT_STATUS );
 		$new_person->email = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $new_person ) ];
 		if ( @$_POST[ self::FIELD_PERSON_ROLE ] == Strings::get('competition_signup.role_label.extra_contact') ) {
-			$new_person->name = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $new_person ) ];
 			$new_person->set_type( Person::PERSON_TYPE_ADMIN );
 		} else {
 			$new_person->name  = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $new_person ) ];

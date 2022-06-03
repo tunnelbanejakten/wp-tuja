@@ -8,6 +8,8 @@ AdminUtils::printTopMenu( $competition );
 $this->print_menu();
 ?>
 
+<p><a href="<?= $add_member_url ?>" id="tuja_group_member_add_link">Lägg till deltagare...</a></p>
+
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
 
 	<table class="tuja-table">
@@ -57,16 +59,18 @@ $this->print_menu();
 			'',
 			array_map(
 				function ( Person $person ) {
-					$admin_person_url            = add_query_arg( array(
-						'tuja_competition' => $this->competition->id,
-						'tuja_person'      => $person->id,
-						'tuja_view'        => 'GroupMember',
-					) );
-			
+					$admin_person_url = add_query_arg(
+						array(
+							'tuja_competition' => $this->competition->id,
+							'tuja_person'      => $person->id,
+							'tuja_view'        => 'GroupMember',
+						)
+					);
+
 					return sprintf(
 						'<tr class="tuja-person-status-%s">' .
 							'<td><input type="checkbox" name="tuja_group_people[]" value="%d" id="tuja_group_people__person_%d"></td>' .
-							'<td><a href="%s">%s</a></td>' .
+							'<td><a href="%s" id="tuja_group_member_link__%s">%s</a></td>' .
 							'<td>%s</td>' .
 							'<td>%s</td>' .
 							'<td><em>%s</em></td>' .
@@ -78,7 +82,8 @@ $this->print_menu();
 						$person->id,
 						$person->id,
 						$admin_person_url,
-						$person->name,
+						$person->id,
+						$person->get_short_description(),
 						$person->get_type_label(),
 						$person->get_formatted_age(),
 						$person->food,

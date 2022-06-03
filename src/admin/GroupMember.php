@@ -14,12 +14,20 @@ class GroupMember extends AbstractGroup {
 	public function __construct() {
 		parent::__construct();
 
-		$this->person_dao = new PersonDao();
-		$this->person     = $this->person_dao->get( $_GET['tuja_person'] );
-		if ( ! $this->person ) {
-			print 'Could not find person';
+		$this->person_dao     = new PersonDao();
+		$this->is_create_mode = ! is_numeric( $_GET['tuja_person'] );
+		if ( ! $this->is_create_mode ) {
+			$this->person = $this->person_dao->get( intval( $_GET['tuja_person'] ) );
+			if ( ! $this->person ) {
+				print 'Could not find person';
 
-			return;
+				return;
+			}
+		} else {
+			$person = new Person();
+			$person->set_type( Person::PERSON_TYPE_REGULAR );
+			$person->set_status( Person::DEFAULT_STATUS );
+			$this->person = $person;
 		}
 	}
 
@@ -31,10 +39,8 @@ class GroupMember extends AbstractGroup {
 		@list( $action, $parameter ) = explode( '__', @$_POST['tuja_action'] );
 
 		if ( $action === 'save' ) {
-			$this->update_person();
+			$this->save_person();
 		} elseif ( $action === 'transition' ) {
-			var_dump($parameter);
-
 			$this->person->set_status( $parameter );
 
 			$success = $this->person_dao->update( $this->person );
@@ -58,7 +64,7 @@ class GroupMember extends AbstractGroup {
 		}
 	}
 
-	private function update_person() {
+	private function save_person() {
 		$person = $this->person;
 
 		$props = array(
@@ -89,25 +95,37 @@ class GroupMember extends AbstractGroup {
 		if ( $is_updated ) {
 			$success = false;
 			try {
-				$affected_rows = $this->person_dao->update( $person );
-				if ( $affected_rows !== false ) {
-					$success      = true;
-					$this->person = $this->person_dao->get( $person->id );
+				if ( $this->is_create_mode ) {
+					$person->group_id = $this->group->id;
+					$new_person_id    = $this->person_dao->create( $person );
+					$success          = $new_person_id !== false;
+					$person_id        = $new_person_id;
+				} else {
+					$affected_rows = $this->person_dao->update( $person );
+					$success       = $affected_rows !== false;
+					$person_id     = $person->id;
+				}
+				if ( $success ) {
+					$this->is_create_mode = false;
+					$this->person         = $this->person_dao->get( $person_id );
 
 					foreach ( $props as $prop ) {
 						$_POST[ 'tuja_person_property__' . $prop ] = null;
 					}
+
+					AdminUtils::printSuccess(
+						sprintf(
+							'<span id="tuja_group_member_save_status" data-new-person-id="%d">Ändringarna har sparats.</span>',
+							$person_id
+						)
+					);
+				} else {
+					AdminUtils::printError( 'Alla ändringar kunde inte sparas.' );
 				}
 			} catch ( ValidationException $e ) {
 				AdminUtils::printException( $e );
 			} catch ( Exception $e ) {
 				AdminUtils::printException( $e );
-			}
-
-			if ( $success ) {
-				AdminUtils::printSuccess( 'Ändringarna har sparats.' );
-			} else {
-				AdminUtils::printError( 'Alla ändringar kunde inte sparas.' );
 			}
 		}
 	}
@@ -115,13 +133,13 @@ class GroupMember extends AbstractGroup {
 	protected function create_menu( $current_view_name ) {
 		$menu = parent::create_menu( $current_view_name );
 
-		if ( $current_view_name === 'GroupMember' ) {
+		if ( ! $this->is_create_mode ) {
 			$people_current = null;
 			$people_links   = array();
 			$people         = $this->person_dao->get_all_in_group( $this->group->id, true );
 			foreach ( $people as $person ) {
-				if ( $person->id === $this->person->id ) {
-					$people_current = $person->name;
+				if ( isset( $this->person ) && $person->id === $this->person->id ) {
+					$people_current = $person->get_short_description();
 				}
 				$link           = add_query_arg(
 					array(
@@ -131,11 +149,15 @@ class GroupMember extends AbstractGroup {
 						'tuja_person'      => $person->id,
 					)
 				);
-				$people_links[] = BreadcrumbsMenu::item( $person->name, $link );
+				$people_links[] = BreadcrumbsMenu::item( $person->get_short_description(), $link );
 			}
 			$menu->add(
 				BreadcrumbsMenu::item( $people_current ),
 				...$people_links,
+			);
+		} else {
+			$menu->add(
+				BreadcrumbsMenu::item( 'Ny person' ),
 			);
 		}
 
@@ -145,17 +167,21 @@ class GroupMember extends AbstractGroup {
 	public function output() {
 		$this->handle_post();
 
-		$group       = $this->group;
-		$person      = $this->person;
-		$competition = $this->competition;
-
-		$is_crew_group = $group->get_category()->get_rules()->is_crew();
-		$links         = array_filter(
-			array(
-				'Redigera person via lagportal' => PersonEditorInitiator::link( $group, $person ),
-				'Rapportera poäng'              => $is_crew_group ? ReportPointsInitiator::link_all( $person ) : null,
-			)
-		);
+		$is_create_mode = $this->is_create_mode;
+		$group          = $this->group;
+		$competition    = $this->competition;
+		$is_crew_group  = $group->get_category()->get_rules()->is_crew();
+		$person         = $this->person;
+		if ( $is_create_mode ) {
+			$links = array();
+		} else {
+			$links = array_filter(
+				array(
+					'Redigera person via lagportal' => PersonEditorInitiator::link( $group, $person ),
+					'Rapportera poäng'              => $is_crew_group ? ReportPointsInitiator::link_all( $person ) : null,
+				)
+			);
+		}
 
 		$person_type_dropdown = sprintf(
 			'<div><select name="tuja_person_property__role">%s</select></div>',

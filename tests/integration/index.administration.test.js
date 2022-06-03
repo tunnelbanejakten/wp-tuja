@@ -124,11 +124,11 @@ describe('Administration', () => {
       const { id: emptyFieldId } = markerFields.filter(({ value }) => !value)[0]
       const newMarkerData = '59.338609 17.939238 Brommaplan'
       await adminPage.type(`#${emptyFieldId}`, newMarkerData)
-      
+
       const { id: nonEmptyFieldId, value: nonEmptyFieldValue } = markerFields.filter(({ value }) => !!value)[0]
       const updatedMarkerData = nonEmptyFieldValue + '.'
       await adminPage.type(`#${nonEmptyFieldId}`, updatedMarkerData)
-      
+
       await adminPage.clickLink('#tuja_save_button')
 
       await adminPage.expectFormValue(`#${emptyFieldId}`, newMarkerData)
@@ -141,6 +141,73 @@ describe('Administration', () => {
       ).toEqual(
         fieldValuesAfterUpdate.filter(s => !s.includes(emptyFieldId) && !s.includes(nonEmptyFieldId))
       )
+    })
+  })
+
+  describe('Team Members', () => {
+    it('should be possible to add a new group member and later edit it', async () => {
+      const expectFormValues = async (name, phone, email, food, pno, note) => {
+        await adminPage.expectFormValue('#tuja_person_property__name', name)
+        await adminPage.expectFormValue('#tuja_person_property__phone', phone)
+        await adminPage.expectFormValue('#tuja_person_property__email', email)
+        await adminPage.expectFormValue('#tuja_person_property__food', food)
+        await adminPage.expectFormValue('#tuja_person_property__pno', pno)
+        await adminPage.expectFormValue('#tuja_person_property__note', note)
+      }
+
+      // Create a test team
+      const groupProps = await adminPage.addTeam()
+
+      // Find and click link to get to the add-new-team-member page
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupMembers&tuja_competition=${competitionId}&tuja_group=${groupProps.id}`)
+      await adminPage.clickLink('#tuja_group_member_add_link')
+
+      // Add new team member
+      await adminPage.type('#tuja_person_property__name', 'Amy Zingh')
+      await adminPage.type('#tuja_person_property__phone', '070-000001')
+      await adminPage.type('#tuja_person_property__email', 'amy.zingh@example.com')
+      await adminPage.type('#tuja_person_property__food', 'No allergies')
+      await adminPage.type('#tuja_person_property__pno', '2000-01-01')
+      await adminPage.type('#tuja_person_property__note', 'I like warm hugs')
+      await adminPage.clickLink('#tuja_group_member_save_button')
+      const newPersonId = await adminPage.$eval(`#tuja_group_member_save_status`, node => parseInt(node.dataset.newPersonId))
+
+      // Verify that form (still) shows what the user inputted
+      await expectFormValues(
+        'Amy Zingh',
+        '+4670000001',
+        'amy.zingh@example.com',
+        'No allergies',
+        '20000101-0000',
+        'I like warm hugs')
+
+      // Go back to complete list of team members
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupMembers&tuja_competition=${competitionId}&tuja_group=${groupProps.id}`)
+
+      // Find the link to edit the new team member
+      await adminPage.clickLink(`#tuja_group_member_link__${newPersonId}`)
+
+      // Verify that form (still) shows what the user inputted
+      await expectFormValues(
+        'Amy Zingh',
+        '+4670000001',
+        'amy.zingh@example.com',
+        'No allergies',
+        '20000101-0000',
+        'I like warm hugs')
+
+      // Change the name
+      await adminPage.type('#tuja_person_property__name', 'Amy Sing')
+      await adminPage.clickLink('#tuja_group_member_save_button')
+
+      // Verify that form (still) shows what the user inputted
+      await expectFormValues(
+        'Amy Sing',
+        '+4670000001',
+        'amy.zingh@example.com',
+        'No allergies',
+        '20000101-0000',
+        'I like warm hugs')
     })
   })
 })
