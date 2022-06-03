@@ -65,8 +65,6 @@ class GroupMembers extends AbstractGroup {
 		$group       = $this->group;
 		$competition = $this->competition;
 
-		$is_crew_group = $group->get_category()->get_rules()->is_crew();
-
 		$person_dao = new PersonDao();
 		$people     = $person_dao->get_all_in_group( $group->id, true );
 
