@@ -45,7 +45,7 @@ class PersonDao extends AbstractDao {
 
 		$person->id = $this->wpdb->insert_id;
 
-		$success = $this->add_record( $person, Person::STATUS_CREATED );
+		$success = $this->add_record( $person, $person->get_status() );
 
 		return $success ? $person->id : false;
 	}
@@ -53,7 +53,7 @@ class PersonDao extends AbstractDao {
 	function update( Person $person ) {
 		$person->validate( $this->get_group( $person )->get_category()->get_rules() );
 
-		$success = $this->add_record( $person, Person::STATUS_CREATED );
+		$success = $this->add_record( $person, $person->get_status() );
 
 		return $success ? $person->id : false;
 	}
@@ -65,7 +65,7 @@ class PersonDao extends AbstractDao {
 				'created_at' => self::to_db_date( new DateTime() ),
 				'status'     => $status,
 
-				'name'            => $person->name,
+				'name'            => $person->name ?? '', // Database has not-null constraint.
 				'team_id'         => $person->group_id,
 				'phone'           => $person->phone,
 				'email'           => $person->email,
@@ -179,7 +179,9 @@ class PersonDao extends AbstractDao {
 					FROM ' . $this->props_table . ' 
 					WHERE created_at <= %d
 					GROUP BY person_id
-				)',
+				)
+			ORDER BY
+				pp.name',
 			$group_id,
 			self::to_db_date( $date ?: new DateTime() ) );
 
@@ -211,7 +213,9 @@ class PersonDao extends AbstractDao {
 					FROM ' . $this->props_table . ' 
 					WHERE created_at <= %d
 					GROUP BY person_id
-				)',
+				)
+			ORDER BY
+				pp.name',
 			$competition_id,
 			self::to_db_date( $date ?: new DateTime() ) );
 

@@ -80,7 +80,7 @@ abstract class AbstractGroupView extends FrontendView {
 	protected function init_posted_person( $id = null ): Person {
 		$person        = new Person();
 		$person->id    = $id ?: null;
-		$person->name  = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $person ) ] ?: @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ];
+		$person->name  = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $person ) ];
 		$person->email = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ];
 		$person->phone = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $person ) ];
 		$person->pno   = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $person ) ];
