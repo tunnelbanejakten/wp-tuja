@@ -113,13 +113,13 @@ class QuestionGroupDao extends AbstractDao {
 	}
 
 	private static function to_question_group( $result ): QuestionGroup {
-		$q             = new QuestionGroup();
-		$q->id         = $result->id;
-		$q->form_id    = $result->form_id;
-		$q->random_id  = $result->random_id;
-		$q->text       = $result->text;
-		$q->text_description       = $result->text_description;
-		$q->sort_order = $result->sort_order;
+		$q                   = new QuestionGroup();
+		$q->id               = intval( $result->id );
+		$q->form_id          = intval( $result->form_id );
+		$q->random_id        = $result->random_id;
+		$q->text             = $result->text;
+		$q->text_description = $result->text_description;
+		$q->sort_order       = $result->sort_order;
 		self::set_config( $q, $result->config );
 
 		return $q;

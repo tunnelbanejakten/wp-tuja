@@ -104,8 +104,8 @@ class MessageTemplateDao extends AbstractDao
 
 	private static function to_message_template( $result ): MessageTemplate {
 		$mt                      = new MessageTemplate();
-		$mt->id                  = $result->id;
-		$mt->competition_id      = $result->competition_id;
+		$mt->id                  = intval( $result->id );
+		$mt->competition_id      = intval( $result->competition_id );
 		$mt->delivery_method     = $result->delivery_method;
 		$mt->name                = $result->name;
 		$mt->subject             = $result->subject;

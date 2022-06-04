@@ -89,7 +89,7 @@ class CompetitionDao extends AbstractDao {
 	private static function to_competition( $result ): Competition {
 		$c            = new Competition();
 		$c->name      = $result->name;
-		$c->id        = $result->id;
+		$c->id        = intval( $result->id );
 		$c->random_id = $result->random_id;
 //		$c->create_group_start                     = self::from_db_date($result->create_group_start);
 //		$c->create_group_end                       = self::from_db_date($result->create_group_end);

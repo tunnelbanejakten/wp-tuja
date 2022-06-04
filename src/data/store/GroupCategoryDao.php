@@ -119,8 +119,8 @@ class GroupCategoryDao extends AbstractDao {
 
 	private static function to_group_category( $result ): GroupCategory {
 		$gc                 = new GroupCategory();
-		$gc->id             = $result->id;
-		$gc->competition_id = $result->competition_id;
+		$gc->id             = intval( $result->id );
+		$gc->competition_id = intval( $result->competition_id );
 		$gc->name           = $result->name;
 
 		if ( isset( $result->rules_configuration ) ) {

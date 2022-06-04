@@ -359,9 +359,9 @@ class ResponseDao extends AbstractDao {
 
 	private static function to_response( $result ): Response {
 		$r                          = new Response();
-		$r->id                      = $result->id;
-		$r->form_question_id        = $result->form_question_id;
-		$r->group_id                = $result->team_id;
+		$r->id                      = intval( $result->id );
+		$r->form_question_id        = intval( $result->form_question_id );
+		$r->group_id                = intval( $result->team_id );
 		$r->submitted_answer        = json_decode( $result->answer, true );
 		$r->created                 = self::from_db_date( $result->created_at );
 		$r->is_reviewed             = $result->is_reviewed;
