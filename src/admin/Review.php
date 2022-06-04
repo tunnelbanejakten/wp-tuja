@@ -16,16 +16,15 @@ use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
 
 
-class Review {
+class Review extends AbstractCompetitionPage {
 
 	const DEFAULT_QUESTION_FILTER = ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL;
-	const DEFAULT_GROUP_FILTER = FieldGroupSelector::GROUP_KEY_ALL;
-	const RESPONSE_MISSING_ID = 0;
+	const DEFAULT_GROUP_FILTER    = FieldGroupSelector::GROUP_KEY_ALL;
+	const RESPONSE_MISSING_ID     = 0;
 
-	private $competition;
 	private $response_dao;
 
-	const GROUP_FILTER_URL_PARAM = 'tuja_review_group_selector';
+	const GROUP_FILTER_URL_PARAM    = 'tuja_review_group_selector';
 	const QUESTION_FILTER_URL_PARAM = 'tuja_question_filter';
 	private $question_dao;
 	private $question_group_dao;
@@ -35,19 +34,10 @@ class Review {
 	private $selected_groups;
 
 	public function __construct() {
-		$this->question_dao = new QuestionDao();
-		$this->response_dao = new ResponseDao();
-		$this->question_group_dao = new QuestionGroupDao();
-		$db_competition     = new CompetitionDao();
-
-
-		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
-
+		parent::__construct();
+		$this->question_dao         = new QuestionDao();
+		$this->response_dao         = new ResponseDao();
+		$this->question_group_dao   = new QuestionGroupDao();
 		$this->field_group_selector = new FieldGroupSelector( $this->competition );
 		$this->review_component     = new ReviewComponent( $this->competition );
 		$this->selected_filter      = @$_GET[ Review::QUESTION_FILTER_URL_PARAM ] ?: self::DEFAULT_QUESTION_FILTER;
@@ -65,22 +55,28 @@ class Review {
 			$result = $this->review_component->handle_post( $this->selected_filter, $this->selected_groups );
 
 			if ( $result['skipped'] > 0 ) {
-				AdminUtils::printError( sprintf(
-					'Kunde inte uppdatera poängen för %d frågor. Någon annan hann före.',
-					$result['skipped'] ) );
+				AdminUtils::printError(
+					sprintf(
+						'Kunde inte uppdatera poängen för %d frågor. Någon annan hann före.',
+						$result['skipped']
+					)
+				);
 			}
 			if ( count( $result['marked_as_reviewed'] ) > 0 ) {
-				AdminUtils::printSuccess( sprintf(
-					'Svar på %d frågor har markerats som kontrollerade.',
-					count( $result['marked_as_reviewed'] ) ) );
+				AdminUtils::printSuccess(
+					sprintf(
+						'Svar på %d frågor har markerats som kontrollerade.',
+						count( $result['marked_as_reviewed'] )
+					)
+				);
 			}
 		}
 	}
 
 	public function get_scripts(): array {
-		return [
-			'admin-review-component.js'
-		];
+		return array(
+			'admin-review-component.js',
+		);
 	}
 
 	public function output() {

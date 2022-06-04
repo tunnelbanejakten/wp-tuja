@@ -7,6 +7,7 @@ use tuja\data\model\Person;
 use tuja\util\TemplateEditor;
 
 AdminUtils::printTopMenu( $competition );
+$this->print_menu();
 ?>
 
 <h3>Skicka e-post och SMS</h3>

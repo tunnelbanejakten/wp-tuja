@@ -6,33 +6,24 @@ use tuja\data\store\StationDao;
 use tuja\data\store\CompetitionDao;
 
 
-class AbstractStation {
+class AbstractStation extends AbstractCompetitionPage {
 
 	protected $station;
-	protected $competition;
 	protected $station_dao;
-	protected $competition_dao;
 
 	public function __construct() {
+		parent::__construct();
 		$this->station_dao     = new StationDao();
 		$this->competition_dao = new CompetitionDao();
 
 		if ( isset( $_GET['tuja_station'] ) ) {
-			$this->station     = $this->station_dao->get( $_GET['tuja_station'] );
-			$this->competition = $this->competition_dao->get( $this->station->competition_id );
-		} elseif ( isset( $_GET['tuja_competition'] ) ) {
-			$this->competition = $this->competition_dao->get( $_GET['tuja_competition'] );
-		}
-
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
+			$this->station = $this->station_dao->get( $_GET['tuja_station'] );
+			// TODO: Validate that station belongs to competition
 		}
 	}
 
-	protected function print_menu() {
-		$menu = BreadcrumbsMenu::create();
+	protected function create_menu( string $current_view_name ): BreadcrumbsMenu {
+		$menu = parent::create_menu( $current_view_name );
 
 		//
 		// First level
@@ -74,7 +65,7 @@ class AbstractStation {
 			);
 		}
 
-		print $menu->render();
+		return $menu;
 	}
 
 }

@@ -9,32 +9,23 @@ use tuja\data\model\Station;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\QuestionGroup;
 use tuja\data\store\MapDao;
-use tuja\data\store\CompetitionDao;
 use tuja\data\model\ValidationException;
 use tuja\data\store\MarkerDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\StationDao;
 
-class Maps {
+class Maps extends AbstractCompetitionPage {
 	const ACTION_NAME_DELETE_PREFIX = 'tuja_map_delete__';
 	const FIELD_VALUE_SEP           = ' ';
 
-	private $competition;
-
 	public function __construct() {
-		$db_competition           = new CompetitionDao();
+		parent::__construct();
 		$this->question_dao       = new QuestionDao();
 		$this->question_group_dao = new QuestionGroupDao();
 		$this->map_dao            = new MapDao();
 		$this->marker_dao         = new MarkerDao();
 		$this->station_dao        = new StationDao();
-		$this->competition        = $db_competition->get( $_GET['tuja_competition'] );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
 	}
 
 	private static function key( int $map_id, string $type, int $question_id, int $station_id ) {

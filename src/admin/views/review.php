@@ -2,9 +2,10 @@
 
 namespace tuja\admin;
 
-AdminUtils::printTopMenu( $competition );
-
 use tuja\data\store\ResponseDao;
+
+AdminUtils::printTopMenu( $competition );
+$this->print_menu();
 
 $question_filters = [
 	ResponseDao::QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE => 'alla svar där auto-rättningen är osäker',

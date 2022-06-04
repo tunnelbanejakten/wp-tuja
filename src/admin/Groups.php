@@ -7,29 +7,13 @@ use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\GroupCategory;
 use tuja\data\model\Map;
-use tuja\data\model\ValidationException;
-use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\MapDao;
 use tuja\data\store\PersonDao;
-use tuja\data\store\ResponseDao;
 use tuja\util\rules\RuleResult;
 
-class Groups {
-
-	private $competition;
-
-	public function __construct() {
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
-	}
-
+class Groups extends AbstractCompetitionPage {
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {
 			return;

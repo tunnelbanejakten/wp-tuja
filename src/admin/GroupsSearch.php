@@ -2,33 +2,17 @@
 
 namespace tuja\admin;
 
-use Exception;
-use tuja\data\store\CompetitionDao;
-
-class GroupsSearch {
-
-	private $competition;
-
-	public function __construct() {
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
-	}
-
+class GroupsSearch extends AbstractCompetitionPage {
 	public function get_scripts(): array {
-		return [
-			'admin-search.js'
-		];
+		return array(
+			'admin-search.js',
+		);
 	}
 
 	public function output() {
 		$competition = $this->competition;
 
-		$search_query_endpoint = add_query_arg(
+		$search_query_endpoint  = add_query_arg(
 			array(
 				'action'           => 'tuja_search',
 				'query'            => 'QUERY',
@@ -36,16 +20,18 @@ class GroupsSearch {
 			),
 			admin_url( 'admin.php' )
 		);
-		$group_page_url_pattern = add_query_arg( array(
-			'tuja_view'  => 'GroupMembers',
-			'tuja_group' => 'GROUPID',
-			'tuja_competition' => $this->competition->id,
-		) );
-	
+		$group_page_url_pattern = add_query_arg(
+			array(
+				'tuja_view'        => 'GroupMembers',
+				'tuja_group'       => 'GROUPID',
+				'tuja_competition' => $this->competition->id,
+			)
+		);
+
 		include( 'views/groups-search.php' );
 	}
 
-	public function print_menu() {
+	protected function create_menu( string $current_view_name ): BreadcrumbsMenu {
 		$groups_start_page_link = add_query_arg(
 			array(
 				'tuja_competition' => $this->competition->id,
@@ -53,11 +39,12 @@ class GroupsSearch {
 			)
 		);
 
-		print BreadcrumbsMenu::create(
+		return parent::create_menu(
+			$current_view_name
 		)->add(
 			BreadcrumbsMenu::item( 'Grupper', $groups_start_page_link )
 		)->add(
 			BreadcrumbsMenu::item( 'Sök' ),
-		)->render();
+		);
 	}
 }

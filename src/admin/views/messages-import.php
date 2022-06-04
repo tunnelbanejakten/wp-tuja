@@ -3,6 +3,7 @@
 namespace tuja\admin;
 
 AdminUtils::printTopMenu( $competition );
+$this->print_menu();
 ?>
 
 <h3>Importera SMS och MMS</h3>

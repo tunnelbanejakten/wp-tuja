@@ -8,15 +8,14 @@ use tuja\data\store\FormDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\QuestionDao;
 
-class AbstractForm {
+class AbstractForm extends AbstractCompetitionPage {
 	protected $form;
-	protected $competition;
 	protected $form_dao;
 	protected $question_dao;
 	protected $question_group_dao;
 
 	public function __construct() {
-		$this->competition_dao    = new CompetitionDao();
+		parent::__construct();
 		$this->form_dao           = new FormDao();
 		$this->question_dao       = new QuestionDao();
 		$this->question_group_dao = new QuestionGroupDao();
@@ -24,24 +23,18 @@ class AbstractForm {
 		if ( isset( $_GET['tuja_question_group'] ) ) {
 			$this->question_group = $this->question_group_dao->get( $_GET['tuja_question_group'] );
 			$this->form           = $this->form_dao->get( $this->question_group->form_id );
-			$this->competition    = $this->competition_dao->get( $this->form->competition_id );
+			// $this->competition    = $this->competition_dao->get( $this->form->competition_id );
 		} elseif ( isset( $_GET['tuja_form'] ) ) {
-			$this->form        = $this->form_dao->get( $_GET['tuja_form'] );
-			$this->competition = $this->competition_dao->get( $this->form->competition_id );
+			$this->form = $this->form_dao->get( $_GET['tuja_form'] );
+			// $this->competition = $this->competition_dao->get( $this->form->competition_id );
 		} elseif ( isset( $_GET['tuja_competition'] ) ) {
-			$this->competition = $this->competition_dao->get( $_GET['tuja_competition'] );
-		}
-
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-			return;
+			// $this->competition = $this->competition_dao->get( $_GET['tuja_competition'] );
 		}
 	}
 
-	public function print_menu() {
+	protected function create_menu( string $current_view_name ): BreadcrumbsMenu {
+		$menu              = parent::create_menu( $current_view_name );
 		$current_view_name = $_GET['tuja_view'];
-
-		$menu = BreadcrumbsMenu::create();
 
 		//
 		// First level
@@ -116,6 +109,6 @@ class AbstractForm {
 				...$question_group_links,
 			);
 		}
-		print $menu->render();
+		return $menu;
 	}
 }

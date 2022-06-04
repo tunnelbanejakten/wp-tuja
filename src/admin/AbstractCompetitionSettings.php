@@ -1,29 +1,9 @@
 <?php
 namespace tuja\admin;
 
-use tuja\data\store\CompetitionDao;
-
-class AbstractCompetitionSettings {
-
-	protected $competition;
-	protected $competition_dao;
-
-	public function __construct() {
-		$this->competition_dao = new CompetitionDao();
-
-		if ( isset( $_GET['tuja_competition'] ) ) {
-			$this->competition = $this->competition_dao->get( $_GET['tuja_competition'] );
-		}
-
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
-	}
-
-	public function print_menu() {
-		$menu = BreadcrumbsMenu::create();
+class AbstractCompetitionSettings extends AbstractCompetitionPage {
+	protected function create_menu( string $current_view_name ): BreadcrumbsMenu {
+		$menu = parent::create_menu( $current_view_name );
 
 		$current_view_name = $_GET['tuja_view'];
 
@@ -76,6 +56,6 @@ class AbstractCompetitionSettings {
 			);
 		}
 
-		print $menu->render();
+		return $menu;
 	}
 }

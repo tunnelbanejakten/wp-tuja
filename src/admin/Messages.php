@@ -6,19 +6,12 @@ use tuja\data\store\CompetitionDao;
 use tuja\view\FieldImages;
 use tuja\data\store\MessageDao;
 
-class Messages {
+class Messages extends AbstractCompetitionPage {
 
-	private $competition;
 	private $messages_manager;
 
 	public function __construct() {
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if (!$this->competition) {
-			print 'Could not find competition';
-
-			return;
-		}
+		parent::__construct();
 		$this->messages_manager = new MessagesManager( $this->competition );
 	}
 

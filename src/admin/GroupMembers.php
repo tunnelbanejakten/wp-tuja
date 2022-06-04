@@ -8,10 +8,6 @@ use tuja\data\store\GroupDao;
 
 class GroupMembers extends AbstractGroup {
 
-	public function __construct() {
-		parent::__construct();
-	}
-
 	public function handle_post() {
 		global $wpdb;
 

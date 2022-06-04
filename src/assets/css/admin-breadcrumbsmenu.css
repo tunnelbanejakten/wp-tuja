@@ -30,6 +30,11 @@ nav.breadcrumb .drop-container>span::after {
     color: #bbb;
 }
 
+nav.breadcrumb .active,
+nav.leaves .active {
+    font-weight: bold;
+}
+
 nav.breadcrumb ol,
 nav.breadcrumb ul {
     list-style-type: none;

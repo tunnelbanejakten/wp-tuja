@@ -2,6 +2,7 @@
 namespace tuja\admin;
 
 AdminUtils::printTopMenu( $competition );
+$this->print_menu();
 ?>
 
 <?php foreach ( $reports as $report ) { ?>

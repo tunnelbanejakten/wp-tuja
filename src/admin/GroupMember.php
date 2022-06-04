@@ -130,7 +130,7 @@ class GroupMember extends AbstractGroup {
 		}
 	}
 
-	protected function create_menu( $current_view_name ) {
+	protected function create_menu( string $current_view_name ): BreadcrumbsMenu {
 		$menu = parent::create_menu( $current_view_name );
 
 		if ( ! $this->is_create_mode ) {
@@ -138,7 +138,8 @@ class GroupMember extends AbstractGroup {
 			$people_links   = array();
 			$people         = $this->person_dao->get_all_in_group( $this->group->id, true );
 			foreach ( $people as $person ) {
-				if ( isset( $this->person ) && $person->id === $this->person->id ) {
+				$active = isset( $this->person ) && $person->id === $this->person->id;
+				if ( $active ) {
 					$people_current = $person->get_short_description();
 				}
 				$link           = add_query_arg(
@@ -149,7 +150,7 @@ class GroupMember extends AbstractGroup {
 						'tuja_person'      => $person->id,
 					)
 				);
-				$people_links[] = BreadcrumbsMenu::item( $person->get_short_description(), $link );
+				$people_links[] = BreadcrumbsMenu::item( $person->get_short_description(), $link, $active );
 			}
 			$menu->add(
 				BreadcrumbsMenu::item( $people_current ),

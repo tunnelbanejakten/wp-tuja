@@ -2,7 +2,7 @@
 namespace tuja\admin;
 
 AdminUtils::printTopMenu( $competition );
-
+$this->print_menu();
 ?>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">

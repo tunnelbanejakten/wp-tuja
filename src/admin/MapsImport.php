@@ -11,27 +11,17 @@ use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\question\TextQuestion;
 use tuja\data\store\MapDao;
 use tuja\data\store\MarkerDao;
-use tuja\data\store\CompetitionDao;
 use tuja\data\model\ValidationException;
 use tuja\data\store\QuestionDao;
 
-use function PHPUnit\Framework\matches;
-
-class MapsImport {
+class MapsImport extends AbstractCompetitionPage {
 	const MAGIC_NUMBER_NO_LINKING = -42;
 
-	private $competition;
 	private $mao_dao;
 	private $marker_dao;
 
 	public function __construct() {
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
+		parent::__construct();
 
 		$this->mao_dao       = new MapDao();
 		$this->existing_maps = array_reduce(
@@ -60,11 +50,11 @@ class MapsImport {
 	}
 
 	private function is_parse_file_mode():bool {
-		return $_POST['tuja_action'] == 'map_import_parse';
+		return @$_POST['tuja_action'] == 'map_import_parse';
 	}
 
 	private function is_save_mode():bool {
-		return $_POST['tuja_action'] == 'map_import_save';
+		return @$_POST['tuja_action'] == 'map_import_save';
 	}
 
 
@@ -157,6 +147,9 @@ class MapsImport {
 		$this->handle_post();
 
 		$competition = $this->competition;
+
+		$map_labels = array();
+		$markers_labels = array();
 
 		if ( $this->is_parse_file_mode() || $this->is_save_mode() ) {
 			$data    = $_POST['tuja_maps_import_raw'];

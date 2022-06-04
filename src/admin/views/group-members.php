@@ -6,6 +6,7 @@ use tuja\data\model\Person;
 AdminUtils::printTopMenu( $competition );
 
 $this->print_menu();
+$this->print_leaves_menu();
 ?>
 
 <p><a href="<?= $add_member_url ?>" id="tuja_group_member_add_link">Lägg till deltagare...</a></p>

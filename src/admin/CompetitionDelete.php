@@ -4,24 +4,9 @@ namespace tuja\admin;
 
 use Exception;
 use tuja\controller\DeleteCompetitionController;
-use tuja\data\store\CompetitionDao;
 use tuja\controller\AnonymizeController;
 
-class CompetitionDelete {
-
-	private $competition;
-
-	public function __construct() {
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
-	}
-
-
+class CompetitionDelete extends AbstractCompetitionPage {
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {
 			return true;

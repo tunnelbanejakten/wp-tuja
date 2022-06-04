@@ -17,19 +17,11 @@ use tuja\util\messaging\MessageSender;
 use tuja\util\messaging\OutgoingEmailMessage;
 use tuja\util\messaging\OutgoingSMSMessage;
 
-class MessagesSend {
-	private $competition;
+class MessagesSend extends AbstractCompetitionPage {
 	private $field_group_selector;
 
 	public function __construct() {
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
-
+		parent::__construct();
 		$this->field_group_selector = new FieldGroupSelector( $this->competition );
 	}
 

@@ -6,12 +6,14 @@ use Exception;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupDao;
 
-class AbstractGroup {
+class AbstractGroup extends AbstractCompetitionPage {
 	protected $group;
 	protected $competition;
 	protected $group_dao;
 
 	public function __construct() {
+		parent::__construct();
+
 		$this->group_dao = new GroupDao();
 		$this->group     = $this->group_dao->get( $_GET['tuja_group'] );
 		if ( ! $this->group ) {
@@ -20,16 +22,15 @@ class AbstractGroup {
 			return;
 		}
 
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $this->group->competition_id );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
+		error_log( var_export( $this->competition->id, true ) );
+		error_log( var_export( $this->group->competition_id, true ) );
+		if ( $this->competition->id !== $this->group->competition_id ) {
+			print 'Group is from different competition';
 			return;
 		}
 	}
 
-	protected function create_menu( $current_view_name ) {
+	protected function create_menu( string $current_view_name ): BreadcrumbsMenu {
 		//
 		// First level
 		//
@@ -53,7 +54,7 @@ class AbstractGroup {
 			if ( $group->id === $this->group->id ) {
 				$groups_current = $group->name;
 			}
-			$link = add_query_arg(
+			$link           = add_query_arg(
 				array(
 					'tuja_competition' => $this->competition->id,
 					'tuja_view'        => 'Group',
@@ -78,7 +79,8 @@ class AbstractGroup {
 		);
 		foreach ( $items as $full_view_name => $title ) {
 			$short_view_name = substr( $full_view_name, strrpos( $full_view_name, '\\' ) + 1 );
-			if ( $short_view_name === $current_view_name || ( $current_view_name === 'GroupMember' && $short_view_name === 'GroupMembers' ) ) {
+			$active          = $short_view_name === $current_view_name;
+			if ( $active || ( $current_view_name === 'GroupMember' && $short_view_name === 'GroupMembers' ) ) {
 				$group_page_current = $title;
 			}
 			$link               = add_query_arg(
@@ -87,10 +89,11 @@ class AbstractGroup {
 					'tuja_view'        => $short_view_name,
 				)
 			);
-			$group_page_links[] = BreadcrumbsMenu::item( $title, $link );
+			$group_page_links[] = BreadcrumbsMenu::item( $title, $link, $active );
 		}
 
-		$menu = BreadcrumbsMenu::create(
+		$menu = parent::create_menu(
+			$current_view_name
 		)->add(
 			BreadcrumbsMenu::item( 'Grupper', $groups_start_page_link )
 		)->add(
@@ -102,9 +105,5 @@ class AbstractGroup {
 		);
 
 		return $menu;
-	}
-
-	public function print_menu() {
-		print $this->create_menu( $_GET['tuja_view'] )->render();
 	}
 }

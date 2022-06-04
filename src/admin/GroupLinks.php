@@ -19,6 +19,7 @@ class GroupLinks extends AbstractGroup {
 
 	public function __construct() {
 		parent::__construct();
+
 		$this->form_dao = new FormDao();
 	}
 

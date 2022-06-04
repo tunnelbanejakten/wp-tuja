@@ -66,6 +66,7 @@ class GroupScore extends AbstractGroup {
 			}
 		}
 	}
+
 	public function output() {
 		$this->handle_post();
 

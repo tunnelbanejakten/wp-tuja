@@ -3,13 +3,14 @@
 use tuja\data\model\question\AbstractQuestion;
 
 AdminUtils::printTopMenu( $competition );
+$this->print_menu();
 ?>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
 	<?php
 	printf( '<p><a href="%s">« Tillbaka till kartöversikten</a></p>', $back_url );
 	?>
-	<textarea name="tuja_maps_import_raw" style="width: 100%; height: 10em;" placeholder="Klistra in innehållet i KML-filen här..."><?php echo stripslashes( $_POST['tuja_maps_import_raw'] ); ?></textarea>
+	<textarea name="tuja_maps_import_raw" style="width: 100%; height: 10em;" placeholder="Klistra in innehållet i KML-filen här..."><?php echo stripslashes( @$_POST['tuja_maps_import_raw'] ); ?></textarea>
 
 	<button type="submit" class="button" name="tuja_action" value="map_import_parse" id="map_import_parse_button">
 		Läs in kartfil

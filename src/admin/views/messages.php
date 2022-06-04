@@ -1,10 +1,8 @@
 <?php
 namespace tuja\admin;
 
-use DateTime;
-use tuja\view\FieldImages;
-
 AdminUtils::printTopMenu( $competition );
+$this->print_menu();
 ?>
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
 
