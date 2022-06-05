@@ -6,7 +6,7 @@ use tuja\data\model\Form;
 use tuja\data\model\ValidationException;
 use tuja\util\QuestionNameGenerator;
 
-class Competition extends AbstractForm {
+class Forms extends AbstractForm {
 
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {
@@ -42,6 +42,6 @@ class Competition extends AbstractForm {
 
 		$forms = $this->form_dao->get_all_in_competition( $competition->id );
 
-		include( 'views/competition.php' );
+		include( 'views/forms.php' );
 	}
 }

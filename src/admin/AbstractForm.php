@@ -34,14 +34,13 @@ class AbstractForm extends AbstractCompetitionPage {
 
 	protected function create_menu( string $current_view_name ): BreadcrumbsMenu {
 		$menu              = parent::create_menu( $current_view_name );
-		$current_view_name = $_GET['tuja_view'];
 
 		//
 		// First level
 		//
-		$groups_start_page_link = 'Competition' !== $current_view_name ? add_query_arg(
+		$groups_start_page_link = 'Forms' !== $current_view_name ? add_query_arg(
 			array(
-				'tuja_view'           => 'Competition',
+				'tuja_view'           => 'Forms',
 				'tuja_competition'    => $this->competition->id,
 				'tuja_form'           => null,
 				'tuja_question_group' => null,
@@ -55,7 +54,7 @@ class AbstractForm extends AbstractCompetitionPage {
 		// Second level
 		//
 
-		if ( 'Competition' !== $current_view_name ) {
+		if ( 'Forms' !== $current_view_name ) {
 			$forms_current = null;
 			$forms_links   = array();
 			$forms         = $this->form_dao->get_all_in_competition( $this->competition->id );

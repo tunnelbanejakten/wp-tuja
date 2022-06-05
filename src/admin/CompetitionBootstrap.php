@@ -42,7 +42,7 @@ class CompetitionBootstrap {
 
 				$url = add_query_arg(
 					array(
-						'tuja_view'        => 'Competition',
+						'tuja_view'        => 'Forms',
 						'tuja_competition' => $competition->id,
 					)
 				);
