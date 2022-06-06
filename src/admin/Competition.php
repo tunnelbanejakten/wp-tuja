@@ -34,12 +34,14 @@ class Competition {
 	}
 
 	protected function add_static_menu( BreadcrumbsMenu $menu, array $items ) {
-		$parents            = array_values( class_parents( $this ) );
-		$group_page_current = 'Some title';
-		$group_page_links   = array();
+		$parents                       = array_values( class_parents( $this ) );
+		$group_page_current            = 'Some title';
+		$group_page_links              = array();
+		$this_name                     = get_class( $this );
+		$is_active_page_in_static_menu = in_array( $this_name, array_keys( $items ), true );
 		foreach ( $items as $full_view_name => $title ) {
 			$short_view_name = substr( $full_view_name, strrpos( $full_view_name, '\\' ) + 1 );
-			$active          = get_class( $this ) === $full_view_name || in_array( $full_view_name, $parents );
+			$active          = $this_name === $full_view_name || ( ! $is_active_page_in_static_menu && in_array( $full_view_name, $parents, true ) );
 			if ( $active ) {
 				$group_page_current = $title;
 			}
@@ -59,18 +61,7 @@ class Competition {
 	}
 
 	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
-		$menu = BreadcrumbsMenu::create()->add(
-			BreadcrumbsMenu::item(
-				'Start',
-				add_query_arg(
-					array(
-						'tuja_competition' => $this->competition->id,
-						'tuja_view'        => 'Competition',
-					)
-				),
-				in_array( Competition::class, $parents )
-			)
-		);
+		$menu = BreadcrumbsMenu::create();
 
 		return $this->add_static_menu(
 			$menu,

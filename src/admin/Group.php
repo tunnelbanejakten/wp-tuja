@@ -38,7 +38,8 @@ class Group extends Groups {
 		$dao            = new GroupDao();
 		$groups         = $dao->get_all_in_competition( $this->competition->id );
 		foreach ( $groups as $group ) {
-			if ( $group->id === $this->group->id ) {
+			$active = $group->id === $this->group->id;
+			if ( $active ) {
 				$groups_current = $group->name;
 			}
 			$link           = add_query_arg(
@@ -48,7 +49,7 @@ class Group extends Groups {
 					'tuja_group'       => $group->id,
 				)
 			);
-			$groups_links[] = BreadcrumbsMenu::item( $group->name, $link );
+			$groups_links[] = BreadcrumbsMenu::item( $group->name, $link, $active );
 		}
 
 		$menu->add(
