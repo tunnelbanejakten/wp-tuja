@@ -11,7 +11,7 @@ use tuja\admin\reportgenerators\ReportNotes;
 use tuja\admin\reportgenerators\ReportPeople;
 use tuja\admin\reportgenerators\ReportQuestionFiltering;
 
-class Reports extends AbstractCompetitionPage {
+class Reports extends Competition {
 	private function get_report_url( $short_name, $format ) {
 		return add_query_arg(
 			array(

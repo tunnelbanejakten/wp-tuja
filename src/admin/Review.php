@@ -16,7 +16,7 @@ use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
 
 
-class Review extends AbstractCompetitionPage {
+class Review extends Competition {
 
 	const DEFAULT_QUESTION_FILTER = ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL;
 	const DEFAULT_GROUP_FILTER    = FieldGroupSelector::GROUP_KEY_ALL;

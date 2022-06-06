@@ -14,18 +14,14 @@ use tuja\data\store\MarkerDao;
 use tuja\data\model\ValidationException;
 use tuja\data\store\QuestionDao;
 
-class MapsImport extends AbstractCompetitionPage {
+class MapsImport extends Maps {
 	const MAGIC_NUMBER_NO_LINKING = -42;
-
-	private $mao_dao;
-	private $marker_dao;
 
 	public function __construct() {
 		parent::__construct();
 
-		$this->mao_dao       = new MapDao();
 		$this->existing_maps = array_reduce(
-			$this->mao_dao->get_all_in_competition( $this->competition->id ),
+			$this->map_dao->get_all_in_competition( $this->competition->id ),
 			function ( $res, Map $map ) {
 				$res[ $map->name ] = $map;
 				return $res;
@@ -33,8 +29,11 @@ class MapsImport extends AbstractCompetitionPage {
 			array()
 		);
 
-		$this->marker_dao       = new MarkerDao();
 		$this->existing_markers = $this->marker_dao->get_all_in_competition( $this->competition->id );
+	}
+
+	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
+		return parent::create_menu( $current_view_name, $parents )->add( BreadcrumbsMenu::item( 'Importera' ) );
 	}
 
 	// TODO: Make this function do something, or delete it.
@@ -83,7 +82,7 @@ class MapsImport extends AbstractCompetitionPage {
 			$props->name           = $map_name;
 			$props->competition_id = $this->competition->id;
 			try {
-				$id = $this->mao_dao->create( $props );
+				$id = $this->map_dao->create( $props );
 				if ( $id !== false ) {
 					return $id;
 				}
@@ -148,7 +147,7 @@ class MapsImport extends AbstractCompetitionPage {
 
 		$competition = $this->competition;
 
-		$map_labels = array();
+		$map_labels     = array();
 		$markers_labels = array();
 
 		if ( $this->is_parse_file_mode() || $this->is_save_mode() ) {

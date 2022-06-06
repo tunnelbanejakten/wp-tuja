@@ -13,7 +13,7 @@ use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\util\score\ScoreCalculator;
 
-class Scoreboard extends AbstractCompetitionPage {
+class Scoreboard extends Competition {
 
 	public function handle_post() {
 	}

@@ -4,26 +4,69 @@ namespace tuja\admin;
 
 use Exception;
 use tuja\data\model\QuestionGroup;
-use tuja\data\store\FormDao;
-use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\util\DateUtils;
 use tuja\data\store\CompetitionDao;
 use tuja\util\ReflectionUtils;
 use tuja\util\QuestionNameGenerator;
 
-class Form extends AbstractForm {
-	const FORM_FIELD_NAME_PREFIX = 'tuja-question';
+class Form extends Forms {
+	const FORM_FIELD_NAME_PREFIX    = 'tuja-question';
 	const ACTION_NAME_DELETE_PREFIX = 'question_group_delete__';
+
+	protected $question_group_dao;
+	protected $form;
+
+	public function __construct() {
+		parent::__construct();
+		$this->question_group_dao = new QuestionGroupDao();
+
+		if ( isset( $_GET['tuja_form'] ) ) {
+			$this->form = $this->form_dao->get( $_GET['tuja_form'] );
+		}
+		$this->assert_set( 'Could not find form', $this->form );
+		$this->assert_same( 'Form needs to belong to competition', $this->competition->id, $this->form->competition_id );
+	}
+
+	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
+		$menu = parent::create_menu( $current_view_name, $parents );
+
+		$forms_current = null;
+		$forms_links   = array();
+		$forms         = $this->form_dao->get_all_in_competition( $this->competition->id );
+		foreach ( $forms as $form ) {
+			$active = $form->id === $this->form->id;
+			if ( $active ) {
+				$forms_current = $form->name;
+			}
+			$link          = add_query_arg(
+				array(
+					'tuja_view'           => 'Form',
+					'tuja_competition'    => $this->competition->id,
+					'tuja_form'           => $form->id,
+					'tuja_question_group' => null,
+				)
+			);
+			$forms_links[] = BreadcrumbsMenu::item( $form->name, $link, $active );
+		}
+		$menu->add(
+			BreadcrumbsMenu::item( $forms_current ),
+			...$forms_links,
+		);
+
+		return $menu;
+	}
 
 	public function handle_post() {
 		global $wpdb;
 
-		if(!isset($_POST['tuja_action'])) return;
+		if ( ! isset( $_POST['tuja_action'] ) ) {
+			return;
+		}
 
-		if($_POST['tuja_action'] == 'question_groups_update') {
+		if ( $_POST['tuja_action'] == 'question_groups_update' ) {
 			$wpdb->show_errors();
-		
+
 			$question_groups = $this->question_group_dao->get_all_in_form( $this->form->id );
 
 			$success = true;
@@ -41,36 +84,36 @@ class Form extends AbstractForm {
 				}
 			}
 
-			$success ? AdminUtils::printSuccess('Uppdaterat!') : AdminUtils::printError('Kunde inte uppdatera grupp.');
-		} elseif ($_POST['tuja_action'] == 'form_update') {
+			$success ? AdminUtils::printSuccess( 'Uppdaterat!' ) : AdminUtils::printError( 'Kunde inte uppdatera grupp.' );
+		} elseif ( $_POST['tuja_action'] == 'form_update' ) {
 			try {
 				$this->form->submit_response_start = DateUtils::from_date_local_value( $_POST['tuja-submit-response-start'] );
 				$this->form->submit_response_end   = DateUtils::from_date_local_value( $_POST['tuja-submit-response-end'] );
-				$success = $this->form_dao->update( $this->form );
-			} catch (Exception $e) {
+				$success                           = $this->form_dao->update( $this->form );
+			} catch ( Exception $e ) {
 				$success = false;
 			}
 
-			$success !== false ? AdminUtils::printSuccess('Uppdaterat!') : AdminUtils::printException($e);
-		} elseif ($_POST['tuja_action'] == 'question_group_create') {
+			$success !== false ? AdminUtils::printSuccess( 'Uppdaterat!' ) : AdminUtils::printException( $e );
+		} elseif ( $_POST['tuja_action'] == 'question_group_create' ) {
 			$group_props          = new QuestionGroup();
 			$group_props->text    = null;
 			$group_props->form_id = $this->form->id;
 
 			$success = $this->question_group_dao->create( $group_props );
 
-			$success !== false ? AdminUtils::printSuccess('Grupp skapad!') : AdminUtils::printError('Kunde inte skapa grupp.');
-		} elseif (substr($_POST['tuja_action'], 0, strlen(self::ACTION_NAME_DELETE_PREFIX)) == self::ACTION_NAME_DELETE_PREFIX) {
+			$success !== false ? AdminUtils::printSuccess( 'Grupp skapad!' ) : AdminUtils::printError( 'Kunde inte skapa grupp.' );
+		} elseif ( substr( $_POST['tuja_action'], 0, strlen( self::ACTION_NAME_DELETE_PREFIX ) ) == self::ACTION_NAME_DELETE_PREFIX ) {
 			$question_group_id_to_delete = substr( $_POST['tuja_action'], strlen( self::ACTION_NAME_DELETE_PREFIX ) );
-			$affected_rows = $this->question_group_dao->delete( $question_group_id_to_delete );
-			$success       = $affected_rows !== false && $affected_rows === 1;
-			
-			if($success) {
-				AdminUtils::printSuccess('Grupp borttagen!');
+			$affected_rows               = $this->question_group_dao->delete( $question_group_id_to_delete );
+			$success                     = $affected_rows !== false && $affected_rows === 1;
+
+			if ( $success ) {
+				AdminUtils::printSuccess( 'Grupp borttagen!' );
 			} else {
-				AdminUtils::printError('Kunde inte ta bort grupp.');
-				if($error = $wpdb->last_error) {
-					AdminUtils::printError($error);
+				AdminUtils::printError( 'Kunde inte ta bort grupp.' );
+				if ( $error = $wpdb->last_error ) {
+					AdminUtils::printError( $error );
 				}
 			}
 		}

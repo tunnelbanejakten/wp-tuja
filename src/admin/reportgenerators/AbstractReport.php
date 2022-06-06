@@ -3,9 +3,9 @@
 namespace tuja\admin\reportgenerators;
 
 
-use tuja\admin\AbstractCompetitionPage;
+use tuja\admin\Competition;
 
-abstract class AbstractReport extends AbstractCompetitionPage {
+abstract class AbstractReport extends Competition {
 	abstract function get_rows(): array;
 
 	abstract function output_html( array $rows );

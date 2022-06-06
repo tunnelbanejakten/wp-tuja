@@ -3,10 +3,19 @@
 namespace tuja\admin;
 
 use tuja\data\model\Form;
+use tuja\data\store\FormDao;
 use tuja\data\model\ValidationException;
 use tuja\util\QuestionNameGenerator;
 
-class Forms extends AbstractForm {
+class Forms extends Competition {
+
+	protected $form;
+	protected $form_dao;
+
+	public function __construct() {
+		parent::__construct();
+		$this->form_dao = new FormDao();
+	}
 
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {

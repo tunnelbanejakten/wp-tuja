@@ -6,7 +6,7 @@ use Exception;
 use tuja\controller\DeleteCompetitionController;
 use tuja\controller\AnonymizeController;
 
-class CompetitionDelete extends AbstractCompetitionPage {
+class CompetitionDelete extends Competition {
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {
 			return true;

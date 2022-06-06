@@ -12,7 +12,7 @@ use tuja\data\store\MessageDao;
 use Exception;
 use DateTime;
 
-class MessagesImport extends AbstractCompetitionPage {
+class MessagesImport extends Messages {
 
 	private $group_dao;
 	private $message_dao;

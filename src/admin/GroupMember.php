@@ -9,7 +9,7 @@ use tuja\data\model\ValidationException;
 use tuja\frontend\router\PersonEditorInitiator;
 use tuja\frontend\router\ReportPointsInitiator;
 
-class GroupMember extends AbstractGroup {
+class GroupMember extends Group {
 
 	public function __construct() {
 		parent::__construct();
@@ -18,11 +18,8 @@ class GroupMember extends AbstractGroup {
 		$this->is_create_mode = ! is_numeric( $_GET['tuja_person'] );
 		if ( ! $this->is_create_mode ) {
 			$this->person = $this->person_dao->get( intval( $_GET['tuja_person'] ) );
-			if ( ! $this->person ) {
-				print 'Could not find person';
 
-				return;
-			}
+			$this->assert_set( 'Could not find person', $this->person );
 		} else {
 			$person = new Person();
 			$person->set_type( Person::PERSON_TYPE_REGULAR );
@@ -130,8 +127,8 @@ class GroupMember extends AbstractGroup {
 		}
 	}
 
-	protected function create_menu( string $current_view_name ): BreadcrumbsMenu {
-		$menu = parent::create_menu( $current_view_name );
+	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
+		$menu = parent::create_menu( $current_view_name, $parents );
 
 		if ( ! $this->is_create_mode ) {
 			$people_current = null;

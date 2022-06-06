@@ -2,7 +2,7 @@
 
 namespace tuja\admin;
 
-class GroupsSearch extends AbstractCompetitionPage {
+class GroupsSearch extends Groups {
 	public function get_scripts(): array {
 		return array(
 			'admin-search.js',
@@ -31,7 +31,8 @@ class GroupsSearch extends AbstractCompetitionPage {
 		include( 'views/groups-search.php' );
 	}
 
-	protected function create_menu( string $current_view_name ): BreadcrumbsMenu {
+	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
+		$menu = parent::create_menu( $current_view_name, $parents );
 		$groups_start_page_link = add_query_arg(
 			array(
 				'tuja_competition' => $this->competition->id,
@@ -39,11 +40,7 @@ class GroupsSearch extends AbstractCompetitionPage {
 			)
 		);
 
-		return parent::create_menu(
-			$current_view_name
-		)->add(
-			BreadcrumbsMenu::item( 'Grupper', $groups_start_page_link )
-		)->add(
+		return $menu->add(
 			BreadcrumbsMenu::item( 'Sök' ),
 		);
 	}

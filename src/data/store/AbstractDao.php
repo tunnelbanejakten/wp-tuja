@@ -88,8 +88,8 @@ class AbstractDao {
 					$result->name,
 					$result->text,
 					$result->text_hint,
-					$result->id,
-					$result->question_group_id,
+					intval( $result->id ),
+					intval( $result->question_group_id ),
 					$result->sort_order,
 					$result->limit_time !== null ? intval( $result->limit_time ) : null,
 					@$config['score_max'],
@@ -106,8 +106,8 @@ class AbstractDao {
 					$result->name,
 					$result->text,
 					$result->text_hint,
-					$result->id,
-					$result->question_group_id,
+					intval( $result->id ),
+					intval( $result->question_group_id ),
 					$result->sort_order,
 					$result->limit_time !== null ? intval( $result->limit_time ) : null,
 					@$config['score_max'],
@@ -124,8 +124,8 @@ class AbstractDao {
 					$result->name,
 					$result->text,
 					$result->text_hint,
-					$result->id,
-					$result->question_group_id,
+					intval( $result->id ),
+					intval( $result->question_group_id ),
 					$result->sort_order,
 					$result->limit_time !== null ? intval( $result->limit_time ) : null,
 					@$config['score_max'],
@@ -138,8 +138,8 @@ class AbstractDao {
 					$result->name,
 					$result->text,
 					$result->text_hint,
-					$result->id,
-					$result->question_group_id,
+					intval( $result->id ),
+					intval( $result->question_group_id ),
 					$result->sort_order,
 					$result->limit_time !== null ? intval( $result->limit_time ) : null,
 					@$config['score_max'],
@@ -154,9 +154,9 @@ class AbstractDao {
 
 	protected static function to_form( $result ): Form {
 		$f                                     = new Form();
-		$f->id                                 = $result->id;
+		$f->id                                 = intval( $result->id );
 		$f->random_id                          = $result->random_id;
-		$f->competition_id                     = $result->competition_id;
+		$f->competition_id                     = intval( $result->competition_id );
 		$f->name                               = $result->name;
 		$f->allow_multiple_responses_per_group = $result->allow_multiple_responses_per_team;
 		$f->submit_response_start              = self::from_db_date( $result->submit_response_start );
@@ -167,9 +167,9 @@ class AbstractDao {
 
 	protected static function to_station( $result ): Station {
 		$s                          = new Station();
-		$s->id                      = $result->id;
+		$s->id                      = intval( $result->id );
 		$s->random_id               = $result->random_id;
-		$s->competition_id          = $result->competition_id;
+		$s->competition_id          = intval( $result->competition_id );
 		$s->name                    = $result->name;
 		$s->location_gps_coord_lat  = $result->location_gps_coord_lat;
 		$s->location_gps_coord_long = $result->location_gps_coord_long;
@@ -180,7 +180,7 @@ class AbstractDao {
 
 	protected static function to_ticket_design( $result ): TicketDesign {
 		$td                       = new TicketDesign();
-		$td->station_id           = $result->station_id;
+		$td->station_id           = intval( $result->station_id );
 		$td->colour               = $result->colour;
 		$td->word                 = $result->word;
 		$td->symbol               = $result->symbol;
@@ -191,9 +191,9 @@ class AbstractDao {
 
 	protected static function to_map( $result ): Map {
 		$map                 = new Map();
-		$map->id             = $result->id;
+		$map->id             = intval( $result->id );
 		$map->random_id      = $result->random_id;
-		$map->competition_id = $result->competition_id;
+		$map->competition_id = intval( $result->competition_id );
 		$map->name           = $result->name;
 
 		return $map;

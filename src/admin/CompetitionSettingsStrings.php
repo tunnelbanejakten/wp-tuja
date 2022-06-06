@@ -8,7 +8,7 @@ use tuja\data\store\CompetitionDao;
 use tuja\data\store\StringsDao;
 use tuja\util\Strings;
 
-class CompetitionSettingsStrings extends AbstractCompetitionSettings {
+class CompetitionSettingsStrings extends CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	public function handle_post() {

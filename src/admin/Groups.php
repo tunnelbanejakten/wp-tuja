@@ -13,7 +13,21 @@ use tuja\data\store\MapDao;
 use tuja\data\store\PersonDao;
 use tuja\util\rules\RuleResult;
 
-class Groups extends AbstractCompetitionPage {
+class Groups extends Competition {
+	protected $group_dao;
+
+	public function __construct() {
+		parent::__construct();
+
+		$this->group_dao = new GroupDao();
+	}
+
+	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
+		$menu = parent::create_menu( $current_view_name, $parents );
+
+		return $menu;
+	}
+
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {
 			return;

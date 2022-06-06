@@ -17,7 +17,7 @@ use tuja\util\messaging\MessageSender;
 use tuja\util\messaging\OutgoingEmailMessage;
 use tuja\util\messaging\OutgoingSMSMessage;
 
-class MessagesSend extends AbstractCompetitionPage {
+class MessagesSend extends Messages {
 	private $field_group_selector;
 
 	public function __construct() {

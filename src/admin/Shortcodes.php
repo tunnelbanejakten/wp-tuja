@@ -4,7 +4,7 @@ namespace tuja\admin;
 
 use tuja\data\store\FormDao;
 
-class Shortcodes extends AbstractCompetitionPage {
+class Shortcodes extends Competition {
 
 	public function handle_post() {
 

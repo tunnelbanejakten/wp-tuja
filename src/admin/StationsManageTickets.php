@@ -11,7 +11,7 @@ use tuja\data\store\GroupDao;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\TicketDao;
 
-class StationsManageTickets extends AbstractStation {
+class StationsManageTickets extends Stations {
 	private $ticket_dao;
 
 	const ACTION_GRANT  = 'grant_ticket';
@@ -25,7 +25,6 @@ class StationsManageTickets extends AbstractStation {
 
 		$this->ticket_dao = new TicketDao();
 	}
-
 
 	public function handle_post() {
 		if ( ! isset( $_POST[ self::INPUT_FIELD_ACTION ] ) ) {

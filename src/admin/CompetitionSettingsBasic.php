@@ -8,7 +8,7 @@ use tuja\data\model\ValidationException;
 use tuja\util\DateUtils;
 
 
-class CompetitionSettingsBasic extends AbstractCompetitionSettings {
+class CompetitionSettingsBasic extends CompetitionSettings {
 	private function handle_post() {
 		if ( ! isset( $_POST['tuja_competition_settings_action'] ) ) {
 			return;

@@ -15,7 +15,7 @@ use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\StationDao;
 
-class Maps extends AbstractCompetitionPage {
+class Maps extends Competition {
 	const ACTION_NAME_DELETE_PREFIX = 'tuja_map_delete__';
 	const FIELD_VALUE_SEP           = ' ';
 

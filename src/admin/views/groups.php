@@ -2,6 +2,7 @@
 
 AdminUtils::printTopMenu( $competition );
 
+$this->print_menu();
 ?>
 
 <p><a href="<?= $search_url ?>">Sök</a></p>
