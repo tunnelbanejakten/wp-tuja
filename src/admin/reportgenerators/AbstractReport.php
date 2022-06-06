@@ -3,26 +3,14 @@
 namespace tuja\admin\reportgenerators;
 
 
-use tuja\data\store\CompetitionDao;
+use tuja\admin\Competition;
 
-abstract class AbstractReport {
-	protected $competition;
-
-	public function __construct() {
-		$this->competition = ( new CompetitionDao() )->get( $_GET['tuja_competition'] );
-	}
-
+abstract class AbstractReport extends Competition {
 	abstract function get_rows(): array;
 
 	abstract function output_html( array $rows );
 
 	public function output() {
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
-
 		$rows = $this->get_rows();
 
 		switch ( $_GET['tuja_report_format'] ) {

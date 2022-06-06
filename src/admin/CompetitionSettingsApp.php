@@ -6,7 +6,7 @@ use Exception;
 use tuja\data\model\Competition;
 use tuja\data\store\CompetitionDao;
 
-class CompetitionSettingsApp extends AbstractCompetitionSettings {
+class CompetitionSettingsApp extends CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	public function handle_post() {

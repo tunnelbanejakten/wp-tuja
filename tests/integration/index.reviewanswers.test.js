@@ -16,7 +16,7 @@ describe('Review Answers', () => {
   const createNewUserPage = async () => (new UserPageWrapper(browser, competitionId, competitionKey)).init()
 
   const createNewForm = async (formName) => {
-    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Competition&tuja_competition=${competitionId}`)
+    await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Forms&tuja_competition=${competitionId}`)
 
     await adminPage.type('#tuja_form_name', formName)
     await adminPage.clickLink('#tuja_form_create_button')

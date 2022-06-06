@@ -14,7 +14,7 @@ use tuja\data\store\ResponseDao;
 use tuja\data\store\StationDao;
 use tuja\util\score\ScoreCalculator;
 
-class GroupScore extends AbstractGroup {
+class GroupScore extends Group {
 
 	const DEFAULT_QUESTION_FILTER   = ResponseDao::QUESTION_FILTER_ALL;
 	const QUESTION_FILTER_URL_PARAM = 'tuja_group_question_filter';
@@ -66,6 +66,7 @@ class GroupScore extends AbstractGroup {
 			}
 		}
 	}
+
 	public function output() {
 		$this->handle_post();
 

@@ -3,7 +3,6 @@
 namespace tuja\admin;
 
 use tuja\data\model\Group;
-use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\ResponseDao;
@@ -14,20 +13,7 @@ use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\util\score\ScoreCalculator;
 
-class Scoreboard {
-
-	private $competition;
-
-	public function __construct() {
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if ( ! $this->competition ) {
-			print 'Could not find competition';
-
-			return;
-		}
-	}
-
+class Scoreboard extends Competition {
 
 	public function handle_post() {
 	}

@@ -6,7 +6,14 @@ use tuja\data\model\Station;
 use tuja\data\store\StationDao;
 use tuja\data\model\ValidationException;
 
-class Stations extends AbstractStation {
+class Stations extends Competition {
+
+	protected $station_dao;
+
+	public function __construct() {
+		parent::__construct();
+		$this->station_dao = new StationDao();
+	}
 
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {
@@ -18,35 +25,45 @@ class Stations extends AbstractStation {
 			$props->name           = $_POST['tuja_station_name'];
 			$props->competition_id = $this->competition->id;
 			try {
-				$station_dao = new StationDao();
-				$station_dao->create( $props );
+				$this->station_dao->create( $props );
 			} catch ( ValidationException $e ) {
 				AdminUtils::printException( $e );
 			}
 		}
 	}
 
+	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
+		$menu = parent::create_menu( $current_view_name, $parents );
+
+		return $this->add_static_menu(
+			$menu,
+			array(
+				Stations::class              => 'Översikt',
+				StationsManageTickets::class => 'Hantera biljetter',
+				StationsPoints::class        => 'Dela ut poäng',
+				StationsTicketing::class     => 'Konfigurera biljettsystem',
+			)
+		);
+	}
 
 	public function output() {
 		$this->handle_post();
 
-		$station_dao = new StationDao();
-
 		$competition = $this->competition;
 
-		$stations = $station_dao->get_all_in_competition( $competition->id );
+		$stations = $this->station_dao->get_all_in_competition( $competition->id );
 
-		$ticketing_url = add_query_arg(
+		$ticketing_url      = add_query_arg(
 			array(
 				'tuja_view' => 'StationsTicketing',
 			)
 		);
-		$points_url    = add_query_arg(
+		$points_url         = add_query_arg(
 			array(
 				'tuja_view' => 'StationsPoints',
 			)
 		);
-		$manage_tickets_url    = add_query_arg(
+		$manage_tickets_url = add_query_arg(
 			array(
 				'tuja_view' => 'StationsManageTickets',
 			)

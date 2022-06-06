@@ -114,9 +114,9 @@ class MarkerDao extends AbstractDao {
 
 	private static function to_marker( $result ): Marker {
 		$marker                         = new Marker();
-		$marker->id                     = $result->id;
+		$marker->id                     = intval( $result->id );
 		$marker->random_id              = $result->random_id;
-		$marker->map_id                 = $result->map_id;
+		$marker->map_id                 = intval( $result->map_id );
 		$marker->gps_coord_lat          = isset( $result->gps_coord_lat ) ? floatval( $result->gps_coord_lat ) : null;
 		$marker->gps_coord_long         = isset( $result->gps_coord_long ) ? floatval( $result->gps_coord_long ) : null;
 		$marker->type                   = $result->type;

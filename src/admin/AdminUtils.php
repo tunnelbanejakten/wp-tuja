@@ -51,7 +51,7 @@ class AdminUtils {
 			'Scoreboard'          => 'Poängställning',
 			'Review'              => 'Svar att rätta',
 			'Messages'            => 'Meddelanden',
-			'Competition'         => 'Formulär',
+			'Forms'               => 'Formulär',
 			'Stations'            => 'Stationer',
 			'Maps'                => 'Kartor',
 			'Reports'             => 'Rapporter',

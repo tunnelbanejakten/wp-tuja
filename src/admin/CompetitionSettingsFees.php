@@ -19,7 +19,7 @@ use tuja\data\model\Group;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 
-class CompetitionSettingsFees extends AbstractCompetitionSettings {
+class CompetitionSettingsFees extends CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	public function __construct() {

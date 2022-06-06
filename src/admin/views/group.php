@@ -6,6 +6,7 @@ use tuja\util\rules\RuleResult;
 AdminUtils::printTopMenu( $competition );
 
 $this->print_menu();
+$this->print_leaves_menu();
 ?>
 
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">

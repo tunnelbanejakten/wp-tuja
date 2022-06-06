@@ -15,7 +15,7 @@ use tuja\util\messaging\EventMessageSender;
 use tuja\util\Strings;
 use tuja\util\TemplateEditor;
 
-class CompetitionSettingsMessageTemplates extends AbstractCompetitionSettings {
+class CompetitionSettingsMessageTemplates extends CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	public function handle_post() {

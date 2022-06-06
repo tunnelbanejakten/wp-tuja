@@ -6,11 +6,7 @@ use Exception;
 use tuja\data\store\PersonDao;
 use tuja\data\store\GroupDao;
 
-class GroupMembers extends AbstractGroup {
-
-	public function __construct() {
-		parent::__construct();
-	}
+class GroupMembers extends Group {
 
 	public function handle_post() {
 		global $wpdb;

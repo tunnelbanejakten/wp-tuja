@@ -109,9 +109,9 @@ class MessageDao extends AbstractDao
 
 	private static function to_message( $result ): Message {
 		$m                    = new Message();
-		$m->id                = $result->id;
-		$m->form_question_id  = $result->form_question_id;
-		$m->group_id          = $result->team_id;
+		$m->id                = intval( $result->id );
+		$m->form_question_id  = intval( $result->form_question_id );
+		$m->group_id          = intval( $result->team_id );
 		$m->text              = $result->text;
 		$m->image_ids         = explode( ',', $result->image );
 		$m->source            = $result->source;

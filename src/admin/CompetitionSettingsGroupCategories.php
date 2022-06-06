@@ -15,7 +15,7 @@ use tuja\util\rules\PassthroughRuleSet;
 use tuja\util\rules\YoungParticipantsRuleSet;
 use tuja\util\fee\GroupFeeCalculator;
 
-class CompetitionSettingsGroupCategories extends AbstractCompetitionSettings {
+class CompetitionSettingsGroupCategories extends CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
 
 	const RULE_SETS = array(
@@ -31,10 +31,7 @@ class CompetitionSettingsGroupCategories extends AbstractCompetitionSettings {
 		}
 
 		$competition = $this->competition_dao->get( $_GET['tuja_competition'] );
-
-		if ( ! $competition ) {
-			throw new Exception( 'Could not find competition' );
-		}
+		$this->assert_set( 'Could not find competition', $competition );
 
 		@list( $action, $parameter ) = explode( '__', $_POST['tuja_action'] );
 

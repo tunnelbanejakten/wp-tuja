@@ -28,7 +28,7 @@ describe('Administration', () => {
     })
 
     it('should be able to create a new form', async () => {
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Competition&tuja_competition=${competitionId}`)
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Forms&tuja_competition=${competitionId}`)
 
       const formName = 'New Form'
       await adminPage.type('#tuja_form_name', formName)

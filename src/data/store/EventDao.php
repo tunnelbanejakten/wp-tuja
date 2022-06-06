@@ -62,8 +62,8 @@ class EventDao extends AbstractDao {
 
 	protected static function to_event( $result ): Event {
 		$event                 = new Event();
-		$event->id             = $result->id;
-		$event->competition_id = $result->competition_id;
+		$event->id             = intval( $result->id );
+		$event->competition_id = intval( $result->competition_id );
 		$event->created_at     = self::from_db_date( $result->created_at );
 		$event->event_name     = $result->event_name;
 		$event->event_data     = $result->event_data;

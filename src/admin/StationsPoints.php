@@ -18,7 +18,7 @@ use tuja\data\store\CompetitionDao;
 use tuja\data\model\ValidationException;
 use tuja\data\store\StationPointsDao;
 
-class StationsPoints extends AbstractStation {
+class StationsPoints extends Stations {
 
 
 	const ACTION_SAVE = 'save';

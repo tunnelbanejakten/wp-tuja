@@ -14,7 +14,7 @@ use tuja\data\store\CompetitionDao;
 use tuja\util\ReflectionUtils;
 use tuja\util\QuestionNameGenerator;
 
-class FormQuestions extends AbstractForm {
+class FormQuestions extends Form {
 	const FORM_FIELD_NAME_PREFIX    = 'tuja-question';
 	const ACTION_NAME_DELETE_PREFIX = 'question_delete__';
 	const ACTION_NAME_CREATE_PREFIX = 'question_create__';
@@ -24,21 +24,66 @@ class FormQuestions extends AbstractForm {
 	const ACTION_NAME_CREATE_IMAGES  = self::ACTION_NAME_CREATE_PREFIX . 'images';
 	const ACTION_NAME_CREATE_CHOICES = self::ACTION_NAME_CREATE_PREFIX . 'choices';
 
+	protected $question_dao;
+
+	public function __construct() {
+		parent::__construct();
+		$this->question_dao = new QuestionDao();
+
+		if ( isset( $_GET['tuja_question_group'] ) ) {
+			$this->question_group = $this->question_group_dao->get( $_GET['tuja_question_group'] );
+		}
+		$this->assert_set( 'Could not find question group', $this->question_group );
+		$this->assert_same( 'Question group needs to belong to form', $this->form->id, $this->question_group->form_id );
+	}
+
+	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
+		$menu = parent::create_menu( $current_view_name, $parents );
+
+		$question_group_current = null;
+		$question_group_links   = array();
+		$question_groups        = $this->question_group_dao->get_all_in_form( intval( $_GET['tuja_form'] ) );
+		foreach ( $question_groups as $question_group ) {
+			$active = $question_group->id === $this->question_group->id;
+			if ( $active ) {
+				$question_group_current = $question_group->text ?? $question_group->id;
+			}
+			$link                   = add_query_arg(
+				array(
+					'tuja_view'           => 'FormQuestions',
+					'tuja_competition'    => $this->competition->id,
+					'tuja_form'           => $this->form->id,
+					'tuja_question_group' => $question_group->id,
+				)
+			);
+			$question_group_links[] = BreadcrumbsMenu::item( $question_group->text ?? $question_group->id, $link, $active );
+		}
+
+		$menu->add(
+			BreadcrumbsMenu::item( $question_group_current ),
+			...$question_group_links,
+		);
+
+		return $menu;
+	}
+
 	public function handle_post() {
 		global $wpdb;
 
-		if(!isset($_POST['tuja_action'])) return;
+		if ( ! isset( $_POST['tuja_action'] ) ) {
+			return;
+		}
 
-		if($_POST['tuja_action'] == 'questions_update') {
+		if ( $_POST['tuja_action'] == 'questions_update' ) {
 			$wpdb->show_errors();
-		
-			$questions = $this->question_dao->get_all_in_group($this->question_group->id);
+
+			$questions = $this->question_dao->get_all_in_group( $this->question_group->id );
 
 			$success = true;
 			foreach ( $questions as $question ) {
 				if ( isset( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question->id ] ) ) {
 
-					$question->set_properties_from_json_string(stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question->id ] ));
+					$question->set_properties_from_json_string( stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question->id ] ) );
 
 					try {
 						$affected_rows = $this->question_dao->update( $question );
@@ -49,10 +94,10 @@ class FormQuestions extends AbstractForm {
 				}
 			}
 
-			$success ? AdminUtils::printSuccess('Uppdaterat!') : AdminUtils::printError('Kunde inte uppdatera fråga.');
+			$success ? AdminUtils::printSuccess( 'Uppdaterat!' ) : AdminUtils::printError( 'Kunde inte uppdatera fråga.' );
 		} elseif ( substr( $_POST['tuja_action'], 0, strlen( self::ACTION_NAME_CREATE_PREFIX ) ) == self::ACTION_NAME_CREATE_PREFIX ) {
 			$success = false;
-			
+
 			try {
 				switch ( $_POST['tuja_action'] ) {
 					case self::ACTION_NAME_CREATE_CHOICES:
@@ -119,24 +164,24 @@ class FormQuestions extends AbstractForm {
 						break;
 				}
 
-				$new_id = $this->question_dao->create( $props );
+				$new_id  = $this->question_dao->create( $props );
 				$success = $new_id !== false;
 			} catch ( Exception $e ) {
 				$success = false;
 			}
 
-			$success === true ? AdminUtils::printSuccess('Fråga skapad!') : AdminUtils::printError('Kunde inte skapa fråga.');
-		} elseif (substr($_POST['tuja_action'], 0, strlen(self::ACTION_NAME_DELETE_PREFIX)) == self::ACTION_NAME_DELETE_PREFIX) {
+			$success === true ? AdminUtils::printSuccess( 'Fråga skapad!' ) : AdminUtils::printError( 'Kunde inte skapa fråga.' );
+		} elseif ( substr( $_POST['tuja_action'], 0, strlen( self::ACTION_NAME_DELETE_PREFIX ) ) == self::ACTION_NAME_DELETE_PREFIX ) {
 			$question_id_to_delete = substr( $_POST['tuja_action'], strlen( self::ACTION_NAME_DELETE_PREFIX ) );
-			$affected_rows = $this->question_dao->delete( $question_id_to_delete );
-			$success       = $affected_rows !== false && $affected_rows === 1;
-			
-			if($success) {
-				AdminUtils::printSuccess('Fråga borttagen!');
+			$affected_rows         = $this->question_dao->delete( $question_id_to_delete );
+			$success               = $affected_rows !== false && $affected_rows === 1;
+
+			if ( $success ) {
+				AdminUtils::printSuccess( 'Fråga borttagen!' );
 			} else {
-				AdminUtils::printError('Kunde inte ta bort fråga.');
-				if($error = $wpdb->last_error) {
-					AdminUtils::printError($error);
+				AdminUtils::printError( 'Kunde inte ta bort fråga.' );
+				if ( $error = $wpdb->last_error ) {
+					AdminUtils::printError( $error );
 				}
 			}
 		}
@@ -160,11 +205,11 @@ class FormQuestions extends AbstractForm {
 	}
 
 	public function get_scripts(): array {
-		return [
+		return array(
 			'admin-formgenerator.js',
 			'admin-forms.js',
-			'jsoneditor.min.js'
-		];
+			'jsoneditor.min.js',
+		);
 	}
 
 	public function output() {

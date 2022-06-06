@@ -12,9 +12,8 @@ use tuja\data\store\MessageDao;
 use Exception;
 use DateTime;
 
-class MessagesImport {
+class MessagesImport extends Messages {
 
-	private $competition;
 	private $group_dao;
 	private $message_dao;
 	private $person_dao;
@@ -22,17 +21,10 @@ class MessagesImport {
 	const SOURCE = 'mms';
 
 	public function __construct() {
+		parent::__construct();
 		$this->group_dao   = new GroupDao();
 		$this->message_dao = new MessageDao();
 		$this->person_dao  = new PersonDao();
-		$db_competition    = new CompetitionDao();
-		$this->competition = $db_competition->get( $_GET['tuja_competition'] );
-		if (!$this->competition) {
-			print 'Could not find competition';
-
-			return;
-		}
-
 	}
 
 	public function handle_post() {
