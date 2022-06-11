@@ -237,7 +237,7 @@ class ScoreCalculator {
 		return $scores;
 	}
 
-	public function score_board() {
+	public function score_board( $details = false ) {
 		$result = array();
 		$groups = $this->group_dao->get_all_in_competition( $this->competition_id );
 		foreach ( $groups as $group ) {
@@ -256,7 +256,10 @@ class ScoreCalculator {
 			$group_result['group_name'] = $group->name;
 			$group_result['score']      = $score_result->total_final;
 			$group_result['progress']   = count( $count_scored_questions ) / count( $score_result->questions );
-			$result[]                   = $group_result;
+			if ( $details ) {
+				$group_result['details'] = $score_result;
+			}
+			$result[] = $group_result;
 		}
 
 		return $result;

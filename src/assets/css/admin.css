@@ -195,6 +195,11 @@ table.tuja-table td {
     border-collapse: collapse;
 }
 
+table.tuja-table .tuja-rotated-header {
+    text-align: right;
+    writing-mode: vertical-rl;
+}
+
 tr.tuja-admin-review-response-row td {
     border-top: 1px solid #aaa;
 }
