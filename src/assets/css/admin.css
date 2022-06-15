@@ -195,6 +195,17 @@ table.tuja-table td {
     border-collapse: collapse;
 }
 
+table.tuja-table .tuja-rotated-header {
+    text-align: right;
+    writing-mode: vertical-rl;
+}
+
+table.tuja-table .numeric-value {
+    font-family: monospace;
+    text-align: right;
+    white-space: nowrap;
+}
+
 tr.tuja-admin-review-response-row td {
     border-top: 1px solid #aaa;
 }
@@ -415,12 +426,16 @@ span.tuja-group-city {
     white-space: nowrap;
 }
 
+span.tuja-scoreboard-details-question,
 span.tuja-maps-question {
     display: inline-block;
     text-overflow: ellipsis;
     max-width: 10em;
     overflow: hidden;
     white-space: nowrap;
+}
+span.tuja-scoreboard-details-question {
+    max-width: 20em;
 }
 
 div.progress-bar-wrapper {
