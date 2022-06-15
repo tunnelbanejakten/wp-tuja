@@ -15,10 +15,10 @@ $this->print_leaves_menu();
 		<?php
 		print join(
 			array_map(
-				function( $header ) {
-					return sprintf( '<td class="tuja-rotated-header"><span>%s</span></td>', $header );
+				function( $column_label ) {
+					return sprintf( '<td class="tuja-rotated-header"><span>%s</span></td>', $column_label );
 				},
-				array_keys( $aggregate_headers )
+				$column_labels
 			)
 		);
 		?>
@@ -29,11 +29,17 @@ $this->print_leaves_menu();
 	$render_fields = function ( $fields ) {
 		foreach ( $fields as $value ) {
 			printf(
-				'<td>%s</td>',
+				'<td class="numeric-value">%s</td>',
 				$value
 			);
 		}
 	};
+	printf( '<tr><th>Övergripande:</th></tr>' );
+	foreach ( $overall_fields as $overall_field ) {
+		printf( '<tr><td><span class="tuja-maps-question">%s</span></td>', $overall_field['label'] );
+		$render_fields( $overall_field['fields'] );
+		printf( '</tr>' );
+	}
 	printf( '<tr><th>Frågor:</th></tr>' );
 	$last_header = null;
 	foreach ( $questions_fields as $question_fields ) {

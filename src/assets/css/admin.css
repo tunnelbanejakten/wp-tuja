@@ -200,6 +200,12 @@ table.tuja-table .tuja-rotated-header {
     writing-mode: vertical-rl;
 }
 
+table.tuja-table .numeric-value {
+    font-family: monospace;
+    text-align: right;
+    white-space: nowrap;
+}
+
 tr.tuja-admin-review-response-row td {
     border-top: 1px solid #aaa;
 }

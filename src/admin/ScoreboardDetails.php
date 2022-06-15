@@ -4,6 +4,7 @@ namespace tuja\admin;
 
 use tuja\data\model\Station;
 use tuja\data\model\Group;
+use tuja\data\model\GroupCategory;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\ResponseDao;
@@ -24,6 +25,8 @@ class ScoreboardDetails extends Scoreboard {
 	private $group_dao;
 	private $group_category_dao;
 	private $station_dao;
+	private $score_board;
+	private $column_definitions;
 
 	public function __construct() {
 		parent::__construct();
@@ -34,17 +37,110 @@ class ScoreboardDetails extends Scoreboard {
 		$this->station_dao        = new StationDao();
 	}
 
+	private function get_column_definitions() {
+		if ( ! isset( $this->column_definitions ) ) {
+			$groups = array_values(
+				array_filter(
+					$this->group_dao->get_all_in_competition( $this->competition->id ),
+					function ( Group $group ) {
+						return $group->get_status() !== Group::STATUS_DELETED;
+					}
+				)
+			);
 
-	public function handle_post() {
+			$group_categories = $this->group_category_dao->get_all_in_competition( $this->competition->id );
+
+			$all_groups_column_definition = array(
+				array(
+					'label'     => 'Alla',
+					'group_ids' => array_map(
+						function ( Group $group ) {
+							return $group->id;
+						},
+						$groups
+					),
+				),
+			);
+
+			$group_categories_columns_definitions = array_map(
+				function ( GroupCategory $group_category ) use ( $groups ) {
+					return array(
+						'label'     => $group_category->name,
+						'group_ids' => array_map(
+							function ( Group $group ) {
+								return $group->id;
+							},
+							array_filter(
+								$groups,
+								function ( Group $group ) use ( $group_category ) {
+									return $group->category_id === $group_category->id;
+								}
+							)
+						),
+					);
+				},
+				$group_categories
+			);
+
+			$group_columns_definitions = array_map(
+				function ( Group $group ) {
+					return array(
+						'label'     => $group->name,
+						'group_ids' => array( $group->id ),
+					);
+				},
+				$groups
+			);
+
+			$this->column_definitions = array_merge(
+				$all_groups_column_definition,
+				$group_categories_columns_definitions,
+				$group_columns_definitions
+			);
+		}
+		return $this->column_definitions;
 	}
 
-	private function create_row_values_mapper( array $score_board, string $objects_section, int $object_id ) {
-		return function ( array $group_ids ) use ( $score_board, $objects_section, $object_id ) {
+	private function get_scoreboard() {
+		if ( ! isset( $this->score_board ) ) {
+			$calculator        = new ScoreCalculator(
+				$this->competition->id,
+				$this->question_dao,
+				$this->question_group_dao,
+				new ResponseDao(),
+				$this->group_dao,
+				new QuestionPointsOverrideDao(),
+				new StationPointsDao(),
+				new EventDao()
+			);
+			$this->score_board = $calculator->score_board( true );
+		}
+		return $this->score_board;
+	}
+
+	private function create_details_value_extrator( string $objects_section, int $object_id ) {
+		return function ( $obj ) use ( $objects_section, $object_id ) {
+			return $obj['details']->{$objects_section}[ $object_id ]->final;
+		};
+	}
+
+	private function create_overall_value_extrator( string $objects_section ) {
+		return function ( $obj ) use ( $objects_section ) {
+			return $obj['details']->{$objects_section};
+		};
+	}
+
+	private function create_total_score_reduction_value_extrator() {
+		return function ( $obj ) {
+			return $obj['details']->total_without_question_group_max_limits - $obj['details']->total_final;
+		};
+	}
+
+	private function create_row_values_mapper( array $score_board, $value_extractor ) {
+		return function ( array $group_ids ) use ( $score_board, $value_extractor ) {
 			$all_scores = array_values(
 				array_map(
-					function ( $obj ) use ( $objects_section, $object_id ) {
-						return $obj['details']->{$objects_section}[ $object_id ]->final;
-					},
+					$value_extractor,
 					array_filter(
 						$score_board,
 						function ( $obj ) use ( $group_ids ) {
@@ -54,75 +150,65 @@ class ScoreboardDetails extends Scoreboard {
 				)
 			);
 			if ( count( $all_scores ) > 1 ) {
-				return sprintf( '%0.2f (medel)', array_sum( $all_scores ) / count( $all_scores ) );
-				// return sprintf( '%s, avg: %0.2f', join( ', ', $all_scores ), array_sum( $all_scores ) / count( $all_scores ) );
+				return sprintf( '%.1f', array_sum( $all_scores ) / count( $all_scores ) );
+			} elseif ( count( $all_scores ) === 1 ) {
+				return sprintf( '%.1f', $all_scores[0] );
 			} else {
-				return sprintf( '%0.2f', $all_scores[0] );
+				return '-';
 			}
 		};
 	}
 
-	public function output() {
-		$this->handle_post();
-
-		$groups           = array_values(
-			array_filter(
-				$this->group_dao->get_all_in_competition( $this->competition->id ),
-				function ( Group $group ) {
-					return $group->get_status() !== Group::STATUS_DELETED;
-				}
-			)
-		);
-		$group_categories = $this->group_category_dao->get_all_in_competition( $this->competition->id );
-
-		$competition = $this->competition;
-
-		$unreviewed_answers = $this->get_unreviewed_answers_count();
-
-		$score_board = $this->get_sorted_scoreboard();
-
-		$aggregate_headers = array_merge(
+	private function get_overall_rows() {
+		$column_group_ids = $this->get_column_group_ids();
+		$score_board      = $this->get_scoreboard();
+		return array(
 			array(
-				'Alla' => array_map(
-					function ( Group $group ) {
-						return $group->id;
-					},
-					$groups
+				'label'  => 'Slutpoäng',
+				'fields' => array_map(
+					$this->create_row_values_mapper( $score_board, $this->create_overall_value_extrator( 'total_final' ) ),
+					$column_group_ids
 				),
 			),
-			array_combine(
-				array_map(
-					function ( Group $group ) {
-						return $group->name;
-					},
-					$groups
+			array(
+				'label'  => 'Slutpoäng utan frågegruppsgränser',
+				'fields' => array_map(
+					$this->create_row_values_mapper( $score_board, $this->create_overall_value_extrator( 'total_without_question_group_max_limits' ) ),
+					$column_group_ids
 				),
-				array_map(
-					function ( Group $group ) {
-						return array( $group->id );
-					},
-					$groups
-				)
-			)
+			),
+			array(
+				'label'  => 'Avdrag pga. frågegruppsgränser',
+				'fields' => array_map(
+					$this->create_row_values_mapper( $score_board, $this->create_total_score_reduction_value_extrator() ),
+					$column_group_ids
+				),
+			),
 		);
+	}
 
-		$questions        = $this->question_dao->get_all_in_competition( $competition->id );
-		$question_groups  = array_reduce(
-			$this->question_group_dao->get_all_in_competition( $competition->id ),
+	private function get_question_rows() {
+		$column_group_ids = $this->get_column_group_ids();
+		$score_board      = $this->get_scoreboard();
+
+		$questions       = $this->question_dao->get_all_in_competition( $this->competition->id );
+		$question_groups = array_reduce(
+			$this->question_group_dao->get_all_in_competition( $this->competition->id ),
 			function ( array $res, QuestionGroup $qg ) {
 				$res[ $qg->id ] = $qg->text;
 				return $res;
 			},
 			array()
 		);
+
 		$questions_fields = array_map(
-			function ( AbstractQuestion $question ) use ( $question_groups, $aggregate_headers, $score_board ) {
+			function ( AbstractQuestion $question ) use ( $question_groups, $column_group_ids, $score_board ) {
 				return array(
 					'label'          => $question->text,
 					'question_group' => $question_groups[ $question->question_group_id ] ?? sprintf( 'Namnlös grupp %s', $question->question_group_id ),
 					'fields'         => array_map(
-						$this->create_row_values_mapper( $score_board, 'questions', $question->id ),
-						array_values( $aggregate_headers )
+						$this->create_row_values_mapper( $score_board, $this->create_details_value_extrator( 'questions', $question->id ) ),
+						$column_group_ids
 					),
 				);
 			},
@@ -134,64 +220,52 @@ class ScoreboardDetails extends Scoreboard {
 				return strcmp( $questions_field_1['question_group'], $questions_field_2['question_group'] );
 			}
 		);
-		$stations        = $this->station_dao->get_all_in_competition( $this->competition->id );
-		$stations_fields = array_map(
-			function ( Station $station ) use ( $aggregate_headers, $score_board ) {
+		return $questions_fields;
+	}
+
+	private function get_station_rows() {
+		$column_group_ids = $this->get_column_group_ids();
+		$score_board      = $this->get_scoreboard();
+
+		$stations = $this->station_dao->get_all_in_competition( $this->competition->id );
+		return array_map(
+			function ( Station $station ) use ( $column_group_ids, $score_board ) {
 				return array(
 					'label'  => $station->name,
 					'fields' => array_map(
-						$this->create_row_values_mapper( $score_board, 'stations', $station->id ),
-						array_values( $aggregate_headers )
+						$this->create_row_values_mapper( $score_board, $this->create_details_value_extrator( 'stations', $station->id ) ),
+						$column_group_ids
 					),
 				);
 			},
 			$stations
 		);
 
+	}
+
+	private function get_column_group_ids() {
+		return array_map(
+			function ( array $column_definition ) {
+				return $column_definition['group_ids'];
+			},
+			$this->get_column_definitions()
+		);
+	}
+
+	public function output() {
+		$competition = $this->competition;
+
+		$column_labels = array_map(
+			function ( array $column_definition ) {
+				return $column_definition['label'];
+			},
+			$this->get_column_definitions()
+		);
+
+		$overall_fields   = $this->get_overall_rows();
+		$questions_fields = $this->get_question_rows();
+		$stations_fields  = $this->get_station_rows();
+
 		include 'views/scoreboard-details.php';
-	}
-
-	private function get_unreviewed_answers_count(): array {
-		$response_dao = new ResponseDao();
-		$data         = $response_dao->get_by_questions(
-			$this->competition->id,
-			ResponseDao::QUESTION_FILTER_UNREVIEWED_ALL,
-			array()
-		);
-
-		$unreviewed_answers = array();
-		foreach ( $data as $form_entry ) {
-			foreach ( $form_entry['questions'] as $question_entry ) {
-				foreach ( $question_entry['responses'] as $response_entry ) {
-					$response = isset( $response_entry ) ? $response_entry['response'] : null;
-					if ( isset( $response ) ) {
-						$unreviewed_answers[ $response->group_id ] = ( @$unreviewed_answers[ $response->group_id ] ?: 0 ) + 1;
-					}
-				}
-			}
-		}
-
-		return $unreviewed_answers;
-	}
-
-	private function get_sorted_scoreboard() {
-		$calculator  = new ScoreCalculator(
-			$this->competition->id,
-			$this->question_dao,
-			$this->question_group_dao,
-			new ResponseDao(),
-			$this->group_dao,
-			new QuestionPointsOverrideDao(),
-			new StationPointsDao(),
-			new EventDao()
-		);
-		$score_board = $calculator->score_board( true );
-		usort(
-			$score_board,
-			function ( $a, $b ) {
-				return $b['score'] - $a['score'];
-			}
-		);
-		return $score_board;
 	}
 }
