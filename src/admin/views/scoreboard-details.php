@@ -36,7 +36,7 @@ $this->print_leaves_menu();
 	};
 	printf( '<tr><th>Övergripande:</th></tr>' );
 	foreach ( $overall_fields as $overall_field ) {
-		printf( '<tr><td><span class="tuja-maps-question">%s</span></td>', $overall_field['label'] );
+		printf( '<tr><td><span class="tuja-scoreboard-details-question">%s</span></td>', $overall_field['label'] );
 		$render_fields( $overall_field['fields'] );
 		printf( '</tr>' );
 	}
@@ -47,13 +47,13 @@ $this->print_leaves_menu();
 			printf( '<tr><td>%s</td></tr>', $question_fields['question_group'] );
 			$last_header = $question_fields['question_group'];
 		}
-		printf( '<tr><td><span class="tuja-maps-question">%s</span></td>', $question_fields['label'] );
+		printf( '<tr><td><span class="tuja-scoreboard-details-question">%s</span></td>', $question_fields['label'] );
 		$render_fields( $question_fields['fields'] );
 		printf( '</tr>' );
 	}
 	printf( '<tr><th>Stationer:</th></tr>' );
 	foreach ( $stations_fields as $station_fields ) {
-		printf( '<tr><td><span class="tuja-maps-question">%s</span></td>', $station_fields['label'] );
+		printf( '<tr><td><span class="tuja-scoreboard-details-question">%s</span></td>', $station_fields['label'] );
 		$render_fields( $station_fields['fields'] );
 		printf( '</tr>' );
 	}
