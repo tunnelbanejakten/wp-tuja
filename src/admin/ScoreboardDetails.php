@@ -136,6 +136,15 @@ class ScoreboardDetails extends Scoreboard {
 		};
 	}
 
+	private function create_overall_per_participant_value_extrator() {
+		return function ( $obj ) {
+			if ( 0 === $obj['group_count_competing'] ) {
+				return '-';
+			}
+			return $obj['details']->total_final / $obj['group_count_competing'];
+		};
+	}
+
 	private function create_row_values_mapper( array $score_board, $value_extractor ) {
 		return function ( array $group_ids ) use ( $score_board, $value_extractor ) {
 			$all_scores = array_values(
@@ -167,6 +176,13 @@ class ScoreboardDetails extends Scoreboard {
 				'label'  => 'Slutpoäng',
 				'fields' => array_map(
 					$this->create_row_values_mapper( $score_board, $this->create_overall_value_extrator( 'total_final' ) ),
+					$column_group_ids
+				),
+			),
+			array(
+				'label'  => 'Slutpoäng per tävlande',
+				'fields' => array_map(
+					$this->create_row_values_mapper( $score_board, $this->create_overall_per_participant_value_extrator() ),
 					$column_group_ids
 				),
 			),
