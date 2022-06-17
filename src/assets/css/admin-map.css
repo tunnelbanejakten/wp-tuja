@@ -1,0 +1,41 @@
+.leaflet-container.crosshair-cursor-enabled {
+    cursor: crosshair;
+}
+
+div#tuja-map-page {
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+div#tuja-map-markers {
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+div#tuja-map-component-container {
+    flex: 1;
+    position: relative;
+}
+
+div#tuja-map-page input {
+    width: 20em;
+}
+
+div#tuja-map-component-overlay-container {
+    z-index: 1000;
+    position: absolute;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+div#tuja-map-component-overlay {
+    background-color: white;
+    padding: 3px 6px;
+    border: 2px solid rgba(0,0,0,0.2);
+    background-clip: padding-box;
+    border-radius: 3px;
+
+}
