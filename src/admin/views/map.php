@@ -26,24 +26,49 @@ $this->print_menu();
 					?>
 				</tr>
 				<?php
-				$render_field = function ( $name, $value, $short_label ) {
-						printf(
-							'<td><input type="text" class="tuja-marker-raw-field" name="%s" id="%s" value="%s" data-short-label="%s" /></td>',
-							$name,
-							$name,
-							$value,
-							$short_label
-						);
-				};
-				$last_header  = null;
+				$last_header = null;
 				foreach ( $marker_config as $question_fields ) {
 					if ( $question_fields['question_group'] !== $last_header ) {
 						printf( '<tr><th>%s</th></tr>', $question_fields['question_group'] );
 						$last_header = $question_fields['question_group'];
 					}
-					printf( '<tr><td><span class="tuja-maps-question">%s</span></td>', $question_fields['label'] );
-					$render_field( $question_fields['field_name'], $question_fields['field_value'], $question_fields['short_label'] );
-					printf( '</tr>' );
+					printf( '<tr><td><span class="tuja-maps-question">%s</span></td><td>', $question_fields['label'] );
+
+					list ($lat_fieldname, $lat_value)   = $question_fields['fields']['lat'];
+					list ($long_fieldname, $long_value) = $question_fields['fields']['long'];
+					list ($name_fieldname, $name_value) = $question_fields['fields']['name'];
+
+					printf(
+						'<input type="text" readonly name="%s" id="%s" value="%s"/>',
+						$lat_fieldname,
+						$lat_fieldname,
+						$lat_value,
+					);
+					printf(
+						'<input type="text" readonly name="%s" id="%s" value="%s" />',
+						$long_fieldname,
+						$long_fieldname,
+						$long_value,
+					);
+					printf(
+						'<input
+							type="text"
+							class="tuja-marker-raw-field"
+							name="%s"
+							id="%s"
+							value="%s"
+							data-short-label="%s"
+							data-lat-field-id="%s"
+							data-long-field-id="%s"
+							/>',
+						$name_fieldname,
+						$name_fieldname,
+						$name_value,
+						$question_fields['short_label'],
+						$lat_fieldname,
+						$long_fieldname,
+					);
+					printf( '</td></tr>' );
 				}
 				?>
 			</tbody>

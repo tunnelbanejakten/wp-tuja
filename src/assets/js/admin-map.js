@@ -1,35 +1,34 @@
 const tujaMaps = (function () {
     const COORDINATE_PRECISION = 5
+    const HEIGHT_MARGIN = 100 // Semi-arbitrary number to reduce risk of scrolling because of page header and such.
     return {
         init: function ($) {
             const container = $('#tuja-map-page')
             const statusContainer = $('#tuja-map-component-overlay')
-            const desiredHeight = window.innerHeight - container.offset().top - 100
+            const desiredHeight = window.innerHeight - container.offset().top - HEIGHT_MARGIN
             container.height(desiredHeight)
             $('#tuja-map-component').height(desiredHeight)
 
-            let currentMarkerFieldId = null
+            let currentTargets = {}
 
             $('.tuja-marker-raw-field').on('focus', function (event) {
-                currentMarkerFieldId = event.target.id
+                currentTargets = {
+                    lat: event.target.dataset.latFieldId,
+                    long: event.target.dataset.longFieldId,
+                    name: event.target.id,
+                }
                 L.DomUtil.addClass(map._container, 'crosshair-cursor-enabled');
                 statusContainer.text('Klicka för att placera ut ' + event.target.dataset.shortLabel)
             })
 
             const onClickHandler = function (e) {
-                if (currentMarkerFieldId) {
-                    const field = $('#' + currentMarkerFieldId)
-                    const currentInput = field.val()
-                    const label = currentInput.split(' ').slice(2).join(' ') || 'Namn'
-                    const { lat, lng } = e.latlng
-                    const newInput = [
-                        lat.toFixed(COORDINATE_PRECISION),
-                        lng.toFixed(COORDINATE_PRECISION),
-                        label
-                    ].join(' ')
-                    field.val(newInput)
+                if (currentTargets) {
+                    document.getElementById(currentTargets.lat).value = e.latlng.lat.toFixed(COORDINATE_PRECISION)
+                    document.getElementById(currentTargets.long).value = e.latlng.lng.toFixed(COORDINATE_PRECISION)
+                    const nameField = document.getElementById(currentTargets.name)
+                    nameField.value = nameField.value || 'Kontroll'
 
-                    currentMarkerFieldId = null
+                    currentTargets = null
                     L.DomUtil.removeClass(map._container, 'crosshair-cursor-enabled');
                     statusContainer.text('')
                 }

@@ -17,7 +17,11 @@ use tuja\data\store\StationDao;
 class Map extends Maps {
 	const ACTION_NAME_SAVE   = 'map_save';
 	const ACTION_NAME_DELETE = 'map_delete';
-	const FIELD_VALUE_SEP    = ' ';
+	const FIELD_VALUE_SEP    = '__';
+
+	const FIELD_SUFFIX_LAT  = self::FIELD_VALUE_SEP . 'lat';
+	const FIELD_SUFFIX_LONG = self::FIELD_VALUE_SEP . 'long';
+	const FIELD_SUFFIX_NAME = self::FIELD_VALUE_SEP . 'name';
 
 	public function __construct() {
 		parent::__construct();
@@ -67,7 +71,7 @@ class Map extends Maps {
 	}
 
 	private static function key( string $type, int $question_id, int $station_id ) {
-		return join( '__', array( 'tuja_marker_raw', $type, $question_id, $station_id ) );
+		return join( self::FIELD_VALUE_SEP, array( 'tuja_marker_raw', $type, $question_id, $station_id ) );
 	}
 
 	private function get_markers() {
@@ -82,17 +86,21 @@ class Map extends Maps {
 		);
 	}
 
-	private static function get_field_value( string $key, array $markers ) {
-		return @$markers[ $key ]
-		? join(
-			self::FIELD_VALUE_SEP,
-			array(
-				$markers[ $key ]->gps_coord_lat,
-				$markers[ $key ]->gps_coord_long,
-				$markers[ $key ]->name,
-			)
-		)
-		: '';
+	private static function get_field_values( string $key, array $markers ) {
+		return array(
+			'lat'  => array(
+				$key . self::FIELD_SUFFIX_LAT,
+				isset( $markers[ $key ] ) ? $markers[ $key ]->gps_coord_lat : '',
+			),
+			'long' => array(
+				$key . self::FIELD_SUFFIX_LONG,
+				isset( $markers[ $key ] ) ? $markers[ $key ]->gps_coord_long : '',
+			),
+			'name' => array(
+				$key . self::FIELD_SUFFIX_NAME,
+				isset( $markers[ $key ] ) ? $markers[ $key ]->name : '',
+			),
+		);
 	}
 
 	public function handle_post() {
@@ -143,9 +151,10 @@ class Map extends Maps {
 					// Delete marker.
 				// Marker DOES NOT exist:
 					// Do nothing.
-				$user_value = @$_POST[ $key ];
-				if ( ! empty( $user_value ) ) {
-					list ($gps_coord_lat, $gps_coord_long, $name) = explode( self::FIELD_VALUE_SEP, $user_value, 3 );
+				$gps_coord_lat  = $_POST[ $key . self::FIELD_SUFFIX_LAT ];
+				$gps_coord_long = $_POST[ $key . self::FIELD_SUFFIX_LONG ];
+				$name           = $_POST[ $key . self::FIELD_SUFFIX_NAME ];
+				if ( ! empty( $name ) ) {
 					if ( isset( $markers[ $key ] ) ) {
 						$marker                 = $markers[ $key ];
 						$marker->gps_coord_lat  = floatval( $gps_coord_lat );
@@ -238,8 +247,7 @@ class Map extends Maps {
 				'label'          => 'Startplats',
 				'short_label'    => 'Startplatsen',
 				'question_group' => 'Startplats',
-				'field_name'     => $start_field_key,
-				'field_value'    => self::get_field_value( $start_field_key, $markers ),
+				'fields'         => self::get_field_values( $start_field_key, $markers ),
 			),
 		);
 
@@ -254,8 +262,7 @@ class Map extends Maps {
 					'label'          => $question->name . ': ' . $question->text,
 					'short_label'    => sprintf( 'Fråga %s', $question->name ),
 					'question_group' => $question_groups[ $question->question_group_id ] ?? sprintf( 'Namnlös grupp %s', $question->question_group_id ),
-					'field_name'     => $question_field_key,
-					'field_value'    => self::get_field_value( $question_field_key, $markers ),
+					'fields'         => self::get_field_values( $question_field_key, $markers ),
 				);
 			},
 			$questions
@@ -279,8 +286,7 @@ class Map extends Maps {
 					'label'          => $station->name,
 					'short_label'    => sprintf( 'Station %s', $station->name ),
 					'question_group' => 'Stationer',
-					'field_name'     => $station_field_key,
-					'field_value'    => self::get_field_value( $station_field_key, $markers ),
+					'fields'         => self::get_field_values( $station_field_key, $markers ),
 				);
 			},
 			$stations

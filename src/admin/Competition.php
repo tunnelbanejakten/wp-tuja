@@ -27,8 +27,6 @@ class Competition {
 
 	protected function assert_same( $message, $id1, $id2 ) {
 		if ( $id1 !== $id2 ) {
-			error_log( var_export( $id1, true ) );
-			error_log( var_export( $id2, true ) );
 			throw new Exception( $message );
 		}
 	}

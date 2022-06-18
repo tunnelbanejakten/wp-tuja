@@ -19,7 +19,15 @@ div#tuja-map-component-container {
 }
 
 div#tuja-map-page input {
-    width: 20em;
+    width: 10em;
+}
+
+div#tuja-map-page input#tuja_map_name {
+    width: 100%;
+}
+
+div#tuja-map-page input:read-only {
+    width: 5em;
 }
 
 div#tuja-map-component-overlay-container {
