@@ -13,6 +13,15 @@ div#tuja-map-markers {
     overflow-y: scroll;
 }
 
+div#tuja-map-markers table td {
+    vertical-align: middle;
+}
+
+div#tuja-map-markers div.tuja-map-marker-controls {
+    display: flex;
+    align-items: center;
+}
+
 div#tuja-map-component-container {
     flex: 1;
     position: relative;

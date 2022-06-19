@@ -28,16 +28,34 @@ $this->print_menu();
 				<?php
 				$last_header = null;
 				foreach ( $marker_config as $question_fields ) {
+					list ($lat_fieldname, $lat_value)   = $question_fields['fields']['lat'];
+					list ($long_fieldname, $long_value) = $question_fields['fields']['long'];
+					list ($name_fieldname, $name_value) = $question_fields['fields']['name'];
+
 					if ( $question_fields['question_group'] !== $last_header ) {
 						printf( '<tr><th>%s</th></tr>', $question_fields['question_group'] );
 						$last_header = $question_fields['question_group'];
 					}
 					printf( '<tr><td><span class="tuja-maps-question">%s</span></td><td>', $question_fields['label'] );
 
-					list ($lat_fieldname, $lat_value)   = $question_fields['fields']['lat'];
-					list ($long_fieldname, $long_value) = $question_fields['fields']['long'];
-					list ($name_fieldname, $name_value) = $question_fields['fields']['name'];
+					$controls_id = 'tuja-map-markers-controls-' . uniqid();
+					printf(
+						'<div
+							id="%s"
+							class="tuja-map-marker-controls"
+							data-short-label="%s"
+							data-name-field-id="%s"
+							data-lat-field-id="%s"
+							data-long-field-id="%s"
+							/>',
+						$controls_id,
+						$question_fields['short_label'],
+						$name_fieldname,
+						$lat_fieldname,
+						$long_fieldname,
+					);
 
+					printf( '<span class="dashicons dashicons-location tuja-map-marker-pin-button"></span>' );
 					printf(
 						'<input type="text" readonly name="%s" id="%s" value="%s"/>',
 						$lat_fieldname,
@@ -57,18 +75,13 @@ $this->print_menu();
 							name="%s"
 							id="%s"
 							value="%s"
-							data-short-label="%s"
-							data-lat-field-id="%s"
-							data-long-field-id="%s"
 							/>',
 						$name_fieldname,
 						$name_fieldname,
 						$name_value,
-						$question_fields['short_label'],
-						$lat_fieldname,
-						$long_fieldname,
 					);
-					printf( '</td></tr>' );
+					printf( '<span class="dashicons dashicons-no tuja-map-marker-delete-button"></span>' );
+					printf( '</div></td></tr>' );
 				}
 				?>
 			</tbody>
