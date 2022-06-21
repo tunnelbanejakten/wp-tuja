@@ -1,6 +1,7 @@
 const tujaMaps = (function () {
     const COORDINATE_PRECISION = 5
     const HEIGHT_MARGIN = 100 // Semi-arbitrary number to reduce risk of scrolling because of page header and such.
+    const LEAFLET_AVERAGE_LETTER_WIDTH = 5.6 // Value determined through trial-and-error.
 
     function setMarker(markerId, lat, long) {
         const controlsContainer = document.getElementById(markerId)
@@ -20,6 +21,19 @@ const tujaMaps = (function () {
         document.getElementById(controlsContainer.dataset.nameFieldId).value = ''
         document.getElementById(controlsContainer.dataset.latFieldId).value = ''
         document.getElementById(controlsContainer.dataset.longFieldId).value = ''
+        document.getElementById(controlsContainer.dataset.latFieldId).style.backgroundColor = ''
+        document.getElementById(controlsContainer.dataset.longFieldId).style.backgroundColor = ''
+    }
+
+    let markerCounter = 0
+    const GOLDEN_ANGLE = 137.5
+    function nextMarkerColor() {
+        const degrees = (markerCounter * GOLDEN_ANGLE) % 360
+        markerCounter++
+        return {
+            light: "hsl(" + degrees + ", 75%, 50%, 0.25)",
+            dark: "hsl(" + degrees + ", 100%, 50%, 0.75)"
+        };
     }
 
     return {
@@ -28,17 +42,24 @@ const tujaMaps = (function () {
 
             const mapMarkers = {}
 
-            const iconUserPosition = L.icon({
-                iconUrl: '../wp-content/plugins/tuja/assets/map-markers/default.png',
-                iconSize: [48, 48],
-                iconAnchor: [24, 48],
-                popupAnchor: [0, -34]
-            })
             const container = $('#tuja-map-page')
             const statusContainer = $('#tuja-map-component-overlay')
             const desiredHeight = window.innerHeight - container.offset().top - HEIGHT_MARGIN
             container.height(desiredHeight)
             $('#tuja-map-component').height(desiredHeight)
+
+            function createLeafletIcon(label, lightColor, darkColor) {
+                const approxWidth = label.length * LEAFLET_AVERAGE_LETTER_WIDTH
+                return L.divIcon({
+                    className: 'tuja-map-marker-icon-wrapper',
+                    html: '' +
+                        '<div class="tuja-map-marker-icon-outer" style="background-color: ' + lightColor + '">' +
+                        '   <div class="tuja-map-marker-icon-inner" style="background-color: ' + darkColor + '"></div>' +
+                        '</div>' +
+                        '<div class="tuja-map-marker-label" style="width: ' + approxWidth + 'px; left: ' + (-approxWidth / 2) + 'px;">' + label + '</div>',
+                    iconSize: L.point(2, 2)
+                })
+            }
 
             function createOnDragEndHander(id) {
                 return function (event) {
@@ -53,14 +74,26 @@ const tujaMaps = (function () {
                     const id = node.id
                     const name = document.getElementById(node.dataset.nameFieldId).value
                     if (!!name) {
-                        const lat = document.getElementById(node.dataset.latFieldId).value
-                        const long = document.getElementById(node.dataset.longFieldId).value
+                        const latField = document.getElementById(node.dataset.latFieldId)
+                        const longField = document.getElementById(node.dataset.longFieldId)
+                        const lat = latField.value
+                        const long = longField.value
                         // Marker should be shown on map.
                         if (mapMarkers[id]) {
                             // Marker already exists. Do nothing.
                         } else {
                             // Marker needs to be created
-                            const newMarker = L.marker([lat, long], { title: name, icon: iconUserPosition, draggable: true }).on('dragend', createOnDragEndHander(id))
+                            const { light: lightColor, dark: darkColor } = nextMarkerColor()
+                            latField.style.backgroundColor = lightColor
+                            longField.style.backgroundColor = lightColor
+                            const newMarker = L.marker(
+                                [lat, long],
+                                {
+                                    title: name,
+                                    icon: createLeafletIcon(node.dataset.shortLabel, lightColor, darkColor),
+                                    draggable: true
+                                })
+                                .on('dragend', createOnDragEndHander(id))
                             newMarker.addTo(map);
                             mapMarkers[id] = newMarker
                         }
