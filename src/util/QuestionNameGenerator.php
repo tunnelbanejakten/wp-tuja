@@ -16,7 +16,6 @@ class QuestionNameGenerator {
 			$name_generator->update();
 			return true;
 		} catch ( Exception $e ) {
-			error_log( $e->getMessage() );
 			return false;
 		}
 
@@ -27,8 +26,6 @@ class QuestionNameGenerator {
 	}
 
 	public function update() {
-		error_log( 'Checking if questions need to be renamed.' );
-
 		$questions_dao       = new QuestionDao();
 		$question_groups_dao = new QuestionGroupDao();
 
@@ -71,7 +68,6 @@ class QuestionNameGenerator {
 			);
 
 			if ( $name !== $q->name ) {
-				error_log( sprintf( 'Rename question %s from %s to %s', $q->id, $q->name, $name ) );
 				$q->name = $name;
 				$questions_dao->update( $q );
 			}

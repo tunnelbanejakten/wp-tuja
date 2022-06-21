@@ -112,6 +112,8 @@ class Admin extends Plugin {
 			wp_enqueue_style( 'tuja-admin-jsoneditor', static::get_url() . '/assets/css/admin-jsoneditor.css' );
 			wp_enqueue_style( 'tuja-admin-breadcrumbsmenu', static::get_url() . '/assets/css/admin-breadcrumbsmenu.css' );
 			wp_enqueue_style( 'tuja-admin-search', static::get_url() . '/assets/css/admin-search.css' ); // TODO: Include this conditionally
+			wp_enqueue_style( 'tuja-admin-map', static::get_url() . '/assets/css/admin-map.css' ); // TODO: Include this conditionally
+			wp_enqueue_style( 'tuja-admin-leaflet', static::get_url() . '/assets/css/leaflet-1.8.0.css' ); // TODO: Include this conditionally
 		}
 
 		// Load scripts based on screen->id
