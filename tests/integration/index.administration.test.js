@@ -100,7 +100,7 @@ describe('Administration', () => {
       await adminPage.expectElementCount('a.tuja-map-link', 2)
     })
 
-    it.only('should be possible to rename map and edit markers', async () => {
+    it('should be possible to rename map and edit markers', async () => {
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Map&tuja_map=${preexistingMapId}&tuja_competition=${competitionId}`)
 
       const fieldValuesBefore = await adminPage.$$eval('input.tuja-marker-raw-field', nodes => nodes.map(node => `${node.name}=${node.value}`))
@@ -116,24 +116,24 @@ describe('Administration', () => {
       expect(fieldValuesBefore).toEqual(fieldValuesAfterRename)
 
       // Update markers
-      const markerFields = await adminPage.$$eval(`input.tuja-marker-raw-field[id^="tuja_marker_raw__"]`, nodes => nodes.map(node => ({
-        id: node.id,
-        value: node.value,
+      const markerFields = await adminPage.$$eval(`div.tuja-map-marker-controls`, nodes => nodes.map(node => ({
+        nameFieldId: node.dataset.nameFieldId,
+        nameFieldValue: document.getElementById(node.dataset.nameFieldId).value,
         latFieldId: node.dataset.latFieldId,
         longFieldId: node.dataset.longFieldId
       })))
 
       const { 
-        id: emptyFieldId,
+        nameFieldId: emptyFieldId,
         latFieldId: emptyLatFieldId,
         longFieldId: emptyLongFieldId,
-      } = markerFields.filter(({ value }) => !value)[0]
+      } = markerFields.filter(({ nameFieldValue }) => !nameFieldValue)[0]
       await adminPage.type(`#${emptyFieldId}`, 'Brommaplan')
       // Emulate map click:
       await adminPage.$eval(`#${emptyLatFieldId}`, node => node.value = '59.338609')
       await adminPage.$eval(`#${emptyLongFieldId}`, node => node.value = '17.939238')
 
-      const { id: nonEmptyFieldId, value: nonEmptyFieldValue } = markerFields.filter(({ value }) => !!value)[0]
+      const { nameFieldId: nonEmptyFieldId, nameFieldValue: nonEmptyFieldValue } = markerFields.filter(({ nameFieldValue }) => !!nameFieldValue)[0]
       const updatedMarkerData = nonEmptyFieldValue + '.'
       await adminPage.type(`#${nonEmptyFieldId}`, updatedMarkerData)
 
