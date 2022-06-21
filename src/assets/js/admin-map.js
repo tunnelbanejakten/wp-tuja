@@ -32,7 +32,7 @@ const tujaMaps = (function () {
         markerCounter++
         return {
             light: "hsl(" + degrees + ", 75%, 50%, 0.25)",
-            dark: "hsl(" + degrees + ", 100%, 50%, 0.75)"
+            dark: "hsl(" + degrees + ", 100%, 60%, 0.75)"
         };
     }
 
