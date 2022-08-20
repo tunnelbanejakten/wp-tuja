@@ -122,10 +122,10 @@ class MarkerDao extends AbstractDao {
 		$marker->type                   = $result->type;
 		$marker->name                   = $result->name;
 		$marker->description            = $result->description;
-		$marker->link_form_id           = $result->link_form_id;
-		$marker->link_form_question_id  = $result->link_form_question_id;
-		$marker->link_question_group_id = $result->link_question_group_id;
-		$marker->link_station_id        = $result->link_station_id;
+		$marker->link_form_id           = isset( $result->link_form_id ) ? intval( $result->link_form_id ) : null;
+		$marker->link_form_question_id  = isset( $result->link_form_question_id ) ? intval( $result->link_form_question_id ) : null;
+		$marker->link_question_group_id = isset( $result->link_question_group_id ) ? intval( $result->link_question_group_id ) : null;
+		$marker->link_station_id        = isset( $result->link_station_id ) ? intval( $result->link_station_id ) : null;
 
 		return $marker;
 	}
