@@ -48,6 +48,7 @@ class Tickets extends AbstractRestEndpoint {
 						'is_used' => $ticket->is_used,
 						'station' => array(
 							'name'      => $ticket->station->name,
+							'id'        => $ticket->station->id,
 							'random_id' => $ticket->station->random_id,
 						),
 					);
