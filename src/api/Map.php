@@ -12,6 +12,7 @@ use tuja\data\model\Points;
 use tuja\data\model\Ticket;
 use tuja\data\store\FormDao;
 use tuja\data\store\StationPointsDao;
+use tuja\data\store\CompetitionDao;
 use tuja\data\store\TicketDao;
 use tuja\util\FormUtils;
 use tuja\util\FormView;
@@ -81,21 +82,27 @@ class Map extends AbstractRestEndpoint {
 	 * @param Group $group The group requesting the data.
 	 */
 	private static function get_markers_to_return( Group $group ) {
-		$marker_dao           = new MarkerDao();
-		$all_markers          = $marker_dao->get_all_on_map( $group->map_id );
+		$marker_dao             = new MarkerDao();
+		$all_markers            = $marker_dao->get_all_on_map( $group->map_id );
+		$competition_dao        = new CompetitionDao();
+		$competition            = $competition_dao->get( $group->competition_id );
+		$is_competition_ongoing = $competition->is_ongoing();
+
 		$available_object_ids = self::get_available_form_object_ids( $group );
 		return array_filter(
 			$all_markers,
-			function ( Marker $marker ) use ( $available_object_ids ) {
+			function ( Marker $marker ) use ( $available_object_ids, $is_competition_ongoing ) {
 				$link_form_id           = isset( $marker->link_form_id ) ? intval( $marker->link_form_id ) : null;
 				$link_question_group_id = isset( $marker->link_question_group_id ) ? intval( $marker->link_question_group_id ) : null;
 				$link_form_question_id  = isset( $marker->link_form_question_id ) ? intval( $marker->link_form_question_id ) : null;
+				$link_station_id        = isset( $marker->link_station_id ) ? intval( $marker->link_station_id ) : null;
 
 				$is_available = $marker->type !== Marker::MARKER_TYPE_TASK ||
 				(
 					( ! isset( $link_form_id ) || in_array( $link_form_id, $available_object_ids->form_ids, true ) ) &&
 					( ! isset( $link_question_group_id ) || in_array( $link_question_group_id, $available_object_ids->question_group_ids, true ) ) &&
-					( ! isset( $link_form_question_id ) || in_array( $link_form_question_id, $available_object_ids->question_ids, true ) )
+					( ! isset( $link_form_question_id ) || in_array( $link_form_question_id, $available_object_ids->question_ids, true ) ) &&
+					( ! isset( $link_station_id ) || $is_competition_ongoing )
 				);
 				return $is_available;
 			}

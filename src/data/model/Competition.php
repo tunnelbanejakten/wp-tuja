@@ -2,8 +2,7 @@
 
 namespace tuja\data\model;
 
-use tuja\util\fee\CompetingParticipantFeeCalculator;
-use tuja\util\fee\GroupFeeCalculator;
+use DateTime;
 
 class Competition {
 	public $id;
@@ -34,5 +33,12 @@ class Competition {
 
 	public static function allowed_initial_statuses() {
 		return array_merge( array( Group::DEFAULT_STATUS ), Group::STATUS_TRANSITIONS[ Group::DEFAULT_STATUS ] );
+	}
+
+	public function is_ongoing(): bool {
+		$now              = new DateTime();
+		$is_event_ongoing = ( $this->event_start == null || $this->event_start <= $now )
+		                    && ( $this->event_end == null || $now <= $this->event_end );
+		return $is_event_ongoing;
 	}
 }

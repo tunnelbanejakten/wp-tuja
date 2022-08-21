@@ -101,10 +101,7 @@ abstract class AbstractGroupView extends FrontendView {
 
 	protected function check_event_is_ongoing() {
 		$competition      = $this->competition_dao->get( $this->get_group()->competition_id );
-		$now              = new DateTime();
-		$is_event_ongoing = ( $competition->event_start == null || $competition->event_start <= $now )
-		                    && ( $competition->event_end == null || $now <= $competition->event_end );
-		if ( ! $is_event_ongoing ) {
+		if ( ! $competition->is_ongoing() ) {
 			throw new Exception( Strings::get( 'competition.is_not_open_yet' ) );
 		}
 	}
