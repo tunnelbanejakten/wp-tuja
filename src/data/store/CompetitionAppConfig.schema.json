@@ -19,6 +19,11 @@
           "title": "Väntetid för önskad nog. (s)",
           "type": "integer",
           "format": "number"
+        },
+        "stale_position_timeout": {
+          "title": "Maximal ålder för position (s)",
+          "type": "integer",
+          "format": "number"
         }
       }
     },

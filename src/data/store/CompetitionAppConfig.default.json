@@ -2,7 +2,8 @@
     "positioning": {
         "show_unavailable_stations": false,
         "high_accuracy_threshold": 100,
-        "high_accuracy_timeout": 30
+        "high_accuracy_timeout": 30,
+        "stale_position_timeout": 120
     },
     "uploads": {
         "max_file_size": 20
