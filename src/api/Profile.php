@@ -5,6 +5,7 @@ namespace tuja;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\frontend\router\GroupHomeInitiator;
+use tuja\util\AppUtils;
 use tuja\util\JwtUtils;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -34,10 +35,13 @@ class Profile extends AbstractRestEndpoint {
 			'category_name'      => $category->name,
 
 			'portal_link'        => GroupHomeInitiator::link( $group ),
+			'app_link'           => AppUtils::group_link( $group ),
 
 			'count_competing'    => $group->count_competing,
 			'count_follower'     => $group->count_follower,
 			'count_team_contact' => $group->count_team_contact,
+
+			'auth_code'          => $group_dao->calculate_auth_code( $group ),
 		);
 	}
 }

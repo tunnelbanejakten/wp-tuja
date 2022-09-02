@@ -16,6 +16,10 @@ use tuja\util\messaging\EventMessageSender;
 use tuja\util\rules\RuleResult;
 
 class GroupDao extends AbstractDao {
+
+	const AUTH_CODE_MIN_LENGTH = 4;
+	const AUTH_CODE_MAX_LENGTH = 6;
+
 	private $props_table;
 
 	function __construct() {
@@ -212,6 +216,35 @@ class GroupDao extends AbstractDao {
 		return $include_deleted ? $objects : array_filter( $objects, function ( Group $group ) {
 			return $group->get_status() != Group::STATUS_DELETED;
 		} );
+	}
+
+	function get_by_auth_code( string $code ) {
+		$code_length = strlen( $code );
+		if ($code_length < self::AUTH_CODE_MIN_LENGTH || $code_length > self::AUTH_CODE_MAX_LENGTH) {
+			return false;
+		}
+		$objects     = $this->get_objects(
+			function ( $row ) {
+				return self::to_group( $row, null );
+			},
+			$this->generate_query( array( 'RIGHT(CONVERT(CRC32(g.random_id), CHAR(20)), ' . $code_length . ') = %s' ), null ),
+			$code
+		);
+		if ( count( $objects ) === 1 ) {
+			return $objects[0];
+		}
+		return false;
+	}
+
+	function calculate_auth_code( Group $group ) {
+		$full_code = sprintf( '%u', crc32( $group->random_id ) );
+		for ( $len = self::AUTH_CODE_MIN_LENGTH; $len <= self::AUTH_CODE_MAX_LENGTH; $len++ ) {
+			$short_code = substr( $full_code, -$len );
+			if ( $this->get_by_auth_code( $short_code ) !== false ) {
+				return $short_code;
+			}
+		}
+		return false;
 	}
 
 	function search( $competition_id, string $query ) {
