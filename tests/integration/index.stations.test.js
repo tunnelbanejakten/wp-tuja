@@ -25,7 +25,7 @@ describe('Stations', () => {
   })
 
   describe('Points and scoring', () => {
-    it('set points for any team and for any station', async () => {
+    it('set points for any team and for any station (also some bonus points)', async () => {
       const groupAliceProps = await adminPage.addTeam()
       const groupBobProps = await adminPage.addTeam()
 
@@ -49,6 +49,24 @@ describe('Stations', () => {
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupScore&tuja_competition=${competitionId}&tuja_group=${groupBobProps.id}`)
       const totalFinalBob = await adminPage.$eval(`#tuja-group-score`, node => parseInt(node.dataset.totalFinal))
       expect(totalFinalBob).toBe(15)
+
+      // Goto ExtraPoints
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=ExtraPoints&tuja_competition=${competitionId}`)
+      
+      // Enter points
+      await adminPage.type(`#tuja__extra-points__0__-1`, 'Bonuspoäng')
+      await adminPage.type(`#tuja__extra-points__0__${groupAliceProps.id}`, '7')
+      await adminPage.type(`#tuja__extra-points__0__${groupBobProps.id}`, '8')
+      await adminPage.clickLink('button[name="tuja_action"][value="save"]')
+      
+      // Visit team pages and check total scores  
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupScore&tuja_competition=${competitionId}&tuja_group=${groupAliceProps.id}`)
+      const totalFinalAliceWithExtra = await adminPage.$eval(`#tuja-group-score`, node => parseInt(node.dataset.totalFinal))
+      expect(totalFinalAliceWithExtra).toBe(6 + 7)
+
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupScore&tuja_competition=${competitionId}&tuja_group=${groupBobProps.id}`)
+      const totalFinalBobWithExtra = await adminPage.$eval(`#tuja-group-score`, node => parseInt(node.dataset.totalFinal))
+      expect(totalFinalBobWithExtra).toBe(15 + 8)
     })
   })
 })

@@ -22,7 +22,7 @@ $this->print_menu();
 					function ( string $name ) {
 						$name_field_key = self::get_field_key( $name, self::MAGIC_NUMBER_NAME_FIELD_ID );
 						$read_only      = ! empty( $name );
-						return sprintf( '<td><input type="text" name="%s" value="%s" %s></td>', $name_field_key, $name, $read_only ? 'readonly' : '' );
+						return sprintf( '<td><input type="text" name="%s" id="%s" value="%s" %s></td>', $name_field_key, $name_field_key, $name, $read_only ? 'readonly' : '' );
 					},
 					$all_names
 				)
