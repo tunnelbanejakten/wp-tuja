@@ -7,6 +7,7 @@ use tuja\data\model\Event;
 use tuja\data\model\Group;
 use tuja\data\model\Response;
 use tuja\data\store\EventDao;
+use tuja\data\store\ExtraPointsDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionPointsOverrideDao;
 use tuja\data\store\QuestionDao;
@@ -24,6 +25,7 @@ class ScoreCalculator {
 	private $group_dao;
 	private $question_points_override_dao;
 	private $station_points_dao;
+	private $extra_points_dao;
 	private $event_dao;
 	private $question_groups;
 	private $questions;
@@ -36,6 +38,7 @@ class ScoreCalculator {
 		GroupDao $group_dao,
 		QuestionPointsOverrideDao $question_points_override_dao,
 		StationPointsDao $station_points_dao,
+		ExtraPointsDao $extra_points_dao,
 		EventDao $event_dao
 	) {
 		$this->competition_id               = $competition_id;
@@ -43,6 +46,7 @@ class ScoreCalculator {
 		$this->group_dao                    = $group_dao;
 		$this->question_points_override_dao = $question_points_override_dao;
 		$this->station_points_dao           = $station_points_dao;
+		$this->extra_points_dao             = $extra_points_dao;
 		$this->event_dao                    = $event_dao;
 		$this->question_groups              = $question_group_dao->get_all_in_competition( $competition_id );
 		$this->questions                    = $question_dao->get_all_in_competition( $competition_id );
@@ -95,6 +99,7 @@ class ScoreCalculator {
 		$result            = new ScoreResult();
 		$result->questions = $this->score_per_question( $group );
 		$result->stations  = $this->score_per_station( $group );
+		$result->extra     = $this->score_per_extra( $group );
 
 		$result->total_final = $this->calculate_total_final( $result );
 
@@ -111,7 +116,8 @@ class ScoreCalculator {
 				},
 				array_merge(
 					array_values( $result->questions ),
-					array_values( $result->stations )
+					array_values( $result->stations ),
+					array_values( $result->extra )
 				)
 			)
 		);
@@ -149,6 +155,11 @@ class ScoreCalculator {
 
 		// ...and then also add the points for all the stations.
 		foreach ( $result->stations as $score ) {
+			$sum += $score->final;
+		}
+
+		// ...and then also add the extra points
+		foreach ( $result->extra as $score ) {
 			$sum += $score->final;
 		}
 
@@ -232,6 +243,25 @@ class ScoreCalculator {
 			$station_result->final           = $station_result->override ?? 0;
 
 			$scores[ $station->id ] = $station_result;
+		}
+
+		return $scores;
+	}
+
+	private function score_per_extra( Group $group ) {
+		$group_id         = $group->id;
+		$all_extra_points = $this->extra_points_dao->get_by_group( $group_id );
+		$scores           = array();
+
+		foreach ( $all_extra_points as $extra_points ) {
+			$points_result = new ScoreQuestionResult();
+
+			$points_result->auto            = null;
+			$points_result->auto_confidence = null;
+			$points_result->override        = null;
+			$points_result->final           = $extra_points->points ?? 0;
+
+			$scores[ $extra_points->name ] = $points_result;
 		}
 
 		return $scores;
