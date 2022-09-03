@@ -28,7 +28,7 @@ abstract class AbstractPointsDao extends AbstractDao {
 					'created_at'     => self::to_db_date( new DateTime() ),
 				),
 				array(
-					'%d',
+					is_numeric( $object_id ) ? '%d' : '%s',
 					'%d',
 					'%d',
 					'%d',
@@ -42,7 +42,7 @@ abstract class AbstractPointsDao extends AbstractDao {
 					'team_id'        => $group_id,
 				),
 				array(
-					'%d',
+					is_numeric( $object_id ) ? '%d' : '%s',
 					'%d',
 				)
 			);
@@ -83,7 +83,7 @@ abstract class AbstractPointsDao extends AbstractDao {
 		$p                     = new Points();
 		$p->{$this->id_column} = $result->{$this->id_column};
 		$p->group_id           = $result->team_id;
-		$p->points             = $result->points;
+		$p->points             = intval( $result->points );
 		$p->created            = self::from_db_date( $result->created_at );
 
 		return $p;
