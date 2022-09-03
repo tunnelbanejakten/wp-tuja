@@ -57,6 +57,12 @@ $this->print_leaves_menu();
 		$render_fields( $station_fields['fields'] );
 		printf( '</tr>' );
 	}
+	printf( '<tr><th>Bonuspoäng:</th></tr>' );
+	foreach ( $extras_fields as $extra_fields ) {
+		printf( '<tr><td><span class="tuja-scoreboard-details-question">%s</span></td>', $extra_fields['label'] );
+		$render_fields( $extra_fields['fields'] );
+		printf( '</tr>' );
+	}
 	?>
 </tbody>
 </table>

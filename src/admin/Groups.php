@@ -218,6 +218,11 @@ class Groups extends Competition {
 			'tuja_view'        => 'GroupsSearch'
 		) );
 
+		$extra_points_url            = add_query_arg( array(
+			'tuja_competition' => $this->competition->id,
+			'tuja_view'        => 'ExtraPoints'
+		) );
+
 		include( 'views/groups.php' );
 	}
 

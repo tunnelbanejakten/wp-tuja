@@ -4,6 +4,7 @@ namespace tuja\admin;
 
 use Exception;
 use tuja\data\store\EventDao;
+use tuja\data\store\ExtraPointsDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\MessageDao;
 use tuja\data\store\QuestionPointsOverrideDao;
@@ -79,6 +80,7 @@ class GroupScore extends Group {
 		$db_groups         = new GroupDao();
 		$db_points         = new QuestionPointsOverrideDao();
 		$db_station_points = new StationPointsDao();
+		$db_extra_points   = new ExtraPointsDao();
 		$db_stations       = new StationDao();
 		$db_message        = new MessageDao();
 		$db_event          = new EventDao();
@@ -91,6 +93,7 @@ class GroupScore extends Group {
 			$db_groups,
 			$db_points,
 			$db_station_points,
+			$db_extra_points,
 			$db_event
 		);
 		$score_result     = $score_calculator->score( $group );
