@@ -37,7 +37,7 @@ class ScoreboardDetails extends Scoreboard {
 		$this->group_dao          = new GroupDao();
 		$this->group_category_dao = new GroupCategoryDao();
 		$this->station_dao        = new StationDao();
-		$this->extra_points_dao        = new ExtraPointsDao();
+		$this->extra_points_dao   = new ExtraPointsDao();
 	}
 
 	private function get_column_definitions() {
@@ -114,7 +114,7 @@ class ScoreboardDetails extends Scoreboard {
 				$this->group_dao,
 				new QuestionPointsOverrideDao(),
 				new StationPointsDao(),
-				new ExtraPointsDao(),
+				$this->extra_points_dao,
 				new EventDao()
 			);
 			$this->score_board = $calculator->score_board( true );
@@ -162,10 +162,14 @@ class ScoreboardDetails extends Scoreboard {
 					)
 				)
 			);
+			$is_average = count( $group_ids ) > 1;
+			$decimals   = $is_average ? 1 : 0;
 			if ( count( $all_scores ) > 1 ) {
-				return sprintf( '%.1f', array_sum( $all_scores ) / count( $all_scores ) );
+				$value = array_sum( $all_scores ) / count( $all_scores );
+				return number_format( $value, $decimals, ',', '' );
 			} elseif ( count( $all_scores ) === 1 ) {
-				return sprintf( '%.1f', $all_scores[0] );
+				$value = floatval( $all_scores[0] );
+				return number_format( $value, $decimals, ',', '' );
 			} else {
 				return '-';
 			}
@@ -306,6 +310,20 @@ class ScoreboardDetails extends Scoreboard {
 		$questions_fields = $this->get_question_rows();
 		$stations_fields  = $this->get_station_rows();
 		$extras_fields    = $this->get_extra_rows();
+
+		$stations_points_url = add_query_arg(
+			array(
+				'tuja_competition' => $this->competition->id,
+				'tuja_view'        => 'StationsPoints',
+			)
+		);
+
+		$extra_points_url = add_query_arg(
+			array(
+				'tuja_competition' => $this->competition->id,
+				'tuja_view'        => 'ExtraPoints',
+			)
+		);
 
 		include 'views/scoreboard-details.php';
 	}
