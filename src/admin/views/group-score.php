@@ -73,7 +73,7 @@ $this->print_leaves_menu();
 		array_walk(
 			$stations,
 			function( Station $station ) use ( &$station_points_by_key ) {
-				$field_key = self::get_station_points_field_key( $station->id, $this->group->id );
+				$field_key = self::get_station_points_field_key( $station->id );
 				$input     = sprintf(
 					'<input
 						type="number"
@@ -101,7 +101,7 @@ $this->print_leaves_menu();
 		array_walk(
 			$all_extra_points_names,
 			function( string $name ) use ( &$extra_points_by_key ) {
-				$field_key    = self::get_extra_points_field_key( $name, $this->group->id );
+				$field_key    = self::get_extra_points_field_key( $name );
 				$points_input = sprintf(
 					'<input
 						type="number"
@@ -115,7 +115,7 @@ $this->print_leaves_menu();
 					$field_key
 				);
 
-				$name_field_key = self::get_extra_points_field_key( $name, self::MAGIC_NUMBER_NAME_FIELD_ID );
+				$name_field_key = self::get_extra_points_label_field_key( $name );
 				$read_only      = ! empty( $name );
 				$name_input     = sprintf( '<input type="text" name="%s" id="%s" value="%s" %s>', $name_field_key, $name_field_key, $name, $read_only ? 'readonly' : '' );
 

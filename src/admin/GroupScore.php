@@ -21,7 +21,6 @@ class GroupScore extends Group {
 
 	const DEFAULT_QUESTION_FILTER    = ResponseDao::QUESTION_FILTER_ALL;
 	const QUESTION_FILTER_URL_PARAM  = 'tuja_group_question_filter';
-	const MAGIC_NUMBER_NAME_FIELD_ID = -1;
 
 	private $review_component;
 	private $extra_points_dao;
@@ -84,8 +83,8 @@ class GroupScore extends Group {
 		array_walk(
 			$all_names,
 			function ( string $name ) {
-				$name_field_key   = self::get_extra_points_field_key( $name, self::MAGIC_NUMBER_NAME_FIELD_ID );
-				$points_field_key = self::get_extra_points_field_key( $name, $this->group->id );
+				$name_field_key   = self::get_extra_points_label_field_key( $name );
+				$points_field_key = self::get_extra_points_field_key( $name );
 
 				$updated_name = ! empty( $_POST[ $name_field_key ] ) ? $_POST[ $name_field_key ] : $name;
 				if ( isset( $_POST[ $points_field_key ] ) && is_numeric( $_POST[ $points_field_key ] ) ) {
@@ -98,8 +97,12 @@ class GroupScore extends Group {
 		);
 	}
 
-	private static function get_extra_points_field_key( $name, $group_id ) {
-		return join( '__', array( 'tuja', 'extra-points', crc32( $name ), $group_id ) );
+	private static function get_extra_points_field_key( $name ) {
+		return join( '__', array( 'tuja', 'extra-points', crc32( $name ) ) );
+	}
+
+	private static function get_extra_points_label_field_key( $name ) {
+		return join( '__', array( 'tuja', 'extra-points-label', crc32( $name ) ) );
 	}
 
 	private function all_extra_points_names(): array {
@@ -113,7 +116,7 @@ class GroupScore extends Group {
 		array_walk(
 			$stations,
 			function ( Station $station ) {
-				$key = self::get_station_points_field_key( $station->id, $this->group->id );
+				$key = self::get_station_points_field_key( $station->id );
 				if ( isset( $_POST[ $key ] ) && is_numeric( $_POST[ $key ] ) ) {
 					$points = intval( $_POST[ $key ] );
 					$this->station_points_dao->set( $this->group->id, $station->id, $points );
@@ -124,8 +127,8 @@ class GroupScore extends Group {
 		);
 	}
 
-	private static function get_station_points_field_key( $station_id, $group_id ) {
-		return join( '__', array( 'tuja', 'station-points', $station_id, $group_id ) );
+	private static function get_station_points_field_key( $station_id ) {
+		return join( '__', array( 'tuja', 'station-points', $station_id ) );
 	}
 
 	public function output() {
@@ -165,7 +168,7 @@ class GroupScore extends Group {
 		array_walk(
 			$extra_points,
 			function ( Points $points ) use ( &$extra_points_by_key ) {
-				$key                         = self::get_extra_points_field_key( $points->name, $points->group_id );
+				$key                         = self::get_extra_points_field_key( $points->name );
 				$extra_points_by_key[ $key ] = $points->points;
 			}
 		);
@@ -192,7 +195,7 @@ class GroupScore extends Group {
 		array_walk(
 			$station_points,
 			function ( Points $points ) use ( &$station_points_by_key ) {
-				$key                           = self::get_station_points_field_key( $points->station_id, $points->group_id );
+				$key                           = self::get_station_points_field_key( $points->station_id );
 				$station_points_by_key[ $key ] = $points->points;
 			}
 		);
