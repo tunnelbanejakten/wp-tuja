@@ -33,13 +33,6 @@ class GroupsSearch extends Groups {
 
 	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
 		$menu = parent::create_menu( $current_view_name, $parents );
-		$groups_start_page_link = add_query_arg(
-			array(
-				'tuja_competition' => $this->competition->id,
-				'tuja_view'        => 'Groups',
-			)
-		);
-
 		return $menu->add(
 			BreadcrumbsMenu::item( 'Sök' ),
 		);

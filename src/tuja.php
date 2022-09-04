@@ -234,6 +234,15 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'extra_points' ) . ' (
+				name             VARCHAR(100),
+				team_id          INTEGER NOT NULL,
+				points           INTEGER,
+				created_at       INTEGER,
+				PRIMARY KEY (name, team_id)
+			) ' . $charset;
+
+		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'message' ) . ' (
 				id                INTEGER AUTO_INCREMENT NOT NULL,
 				form_question_id  INTEGER,
@@ -363,6 +372,8 @@ abstract class Plugin {
 
 			array( 'station_points', 'station_id', 'station', 'RESTRICT' ),
 			array( 'station_points', 'team_id', 'team', 'CASCADE' ),
+
+			array( 'extra_points', 'team_id', 'team', 'CASCADE' ),
 
 			array( 'message', 'form_question_id', 'form_question', 'RESTRICT' ),
 			array( 'message', 'team_id', 'team', 'CASCADE' ),

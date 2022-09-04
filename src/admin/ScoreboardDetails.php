@@ -16,6 +16,7 @@ use tuja\data\store\QuestionGroupDao;
 use tuja\util\score\ScoreCalculator;
 use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\QuestionGroup;
+use tuja\data\store\ExtraPointsDao;
 use tuja\data\store\StationDao;
 
 class ScoreboardDetails extends Scoreboard {
@@ -24,6 +25,7 @@ class ScoreboardDetails extends Scoreboard {
 	private $question_group_dao;
 	private $group_dao;
 	private $group_category_dao;
+	private $extra_points_dao;
 	private $station_dao;
 	private $score_board;
 	private $column_definitions;
@@ -35,6 +37,7 @@ class ScoreboardDetails extends Scoreboard {
 		$this->group_dao          = new GroupDao();
 		$this->group_category_dao = new GroupCategoryDao();
 		$this->station_dao        = new StationDao();
+		$this->extra_points_dao   = new ExtraPointsDao();
 	}
 
 	private function get_column_definitions() {
@@ -111,6 +114,7 @@ class ScoreboardDetails extends Scoreboard {
 				$this->group_dao,
 				new QuestionPointsOverrideDao(),
 				new StationPointsDao(),
+				$this->extra_points_dao,
 				new EventDao()
 			);
 			$this->score_board = $calculator->score_board( true );
@@ -118,9 +122,9 @@ class ScoreboardDetails extends Scoreboard {
 		return $this->score_board;
 	}
 
-	private function create_details_value_extrator( string $objects_section, int $object_id ) {
+	private function create_details_value_extrator( string $objects_section, $object_id ) {
 		return function ( $obj ) use ( $objects_section, $object_id ) {
-			return $obj['details']->{$objects_section}[ $object_id ]->final;
+			return @$obj['details']->{$objects_section}[ $object_id ]->final ?? 0;
 		};
 	}
 
@@ -158,10 +162,14 @@ class ScoreboardDetails extends Scoreboard {
 					)
 				)
 			);
+			$is_average = count( $group_ids ) > 1;
+			$decimals   = $is_average ? 1 : 0;
 			if ( count( $all_scores ) > 1 ) {
-				return sprintf( '%.1f', array_sum( $all_scores ) / count( $all_scores ) );
+				$value = array_sum( $all_scores ) / count( $all_scores );
+				return number_format( $value, $decimals, ',', '' );
 			} elseif ( count( $all_scores ) === 1 ) {
-				return sprintf( '%.1f', $all_scores[0] );
+				$value = floatval( $all_scores[0] );
+				return number_format( $value, $decimals, ',', '' );
 			} else {
 				return '-';
 			}
@@ -259,6 +267,26 @@ class ScoreboardDetails extends Scoreboard {
 
 	}
 
+	private function get_extra_rows() {
+		$column_group_ids = $this->get_column_group_ids();
+		$score_board      = $this->get_scoreboard();
+
+		$extra_names = $this->extra_points_dao->all_names( $this->competition->id );
+		return array_map(
+			function ( string $name ) use ( $column_group_ids, $score_board ) {
+				return array(
+					'label'  => $name,
+					'fields' => array_map(
+						$this->create_row_values_mapper( $score_board, $this->create_details_value_extrator( 'extra', $name ) ),
+						$column_group_ids
+					),
+				);
+			},
+			$extra_names
+		);
+
+	}
+
 	private function get_column_group_ids() {
 		return array_map(
 			function ( array $column_definition ) {
@@ -281,6 +309,21 @@ class ScoreboardDetails extends Scoreboard {
 		$overall_fields   = $this->get_overall_rows();
 		$questions_fields = $this->get_question_rows();
 		$stations_fields  = $this->get_station_rows();
+		$extras_fields    = $this->get_extra_rows();
+
+		$stations_points_url = add_query_arg(
+			array(
+				'tuja_competition' => $this->competition->id,
+				'tuja_view'        => 'StationsPoints',
+			)
+		);
+
+		$extra_points_url = add_query_arg(
+			array(
+				'tuja_competition' => $this->competition->id,
+				'tuja_view'        => 'ExtraPoints',
+			)
+		);
 
 		include 'views/scoreboard-details.php';
 	}

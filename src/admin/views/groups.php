@@ -5,6 +5,7 @@ AdminUtils::printTopMenu( $competition );
 $this->print_menu();
 ?>
 
+<p><a href="<?= $extra_points_url ?>">Bonuspoäng</a></p>
 <p><a href="<?= $search_url ?>">Sök</a></p>
 
 <p>Filter: <?= $filters ?>.</p>

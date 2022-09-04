@@ -28,8 +28,10 @@ $this->print_leaves_menu();
 	<?php
 	$render_fields = function ( $fields ) {
 		foreach ( $fields as $value ) {
+			$extra_class = 0 == $value ? 'zero-value' : '';
 			printf(
-				'<td class="numeric-value">%s</td>',
+				'<td class="numeric-value %s">%s</td>',
+				$extra_class,
 				$value
 			);
 		}
@@ -51,10 +53,16 @@ $this->print_leaves_menu();
 		$render_fields( $question_fields['fields'] );
 		printf( '</tr>' );
 	}
-	printf( '<tr><th>Stationer:</th></tr>' );
+	printf( '<tr><th>Stationer:</th><td colspan="%d"><a href="%s">Ändra poäng för stationer...</a></td></tr>', count( $column_labels ), $stations_points_url );
 	foreach ( $stations_fields as $station_fields ) {
 		printf( '<tr><td><span class="tuja-scoreboard-details-question">%s</span></td>', $station_fields['label'] );
 		$render_fields( $station_fields['fields'] );
+		printf( '</tr>' );
+	}
+	printf( '<tr><th>Bonuspoäng:</th><td colspan="%d"><a href="%s">Ändra bonuspoäng...</a></td></tr>', count( $column_labels ), $extra_points_url );
+	foreach ( $extras_fields as $extra_fields ) {
+		printf( '<tr><td><span class="tuja-scoreboard-details-question">%s</span></td>', $extra_fields['label'] );
+		$render_fields( $extra_fields['fields'] );
 		printf( '</tr>' );
 	}
 	?>

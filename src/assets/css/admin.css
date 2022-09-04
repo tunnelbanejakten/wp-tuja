@@ -201,9 +201,12 @@ table.tuja-table .tuja-rotated-header {
 }
 
 table.tuja-table .numeric-value {
-    font-family: monospace;
     text-align: right;
     white-space: nowrap;
+}
+
+table.tuja-table .numeric-value.zero-value {
+    color: #aaa;
 }
 
 tr.tuja-admin-review-response-row td {
