@@ -3,6 +3,8 @@
 namespace tuja\admin;
 
 use Exception;
+use tuja\data\model\Points;
+use tuja\data\model\Station;
 use tuja\data\store\EventDao;
 use tuja\data\store\ExtraPointsDao;
 use tuja\data\store\GroupDao;
@@ -17,25 +19,30 @@ use tuja\util\score\ScoreCalculator;
 
 class GroupScore extends Group {
 
-	const DEFAULT_QUESTION_FILTER   = ResponseDao::QUESTION_FILTER_ALL;
-	const QUESTION_FILTER_URL_PARAM = 'tuja_group_question_filter';
+	const DEFAULT_QUESTION_FILTER    = ResponseDao::QUESTION_FILTER_ALL;
+	const QUESTION_FILTER_URL_PARAM  = 'tuja_group_question_filter';
+	const MAGIC_NUMBER_NAME_FIELD_ID = -1;
 
 	private $review_component;
+	private $extra_points_dao;
+	private $station_dao;
+	private $station_points_dao;
 
 	public function __construct() {
 		parent::__construct();
-		$this->review_component = new ReviewComponent( $this->competition );
+		$this->review_component   = new ReviewComponent( $this->competition );
+		$this->extra_points_dao   = new ExtraPointsDao();
+		$this->station_dao        = new StationDao();
+		$this->station_points_dao = new StationPointsDao();
 	}
 
 	public function get_scripts(): array {
 		return array(
-			'admin-review-component.js'
+			'admin-review-component.js',
 		);
 	}
 
 	public function handle_post() {
-		global $wpdb;
-
 		if ( ! isset( $_POST['tuja_points_action'] ) ) {
 			return;
 		}
@@ -65,7 +72,60 @@ class GroupScore extends Group {
 					)
 				);
 			}
+		} elseif ( $action === 'save_stations_and_extras' ) {
+			$this->handle_save_extra_points();
+			$this->handle_save_station_points();
 		}
+	}
+
+	private function handle_save_extra_points() {
+		$all_names = $this->all_extra_points_names();
+
+		array_walk(
+			$all_names,
+			function ( string $name ) {
+				$name_field_key   = self::get_extra_points_field_key( $name, self::MAGIC_NUMBER_NAME_FIELD_ID );
+				$points_field_key = self::get_extra_points_field_key( $name, $this->group->id );
+
+				$updated_name = ! empty( $_POST[ $name_field_key ] ) ? $_POST[ $name_field_key ] : $name;
+				if ( isset( $_POST[ $points_field_key ] ) && is_numeric( $_POST[ $points_field_key ] ) ) {
+					$points = intval( $_POST[ $points_field_key ] );
+					$this->extra_points_dao->set( $this->group->id, $updated_name, $points );
+				} else {
+					$this->extra_points_dao->set( $this->group->id, $updated_name, null );
+				}
+			}
+		);
+	}
+
+	private static function get_extra_points_field_key( $name, $group_id ) {
+		return join( '__', array( 'tuja', 'extra-points', crc32( $name ), $group_id ) );
+	}
+
+	private function all_extra_points_names(): array {
+		$existing_names = $this->extra_points_dao->all_names( $this->competition->id );
+		return array_merge( $existing_names, array( '' ) );
+	}
+
+	private function handle_save_station_points() {
+		$stations = $this->station_dao->get_all_in_competition( $this->competition->id );
+
+		array_walk(
+			$stations,
+			function ( Station $station ) {
+				$key = self::get_station_points_field_key( $station->id, $this->group->id );
+				if ( isset( $_POST[ $key ] ) && is_numeric( $_POST[ $key ] ) ) {
+					$points = intval( $_POST[ $key ] );
+					$this->station_points_dao->set( $this->group->id, $station->id, $points );
+				} else {
+					$this->station_points_dao->set( $this->group->id, $station->id, null );
+				}
+			}
+		);
+	}
+
+	private static function get_station_points_field_key( $station_id, $group_id ) {
+		return join( '__', array( 'tuja', 'station-points', $station_id, $group_id ) );
 	}
 
 	public function output() {
@@ -79,9 +139,9 @@ class GroupScore extends Group {
 		$db_response       = new ResponseDao();
 		$db_groups         = new GroupDao();
 		$db_points         = new QuestionPointsOverrideDao();
-		$db_station_points = new StationPointsDao();
-		$db_extra_points   = new ExtraPointsDao();
-		$db_stations       = new StationDao();
+		$db_station_points = $this->station_points_dao;
+		$db_extra_points   = $this->extra_points_dao;
+		$db_stations       = $this->station_dao;
 		$db_message        = new MessageDao();
 		$db_event          = new EventDao();
 
@@ -98,7 +158,19 @@ class GroupScore extends Group {
 		);
 		$score_result     = $score_calculator->score( $group );
 
-		$responses             = $db_response->get_latest_by_group( $group->id );
+		$responses = $db_response->get_latest_by_group( $group->id );
+
+		$extra_points_by_key = array();
+		$extra_points        = $this->extra_points_dao->get_by_group( $this->group->id );
+		array_walk(
+			$extra_points,
+			function ( Points $points ) use ( &$extra_points_by_key ) {
+				$key                         = self::get_extra_points_field_key( $points->name, $points->group_id );
+				$extra_points_by_key[ $key ] = $points->points;
+			}
+		);
+		$all_extra_points_names = $this->all_extra_points_names();
+
 		// TODO: Remove $points_overrides?
 		$points_overrides              = $db_points->get_by_group( $group->id );
 		$points_overrides_per_question = array_combine(
@@ -114,6 +186,24 @@ class GroupScore extends Group {
 		$review_component = $this->review_component;
 
 		$stations = $db_stations->get_all_in_competition( $competition->id );
+
+		$station_points_by_key = array();
+		$station_points        = $this->station_points_dao->get_by_group( $this->group->id );
+		array_walk(
+			$station_points,
+			function ( Points $points ) use ( &$station_points_by_key ) {
+				$key                           = self::get_station_points_field_key( $points->station_id, $points->group_id );
+				$station_points_by_key[ $key ] = $points->points;
+			}
+		);
+
+		$save_station_and_extra_points_button = sprintf(
+			'
+			<div class="tuja-buttons">
+        		<button type="submit" class="button button-primary" name="tuja_points_action" value="%s">Spara stations- och bonuspoäng</button>
+    		</div>',
+			'save_stations_and_extras'
+		);
 
 		include 'views/group-score.php';
 	}

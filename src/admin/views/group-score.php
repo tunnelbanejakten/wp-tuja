@@ -72,13 +72,62 @@ $this->print_leaves_menu();
 		<?php
 		array_walk(
 			$stations,
-			function( Station $station ) use ( $score_result ) {
-				$points = @$score_result->stations[ $station->id ]->final ?? 0;
-				printf( '<tr><td>%s</td><td>%s p</td></tr>', $station->name, $points );
+			function( Station $station ) use ( &$station_points_by_key ) {
+				$field_key = self::get_station_points_field_key( $station->id, $this->group->id );
+				$input     = sprintf(
+					'<input
+						type="number"
+						min="0"
+						placeholder="0"
+						value="%s"
+						id="%s" 
+						name="%s">',
+					@$station_points_by_key[ $field_key ] ?? '',
+					$field_key,
+					$field_key
+				);
+
+				printf( '<tr><td>%s</td><td>%s</td></tr>', $station->name, $input );
 			}
 		);
 		?>
 		</tbody>
 	</table>
+
+	<p><strong>Bonuspoäng</strong></p>
+	<table class="tuja-table">
+		<tbody>	
+		<?php
+		array_walk(
+			$all_extra_points_names,
+			function( string $name ) use ( &$extra_points_by_key ) {
+				$field_key    = self::get_extra_points_field_key( $name, $this->group->id );
+				$points_input = sprintf(
+					'<input
+						type="number"
+						min="0"
+						placeholder="0"
+						value="%s"
+						id="%s" 
+						name="%s">',
+					@$extra_points_by_key[ $field_key ] ?? '',
+					$field_key,
+					$field_key
+				);
+
+				$name_field_key = self::get_extra_points_field_key( $name, self::MAGIC_NUMBER_NAME_FIELD_ID );
+				$read_only      = ! empty( $name );
+				$name_input     = sprintf( '<input type="text" name="%s" id="%s" value="%s" %s>', $name_field_key, $name_field_key, $name, $read_only ? 'readonly' : '' );
+
+				printf( '<tr><td>%s</td><td>%s</td></tr>', $name_input, $points_input );
+			}
+		);
+		?>
+		</tbody>
+	</table>
+
+	<div class="buttons">
+		<?php echo $save_station_and_extra_points_button; ?>
+	</div>
 
 </form>

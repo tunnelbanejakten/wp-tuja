@@ -58,15 +58,37 @@ describe('Stations', () => {
       await adminPage.type(`#tuja__extra-points__0__${groupAliceProps.id}`, '7')
       await adminPage.type(`#tuja__extra-points__0__${groupBobProps.id}`, '8')
       await adminPage.clickLink('button[name="tuja_action"][value="save"]')
+
+      const existingLabelCrc32 = '3938429584' // CRC32 value for 'Bonuspoäng'
+      const anotherExistingLabelCrc32 = '737937151' // CRC32 value for 'Fler poäng'
       
       // Visit team pages and check total scores  
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupScore&tuja_competition=${competitionId}&tuja_group=${groupAliceProps.id}`)
       const totalFinalAliceWithExtra = await adminPage.$eval(`#tuja-group-score`, node => parseInt(node.dataset.totalFinal))
       expect(totalFinalAliceWithExtra).toBe(6 + 7)
+      
+      // Verify that Bonuspoäng still has 7 points
+      await adminPage.expectFormValue(`#tuja__extra-points__${existingLabelCrc32}__${groupAliceProps.id}`, '7')
+
+      // Add new "extra points" label with 9 points
+      await adminPage.type(`#tuja__extra-points__0__-1`, 'Fler poäng')
+      await adminPage.type(`#tuja__extra-points__0__${groupAliceProps.id}`, '9')
+
+      // Save changes and verify that total score has increased by 9 after page has reloaded
+      await adminPage.clickLink('button[name="tuja_points_action"][value="save_stations_and_extras"]')
+      const totalFinalAliceWithExtra2 = await adminPage.$eval(`#tuja-group-score`, node => parseInt(node.dataset.totalFinal))
+      expect(totalFinalAliceWithExtra2).toBe(6 + 7 + 9)
+
+      await adminPage.expectFormValue(`#tuja__extra-points__${existingLabelCrc32}__${groupAliceProps.id}`, '7')
+      await adminPage.expectFormValue(`#tuja__extra-points__${anotherExistingLabelCrc32}__${groupAliceProps.id}`, '9')
 
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupScore&tuja_competition=${competitionId}&tuja_group=${groupBobProps.id}`)
       const totalFinalBobWithExtra = await adminPage.$eval(`#tuja-group-score`, node => parseInt(node.dataset.totalFinal))
       expect(totalFinalBobWithExtra).toBe(15 + 8)
+      
+      // Verify that new "extra points" label is available (and empty)
+      await adminPage.expectFormValue(`#tuja__extra-points__${existingLabelCrc32}__${groupBobProps.id}`, '8')
+      await adminPage.expectFormValue(`#tuja__extra-points__${anotherExistingLabelCrc32}__${groupBobProps.id}`, '')
     })
   })
 })

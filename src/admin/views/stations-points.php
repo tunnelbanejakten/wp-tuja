@@ -33,7 +33,7 @@ $this->print_menu();
                             placeholder="0"
                             value="%s"
                             id="%s" 
-                            name="%s" 
+                            name="%s">
                         </td>',
                     @$points_by_key[ $field_key ] ?? '',
                     $field_key,

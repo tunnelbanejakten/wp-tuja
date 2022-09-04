@@ -18,7 +18,7 @@ use tuja\data\store\CompetitionDao;
 use tuja\data\model\ValidationException;
 use tuja\data\store\ExtraPointsDao;
 
-class ExtraPoints extends Competition {
+class ExtraPoints extends Groups {
 
 	const MAGIC_NUMBER_NAME_FIELD_ID = -1;
 
@@ -125,5 +125,12 @@ class ExtraPoints extends Competition {
 		);
 
 		include 'views/extra-points.php';
+	}
+
+	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
+		$menu = parent::create_menu( $current_view_name, $parents );
+		return $menu->add(
+			BreadcrumbsMenu::item( 'Bonuspoäng' ),
+		);
 	}
 }
