@@ -195,31 +195,41 @@ describe('Crew', () => {
         const initSession = async () => {
           const session = await createNewUserPage()
           await session.goto(`http://localhost:8080/${crewPersonProps.key}/rapportera`)
-          await session.clickLink('form p:nth-of-type(1) a') // Select first station
+          await session.clickLink('div.entry-content p:nth-of-type(1) a') // Select first station
           return session
         }
         const aliceSession = await initSession()
         const bobSession = await initSession()
 
-        await aliceSession.takeScreenshot()
-        await aliceSession.type('div.tuja-field:nth-of-type(1) input.tuja-fieldtext', '10')
-        await aliceSession.type('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '20')
-        await aliceSession.clickLink('button[name="tuja_crewview__action"][value="update"]')
+        await aliceSession.type('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext', '20')
+        await aliceSession.click('header.entry-header') // Click outside to trigger onChange event
+        await aliceSession.wait(1000 + 2000) // 1 second for debounce and 2 seconds for API response
+        const errorMessageContainerDisplay0 = await aliceSession.$eval('#tuja-report-points-warning-message-container', node => node.style.display)
+        expect(errorMessageContainerDisplay0).toEqual('none')
 
-        await aliceSession.expectSuccessMessage('Poängen har sparats.')
+        await bobSession.type('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext', '5')
+        await bobSession.click('header.entry-header') // Click outside to trigger onChange event
+        await bobSession.wait(1000 + 2000) // 1 second for debounce and 2 seconds for API response
+        const errorMessageContainerDisplay1 = await bobSession.$eval('#tuja-report-points-warning-message-container', node => node.style.display)
+        expect(errorMessageContainerDisplay1).toEqual('flex')
+        const errorMessage = await bobSession.$eval('.tuja-message-error', node => node.innerHTML)
+        expect(errorMessage).toContain('Någon annan har hunnit rapportera in andra poäng')
+        await bobSession.click('#tuja-report-points-warning-message-button')
+        const errorMessageContainerDisplay2 = await bobSession.$eval('#tuja-report-points-warning-message-container', node => node.style.display)
+        expect(errorMessageContainerDisplay2).toEqual('none')
 
-        await bobSession.type('div.tuja-field:nth-of-type(1) input.tuja-fieldtext', '5')
-        await bobSession.type('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '15')
-        await bobSession.clickLink('button[name="tuja_crewview__action"][value="update"]')
-
-        await bobSession.expectErrorMessage('Någon annan har hunnit rapportera in andra poäng')
+        await bobSession.type('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext', '10')
+        await bobSession.click('header.entry-header') // Click outside to trigger onChange event
+        await bobSession.wait(1000 + 2000) // 1 second for debounce and 2 seconds for API response
+        const errorMessageContainerDisplay3 = await bobSession.$eval('#tuja-report-points-warning-message-container', node => node.style.display)
+        expect(errorMessageContainerDisplay3).toEqual('none')
 
         await aliceSession.close()
         await bobSession.close()
 
         const verifySession = await initSession()
-        await verifySession.expectFormValue('div.tuja-field:nth-of-type(1) input.tuja-fieldtext', '10')
-        await verifySession.expectFormValue('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '20')
+        await verifySession.expectFormValue('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext', '10')
+        await verifySession.expectFormValue('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext', '20')
         await verifySession.close()
       })
 

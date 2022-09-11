@@ -6,6 +6,7 @@ use tuja\frontend\FrontendView;
 use DateTime;
 use Exception;
 use Throwable;
+use tuja\controller\ReportPointsController;
 use tuja\data\model\Group;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupCategoryDao;
@@ -25,14 +26,16 @@ abstract class AbstractCrewMemberView extends FrontendView {
 
 	protected function __construct( string $url, string $group_or_person_key, string $title ) {
 		parent::__construct( $url );
-		$this->group_dao           = new GroupDao();
-		$this->person_dao          = new PersonDao();
-		$this->competition_dao     = new CompetitionDao();
-		$this->category_dao        = new GroupCategoryDao();
-		$this->group_or_person_key = $group_or_person_key;
-		$this->title               = $title;
+		$this->group_dao                = new GroupDao();
+		$this->person_dao               = new PersonDao();
+		$this->competition_dao          = new CompetitionDao();
+		$this->category_dao             = new GroupCategoryDao();
+		$this->report_points_controller = new ReportPointsController();
+		$this->group_or_person_key      = $group_or_person_key;
+		$this->title                    = $title;
 	}
 
+	// TODO: Accept both user key and group key in ReportPointsController as well?
 	private function init_user_or_group() {
 		$group_or_person_key = $this->group_or_person_key;
 		if ( isset( $group_or_person_key ) ) {
@@ -71,34 +74,7 @@ abstract class AbstractCrewMemberView extends FrontendView {
 	}
 
 	protected function get_participant_groups(): array {
-		if ( ! isset( $this->participant_groups ) ) {
-			// TODO: DRY... Very similar code in Form.php
-			$categories             = $this->category_dao->get_all_in_competition( $this->competition_id );
-			$participant_categories = array_filter(
-				$categories,
-				function ( $category ) {
-					return ! $category->get_rules()->is_crew();
-				}
-			);
-			$ids                    = array_map(
-				function ( $category ) {
-					return $category->id;
-				},
-				$participant_categories
-			);
-
-			$competition_groups       = $this->group_dao->get_all_in_competition( $this->competition_id );
-			$this->participant_groups = array_filter(
-				$competition_groups,
-				function ( Group $group ) use ( $ids ) {
-					$group_category = $group->get_category();
-
-					return isset( $group_category ) && in_array( $group_category->id, $ids );
-				}
-			);
-		}
-
-		return $this->participant_groups;
+		return $this->report_points_controller->get_participant_groups( $this->competition_id );
 	}
 
 	function get_content() {

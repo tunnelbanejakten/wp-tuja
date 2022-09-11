@@ -81,7 +81,8 @@ abstract class AbstractPointsDao extends AbstractDao {
 
 	protected function to_points( $result ): Points {
 		$p                     = new Points();
-		$p->{$this->id_column} = $result->{$this->id_column};
+		$id_column_value       = $result->{$this->id_column};
+		$p->{$this->id_column} = is_numeric( $id_column_value ) ? intval( $id_column_value ) : $id_column_value;
 		$p->group_id           = $result->team_id;
 		$p->points             = intval( $result->points );
 		$p->created            = self::from_db_date( $result->created_at );

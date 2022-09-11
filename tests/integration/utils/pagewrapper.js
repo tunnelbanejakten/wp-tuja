@@ -71,6 +71,12 @@ class PageWrapper {
     await this.expectToContain('.tuja-message-error', expected)
   }
 
+  async wait(timeMs) {
+    return new Promise(function(resolve) { 
+      setTimeout(resolve, timeMs)
+    });
+  }
+ 
   async expectFormValue (selector, expected) {
     const actual = await this._page.$eval(selector, node => node.value)
     await expect(actual).toBe(expected)
