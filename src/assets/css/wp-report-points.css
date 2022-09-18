@@ -19,7 +19,7 @@ section.tuja-team-score-loading div.tuja-team-score-field-container div {
     opacity: 0.2;
 }
 
-div#tuja-report-points-warning-message-container {
+div#tuja-report-points-warning-message-container.show {
     position: fixed;
     top: 0;
     left: 0;
@@ -32,6 +32,10 @@ div#tuja-report-points-warning-message-container {
 
 div#tuja-report-points-warning-message-container p.tuja-message {
     margin: 0;
+}
+
+div#tuja-report-points-warning-message-container.hide {
+    display: none;
 }
 
 div#tuja-report-points-warning-message-container section {

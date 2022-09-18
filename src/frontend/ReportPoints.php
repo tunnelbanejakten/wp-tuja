@@ -15,8 +15,6 @@ use tuja\view\FieldNumber;
 use tuja\Frontend;
 
 class ReportPoints extends AbstractCrewMemberView {
-	const STATION_FIELD_PREFIX = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'station';
-
 	private $station_dao;
 
 	public function __construct( string $url, string $person_key, string $station_key ) {
@@ -90,7 +88,7 @@ class ReportPoints extends AbstractCrewMemberView {
 				'
 				<div 
 					id="tuja-report-points-data" 
-					data-upload-url="%s"
+					data-api-url="%s"
 					data-user-key="%s"
 					data-station-id="%s" 
 				></div>',
@@ -118,9 +116,8 @@ class ReportPoints extends AbstractCrewMemberView {
 	}
 
 	private function render_points_field( $text, $station_id, $group_id, $points ): string {
-		$key        = $station_id . self::FIELD_NAME_PART_SEP . $group_id;
 		$field      = new FieldNumber( $text );
-		$field_name = self::STATION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $key;
+		$field_name = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'group_points' . self::FIELD_NAME_PART_SEP . $group_id;
 
 		return $field->render( $field_name, $points, new Group() );
 	}
