@@ -36,8 +36,16 @@ abstract class Plugin {
 			die( 'Composer is not initialized.' );
 		}
 
-		add_action( 'wp_ajax_tuja_upload_images', array( 'tuja\util\ImageManager', 'handle_image_upload' ) );
-		add_action( 'wp_ajax_nopriv_tuja_upload_images', array( 'tuja\util\ImageManager', 'handle_image_upload' ) );
+		add_action( 'wp_ajax_tuja_upload_images', array( 'tuja\frontend\FrontendApiImageUpload', 'handle_image_upload' ) );
+		add_action( 'wp_ajax_nopriv_tuja_upload_images', array( 'tuja\frontend\FrontendApiImageUpload', 'handle_image_upload' ) );
+
+		// Called periodically to keep report-points page in-sync with what other crew members have reported from other devices.
+		add_action( 'wp_ajax_tuja_station_points_get_all', array( 'tuja\frontend\FrontendApiReportPoints', 'station_points_get_all' ) );
+		add_action( 'wp_ajax_nopriv_tuja_station_points_get_all', array( 'tuja\frontend\FrontendApiReportPoints', 'station_points_get_all' ) );
+
+		// Called when crew member reports points for team for station.
+		add_action( 'wp_ajax_tuja_station_points_set', array( 'tuja\frontend\FrontendApiReportPoints', 'station_points_set' ) );
+		add_action( 'wp_ajax_nopriv_tuja_station_points_set', array( 'tuja\frontend\FrontendApiReportPoints', 'station_points_set' ) );
 
 		add_filter( 'allowed_http_origins', array( $this, 'add_allowed_origins' ) );
 

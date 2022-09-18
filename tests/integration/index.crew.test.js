@@ -33,7 +33,7 @@ describe('Crew', () => {
     crewGroupKey = global.crewGroupKey
     crewPersonKey = global.crewPersonKey
     adminPage = await (new AdminPageWrapper(browser).init())
-    defaultPage = await (new UserPageWrapper(browser, competitionId, competitionKey).init())
+    defaultPage = await createNewUserPage()
 
     await adminPage.configureDefaultGroupStatus(competitionId, 'accepted')
   })
@@ -69,6 +69,18 @@ describe('Crew', () => {
         stationScoreReportForm = global.formId
         await adminPage.addTeam() // Make sure there are at least two teams in competition
       })
+
+      const goToReportStationForm = async (page) => {
+        await page.goto(`http://localhost:8080/${crewPersonProps.key}/rapportera`)
+        await page.clickLink('div.entry-content p:nth-of-type(1) a') // Select first station
+      }
+
+      const typePointsAndWait = async (page, fieldNumber, points, expectWarningMessage = false) => {
+        await page.type(`section.tuja-team-score-container:nth-of-type(${fieldNumber}) input.tuja-fieldtext`, String(points))
+        await page.click('header.entry-header') // Click outside to trigger onChange event
+        await page.wait(1000 + 2000) // 1 second for debounce and 2 seconds for API response
+        await page.expectElementCount(`#tuja-report-points-warning-message-container.${expectWarningMessage ? 'show' : 'hide'}`, 1)
+      }
 
       it('should be possible for crew member to report score for questions', async () => {
         const goToForm = async () => {
@@ -110,32 +122,24 @@ describe('Crew', () => {
       })
 
       it('should be possible for crew member to report points for station', async () => {
-        const goToForm = async () => {
-          await defaultPage.goto(`http://localhost:8080/${crewPersonProps.key}/rapportera`)
-          await defaultPage.clickLink('form p:nth-of-type(1) a') // Select first station
-        }
-        await goToForm()
+        await goToReportStationForm(defaultPage)
 
-        await defaultPage.type('div.tuja-field:nth-of-type(1) input.tuja-fieldtext', '1')
-        await defaultPage.type('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '2')
-        await defaultPage.clickLink('button[name="tuja_crewview__action"][value="update"]')
+        await typePointsAndWait(defaultPage, 1, 1, false)
+        await typePointsAndWait(defaultPage, 2, 2, false)
 
-        await defaultPage.expectSuccessMessage('Poängen har sparats.')
-        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(1) input.tuja-fieldtext', '1')
-        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '2')
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext',  '1')
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext',  '2')
 
-        await goToForm()
+        await goToReportStationForm(defaultPage)
 
-        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(1) input.tuja-fieldtext', '1')
-        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '2')
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext',  '1')
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext',  '2')
 
-        await defaultPage.type('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '9')
-        await defaultPage.clickLink('button[name="tuja_crewview__action"][value="update"]')
+        await typePointsAndWait(defaultPage, 2, 9, false)
 
-        await goToForm()
-
-        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(1) input.tuja-fieldtext', '1')
-        await defaultPage.expectFormValue('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '9')
+        await goToReportStationForm(defaultPage)
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext',  '1')
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext',  '9')
       })
 
       it.each([
@@ -192,34 +196,37 @@ describe('Crew', () => {
       })
 
       it('should NOT be possible for two crew members to unknowingly overwrite each other\'s reported station points', async () => {
-        const initSession = async () => {
-          const session = await createNewUserPage()
-          await session.goto(`http://localhost:8080/${crewPersonProps.key}/rapportera`)
-          await session.clickLink('form p:nth-of-type(1) a') // Select first station
-          return session
-        }
-        const aliceSession = await initSession()
-        const bobSession = await initSession()
+        const aliceSession = defaultPage
+        await goToReportStationForm(aliceSession)
+        const bobSession = await createNewUserPage()
+        await goToReportStationForm(bobSession)
 
-        await aliceSession.takeScreenshot()
-        await aliceSession.type('div.tuja-field:nth-of-type(1) input.tuja-fieldtext', '10')
-        await aliceSession.type('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '20')
-        await aliceSession.clickLink('button[name="tuja_crewview__action"][value="update"]')
+        await aliceSession.type('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext', '20')
+        await aliceSession.click('header.entry-header') // Click outside to trigger onChange event
+        await aliceSession.wait(1000 + 2000) // 1 second for debounce and 2 seconds for API response
+        await aliceSession.expectElementCount('#tuja-report-points-warning-message-container.hide', 1)
 
-        await aliceSession.expectSuccessMessage('Poängen har sparats.')
+        await bobSession.type('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext', '5')
+        await bobSession.click('header.entry-header') // Click outside to trigger onChange event
+        await bobSession.wait(1000 + 2000) // 1 second for debounce and 2 seconds for API response
+        await bobSession.expectElementCount('#tuja-report-points-warning-message-container.show', 1)
 
-        await bobSession.type('div.tuja-field:nth-of-type(1) input.tuja-fieldtext', '5')
-        await bobSession.type('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '15')
-        await bobSession.clickLink('button[name="tuja_crewview__action"][value="update"]')
+        await bobSession.expectToContain('.tuja-message-error', 'Någon annan har hunnit rapportera in andra poäng')
+        await bobSession.click('#tuja-report-points-warning-message-button')
+        await bobSession.expectElementCount('#tuja-report-points-warning-message-container.hide', 1)
 
-        await bobSession.expectErrorMessage('Någon annan har hunnit rapportera in andra poäng')
+        await bobSession.type('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext', '10')
+        await bobSession.click('header.entry-header') // Click outside to trigger onChange event
+        await bobSession.wait(1000 + 2000) // 1 second for debounce and 2 seconds for API response
+        await bobSession.expectElementCount('#tuja-report-points-warning-message-container.hide', 1)
 
-        await aliceSession.close()
+        // await aliceSession.close()
         await bobSession.close()
 
-        const verifySession = await initSession()
-        await verifySession.expectFormValue('div.tuja-field:nth-of-type(1) input.tuja-fieldtext', '10')
-        await verifySession.expectFormValue('div.tuja-field:nth-of-type(2) input.tuja-fieldtext', '20')
+        const verifySession = await createNewUserPage()
+        await goToReportStationForm(verifySession)
+        await verifySession.expectFormValue('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext', '10')
+        await verifySession.expectFormValue('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext', '20')
         await verifySession.close()
       })
 

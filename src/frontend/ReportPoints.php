@@ -4,29 +4,31 @@ namespace tuja\frontend;
 
 
 use Exception;
+use tuja\controller\ReportPointsController;
 use tuja\data\model\Group;
 use tuja\data\model\Station;
 use tuja\data\store\StationDao;
-use tuja\data\store\StationPointsDao;
 use tuja\frontend\AbstractCrewMemberView;
 use tuja\frontend\router\ReportPointsInitiator;
 use tuja\util\concurrency\LockValuesList;
 use tuja\view\FieldNumber;
+use tuja\Frontend;
 
 class ReportPoints extends AbstractCrewMemberView {
-	const STATION_FIELD_PREFIX = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'station';
-
-	private $points_dao;
 	private $station_dao;
 
 	public function __construct( string $url, string $person_key, string $station_key ) {
 		parent::__construct( $url, $person_key, 'Rapportera poäng' );
-		$this->station_key = $station_key;
-		$this->points_dao  = new StationPointsDao();
-		$this->station_dao = new StationDao();
+		$this->station_key              = $station_key;
+		$this->station_dao              = new StationDao();
+		$this->render_points_controller = new ReportPointsController();
 	}
 
 	function output() {
+		Frontend::use_script( 'jquery' );
+		Frontend::use_script( 'tuja-report-points.js' );
+		Frontend::use_stylesheet( 'tuja-wp-report-points.css' );
+
 		$form = $this->get_form_html();
 		include( 'views/report-points.php' );
 	}
@@ -47,30 +49,53 @@ class ReportPoints extends AbstractCrewMemberView {
 
 		// If a station and question station has been selected, display the questions with current points and a save button
 		if ( $station ) {
-			$groups = $this->get_participant_groups();
-
-			$current_points = $this->points_dao->get_by_competition( $this->competition_id );
-			$current_points = array_combine(
-				array_map(
-					function ( $points ) {
-						return $points->station_id . self::FIELD_NAME_PART_SEP . $points->group_id;
-					},
-					$current_points
-				),
-				array_values( $current_points )
-			);
+			$all_data = $this->render_points_controller->get_all_points( $station );
 
 			array_walk(
-				$groups,
-				function ( Group $group ) use ( &$html_sections, $station, $current_points ) {
-					$text            = $group->name;
-					$html_sections[] = sprintf( '<p>%s</p>', $this->render_points_field( $text, $station->id, $group->id, $current_points ) );
+				$all_data,
+				function ( $data ) use ( &$html_sections, $station ) {
+					$group_id   = $data['group_id'];
+					$group_name = $data['group_name'];
+					$points     = $data['points'];
+					$lock       = $data['lock'];
+
+					$html_sections[] = sprintf(
+						'
+						<section
+							class="%s"
+							data-group-id="%s"
+							data-lock-value="%s"
+						>
+							<div class="%s">
+								<div>Uppdaterar...</div>
+							</div>
+							<div class="%s">
+								%s
+							</div>
+						</section>
+						',
+						'tuja-team-score-container',
+						$group_id,
+						htmlspecialchars( $lock ),
+						'tuja-team-score-loading-container',
+						'tuja-team-score-field-container',
+						$this->render_points_field( $group_name, $station->id, $group_id, $points ),
+					);
 				}
 			);
 
-			$html_sections[] = $this->html_optimistic_lock();
-
-			$html_sections[] = $this->html_save_button();
+			$html_sections[] = sprintf(
+				'
+				<div 
+					id="tuja-report-points-data" 
+					data-api-url="%s"
+					data-user-key="%s"
+					data-station-id="%s" 
+				></div>',
+				admin_url( 'admin-ajax.php' ),
+				$this->get_person()->random_id,
+				$station->id
+			);
 
 			$html_sections[] = sprintf( '<a href="%s">Tillbaka</a>', ReportPointsInitiator::link_all( $this->person ) );
 		} else {
@@ -90,92 +115,19 @@ class ReportPoints extends AbstractCrewMemberView {
 		return join( $html_sections );
 	}
 
-	private function render_points_field( $text, $station_id, $group_id, $current_points ): string {
-		$key        = self::key( $station_id, $group_id );
-		$points     = isset( $current_points[ $key ] ) ? $current_points[ $key ]->points : null;
+	private function render_points_field( $text, $station_id, $group_id, $points ): string {
 		$field      = new FieldNumber( $text );
-		$field_name = self::STATION_FIELD_PREFIX . self::FIELD_NAME_PART_SEP . $key;
+		$field_name = self::FORM_PREFIX . self::FIELD_NAME_PART_SEP . 'group_points' . self::FIELD_NAME_PART_SEP . $group_id;
 
 		return $field->render( $field_name, $points, new Group() );
 	}
 
+	public function get_optimistic_lock(): LockValuesList {
+		die( 'Not implemented' );
+	}
+
 	public function update_points(): array {
-		$errors = array();
-
-		$form_values = array_filter(
-			$_POST,
-			function ( $key ) {
-				return substr( $key, 0, strlen( self::STATION_FIELD_PREFIX ) ) === self::STATION_FIELD_PREFIX;
-			},
-			ARRAY_FILTER_USE_KEY
-		);
-
-		try {
-			$this->check_optimistic_lock();
-		} catch ( Exception $e ) {
-			// We do not want to present the previously inputted values in case we notice that another user has assigned score to the same questions.
-			// The responses inputted for the previously selected group are not relevant anymore (they are, in fact, probably incorrect).
-			foreach ( $form_values as $field_name => $field_value ) {
-				unset( $_POST[ $field_name ] );
-			}
-
-			return array( $e->getMessage() );
-		}
-
-		foreach ( $form_values as $field_name => $field_value ) {
-			try {
-				list( , , $station_id, $group_id ) = explode( self::FIELD_NAME_PART_SEP, $field_name );
-
-				$this->points_dao->set( $group_id, $station_id, is_numeric( $field_value ) ? intval( $field_value ) : null );
-			} catch ( Exception $e ) {
-				// TODO: Use the key to display the error message next to the problematic text field.
-				$errors[ $field_name ] = $e->getMessage();
-			}
-		}
-
-		return $errors;
+		die( 'Not implemented' );
 	}
 
-	private static function key( int $station_id, int $group_id ): string {
-		return $station_id . self::FIELD_NAME_PART_SEP . $group_id;
-	}
-
-	function get_optimistic_lock(): LockValuesList {
-		$lock = new LockValuesList();
-
-		$groups  = $this->get_participant_groups();
-		$station = $this->get_station();
-
-		$keys = array_map(
-			function ( Group $group ) use ( $station ) {
-				return self::key( $station->id, $group->id );
-			},
-			$groups
-		);
-
-		$current_points = $this->points_dao->get_by_competition( $this->competition_id );
-		$points_by_key  = array_combine(
-			array_map(
-				function ( $points ) {
-					return self::key( $points->station_id, $points->group_id );
-				},
-				$current_points
-			),
-			array_values( $current_points )
-		);
-
-		array_walk(
-			$keys,
-			function ( string $key ) use ( $points_by_key, $lock ) {
-				if ( isset( $points_by_key[ $key ] ) && null !== $points_by_key[ $key ]->created ) {
-					$lock->add_value( $key, $points_by_key[ $key ]->created->getTimestamp() );
-				} else {
-					$lock->add_value( $key, 0 );
-				}
-			},
-			0
-		);
-
-		return $lock;
-	}
 }
