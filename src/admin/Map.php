@@ -170,8 +170,8 @@ class Map extends Maps {
 						$marker                        = new Marker();
 						$marker->map_id                = $map->id;
 						$marker->type                  = $type;
-						$marker->link_form_question_id = is_numeric($question_id) ? intval( $question_id ) : null;
-						$marker->link_station_id       = is_numeric($station_id) ? intval( $station_id ) : null;
+						$marker->link_form_question_id = is_numeric( $question_id ) && $question_id > 0 ? intval( $question_id ) : null;
+						$marker->link_station_id       = is_numeric( $station_id ) && $station_id > 0 ? intval( $station_id ) : null;
 						$marker->gps_coord_lat         = floatval( $gps_coord_lat );
 						$marker->gps_coord_long        = floatval( $gps_coord_long );
 						$marker->name                  = $name;
