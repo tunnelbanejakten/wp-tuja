@@ -8,7 +8,13 @@
       "enum": [
         "all",
         "one_random_with_even_group_distribution"
-      ]
+      ],
+      "options": {
+        "enum_titles": [
+          "Alla lag ser alla frågor i frågegruppen.",
+          "Varje lag ser bara en av frågorna i frågegruppen. Laget tilldelas sin fråga slumpmässigt."
+        ]
+      }
     }
   }
 }

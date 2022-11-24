@@ -15,9 +15,10 @@ abstract class RuleConfig {
 	protected $slug;
 	protected $label;
 
-	public function __construct( string $slug, string $label ) {
+	public function __construct( string $slug, string $label, string $description = '' ) {
 		$this->slug  = $slug;
 		$this->label = $label;
+		$this->description = $description;
 	}
 
 	abstract function get_jsoneditor_prop_config();
@@ -28,6 +29,10 @@ abstract class RuleConfig {
 
 	public function label() {
 		return $this->label;
+	}
+
+	public function description() {
+		return $this->description;
 	}
 }
 
@@ -57,8 +62,8 @@ class EnumRule extends RuleConfig {
 
 class BoolRule extends RuleConfig {
 
-	public function __construct( string $slug, string $label ) {
-		parent::__construct( $slug, $label );
+	public function __construct( string $slug, string $label, string $description ) {
+		parent::__construct( $slug, $label, $description );
 	}
 
 	function get_jsoneditor_prop_config() {
@@ -91,8 +96,8 @@ class DateRule extends RuleConfig {
 
 class IntRule extends RuleConfig {
 
-	public function __construct( string $slug, string $label ) {
-		parent::__construct( $slug, $label );
+	public function __construct( string $slug, string $label, string $description ) {
+		parent::__construct( $slug, $label, $description );
 	}
 
 	function get_jsoneditor_prop_config() {
@@ -199,8 +204,8 @@ class GroupCategoryRules {
 			$enum_config       = function ( string $slug, string $name, array $options ) {
 				return [ new EnumRule( $slug, $name, $options ) ];
 			};
-			$bool_config       = function ( string $slug, string $name ) {
-				return [ new BoolRule( $slug, $name ) ];
+			$bool_config       = function ( string $slug, string $name, string $description = '' ) {
+				return [ new BoolRule( $slug, $name, $description ) ];
 			};
 			$date_range_config = function ( string $slug, string $name ) {
 				return [
@@ -208,8 +213,8 @@ class GroupCategoryRules {
 					new DateRule( $slug . '_end', $name . ', t.o.m.' )
 				];
 			};
-			$int_config        = function ( string $slug, string $name ) {
-				return [ new IntRule( $slug, $name ) ];
+			$int_config        = function ( string $slug, string $name, string $description = '' ) {
+				return [ new IntRule( $slug, $name, $description ) ];
 			};
 
 			$person_types_configs = array_map( function ( string $slug ) use ( $int_config, $enum_config ) {
@@ -234,9 +239,9 @@ class GroupCategoryRules {
 					] ) );
 			}, Person::PERSON_TYPES );
 			self::$config         = array_merge(
-				$bool_config( 'is_group_note_enabled', 'Meddelande till tävlingsledning' ),
-				$bool_config( 'is_crew', 'Funktionärer' ),
-				$int_config( 'time_limit_multiplier', 'Tidshandikappfaktor' ),
+				$bool_config( 'is_group_note_enabled', 'Meddelande till tävlingsledning', 'Visa fältet "Meddelande till tävlingsledningen" för grupper som anmäls i kategorin.' ),
+				$bool_config( 'is_crew', 'Funktionärer', 'Grupper i kategorin, och personerna i grupperna, är funktionärer. Funktionärer har rätt att dela ut poäng.' ),
+				$int_config( 'time_limit_multiplier', 'Tidshandikappfaktor', 'Anpassaar tidsgränsen för tidsbegränsade uppgifter. Värdet 100 betyder att laget får så lång tid som angetts för frågan. Värdet 150 betyder att laget får 50% mer tid än så. Värdet 75 betyder att laget bara får 75 % av tiden som angetts.' ),
 				$date_range_config( 'create_registration_period', 'Anmäla lag' ),
 				$date_range_config( 'update_registration_period', 'Ändra lag' ),
 				$date_range_config( 'delete_registration_period', 'Avanmäla lag' ),
@@ -272,7 +277,7 @@ class GroupCategoryRules {
 
 	public static function get_props_labels() {
 		return array_map( function ( RuleConfig $config ) {
-			return $config->label();
+			return [$config->label(), $config->description()];
 		}, self::get_config() );
 	}
 

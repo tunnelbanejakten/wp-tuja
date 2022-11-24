@@ -33,6 +33,26 @@ class AdminUtils {
 		printf( '<div class="notice notice-success is-dismissable" style="margin-left: 2px"><p>%s</p></div>', $message );
 	}
 
+	public static function printTooltip( $message ) {
+		echo self::tooltip( $message );
+	}
+
+	public static function tooltip( $message ) {
+		return sprintf(
+			'
+				<span class="tooltip">
+					<span class="tooltip-button">
+						<span class="dashicons dashicons-info"></span>
+					</span>
+					<span class="tooltip-content tooltip-position-right">
+						%s
+					</span>
+				</span>
+			',
+			$message
+		);
+	}
+
 	public static function getScoreCssClass( $score_percent ) {
 		if ( $score_percent > 0.90 ) {
 			return 'tuja-admin-review-autoscore-good';
