@@ -22,8 +22,8 @@ class Scoreboard extends Competition {
 		return $this->add_static_menu(
 			$menu,
 			array(
-				Scoreboard::class        => 'Översikt',
-				ScoreboardDetails::class => 'Detaljer',
+				Scoreboard::class        => array( 'Översikt', null ),
+				ScoreboardDetails::class => array( 'Detaljer', null ),
 			)
 		);
 	}

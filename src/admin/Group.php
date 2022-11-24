@@ -17,7 +17,7 @@ use tuja\data\store\ResponseDao;
 use tuja\data\store\StationDao;
 use tuja\util\JwtUtils;
 
-class Group extends Groups {
+class Group extends GroupsList {
 
 	private $question_group_dao;
 	// private $form_dao;
@@ -33,38 +33,40 @@ class Group extends Groups {
 	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
 		$menu = parent::create_menu( $current_view_name, $parents );
 
-		$groups_current = null;
-		$groups_links   = array();
-		$dao            = new GroupDao();
-		$groups         = $dao->get_all_in_competition( $this->competition->id );
+		$group_current_name = null;
+		$group_current_link = null;
+		$groups_links       = array();
+		$dao                = new GroupDao();
+		$groups             = $dao->get_all_in_competition( $this->competition->id );
 		foreach ( $groups as $group ) {
 			$active = $group->id === $this->group->id;
-			if ( $active ) {
-				$groups_current = $group->name;
-			}
-			$link           = add_query_arg(
+			$link   = add_query_arg(
 				array(
 					'tuja_competition' => $this->competition->id,
 					'tuja_view'        => 'Group',
 					'tuja_group'       => $group->id,
 				)
 			);
+			if ( $active ) {
+				$group_current_name = $group->name;
+				$group_current_link = $link;
+			}
 			$groups_links[] = BreadcrumbsMenu::item( $group->name, $link, $active );
 		}
 
 		$menu->add(
-			BreadcrumbsMenu::item( $groups_current ),
+			BreadcrumbsMenu::item( $group_current_name, $group_current_link ),
 			...$groups_links,
 		);
 
 		return $this->add_static_menu(
 			$menu,
 			array(
-				Group::class        => 'Allmänt',
-				GroupMembers::class => 'Deltagare',
-				GroupLinks::class   => 'Länkar',
-				GroupScore::class   => 'Svar och poäng',
-				GroupEvents::class  => 'Tidsbegränsade frågor som visats',
+				Group::class        => array( 'Allmänt', null ),
+				GroupMembers::class => array( 'Deltagare', null ),
+				GroupLinks::class   => array( 'Länkar', null ),
+				GroupScore::class   => array( 'Svar och poäng', null ),
+				GroupEvents::class  => array( 'Tidsbegränsade frågor som visats', null ),
 			)
 		);
 	}

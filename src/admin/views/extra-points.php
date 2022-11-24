@@ -4,18 +4,17 @@ use tuja\data\model\Station;
 use tuja\data\model\Group;
 use tuja\data\model\StationWeight;
 
-AdminUtils::printTopMenu( $competition );
-
+$this->print_root_menu();
 $this->print_menu();
 ?>
 
-<h3>Bonuspoäng</h3>
+<h3>Bonuspoäng <?php AdminUtils::printTooltip( 'Bonuspoäng är, som namnet antyder, extra poäng som lagen får utöver de poäng som tilldelas av funktionärer på stationer och som erhålles genom att svara rätt på formulären. Det går att dela ut hur många bonuspoäng som helst. Det är även möjligt att ge negativa bonuspoäng, vilket innebär poängavdrag från lagets totalpoäng.' ); ?></h3>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
 	<table>
 		<thead>
 		<tr>
-			<th>Etikett</th>
+			<th>Etikett <?php AdminUtils::printTooltip( 'Etiketter beskriver kortfattat varför ett lag har fått bonuspoäng, exempelvis "Hyllningssång" eller "Bonusuppgift 1". Om flera lag kan få bonuspoäng av samma orsak så är det smidigt att använda samma etikett för dessa bonuspoäng.' ); ?></th>
 			<?php
 			echo join(
 				array_map(

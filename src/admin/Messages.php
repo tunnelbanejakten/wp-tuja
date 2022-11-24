@@ -19,9 +19,9 @@ class Messages extends Competition {
 		return $this->add_static_menu(
 			$menu,
 			array(
-				Messages::class       => 'Översikt',
-				MessagesImport::class => 'Importera meddelanden',
-				MessagesSend::class   => 'Skicka meddelanden',
+				Messages::class       => array( 'Översikt', null ),
+				MessagesImport::class => array( 'Importera meddelanden', null ),
+				MessagesSend::class   => array( 'Skicka meddelanden', null ),
 			)
 		);
 	}

@@ -1,8 +1,7 @@
 <?php
 namespace tuja\admin;
 
-AdminUtils::printTopMenu( $competition );
-
+$this->print_root_menu();
 $this->print_menu();
 $this->print_leaves_menu();
 ?>

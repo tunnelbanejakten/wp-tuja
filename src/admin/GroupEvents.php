@@ -6,7 +6,7 @@ use Exception;
 use tuja\data\model\Event;
 use tuja\data\store\EventDao;
 
-class GroupEvents extends Group {
+class GroupEvents extends GroupsList {
 
 	public function __construct() {
 		parent::__construct();

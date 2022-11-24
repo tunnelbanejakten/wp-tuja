@@ -300,13 +300,13 @@ class ReviewComponent {
 				$is_correct_answer_defined = ! empty( $answer_html );
 				$rowspan                   = $is_correct_answer_defined ? 2 : 1;
 				$valign                    = $is_correct_answer_defined ? 'bottom' : 'bottom';
-				$auto_score_header         = $is_correct_answer_defined ? 'Autorättning' : '';
+				$auto_score_header         = $is_correct_answer_defined ? 'Autorättning ' . AdminUtils::tooltip( 'Systemets egen rättning. Denna poäng används om du inte anger manuell poäng. Klicka på Felrättat om du vill ändra "rättningsmallen" för en fråga så att systemet rättar frågan bättre nästa gång.' ) : '';
 				printf( '
 					<tr class="tuja-admin-review-question-row">
 						<td></td>
 						<td colspan="3"><strong>%s</strong></td>
 						<td valign="%s" rowspan="%s">%s</td>
-						<td valign="%s" rowspan="%s">Manuell</td>
+						<td valign="%s" rowspan="%s">Manuell %s</td>
 						<td valign="%s" rowspan="%s">Slutlig</td>
 					</tr>
 					',
@@ -316,6 +316,7 @@ class ReviewComponent {
 					$auto_score_header,
 					$valign,
 					$rowspan,
+					AdminUtils::tooltip( 'Klicka på siffrorna, eller skriv in poäng själv, för att poängsätta svaret. Manuell poäng ersätter eventuell poäng från autorättningen.' ),
 					$valign,
 					$rowspan
 				);

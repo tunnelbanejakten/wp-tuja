@@ -1,7 +1,7 @@
 <?php namespace tuja\admin;
 
-AdminUtils::printTopMenu( $competition );
-$this->print_menu();
+$this->print_root_menu();
+// $this->print_menu();
 $this->print_leaves_menu();
 
 // printf( '<pre>%s</pre>', var_export( $score_board, true ) );

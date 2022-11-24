@@ -25,6 +25,18 @@ class Maps extends Competition {
 		$this->map_dao = new MapDao();
 	}
 
+	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
+		$menu = parent::create_menu( $current_view_name, $parents );
+
+		return $this->add_static_menu(
+			$menu,
+			array(
+				Maps::class       => array( 'Översikt', null ),
+				MapsImport::class => array( 'Importera', null ),
+			)
+		);
+	}
+
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_action'] ) ) {
 			return;

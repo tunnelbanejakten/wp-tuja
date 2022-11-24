@@ -38,10 +38,10 @@ class Stations extends Competition {
 		return $this->add_static_menu(
 			$menu,
 			array(
-				Stations::class              => 'Översikt',
-				StationsManageTickets::class => 'Hantera biljetter',
-				StationsPoints::class        => 'Dela ut poäng',
-				StationsTicketing::class     => 'Konfigurera biljettsystem',
+				Stations::class              => array( 'Översikt', null ),
+				StationsManageTickets::class => array( 'Hantera biljetter', null ),
+				StationsPoints::class        => array( 'Dela ut poäng', null ),
+				StationsTicketing::class     => array( 'Konfigurera biljettsystem', null ),
 			)
 		);
 	}

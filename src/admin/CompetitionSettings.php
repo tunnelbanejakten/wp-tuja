@@ -8,14 +8,13 @@ class CompetitionSettings extends Competition {
 		return $this->add_static_menu(
 			$menu,
 			array(
-				CompetitionSettings::class                 => 'Inställningar',
-				CompetitionSettingsBasic::class            => 'Namn och tid',
-				CompetitionSettingsGroupCategories::class  => 'Gruppkategorier',
-				CompetitionSettingsStrings::class          => 'Texter',
-				CompetitionSettingsApp::class              => 'Appen',
-				CompetitionSettingsFees::class             => 'Avgifter',
-				CompetitionSettingsGroupLifecycle::class   => 'Livscykel för grupper',
-				CompetitionSettingsMessageTemplates::class => 'Meddelandemallar',
+				CompetitionSettingsBasic::class            => array( 'Namn och tid', null ),
+				CompetitionSettingsGroupCategories::class  => array( 'Gruppkategorier', null ),
+				CompetitionSettingsStrings::class          => array( 'Texter', null ),
+				CompetitionSettingsApp::class              => array( 'Appen', null ),
+				CompetitionSettingsFees::class             => array( 'Avgifter', null ),
+				CompetitionSettingsGroupLifecycle::class   => array( 'Livscykel för grupper', null ),
+				CompetitionSettingsMessageTemplates::class => array( 'Meddelandemallar', null ),
 			)
 		);
 	}

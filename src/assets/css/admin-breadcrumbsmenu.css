@@ -5,7 +5,7 @@ nav.breadcrumb .drop-container {
 
 nav.breadcrumb .drop-container {
     position: relative;
-    padding-bottom: 10px;
+    padding: 10px 0;
 }
 
 nav.breadcrumb .drop-container:hover .drop {
@@ -35,7 +35,8 @@ nav.breadcrumb .drop-container>span::after {
     color: #bbb;
 }
 
-nav.breadcrumb .active,
+nav.root-menu .active,
+/* nav.breadcrumb .active, */
 nav.leaves .active {
     font-weight: bold;
 }
@@ -66,4 +67,53 @@ nav.breadcrumb ol>li::after {
 nav.breadcrumb ol>li:last-child:after {
     content: ":";
     margin: 0;
+}
+
+nav.root-menu {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 10px;
+}
+
+nav.root-menu>div {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-right: 1px solid #ccc;
+    margin-right: 10px;
+    padding: 10px 0;
+}
+
+nav.root-menu>div:last-child {
+    border-right: none;
+}
+
+nav.root-menu div.root-menu-group-header {
+    display: flex;
+}
+
+nav.root-menu div.root-menu-group-items {
+    display: flex;
+    flex-direction: row;
+}
+
+nav.root-menu div.root-menu-item {
+    padding-right: 10px;
+}
+
+nav.leaves-menu-large {
+    margin: 30px 0;
+    font-size: 120%;
+}
+
+nav.leaves-menu-large div.root-menu-item {
+    margin: 0 0 10px 0;
+}
+
+nav.main-menu {
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #fafafa;
+    padding: 0 10px;
+    margin: 10px -10px 0 -10px;
 }

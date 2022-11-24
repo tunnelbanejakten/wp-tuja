@@ -4,9 +4,8 @@ namespace tuja\admin;
 use tuja\data\model\GroupCategory;
 use tuja\data\model\Group;
 
-AdminUtils::printTopMenu( $competition );
-
-$this->print_menu();
+$this->print_root_menu();
+$this->print_leaves_menu();
 ?>
 
 <form method="post" class="tuja" id="tuja-tab-payment">

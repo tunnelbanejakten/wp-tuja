@@ -1,6 +1,6 @@
 <?php namespace tuja\admin;
 
-AdminUtils::printTopMenu( $competition );
+$this->print_root_menu();
 $this->print_menu();
 ?>
 <div id="tuja-map-page">
@@ -25,6 +25,19 @@ $this->print_menu();
 					);
 					?>
 				</tr>
+				<tr><td colspan="2">
+					<p>Så här använder du kartan:</p>
+					<ol>
+						<li>Klicka på "kartnålen" bredvid frågan/stationen du vill placera ut.</li>
+						<li>Klicka på karta där frågan/stationen ska ligga.</li>
+						<li>Ge platsen ett namn som underlättar för lagen att hitta dit.</li>
+					</ol>
+					<p>
+						Varje plats får en färg för att den ska vara enklare att<br>
+						se nu när du redigerar kartan men denna färg är slumpmässig<br>
+						och kommer inte att synas i appen.
+					</p>
+				</td></tr>
 				<?php
 				$last_header = null;
 				foreach ( $marker_config as $question_fields ) {

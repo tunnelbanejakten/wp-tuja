@@ -9,7 +9,7 @@ use tuja\data\model\ValidationException;
 use tuja\frontend\router\PersonEditorInitiator;
 use tuja\frontend\router\ReportPointsInitiator;
 
-class GroupMember extends Group {
+class GroupMember extends GroupMembers {
 
 	public function __construct() {
 		parent::__construct();

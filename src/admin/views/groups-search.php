@@ -1,7 +1,6 @@
 <?php namespace tuja\admin;
 
-AdminUtils::printTopMenu( $competition );
-
+$this->print_root_menu();
 $this->print_menu();
 ?>
 <div id="search-container">

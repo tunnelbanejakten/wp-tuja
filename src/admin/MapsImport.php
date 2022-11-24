@@ -17,8 +17,11 @@ use tuja\data\store\QuestionDao;
 class MapsImport extends Maps {
 	const MAGIC_NUMBER_NO_LINKING = -42;
 
+	protected $marker_dao;
+
 	public function __construct() {
 		parent::__construct();
+		$this->marker_dao = new MarkerDao();
 
 		$this->existing_maps = array_reduce(
 			$this->map_dao->get_all_in_competition( $this->competition->id ),

@@ -4,9 +4,8 @@ namespace tuja\admin;
 use tuja\util\Strings;
 use tuja\util\TemplateEditor;
 
-AdminUtils::printTopMenu( $competition );
-
-$this->print_menu();
+$this->print_root_menu();
+$this->print_leaves_menu();
 ?>
 
 <form method="post" class="tuja">

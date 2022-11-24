@@ -3,8 +3,7 @@ namespace tuja\admin;
 
 use tuja\util\rules\RuleResult;
 
-AdminUtils::printTopMenu( $competition );
-
+$this->print_root_menu();
 $this->print_menu();
 $this->print_leaves_menu();
 ?>

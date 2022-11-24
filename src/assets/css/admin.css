@@ -16,11 +16,6 @@
     list-style-type: disc;
 }
 
-nav.tuja {
-    font-size: 125%;
-    margin: 0 0 2em 0;
-}
-
 div.tuja-buttons {
     display: flex;
     flex-direction: row;
@@ -437,6 +432,7 @@ span.tuja-maps-question {
     overflow: hidden;
     white-space: nowrap;
 }
+
 span.tuja-scoreboard-details-question {
     max-width: 20em;
 }
@@ -461,4 +457,54 @@ div.tuja-ticketmanagement-ticket {
 
 div.tuja-ticket-password-used {
     margin-bottom: 0.5em;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    top: 2px;
+}
+
+.tooltip,
+.tooltip-button,
+.tooltip-button span.dashicons {
+    width: 15px;
+    height: 15px;
+}
+
+.tooltip-button span.dashicons {
+    font-size: 15px;
+}
+
+.tooltip .tooltip-content {
+    display: none;
+}
+
+.tooltip:hover .tooltip-content {
+    display: block;
+}
+
+.tooltip-button {
+    position: absolute;
+    display: inline-block;
+    z-index: 9;
+}
+
+.tooltip-content {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #555;
+    padding: 8px 10px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: normal;
+    box-shadow: 0px 0px 10px 0px rgb(0 0 0 / 30%);
+    z-index: 10;
+    white-space: normal;
+    line-height: 18px;
+}
+
+.tooltip-position-right {
+    left: 20px;
+    width: 20em;
 }

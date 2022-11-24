@@ -4,8 +4,8 @@ namespace tuja\admin;
 
 use tuja\data\store\ResponseDao;
 
-AdminUtils::printTopMenu( $competition );
-$this->print_menu();
+$this->print_root_menu();
+// $this->print_menu();
 
 $question_filters = [
 	ResponseDao::QUESTION_FILTER_LOW_CONFIDENCE_AUTO_SCORE => 'alla svar där auto-rättningen är osäker',
@@ -15,6 +15,11 @@ $question_filters = [
 ];
 
 ?>
+
+<p>
+	Du ser vilken poäng som kommer delas ut om du inte gör något. Om du fyller i poäng för ett svar är det din
+	poäng som räknas.
+</p>
 
 <form method="get" action="<?= add_query_arg( [] ) ?>" class="tuja">
     <?= join(array_map(function($key, $value) {
@@ -44,11 +49,6 @@ $question_filters = [
     </div>
 </form>
 <form method="post" action="<?= add_query_arg( [] ) ?>" class="tuja">
-
-        <p>
-            Du ser vilken poäng som kommer delas ut om du inte gör något. Om du fyller i poäng för ett svar är det din
-            poäng som räknas.
-        </p>
 
 	<?php
 	$review_component->render(

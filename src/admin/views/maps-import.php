@@ -2,7 +2,7 @@
 
 use tuja\data\model\question\AbstractQuestion;
 
-AdminUtils::printTopMenu( $competition );
+$this->print_root_menu();
 $this->print_menu();
 ?>
 

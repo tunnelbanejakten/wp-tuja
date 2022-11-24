@@ -4,8 +4,7 @@ namespace tuja\admin;
 use tuja\data\model\Station;
 use tuja\data\store\ResponseDao;
 
-AdminUtils::printTopMenu( $competition );
-
+$this->print_root_menu();
 $this->print_menu();
 $this->print_leaves_menu();
 ?>
@@ -77,6 +76,7 @@ $this->print_leaves_menu();
 				$input     = sprintf(
 					'<input
 						type="number"
+						style="width: 4em" 
 						min="0"
 						placeholder="0"
 						value="%s"
@@ -94,7 +94,7 @@ $this->print_leaves_menu();
 		</tbody>
 	</table>
 
-	<p><strong>Bonuspoäng</strong></p>
+	<p><strong>Bonuspoäng <?php AdminUtils::printTooltip( 'Bonuspoäng är, som namnet antyder, extra poäng som lagen får utöver de poäng som tilldelas av funktionärer på stationer och som erhålles genom att svara rätt på formulären. Det går att dela ut hur många bonuspoäng som helst. Det är även möjligt att ge negativa bonuspoäng, vilket innebär poängavdrag från lagets totalpoäng.' ); ?></strong></p>
 	<table class="tuja-table">
 		<tbody>	
 		<?php
@@ -105,6 +105,7 @@ $this->print_leaves_menu();
 				$points_input = sprintf(
 					'<input
 						type="number"
+						style="width: 4em" 
 						min="0"
 						placeholder="0"
 						value="%s"
@@ -117,7 +118,7 @@ $this->print_leaves_menu();
 
 				$name_field_key = self::get_extra_points_label_field_key( $name );
 				$read_only      = ! empty( $name );
-				$name_input     = sprintf( '<input type="text" name="%s" id="%s" value="%s" %s>', $name_field_key, $name_field_key, $name, $read_only ? 'readonly' : '' );
+				$name_input     = sprintf( '<input type="text" name="%s" id="%s" value="%s" placeholder="Etikett" %s>', $name_field_key, $name_field_key, $name, $read_only ? 'readonly' : '' );
 
 				printf( '<tr><td>%s</td><td>%s</td></tr>', $name_input, $points_input );
 			}

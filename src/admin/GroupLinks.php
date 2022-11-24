@@ -13,7 +13,7 @@ use tuja\frontend\router\GroupSignupInitiator;
 use tuja\frontend\router\PointsOverrideInitiator;
 use tuja\util\AppUtils;
 
-class GroupLinks extends Group {
+class GroupLinks extends GroupsList {
 
 	private $form_dao;
 

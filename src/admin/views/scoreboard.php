@@ -2,8 +2,8 @@
 
 use tuja\data\store\ResponseDao;
 
-AdminUtils::printTopMenu( $competition );
-$this->print_menu();
+$this->print_root_menu();
+// $this->print_menu();
 $this->print_leaves_menu();
 ?>
 
@@ -12,7 +12,7 @@ $this->print_leaves_menu();
 		<tbody>
 		<tr>
 			<td></td>
-			<td><span title="Andel av uppgifterna som poängsatts" class="progress-bar-wrapper">Avklarat</span></td>
+			<td><span class="progress-bar-wrapper">Avklarat</span> <?php AdminUtils::printTooltip( 'Andel av uppgifterna som poängsatts.' ); ?></td>
 			<td>Orättade svar</td><td>Poäng</td>
 		</tr>
 		<?php
@@ -29,7 +29,7 @@ $this->print_leaves_menu();
 					'
 					<tr>
 						<td><a href="%s">%s</a></td>
-						<td><div title="Andel av uppgifterna som poängsatts" class="progress-bar-wrapper"><div class="progress-bar" style="width: %d%%"></div></div></td>
+						<td><div class="progress-bar-wrapper"><div class="progress-bar" style="width: %d%%"></div></div></td>
 						<td>%s</td>
 						<td><span id="tuja-scoreboard-group-%s-points" data-score="%d"></span>%d p</td>
 					</tr>',

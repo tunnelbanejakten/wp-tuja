@@ -5,9 +5,8 @@ use tuja\data\model\GroupCategory;
 use tuja\util\rules\GroupCategoryRules;
 use tuja\util\rules\PassthroughRuleSet;
 
-AdminUtils::printTopMenu( $competition );
-
-$this->print_menu();
+$this->print_root_menu();
+$this->print_leaves_menu();
 ?>
 
 <form method="post" class="tuja">
@@ -46,7 +45,7 @@ $this->print_menu();
 			<div>
 				Förvalda regler:
 				<?php
-				$selected_ruleset = isset($_POST['tuja_groupcategory_ruleset']) ? stripslashes($_POST['tuja_groupcategory_ruleset']) : PassthroughRuleSet::class;
+				$selected_ruleset = isset( $_POST['tuja_groupcategory_ruleset'] ) ? stripslashes( $_POST['tuja_groupcategory_ruleset'] ) : PassthroughRuleSet::class;
 				echo join(
 					array_map(
 						function ( $class_name, $label ) use ( $selected_ruleset ) {
@@ -80,8 +79,13 @@ $this->print_menu();
 					'<td><div class="tuja-ruleset-column">%s</div></td>',
 					join(
 						array_map(
-							function ( string $label ) {
-								return sprintf( '<div class="row">%s</div>', $label );
+							function ( array $props ) {
+								list ($label, $description) = $props;
+								return sprintf(
+									'<div class="row">%s%s</div>',
+									$label,
+									! empty( $description ) ? AdminUtils::tooltip( $description ) : ''
+								);
 							},
 							GroupCategoryRules::get_props_labels()
 						)

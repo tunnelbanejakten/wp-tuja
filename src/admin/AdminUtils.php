@@ -43,45 +43,6 @@ class AdminUtils {
 		}
 	}
 
-	public static function printTopMenu( $competition ) {
-		printf( '<h1>%s</h1>', $competition->name );
-
-		$menu_config = array(
-			'Groups'              => 'Grupper',
-			'Scoreboard'          => 'Poängställning',
-			'Review'              => 'Svar att rätta',
-			'Messages'            => 'Meddelanden',
-			'Forms'               => 'Formulär',
-			'Stations'            => 'Stationer',
-			'Maps'                => 'Kartor',
-			'Reports'             => 'Rapporter',
-			'Shortcodes'          => 'Länkar',
-			'CompetitionSettings' => 'Inställningar',
-			'CompetitionDelete'   => 'Rensa',
-		);
-
-		$menu = array();
-		foreach ( $menu_config as $view => $label ) {
-			$is_view_selected = sanitize_text_field( $_GET['tuja_view'] ) === $view;
-			if ( $is_view_selected ) {
-				$menu[] = sprintf( '<strong>%s</strong>', $label );
-			} else {
-				$menu[] = sprintf(
-					'<a href="%s">%s</a>',
-					add_query_arg(
-						array(
-							'tuja_competition' => $competition->id,
-							'tuja_view'        => $view,
-						)
-					),
-					$label
-				);
-			}
-		}
-
-		printf( '<nav class="tuja">%s</nav>', join( ' | ', $menu ) );
-	}
-
 	public static function get_image_thumbnails_html( $answer, $group_key = null ) {
 		if ( is_array( $answer ) && isset( $answer[0] ) && ! is_array( $answer[0] ) && ! empty( $answer[0] ) ) {
 			// Fix legacy format (JSON as string in array)

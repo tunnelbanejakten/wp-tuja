@@ -3,8 +3,7 @@
 use tuja\data\model\Station;
 use tuja\data\model\Group;
 
-AdminUtils::printTopMenu( $competition );
-
+$this->print_root_menu();
 $this->print_menu();
 ?>
 
