@@ -81,6 +81,7 @@ class TextQuestion extends AbstractQuestion {
 	 * @param int       $question_group_id
 	 * @param int       $sort_order
 	 * @param int       $limit_time
+	 * @param string    $text_preparation
 	 * @param int       $score_max
 	 * @param string    $score_type
 	 * @param bool      $is_single_answer
@@ -95,6 +96,7 @@ class TextQuestion extends AbstractQuestion {
 		$question_group_id = 0,
 		$sort_order = 0,
 		$limit_time = -1,
+		$text_preparation = null,
 		$score_max = 0,
 		$score_type = self::GRADING_TYPE_ONE_OF,
 		$is_single_answer = true,
@@ -109,6 +111,7 @@ class TextQuestion extends AbstractQuestion {
 			$question_group_id,
 			$sort_order,
 			$limit_time,
+			$text_preparation,
 			$score_max
 		);
 		$this->is_single_answer  = $is_single_answer;

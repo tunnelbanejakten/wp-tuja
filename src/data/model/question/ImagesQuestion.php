@@ -21,6 +21,7 @@ class ImagesQuestion extends AbstractQuestion {
 		$question_group_id,
 		$sort_order,
 		$limit_time,
+		$text_preparation = null,
 		$score_max,
 		$max_files_count = self::DEFAULT_FILE_COUNT_LIMIT
 	) {
@@ -32,6 +33,7 @@ class ImagesQuestion extends AbstractQuestion {
 			$question_group_id,
 			$sort_order,
 			$limit_time,
+			$text_preparation,
 			$score_max
 		);
 		$this->max_files_count = $max_files_count;

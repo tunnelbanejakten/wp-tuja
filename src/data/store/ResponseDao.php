@@ -88,6 +88,7 @@ class ResponseDao extends AbstractDao {
 		'text',
 		'sort_order',
 		'limit_time',
+		'text_preparation',
 		'text_hint',
 		'random_id',
 		'question_group_id',

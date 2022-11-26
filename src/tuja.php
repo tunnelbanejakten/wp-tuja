@@ -181,6 +181,7 @@ abstract class Plugin {
 				sort_order         SMALLINT,
 				limit_time         SMALLINT,
 				text_hint          TEXT,
+				text_preparation   TEXT,
 				PRIMARY KEY (id)
 			) ' . $charset;
 

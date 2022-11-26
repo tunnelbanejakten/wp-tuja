@@ -20,6 +20,7 @@ abstract class AbstractQuestion {
 	public $text              = 'Who? What? When?';
 	public $sort_order        = 0;
 	public $limit_time        = 0;
+	public $text_preparation  = null;
 	public $score_max         = 0;
 
 	/**
@@ -33,7 +34,7 @@ abstract class AbstractQuestion {
 	 * @param $limit_time
 	 * @param $score_max
 	 */
-	public function __construct( $name, $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $score_max ) {
+	public function __construct( $name, $text, $text_hint, $id, $question_group_id, $sort_order, $limit_time, $text_preparation, $score_max ) {
 		$this->id                = $id;
 		$this->name              = $name;
 		$this->question_group_id = $question_group_id;
@@ -41,6 +42,7 @@ abstract class AbstractQuestion {
 		$this->text              = $text;
 		$this->sort_order        = $sort_order;
 		$this->limit_time        = $limit_time;
+		$this->text_preparation  = $text_preparation;
 		$this->score_max         = $score_max;
 	}
 
@@ -82,12 +84,13 @@ abstract class AbstractQuestion {
 	 */
 	public function get_public_properties() {
 		return array(
-			'text_hint'  => $this->text_hint,
-			'text'       => $this->text,
-			'name'       => $this->name,
-			'sort_order' => $this->sort_order,
-			'limit_time' => $this->limit_time,
-			'score_max'  => $this->score_max,
+			'text_preparation' => $this->text_preparation,
+			'text_hint'        => $this->text_hint,
+			'text'             => $this->text,
+			'name'             => $this->name,
+			'sort_order'       => $this->sort_order,
+			'limit_time'       => $this->limit_time,
+			'score_max'        => $this->score_max,
 		);
 	}
 

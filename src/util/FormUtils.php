@@ -206,7 +206,7 @@ class FormUtils {
 				function ( Event $event ) use ( $question ) {
 					return Event::EVENT_VIEW === $event->event_name &&
 					Event::OBJECT_TYPE_QUESTION === $event->object_type &&
-					$event->object_id === $question->id;
+					intval( $event->object_id ) === $question->id;
 				}
 			);
 
@@ -225,8 +225,9 @@ class FormUtils {
 			} else {
 				$public_props       = $question->get_public_properties();
 				$response['config'] = array(
-					'name'      => @$public_props['name'] ?: null,
-					'score_max' => @$public_props['score_max'] ?: null,
+					'name'             => @$public_props['name'] ?: null,
+					'score_max'        => @$public_props['score_max'] ?: null,
+					'text_preparation' => @$public_props['text_preparation'] ?: null,
 				);
 			}
 			$response['time_limit'] = $time_limit;

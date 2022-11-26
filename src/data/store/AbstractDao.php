@@ -92,6 +92,7 @@ class AbstractDao {
 					intval( $result->question_group_id ),
 					$result->sort_order,
 					$result->limit_time !== null ? intval( $result->limit_time ) : null,
+					$result->text_preparation,
 					@$config['score_max'],
 					@$config['score_type'],
 					$result->type == self::QUESTION_TYPE_TEXT,
@@ -110,6 +111,7 @@ class AbstractDao {
 					intval( $result->question_group_id ),
 					$result->sort_order,
 					$result->limit_time !== null ? intval( $result->limit_time ) : null,
+					$result->text_preparation,
 					@$config['score_max'],
 					@$config['score_type'],
 					$result->type == self::QUESTION_TYPE_PICK_ONE,
@@ -128,6 +130,7 @@ class AbstractDao {
 					intval( $result->question_group_id ),
 					$result->sort_order,
 					$result->limit_time !== null ? intval( $result->limit_time ) : null,
+					$result->text_preparation,
 					@$config['score_max'],
 					@$config['max_files_count'] ?: ImagesQuestion::DEFAULT_FILE_COUNT_LIMIT
 				);
@@ -142,6 +145,7 @@ class AbstractDao {
 					intval( $result->question_group_id ),
 					$result->sort_order,
 					$result->limit_time !== null ? intval( $result->limit_time ) : null,
+					$result->text_preparation,
 					@$config['score_max'],
 					@$config['value']
 				);

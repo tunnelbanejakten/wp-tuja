@@ -18,6 +18,7 @@ class NumberQuestion extends AbstractQuestion {
 		$question_group_id,
 		$sort_order,
 		$limit_time,
+		$text_preparation = null,
 		$score_max,
 		$correct_answer
 	) {
@@ -29,6 +30,7 @@ class NumberQuestion extends AbstractQuestion {
 			$question_group_id,
 			$sort_order,
 			$limit_time,
+			$text_preparation,
 			$score_max
 		);
 		$this->correct_answer = $correct_answer;
