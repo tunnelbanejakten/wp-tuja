@@ -54,9 +54,14 @@
       ]
     },
     "limit_time": {
-      "title": "Tidsgräns för att svara (sekunder)",
+      "title": "Tidsbegränsad uppgift: Maximal tid (sekunder, 0 = ingen begränsning)",
       "type": "integer",
       "format": "number"
+    },
+    "text_preparation": {
+      "title": "Tidsbegränsad uppgift: Text innan uppgiften visas",
+      "type": "string",
+      "format": "text"
     }
   }
 }

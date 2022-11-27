@@ -81,6 +81,7 @@ class QuestionDao extends AbstractDao {
                 text,
                 sort_order,
                 limit_time,
+                text_preparation,
                 text_hint
             ) VALUES (
                 %s,
@@ -91,6 +92,7 @@ class QuestionDao extends AbstractDao {
                 %s,
                 %d,
                 %d,
+                %s,
                 %s 
 			)';
 		$query          = $this->wpdb->prepare(
@@ -103,6 +105,7 @@ class QuestionDao extends AbstractDao {
 			$question->text,
 			$question->sort_order,
 			$question->limit_time > 0 ? $question->limit_time : null,
+			$question->text_preparation,
 			$question->text_hint
 		);
 
@@ -134,6 +137,7 @@ class QuestionDao extends AbstractDao {
                 text = %s,
                 sort_order = %d,
                 limit_time = %d,
+                text_preparation = %s,
                 text_hint = %s
                 WHERE 
                 id = %d';
@@ -147,6 +151,7 @@ class QuestionDao extends AbstractDao {
 				$question->text,
 				$question->sort_order,
 				$question->limit_time > 0 ? $question->limit_time : null,
+				$question->text_preparation,
 				$question->text_hint,
 				$question->id
 			)
