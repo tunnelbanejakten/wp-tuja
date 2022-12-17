@@ -65,16 +65,17 @@ class PersonDao extends AbstractDao {
 				'created_at' => self::to_db_date( new DateTime() ),
 				'status'     => $status,
 
-				'name'            => $person->name ?? '', // Database has not-null constraint.
-				'team_id'         => $person->group_id,
-				'phone'           => $person->phone,
-				'email'           => $person->email,
-				'food'            => $person->food,
-				'is_competing'    => $person->is_competing() ? 1 : 0,
-				'is_team_contact' => $person->is_contact() ? 1 : 0,
-				'is_attending'    => $person->is_attending() ? 1 : 0,
-				'pno'             => DateUtils::fix_pno( $person->pno ),
-				'note'            => $person->note
+				'name'             => $person->name ?? '', // Database has not-null constraint.
+				'team_id'          => $person->group_id,
+				'phone'            => $person->phone,
+				'email'            => $person->email,
+				'food'             => $person->food,
+				'is_competing'     => $person->is_competing() ? 1 : 0,
+				'is_team_contact'  => $person->is_contact() ? 1 : 0,
+				'is_attending'     => $person->is_attending() ? 1 : 0,
+				'pno'              => DateUtils::fix_pno( $person->pno ),
+				'note'             => $person->note,
+				'referrer_team_id' => $person->referrer_team_id,
 			),
 			array(
 				'%d',
@@ -90,7 +91,8 @@ class PersonDao extends AbstractDao {
 				'%d',
 				'%d',
 				'%s',
-				'%s'
+				'%s',
+				'%d',
 			) );
 
 		return $affected_rows !== false && $affected_rows === 1;
@@ -359,19 +361,20 @@ class PersonDao extends AbstractDao {
 	}
 
 	private static function to_person( $result ): Person {
-		$p                 = new Person();
-		$p->id             = intval( $result->person_id );
-		$p->random_id      = $result->random_id;
-		$p->name           = $result->name;
-		$p->group_id       = intval( $result->team_id );
-		$p->phone          = Phone::fix_phone_number( $result->phone ); // TODO: Should normalizing the phone number be something we do when we read it from the database? Why not when stored?
-		$p->phone_verified = '1' === $result->phone_verified;
-		$p->email          = $result->email;
-		$p->email_verified = '1' === $result->email_verified;
-		$p->note           = $result->note;
-		$p->food           = $result->food;
-		$p->pno            = $result->pno;
-		$p->age            = floatval( $result->age );
+		$p                   = new Person();
+		$p->id               = intval( $result->person_id );
+		$p->random_id        = $result->random_id;
+		$p->name             = $result->name;
+		$p->group_id         = intval( $result->team_id );
+		$p->phone            = Phone::fix_phone_number( $result->phone ); // TODO: Should normalizing the phone number be something we do when we read it from the database? Why not when stored?
+		$p->phone_verified   = '1' === $result->phone_verified;
+		$p->email            = $result->email;
+		$p->email_verified   = '1' === $result->email_verified;
+		$p->note             = $result->note;
+		$p->referrer_team_id = $result->referrer_team_id !== null ? intval( $result->referrer_team_id ) : null;
+		$p->food             = $result->food;
+		$p->pno              = $result->pno;
+		$p->age              = floatval( $result->age );
 		$p->set_status( $result->status );
 		$p->set_role_flags(
 			$result->is_competing != 0,

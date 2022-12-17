@@ -141,6 +141,7 @@ abstract class Plugin {
 				is_team_contact   BOOLEAN      NOT NULL DEFAULT FALSE,
 				is_attending      BOOLEAN      NOT NULL DEFAULT TRUE,
 				note              TEXT,
+				referrer_team_id  INTEGER,
 				PRIMARY KEY (id)
 			) ' . $charset;
 
@@ -366,6 +367,7 @@ abstract class Plugin {
 
 			array( 'person_properties', 'person_id', 'person', 'CASCADE' ),
 			array( 'person_properties', 'team_id', 'team', 'CASCADE' ),
+			array( 'person_properties', 'referrer_team_id', 'team', 'RESTRICT' ),
 
 			array( 'form', 'competition_id', 'competition', 'CASCADE' ),
 

@@ -20,6 +20,25 @@ class GroupSignup extends AbstractGroupView {
 		parent::__construct( $url, $group_key, 'Anmäl dig till %s' );
 	}
 
+	private $referrer_group;
+
+	protected function get_referrer_group() {
+		$referrer_group_key = @$_GET['ref'];
+		if ( empty( $referrer_group_key ) ) {
+			return null;
+		}
+		if ( ! isset( $this->referrer_group ) ) {
+
+			$referrer_group = $this->group_dao->get_by_key( $referrer_group_key );
+			if ( $referrer_group === false ) {
+				throw new Exception( 'Oj, vi hittade inte laget' ); // Cannot be localized since we don't know which competition we're supposed to check for string overrides
+			}
+			$this->referrer_group = $referrer_group;
+		}
+
+		return $this->referrer_group;
+	}
+
 	function output() {
 		$errors         = [];
 		$errors_overall = '';
@@ -63,6 +82,11 @@ class GroupSignup extends AbstractGroupView {
 			$errors = [ $e->getField() => $e->getMessage() ];
 		} catch ( Exception $e ) {
 			$errors_overall = $this->get_exception_message_html( $e );
+		}
+
+		$referrer_group = $this->get_referrer_group();
+		if ( isset( $referrer_group ) ) {
+			$referrer_group_html = sprintf( '<p class="tuja-message tuja-message-success">%s</p>', Strings::get( 'group_signup.referrer_group', $referrer_group->name ));
 		}
 
 		$form = $this->get_form_html( $do_save );
@@ -117,6 +141,10 @@ class GroupSignup extends AbstractGroupView {
 		$person           = $this->init_posted_person();
 		$person->group_id = $this->get_group()->id;
 		$person->set_type( Person::PERSON_TYPE_REGULAR );
+		$referrer_group = $this->get_referrer_group();
+		if ( isset( $referrer_group ) ) {
+			$person->referrer_team_id = $referrer_group->id;
+		}
 
 		return $person;
 	}

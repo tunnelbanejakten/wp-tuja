@@ -41,7 +41,27 @@ class GroupLinks extends Group {
 		$group_checkin_link       = GroupCheckinInitiator::link( $group );
 		$app_link                 = AppUtils::group_link( $group );
 
-		$is_crew_group    = $group->get_category()->get_rules()->is_crew();
+		$is_crew_group     = $group->get_category()->get_rules()->is_crew();
+		$crew_signup_links = ! $is_crew_group ? array_map(
+			function ( \tuja\data\model\Group $crew_group ) use ( $group ) {
+				$link_url = GroupSignupInitiator::link( $crew_group, $group );
+				return sprintf(
+					'<tr><td>Anmäl funktionär till %s och ge bonus till %s:</td><td><a href="%s">%s</a></td><td>%s</td></tr>',
+					$crew_group->name,
+					$group->name,
+					$link_url,
+					$link_url,
+					AdminUtils::qr_code_button( $link_url )
+				);
+			},
+			array_filter(
+				$this->group_dao->get_all_in_competition( $competition->id, false, null ),
+				function ( \tuja\data\model\Group $group ) {
+					return $group->get_category()->get_rules()->is_crew();
+				}
+			)
+		) : array();
+
 		$group_form_links = array_map(
 			function ( \tuja\data\model\Form $form ) use ( $group, $is_crew_group ) {
 				if ( $is_crew_group ) {
