@@ -75,7 +75,7 @@ class PersonDao extends AbstractDao {
 				'is_attending'     => $person->is_attending() ? 1 : 0,
 				'pno'              => DateUtils::fix_pno( $person->pno ),
 				'note'             => $person->note,
-				'referrer_team_id' => $person->referrer_team_id,
+				'referrer_team_id' => isset( $person->referrer_team_id ) ? $person->referrer_team_id : null,
 			),
 			array(
 				'%d',

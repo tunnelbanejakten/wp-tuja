@@ -109,6 +109,7 @@ class FormQuestions extends Form {
 							$this->question_group->id,            // question_group_id.
 							0,                                    // sort_order.
 							0,                                    // limit_time.
+							null,                                 // text_preparation.
 							10,                                   // score_max.
 							OptionsQuestion::GRADING_TYPE_ONE_OF, // score_type.
 							true,                                 // is_single_select.
@@ -126,6 +127,7 @@ class FormQuestions extends Form {
 							$this->question_group->id,               // question_group_id.
 							0,                                       // sort_order.
 							0,                                       // limit_time.
+							null,                                    // text_preparation.
 							10,                                      // score_max.
 							ImagesQuestion::DEFAULT_FILE_COUNT_LIMIT // max_files_count.
 						);
@@ -139,6 +141,7 @@ class FormQuestions extends Form {
 							$this->question_group->id,         // question_group_id.
 							0,                                 // sort_order.
 							0,                                 // limit_time.
+							null,                              // text_preparation.
 							10,                                // score_max.
 							TextQuestion::GRADING_TYPE_ONE_OF, // score_type.
 							true,                              // is_single_answer.
@@ -155,6 +158,7 @@ class FormQuestions extends Form {
 							$this->question_group->id,         // question_group_id.
 							0,                                 // sort_order.
 							0,                                 // limit_time.
+							null,                              // text_preparation.
 							10,                                // score_max.
 							42                                 // correct_answer.
 						);
