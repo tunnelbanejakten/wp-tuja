@@ -9,6 +9,7 @@ use tuja\data\model\MessageTemplate;
 use tuja\data\model\Person;
 use tuja\data\model\ValidationException;
 use tuja\data\store\CompetitionDao;
+use tuja\data\store\GroupDao;
 use tuja\data\store\MessageTemplateDao;
 use tuja\util\DateUtils;
 use tuja\util\messaging\EventMessageSender;
@@ -17,6 +18,11 @@ use tuja\util\TemplateEditor;
 
 class CompetitionSettingsMessageTemplates extends CompetitionSettings {
 	const FIELD_SEPARATOR = '__';
+
+	public function __construct() {
+		parent::__construct();
+		$this->group_dao = new GroupDao();
+	}
 
 	public function handle_post() {
 		if ( ! isset( $_POST['tuja_competition_settings_action'] ) ) {
@@ -176,7 +182,7 @@ class CompetitionSettingsMessageTemplates extends CompetitionSettings {
 			TemplateEditor::render(
 				$this->list_item_field_name( 'messagetemplate', $message_template->id, 'body' ),
 				$message_template->body ?: '',
-				EventMessageSender::template_parameters( Group::sample(), Person::sample() )
+				EventMessageSender::template_parameters( Group::sample(), Person::sample(), $this->get_crew_groups() )
 			),
 			$this->list_item_field_name( 'messagetemplate', $message_template->id, 'auto_send_recipient' ),
 			$auto_send_recipient_options,
@@ -335,6 +341,20 @@ class CompetitionSettingsMessageTemplates extends CompetitionSettings {
 		);
 
 		return $auto_send_trigger_options;
+	}
+
+	private $crew_groups = null;
+
+	private function get_crew_groups() {
+		if ( is_null( $this->crew_groups ) ) {
+			$this->crew_groups = array_filter(
+				$this->group_dao->get_all_in_competition( $this->competition->id, false, null ),
+				function ( \tuja\data\model\Group $group ) {
+					return $group->get_category()->get_rules()->is_crew();
+				}
+			);
+		}
+		return $this->crew_groups;
 	}
 
 	private function get_event_options() {

@@ -20,8 +20,11 @@ use tuja\util\messaging\OutgoingSMSMessage;
 class MessagesSend extends Messages {
 	private $field_group_selector;
 
+	private $referral_signup_groups = null;
+
 	public function __construct() {
 		parent::__construct();
+		$this->group_dao            = new GroupDao();
 		$this->field_group_selector = new FieldGroupSelector( $this->competition );
 	}
 
@@ -206,8 +209,16 @@ class MessagesSend extends Messages {
 
 
 	public function get_parameters( $person, $group ) {
+		if ( is_null( $this->referral_signup_groups ) ) {
+			$this->referral_signup_groups = array_filter(
+				$this->group_dao->get_all_in_competition( $this->competition->id, false, null ),
+				function ( \tuja\data\model\Group $group ) {
+					return $group->get_category()->get_rules()->is_crew();
+				}
+			);
+		}
 		return array_merge(
-			Template::group_parameters( $group ),
+			Template::group_parameters( $group, $this->referral_signup_groups ),
 			Template::person_parameters( $person, $group ),
 			Template::site_parameters()
 		);
