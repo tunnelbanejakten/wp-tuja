@@ -213,7 +213,7 @@ class MessagesSend extends Messages {
 			$this->referral_signup_groups = array_filter(
 				$this->group_dao->get_all_in_competition( $this->competition->id, false, null ),
 				function ( \tuja\data\model\Group $group ) {
-					return $group->get_category()->get_rules()->is_crew();
+					return $group->is_crew;
 				}
 			);
 		}

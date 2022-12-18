@@ -75,9 +75,7 @@ class EventMessageSender {
 
 		$group = $this->group_dao->get($person->group_id);
 
-		$group_category = $group->get_category();
-
-		$is_crew_group = isset( $group_category ) && $group_category->get_rules()->is_crew();
+		$is_crew_group = $group->is_crew;
 
 		$event_name        = self::new_group_member_event_name( $is_crew_group );
 		$message_templates = $this->message_template_dao->get_for_event( $group->competition_id, $event_name );
@@ -137,7 +135,7 @@ class EventMessageSender {
 				$this->referral_signup_groups = array_filter(
 					$this->group_dao->get_all_in_competition( $group->competition_id, false, null ),
 					function ( \tuja\data\model\Group $group ) {
-						return $group->get_category()->get_rules()->is_crew();
+						return $group->is_crew;
 					}
 				);
 			}

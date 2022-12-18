@@ -57,7 +57,7 @@ class GroupsStats extends Groups {
 			$group_data = array();
 			$group_data['category'] = $group->get_category();
 
-			if ( ! $group_data['category']->get_rules()->is_crew() && $group->get_status() !== Group::STATUS_DELETED ) {
+			if ( ! $group->is_crew && $group->get_status() !== Group::STATUS_DELETED ) {
 				$groups_competing                                      += 1;
 				$people_competing                                      += $group->count_competing;
 				$people_following                                      += $group->count_follower;

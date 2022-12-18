@@ -77,7 +77,7 @@ class ReportPeople extends AbstractListReport {
 					array_filter(
 						$active_groups,
 						function ( Group $group ) {
-							return $group->get_category()->get_rules()->is_crew();
+							return $group->is_crew;
 						}
 					)
 				);

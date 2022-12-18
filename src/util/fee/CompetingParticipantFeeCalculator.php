@@ -21,8 +21,7 @@ class CompetingParticipantFeeCalculator implements GroupFeeCalculator {
 	}
 
 	function calculate_fee( Group $group, DateTimeInterface $date ): int {
-		$is_crew = $group->get_category()->get_rules()->is_crew();
-		if ( $is_crew ) {
+		if ( $group->is_crew ) {
 			return 0;
 		} else {
 			$people = $this->person_dao->get_all_in_group( $group->id, false, $date );

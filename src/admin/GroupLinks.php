@@ -41,7 +41,7 @@ class GroupLinks extends Group {
 		$group_checkin_link       = GroupCheckinInitiator::link( $group );
 		$app_link                 = AppUtils::group_link( $group );
 
-		$is_crew_group     = $group->get_category()->get_rules()->is_crew();
+		$is_crew_group     = $group->is_crew;
 		$crew_signup_links = ! $is_crew_group ? array_map(
 			function ( \tuja\data\model\Group $crew_group ) use ( $group ) {
 				$link_url = GroupSignupInitiator::link( $crew_group, $group );
@@ -57,7 +57,7 @@ class GroupLinks extends Group {
 			array_filter(
 				$this->group_dao->get_all_in_competition( $competition->id, false, null ),
 				function ( \tuja\data\model\Group $group ) {
-					return $group->get_category()->get_rules()->is_crew();
+					return $group->is_crew;
 				}
 			)
 		) : array();

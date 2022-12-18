@@ -168,7 +168,7 @@ class GroupMember extends Group {
 		$is_create_mode = $this->is_create_mode;
 		$group          = $this->group;
 		$competition    = $this->competition;
-		$is_crew_group  = $group->get_category()->get_rules()->is_crew();
+		$is_crew_group  = $group->is_crew;
 		$person         = $this->person;
 		if ( $is_create_mode ) {
 			$links = array();
