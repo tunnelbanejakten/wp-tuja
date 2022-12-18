@@ -161,7 +161,7 @@ describe('Team Management', () => {
         await goto(`http://localhost:8080/${groupProps.key}/andra-personer`)
         await expectFormValue('div.tuja-person-role-leader input[name^="tuja-person__pno__"]', expected)
       })
-
+      
       it.each([
         // This takes a LOT of time
         ['19831109-012', true],
@@ -191,6 +191,12 @@ describe('Team Management', () => {
         }
       })
 
+      it('should NOT be possible to sign up to a competing team using referral link', async () => {
+        await goto(`http://localhost:8080/${groupProps.key}/anmal-mig/?ref=${groupProps.key}`)
+  
+        await expectErrorMessage('Du kan bara ange ett refererande lag när du anmäler dig som funktionär.')
+      })
+  
       it.each([
         [
           '  David Dawson  ',

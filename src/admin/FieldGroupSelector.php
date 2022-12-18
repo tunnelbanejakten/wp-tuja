@@ -18,11 +18,6 @@ class FieldGroupSelector {
 	public function __construct( Competition $competition ) {
 		$group_category_dao = new GroupCategoryDao();
 		$group_categories   = $group_category_dao->get_all_in_competition( $competition->id );
-		$crew_category_ids  = array_map( function ( $category ) {
-			return $category->id;
-		}, array_filter( $group_categories, function ( GroupCategory $category ) {
-			return $category->get_rules()->is_crew();
-		} ) );
 
 		$group_dao       = new GroupDao();
 		$this->groups    = $group_dao->get_all_in_competition( $competition->id );
@@ -38,19 +33,15 @@ class FieldGroupSelector {
 				array(
 					'key'      => 'competinggroups',
 					'label'    => 'alla tävlande grupper',
-					'selector' => function ( Group $group ) use ( $crew_category_ids ) {
-						$category = $group->get_category();
-
-						return isset( $category ) && ! in_array( $category->id, $crew_category_ids );
+					'selector' => function ( Group $group ) {
+						return ! $group->is_crew;
 					}
 				),
 				array(
 					'key'      => 'crewgroups',
 					'label'    => 'alla funktionärsgrupper',
-					'selector' => function ( Group $group ) use ( $crew_category_ids ) {
-						$category = $group->get_category();
-
-						return isset( $category ) && in_array( $category->id, $crew_category_ids );
+					'selector' => function ( Group $group ) {
+						return $group->is_crew;
 					}
 				),
 			),

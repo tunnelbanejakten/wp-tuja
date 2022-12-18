@@ -21,7 +21,7 @@ class AnonymizeController {
 		$this->anonymize(
 			false,
 			function ( Group $grp ) {
-				return ! $grp->get_category()->get_rules()->is_crew();
+				return ! $grp->is_crew;
 			}
 		);
 	}
@@ -30,7 +30,7 @@ class AnonymizeController {
 		$this->anonymize(
 			true,
 			function ( Group $grp ) {
-				return ! $grp->get_category()->get_rules()->is_crew();
+				return ! $grp->is_crew;
 			}
 		);
 	}

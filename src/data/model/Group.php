@@ -69,6 +69,7 @@ class Group {
 	public $name;
 	public $category_id;
 	private $category_obj = null;
+	public $is_crew; // Derived from group category configuration
 	public $age_competing_avg;
 	public $age_competing_min;
 	public $age_competing_max;

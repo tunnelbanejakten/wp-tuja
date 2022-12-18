@@ -23,11 +23,13 @@ class EventMessageSender {
 
 	private $group_dao;
 
-	public static function template_parameters( Group $group, Person $contact ): array {
+	private $referral_signup_groups = null;
+
+	public static function template_parameters( Group $group, Person $contact, array $referral_signup_groups = array() ): array {
 		return array_merge(
 			Template::site_parameters(),
 			Template::person_parameters( $contact, $group ),
-			Template::group_parameters( $group )
+			Template::group_parameters( $group, $referral_signup_groups )
 		);
 	}
 
@@ -73,9 +75,7 @@ class EventMessageSender {
 
 		$group = $this->group_dao->get($person->group_id);
 
-		$group_category = $group->get_category();
-
-		$is_crew_group = isset( $group_category ) && $group_category->get_rules()->is_crew();
+		$is_crew_group = $group->is_crew;
 
 		$event_name        = self::new_group_member_event_name( $is_crew_group );
 		$message_templates = $this->message_template_dao->get_for_event( $group->competition_id, $event_name );
@@ -131,7 +131,15 @@ class EventMessageSender {
 
 	private function send_messages(MessageTemplate $mt, Group $group, $contacts) {
 		foreach ( $contacts as $contact ) {
-			$template_parameters = self::template_parameters( $group, $contact );
+			if ( is_null( $this->referral_signup_groups ) ) {
+				$this->referral_signup_groups = array_filter(
+					$this->group_dao->get_all_in_competition( $group->competition_id, false, null ),
+					function ( \tuja\data\model\Group $group ) {
+						return $group->is_crew;
+					}
+				);
+			}
+			$template_parameters = self::template_parameters( $group, $contact, $this->referral_signup_groups );
 
 			$message = $mt->to_message(
 				$contact,

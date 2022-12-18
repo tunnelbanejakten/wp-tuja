@@ -195,6 +195,7 @@ class BootstrapCompetitionController {
 			$question_group->id,
 			0,
 			-1,
+			null, // text_preparation
 			10,
 			TextQuestion::GRADING_TYPE_ONE_OF,
 			true,
@@ -213,6 +214,7 @@ class BootstrapCompetitionController {
 			$question_group->id,
 			0,
 			-1,
+			null, // text_preparation
 			10,
 			42
 		);
@@ -228,6 +230,7 @@ class BootstrapCompetitionController {
 			$question_group->id,
 			0,
 			-1,
+			null, // text_preparation
 			10,
 			ImagesQuestion::DEFAULT_FILE_COUNT_LIMIT
 		);
@@ -243,6 +246,7 @@ class BootstrapCompetitionController {
 			$question_group->id,
 			0,
 			-1,
+			null, // text_preparation
 			10,
 			OptionsQuestion::GRADING_TYPE_ALL_OF,
 			true,

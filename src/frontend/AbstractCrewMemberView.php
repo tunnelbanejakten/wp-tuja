@@ -82,8 +82,7 @@ abstract class AbstractCrewMemberView extends FrontendView {
 			$this->init_user_or_group();
 
 			// Validate group category
-			$group_category = $this->get_group()->get_category();
-			if ( isset( $group_category ) && ! $group_category->get_rules()->is_crew() ) {
+			if ( ! $this->get_group()->is_crew ) {
 				throw new Exception( Strings::get( 'crew_view.crew_members_only' ) );
 			}
 

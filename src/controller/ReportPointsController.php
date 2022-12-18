@@ -33,10 +33,7 @@ class ReportPointsController {
 		$person = $this->person_dao->get_by_key( $user_key );
 		$group  = $this->group_dao->get( $person->group_id );
 
-		$group_category = $group->get_category();
-
-		$is_crew_group = isset( $group_category ) && $group_category->get_rules()->is_crew();
-		return true === $is_crew_group;
+		return $group->is_crew;
 	}
 
 	public function get_all_points( Station $station ) {
@@ -127,27 +124,11 @@ class ReportPointsController {
 	public function get_participant_groups( $competition_id ): array {
 		if ( ! isset( $this->participant_groups ) ) {
 			// TODO: DRY... Very similar code in Form.php
-			$categories             = $this->category_dao->get_all_in_competition( $competition_id );
-			$participant_categories = array_filter(
-				$categories,
-				function ( $category ) {
-					return ! $category->get_rules()->is_crew();
-				}
-			);
-			$ids                    = array_map(
-				function ( $category ) {
-					return $category->id;
-				},
-				$participant_categories
-			);
-
 			$competition_groups       = $this->group_dao->get_all_in_competition( $competition_id );
 			$this->participant_groups = array_filter(
 				$competition_groups,
-				function ( Group $group ) use ( $ids ) {
-					$group_category = $group->get_category();
-
-					return isset( $group_category ) && in_array( $group_category->id, $ids );
+				function ( Group $group ) {
+					return ! $group->is_crew;
 				}
 			);
 		}

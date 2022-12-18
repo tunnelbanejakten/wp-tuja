@@ -161,6 +161,7 @@ class GroupDao extends AbstractDao {
 		if (!$core_data_only) {
 			$columns[] = 'gc.payment_instructions AS gc_payment_instructions';
 			$columns[] = 'c.payment_instructions AS c_payment_instructions';
+			$columns[] = 'json_extract(gc.rules_configuration, \'$.is_crew\') as gc_is_crew';
 		}
 		$tables = array(
 			$this->table . ' AS g',
@@ -267,6 +268,7 @@ class GroupDao extends AbstractDao {
 		if ( ! $core_data_only ) {
 			$g->city               = $result->city;
 			$g->category_id        = isset($result->category_id) ? intval($result->category_id) : null;
+			$g->is_crew            = $result->gc_is_crew === 'true';
 			$g->competition_id     = isset($result->competition_id) ? intval($result->competition_id) : null;
 			$g->map_id             = isset($result->map_id) ? intval($result->map_id) : null;
 			$g->is_always_editable = $result->is_always_editable;

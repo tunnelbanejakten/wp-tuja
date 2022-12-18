@@ -35,6 +35,7 @@ $this->print_leaves_menu();
 				<td><?= AdminUtils::qr_code_button( $group_signup_link ) ?></td>
 			</tr>
 			<?= join( $group_form_links ) ?>
+			<?= join( $crew_signup_links ) ?>
 			<tr>
 				<td>Länk för att logga in i appen:</td>
 				<td><?= sprintf( '<a href="%s">%s</a>', $app_link, $app_link ) ?></td>

@@ -76,7 +76,7 @@ class Template {
 		];
 	}
 
-	public static function group_parameters( Group $group ) {
+	public static function group_parameters( Group $group, array $referral_signup_groups = array() ) {
 		$evaluation_result = $group->evaluate_registration();
 
 		$group_map_name        = 'Ni har ännu inte tilldelats en karta. Kontakta Kundtjänst.';
@@ -105,7 +105,15 @@ class Template {
 			}
 		}
 
-		return array(
+		$referral_links = array();
+		foreach ( $referral_signup_groups as $referral_signup_group ) {
+			$key                    = sprintf( 'group_%s_referral_signup_link', preg_replace( '/[^a-z0-9]/', '', strtolower( $referral_signup_group->name ) ) );
+			$referral_links[ $key ] = GroupSignupInitiator::link( $referral_signup_group, $group );
+		}
+
+		return array_merge(
+			$referral_links,
+			array(
 			'group_name'                             => $group->name,
 			'group_key'                              => $group->random_id,
 			'group_home_link'                        => GroupHomeInitiator::link( $group ),
@@ -131,6 +139,7 @@ class Template {
 				$evaluation_result,
 				RuleResult::BLOCKER
 			),
+			)
 		);
 	}
 

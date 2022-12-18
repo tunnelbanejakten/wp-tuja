@@ -53,6 +53,7 @@ class Controller {
 
 	private function check_request() {
 		$path = trim( $this->get_path_info(), '/' );
+		$path = preg_replace( '/\?.*/', '', $path ); // Strip query string when looking for matching view
 		foreach ( $this->view_initiators as $page ) {
 			if ( $page->is_handler( $path ) ) {
 				return $page->create_page( $path );

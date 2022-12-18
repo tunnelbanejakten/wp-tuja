@@ -157,7 +157,7 @@ class GroupsList extends Groups {
 			array(
 				'Tävlande lag',
 				function ( $group_data ) {
-					return ! $group_data['category']->get_rules()->is_crew();
+					return ! $group_data['model']->is_crew;
 				},
 			),
 			array(
