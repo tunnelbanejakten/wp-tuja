@@ -48,6 +48,7 @@ describe('Crew', () => {
 
     let crewGroupProps = null
     let crewPersonProps = null
+    let competingGroupProps = null
 
     beforeAll(async () => {
       crewGroupProps = {
@@ -58,14 +59,13 @@ describe('Crew', () => {
       }
 
       await adminPage.configureEventDateLimits(competitionId, 7 * 24 * 60, 7 * 24 * 60 + 60)
+      competingGroupProps = await defaultPage.signUpTeam(adminPage)
     })
 
     describe('report score', () => {
-      let competingGroupProps = null
       let stationScoreReportForm = 0
 
       beforeAll(async () => {
-        competingGroupProps = await defaultPage.signUpTeam(adminPage)
         stationScoreReportForm = global.formId
         await adminPage.addTeam() // Make sure there are at least two teams in competition
       })
@@ -127,19 +127,19 @@ describe('Crew', () => {
         await typePointsAndWait(defaultPage, 1, 1, false)
         await typePointsAndWait(defaultPage, 2, 2, false)
 
-        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext',  '1')
-        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext',  '2')
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext', '1')
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext', '2')
 
         await goToReportStationForm(defaultPage)
 
-        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext',  '1')
-        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext',  '2')
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext', '1')
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext', '2')
 
         await typePointsAndWait(defaultPage, 2, 9, false)
 
         await goToReportStationForm(defaultPage)
-        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext',  '1')
-        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext',  '9')
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(1) input.tuja-fieldtext', '1')
+        await defaultPage.expectFormValue('section.tuja-team-score-container:nth-of-type(2) input.tuja-fieldtext', '9')
       })
 
       it.each([
@@ -254,6 +254,26 @@ describe('Crew', () => {
       await expectFormValue('input[name^="tuja-person__phone"]', '+467012345678')
       await expectFormValue('input[name^="tuja-person__food"]', 'Picky about eggs')
       await expectFormValue('input[name^="tuja-person__note"]', 'Need to leave early')
+    })
+
+    it('should be possible to sign up as crew member using referral link', async () => {
+      await goto(`http://localhost:8080/${crewGroupProps.key}/anmal-mig/?ref=${competingGroupProps.key}`)
+
+      // Check if "thank you on behalf of referring team" message is shown.
+      await expectSuccessMessage(`Som tack för att du anmäler dig som funktionär så kommer ${competingGroupProps.name} få en liten bonus på tävlingsdagen.`)
+
+      await type('input[name^="tuja-person__name"]', 'Dave')
+      await type('input[name^="tuja-person__email"]', 'dave@example.com')
+      await type('input[name^="tuja-person__phone"]', '070-12345678')
+
+      await clickLink('button[name="tuja-action"]')
+
+
+      await expectSuccessMessage('Tack')
+
+      // Check if check-in report mentions that a crew member has been "recruited".
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?action=tuja_report&tuja_competition=${competitionId}&tuja_view=ReportCheckInOut&tuja_report_format=html`)
+      await adminPage.expectToContain(`#group-referral-count-${competingGroupProps.key}`, '(1 funk)')
     })
 
     it.each([

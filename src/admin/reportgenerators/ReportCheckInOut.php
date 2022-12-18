@@ -31,6 +31,7 @@ class ReportCheckInOut extends AbstractListReport {
 				);
 				return array(
 					'name'           => $group->name,
+					'key'            => $group->random_id,
 					'category'       => $group->get_category()->name,
 					'referral_count' => $referrals,
 				);

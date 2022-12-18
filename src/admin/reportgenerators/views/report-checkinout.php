@@ -19,7 +19,11 @@
 				<?php
 				echo $group['name'];
 				if ( $group['referral_count'] > 0 ) {
-					printf( ' (%s funk)', $group['referral_count'] );
+					printf(
+						' <span id="group-referral-count-%s">(%s funk)</span>',
+						$group['key'],
+						$group['referral_count']
+					);
 				}
 				?>
 			</td>
