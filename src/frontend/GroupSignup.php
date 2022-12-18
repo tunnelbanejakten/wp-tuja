@@ -27,11 +27,14 @@ class GroupSignup extends AbstractGroupView {
 		if ( empty( $referrer_group_key ) ) {
 			return null;
 		}
+		if ( ! $this->get_group()->is_crew ) {
+			throw new Exception( 'Du kan bara ange ett refererande lag när du anmäler dig som funktionär.' );
+		}
 		if ( ! isset( $this->referrer_group ) ) {
 
 			$referrer_group = $this->group_dao->get_by_key( $referrer_group_key );
 			if ( $referrer_group === false ) {
-				throw new Exception( 'Oj, vi hittade inte laget' ); // Cannot be localized since we don't know which competition we're supposed to check for string overrides
+				throw new Exception( 'Oj, vi hittade inte laget' );
 			}
 			$this->referrer_group = $referrer_group;
 		}
