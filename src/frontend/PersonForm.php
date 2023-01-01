@@ -12,13 +12,12 @@ use tuja\util\Strings;
 use tuja\view\Field;
 use tuja\view\FieldEmail;
 use tuja\view\FieldPhone;
-use tuja\view\FieldPno;
 use tuja\view\FieldText;
 
 class PersonForm {
 
 	private $person_name_question;
-	private $person_pno_question;
+	private $person_pno_questions;
 	private $person_email_question;
 	private $person_phone_question;
 	private $person_food_question;
@@ -27,22 +26,22 @@ class PersonForm {
 	private $group_category_rules;
 	private $required_only;
 
-	const FIELD_NAME = 'name';
-	const FIELD_PNO = 'pno';
+	const FIELD_NAME  = 'name';
+	const FIELD_PNO   = 'pno';
 	const FIELD_EMAIL = 'email';
 	const FIELD_PHONE = 'phone';
-	const FIELD_FOOD = 'food';
+	const FIELD_FOOD  = 'food';
+	const FIELD_NOTE  = 'note';
 
-	const FIELD_NOTE = 'note';
-	CONST VALIDATION_FIELD_MAPPING = [
+	const VALIDATION_FIELD_MAPPING = array(
 		'email' => self::FIELD_EMAIL,
 		'phone' => self::FIELD_PHONE,
 		'name'  => self::FIELD_NAME,
 		'food'  => self::FIELD_FOOD,
 		'note'  => self::FIELD_NOTE,
 		'pno'   => self::FIELD_PNO,
-//		'status' => ???
-	];
+	//      'status' => ???
+	);
 
 	public function __construct(
 		bool $compact,
@@ -52,12 +51,32 @@ class PersonForm {
 		GroupCategoryRules $group_category_rules,
 		string $i18n_prefix = 'person.form'
 	) {
-		$this->person_name_question   = new FieldText( Strings::get( "${i18n_prefix}.name.label" ), Strings::get( "${i18n_prefix}.name.hint" ), $read_only, [], $compact );
-		$this->person_pno_question    = new FieldPno( Strings::get( "${i18n_prefix}.pno.label" ), Strings::get( "${i18n_prefix}.pno.hint" ), $read_only, $compact );
+		$this->person_name_question = new FieldText( Strings::get( "${i18n_prefix}.name.label" ), Strings::get( "${i18n_prefix}.name.hint" ), $read_only, array(), $compact );
+		$this->person_pno_questions = array_combine(
+			array_keys( GroupCategoryRules::NIN_OPTIONS ),
+			array_map(
+				function ( string $nin_rule_name, $nin_rule_config ) use ( $compact, $read_only, $i18n_prefix ) {
+					return new FieldText(
+						Strings::get( "${i18n_prefix}.pno.${nin_rule_name}.label" ),
+						Strings::get( "${i18n_prefix}.pno.${nin_rule_name}.hint" ),
+						$read_only,
+						array(
+							'type'        => 'tel',
+							'pattern'     => $nin_rule_config['validator'],
+							'placeholder' => Strings::get( "${i18n_prefix}.pno.${nin_rule_name}.placeholder" ),
+						),
+						$compact
+					);
+				},
+				array_keys( GroupCategoryRules::NIN_OPTIONS ),
+				array_values( GroupCategoryRules::NIN_OPTIONS )
+			)
+		);
+
 		$this->person_email_question  = new FieldEmail( Strings::get( "${i18n_prefix}.email.label" ), Strings::get( "${i18n_prefix}.email.hint" ), $read_only, $compact );
 		$this->person_phone_question  = new FieldPhone( Strings::get( "${i18n_prefix}.phone.label" ), Strings::get( "${i18n_prefix}.phone.hint" ), $read_only, $compact );
-		$this->person_food_question   = new FieldText( Strings::get( "${i18n_prefix}.food.label" ), Strings::get( "${i18n_prefix}.food.hint" ), $read_only, [], $compact );
-		$this->person_note_question   = new FieldText( Strings::get( "${i18n_prefix}.note.label" ), Strings::get( "${i18n_prefix}.note.hint" ), $read_only, [], $compact );
+		$this->person_food_question   = new FieldText( Strings::get( "${i18n_prefix}.food.label" ), Strings::get( "${i18n_prefix}.food.hint" ), $read_only, array(), $compact );
+		$this->person_note_question   = new FieldText( Strings::get( "${i18n_prefix}.note.label" ), Strings::get( "${i18n_prefix}.note.hint" ), $read_only, array(), $compact );
 		$this->show_validation_errors = $show_validation_errors;
 		$this->group_category_rules   = $group_category_rules;
 		$this->required_only          = $required_only;
@@ -65,7 +84,7 @@ class PersonForm {
 
 
 	public function render( Person $person ) {
-		$errors = [];
+		$errors = array();
 		if ( $this->show_validation_errors ) {
 			try {
 				$person->validate( $this->group_category_rules );
@@ -75,12 +94,19 @@ class PersonForm {
 			}
 		}
 		try {
-			$html_sections = [];
+			$html_sections = array();
 			if ( $this->is_field_visible( $person, GroupCategoryRules::PERSON_PROP_NAME ) ) {
 				$html_sections[] = FrontendView::render_field( $this->person_name_question, self::get_field_name( self::FIELD_NAME, $person ), @$errors[ self::FIELD_NAME ], $person->name );
 			}
 			if ( $this->is_field_visible( $person, GroupCategoryRules::PERSON_PROP_NIN ) ) {
-				$html_sections[] = FrontendView::render_field( $this->person_pno_question, self::get_field_name( self::FIELD_PNO, $person ), @$errors[ self::FIELD_PNO ], $person->pno );
+				$rule_value = $this->get_field_value( $person, GroupCategoryRules::PERSON_PROP_NIN );
+
+				$html_sections[] = FrontendView::render_field(
+					$this->person_pno_questions[ $rule_value ],
+					self::get_field_name( self::FIELD_PNO, $person ),
+					@$errors[ self::FIELD_PNO ],
+					$person->pno
+				);
 			}
 			if ( $this->is_field_visible( $person, GroupCategoryRules::PERSON_PROP_EMAIL ) ) {
 				$html_sections[] = FrontendView::render_field( $this->person_email_question, self::get_field_name( self::FIELD_EMAIL, $person ), @$errors[ self::FIELD_EMAIL ], $person->email );
@@ -97,7 +123,7 @@ class PersonForm {
 
 			return join( $html_sections );
 		} catch ( Exception $e ) {
-			return sprintf( "[error %s]", $e->getMessage() );
+			return sprintf( '[error %s]', $e->getMessage() );
 		}
 
 	}
@@ -112,5 +138,9 @@ class PersonForm {
 		} else {
 			return $this->group_category_rules->is_person_field_enabled( $person->get_type(), $field );
 		}
+	}
+
+	private function get_field_value( Person $person, $field ) {
+		return $this->group_category_rules->get_person_field_value( $person->get_type(), $field );
 	}
 }

@@ -87,7 +87,7 @@ $this->print_leaves_menu();
 									! empty( $description ) ? AdminUtils::tooltip( $description ) : ''
 								);
 							},
-							GroupCategoryRules::get_props_labels()
+							( new GroupCategoryRules( array() ) )->get_props_labels()
 						)
 					)
 				);

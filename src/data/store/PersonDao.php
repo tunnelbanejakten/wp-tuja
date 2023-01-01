@@ -3,6 +3,7 @@
 namespace tuja\data\store;
 
 use DateTime;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Exception;
 use tuja\data\model\Group;
@@ -14,7 +15,7 @@ use tuja\util\Id;
 use tuja\util\Phone;
 
 class PersonDao extends AbstractDao {
-	const QUERY_COLUMNS = 'p.*, pp.*, (DATEDIFF(CURDATE(), STR_TO_DATE(LEFT(pp.pno, 8), \'%%Y%%m%%d\')) / 365.25) age';
+	const QUERY_COLUMNS = 'p.*, pp.*';
 
 	private $props_table;
 
@@ -59,11 +60,12 @@ class PersonDao extends AbstractDao {
 	}
 
 	private function add_record( Person $person, $status = Person::STATUS_CREATED ) {
-		$affected_rows = $this->wpdb->insert( $this->props_table,
+		$affected_rows = $this->wpdb->insert(
+			$this->props_table,
 			array(
-				'person_id'  => $person->id,
-				'created_at' => self::to_db_date( new DateTime() ),
-				'status'     => $status,
+				'person_id'        => $person->id,
+				'created_at'       => self::to_db_date( new DateTime() ),
+				'status'           => $status,
 
 				'name'             => $person->name ?? '', // Database has not-null constraint.
 				'team_id'          => $person->group_id,
@@ -73,7 +75,7 @@ class PersonDao extends AbstractDao {
 				'is_competing'     => $person->is_competing() ? 1 : 0,
 				'is_team_contact'  => $person->is_contact() ? 1 : 0,
 				'is_attending'     => $person->is_attending() ? 1 : 0,
-				'pno'              => DateUtils::fix_pno( $person->pno ),
+				'pno'              => $person->pno,
 				'note'             => $person->note,
 				'referrer_team_id' => isset( $person->referrer_team_id ) ? $person->referrer_team_id : null,
 			),
@@ -93,7 +95,8 @@ class PersonDao extends AbstractDao {
 				'%s',
 				'%s',
 				'%d',
-			) );
+			)
+		);
 
 		return $affected_rows !== false && $affected_rows === 1;
 	}
@@ -374,12 +377,26 @@ class PersonDao extends AbstractDao {
 		$p->referrer_team_id = $result->referrer_team_id !== null ? intval( $result->referrer_team_id ) : null;
 		$p->food             = $result->food;
 		$p->pno              = $result->pno;
-		$p->age              = floatval( $result->age );
+		$p->age              = 0;
+		if ( isset( $p->pno ) ) {
+			try {
+				$pno_normalized = DateUtils::fix_pno( $p->pno );
+				$date           = DateTime::createFromFormat( 'Ymd', substr( $pno_normalized, 0, 8 ) );
+
+				$age_days = ( new DateTimeImmutable() )->diff( $date )->format( '%a' );
+
+				$p->age = floatval( $age_days ) / 365.25;
+			} catch ( Exception $e ) {
+
+			}
+		}
+
 		$p->set_status( $result->status );
 		$p->set_role_flags(
 			$result->is_competing != 0,
 			$result->is_attending == null || $result->is_attending == 1,
-			$result->is_team_contact != 0 );
+			$result->is_team_contact != 0
+		);
 
 		return $p;
 	}

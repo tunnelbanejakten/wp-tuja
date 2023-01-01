@@ -38,6 +38,7 @@ class RegistrationEvaluator {
 				$rule_name = 'Deltagare ' . htmlspecialchars( $person->name );
 				if ( ! empty( $person->pno ) ) {
 					try {
+						// TODO: Only run this rule if _full_ PNO/NIN is required/optional.
 						$pno  = DateUtils::fix_pno( $person->pno );
 						$date = DateTime::createFromFormat( 'Ymd', substr( $pno, 0, 8 ) );
 						if ( $date !== false ) {
