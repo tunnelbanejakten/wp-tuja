@@ -18,7 +18,8 @@ class AdminPageWrapper extends PageWrapper {
     const groupId = await this.$eval(`span#tuja_new_group_message`, node => node.dataset.groupId)
 
     return {
-      id: groupId
+      id: groupId,
+      name
     }
   }
 
