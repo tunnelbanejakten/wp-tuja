@@ -88,6 +88,7 @@ class GroupSignup extends AbstractGroupView {
 		}
 
 		$referrer_group = $this->get_referrer_group();
+		$referrer_group_html = '';
 		if ( isset( $referrer_group ) ) {
 			$referrer_group_html = sprintf( '<p class="tuja-message tuja-message-success">%s</p>', Strings::get( 'group_signup.referrer_group', $referrer_group->name ));
 		}

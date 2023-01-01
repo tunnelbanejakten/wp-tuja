@@ -11,7 +11,7 @@ if ( count( $people ) > 0 ) {
 					function ( $column ) {
 						return sprintf( '<th>%s</th>', $column );
 					},
-					array_keys( $people[0] )
+					array_keys( current( $people ) )
 				)
 			);
 			?>
