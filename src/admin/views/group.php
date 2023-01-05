@@ -22,11 +22,38 @@ $this->print_leaves_menu();
 
 	<h3>Redigera grupp</h3>
 
-	<h4>Anmälningsavgift</h4>
-
-	<div id="tuja-group-payment">
-		<?= $this->print_fee_configuration_form(); ?>
-	</div>
+	<table class="tuja-table">
+		<tbody>
+		<tr>
+			<td><label for="">Namn</label></td>
+			<td><input type="text" name="tuja_group_name" id="tuja_group_name" value="<?php echo $_POST['tuja_group_name'] ?? $group->name; ?>"></td>
+		</tr>
+		<tr>
+			<td><label for="">Meddelande från laget</label></td>
+			<td><input type="text" name="tuja_group_note" id="tuja_group_note" value="<?php echo $_POST['tuja_group_note'] ?? $group->note; ?>"></td>
+		</tr>
+		<tr>
+			<td><label for="">Ort</label></td>
+			<td><input type="text" name="tuja_group_city" id="tuja_group_city" value="<?php echo $_POST['tuja_group_city'] ?? $group->city; ?>"></td>
+		</tr>
+		<tr>
+			<td><label for="">Kategori</label></td>
+			<td>
+				<div id="tuja-group-category">
+					<?= $this->print_group_category_selector(); ?>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td><label for="">Anmälningsavgift</label></td>
+			<td>
+				<div id="tuja-group-payment">
+					<?= $this->print_fee_configuration_form(); ?>
+				</div>
+			</td>
+		</tr>
+		</tbody>
+	</table>
 
 	<?php
 	$group_categories_settings_url = add_query_arg( array(
