@@ -8,7 +8,6 @@ use Exception;
 use tuja\data\model\Group;
 use tuja\data\model\Person;
 use tuja\data\store\PersonDao;
-use tuja\util\DateUtils;
 
 class RegistrationEvaluator {
 	private $person_dao;
@@ -26,38 +25,9 @@ class RegistrationEvaluator {
 			$this->rule_contacts_defined( $group, $people ),
 			$this->rule_contacts_have_phone_and_email( $people ),
 			$this->rule_person_names( $people ),
-			$this->rule_person_pno( $people ),
 			$this->rule_adult_supervision( $group, $people ),
 			$this->rule_group_size( $people )
 		);
-	}
-
-	private function rule_person_pno( array $people ) {
-		return array_reduce( $people, function ( $carry, Person $person ) {
-			if ( $person->is_competing() ) {
-				$rule_name = 'Deltagare ' . htmlspecialchars( $person->name );
-				if ( ! empty( $person->pno ) ) {
-					try {
-						// TODO: Only run this rule if _full_ PNO/NIN is required/optional.
-						$pno  = DateUtils::fix_pno( $person->pno );
-						$date = DateTime::createFromFormat( 'Ymd', substr( $pno, 0, 8 ) );
-						if ( $date !== false ) {
-							if ( substr( $pno, 9, 4 ) === '0000' ) {
-								$carry[] = new RuleResult( $rule_name, RuleResult::WARNING, 'Vi rekommenderar att ange hela personnumret.' );
-							}
-						} else {
-							$carry[] = new RuleResult( $rule_name, RuleResult::WARNING, 'Personnummer/födelsedag verkar inte vara korrekt.' );
-						}
-					} catch ( Exception $e ) {
-						$carry[] = new RuleResult( $rule_name, RuleResult::WARNING, 'Personnummer/födelsedag verkar inte vara korrekt.' );
-					}
-				} else {
-					$carry[] = new RuleResult( $rule_name, RuleResult::BLOCKER, 'Personnummer eller födelsedag måste anges.' );
-				}
-			}
-
-			return $carry;
-		}, [] );
 	}
 
 	private function rule_adult_supervision( Group $group, array $people ) {
