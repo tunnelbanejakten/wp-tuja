@@ -75,7 +75,7 @@ class CompetitionSettingsGroupCategories extends CompetitionSettings {
 
 	public function print_group_category_form( GroupCategory $category, Competition $competition ) {
 		$rules             = $category->get_rules();
-		$jsoneditor_config = GroupCategoryRules::get_jsoneditor_config();
+		$jsoneditor_config = $rules->get_jsoneditor_config();
 		$jsoneditor_values = $rules->get_json_values();
 
 		return sprintf(

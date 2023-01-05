@@ -12,7 +12,6 @@ use tuja\util\messaging\EventMessageSender;
 use tuja\util\Strings;
 use tuja\view\FieldEmail;
 use tuja\view\FieldPhone;
-use tuja\view\FieldPno;
 use tuja\view\FieldText;
 
 class GroupSignup extends AbstractGroupView {

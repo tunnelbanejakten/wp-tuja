@@ -212,7 +212,7 @@ describe('Administration', () => {
         '+4670000001',
         'amy.zingh@example.com',
         'No allergies',
-        '20000101-0000',
+        '2000-01-01',
         'I like warm hugs')
 
       // Go back to complete list of team members
@@ -227,7 +227,7 @@ describe('Administration', () => {
         '+4670000001',
         'amy.zingh@example.com',
         'No allergies',
-        '20000101-0000',
+        '2000-01-01',
         'I like warm hugs')
 
       // Change the name
@@ -240,7 +240,7 @@ describe('Administration', () => {
         '+4670000001',
         'amy.zingh@example.com',
         'No allergies',
-        '20000101-0000',
+        '2000-01-01',
         'I like warm hugs')
     })
   })

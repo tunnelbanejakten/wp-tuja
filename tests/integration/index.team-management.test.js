@@ -159,7 +159,11 @@ describe('Team Management', () => {
         await expectSuccessMessage('Ändringarna har sparats.')
 
         await goto(`http://localhost:8080/${groupProps.key}/andra-personer`)
-        await expectFormValue('div.tuja-person-role-leader input[name^="tuja-person__pno__"]', expected)
+        await expectFormValue('div.tuja-person-role-leader input[name^="tuja-person__pno__"]', input)
+
+        await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupMembers&tuja_competition=${competitionId}&tuja_group=${groupProps.id}`)
+        const ageData = await adminPage.$eval('tr.tuja-person-status-created.tuja-person-type-leader > td > span.tuja-person-age', el => el.title)
+        expect(ageData).toMatch(`Inmatat: ${input}, Normaliserat: ${expected}`)
       })
       
       it.each([
@@ -202,7 +206,6 @@ describe('Team Management', () => {
           '  David Dawson  ',
           'David Dawson',
           '83-01-01',
-          '19830101-0000',
           'Vegan   ',
           'Vegan'
         ],
@@ -210,7 +213,6 @@ describe('Team Management', () => {
           'Emily Emilia Edvina Ellison',
           'Emily Emilia Edvina Ellison',
           '830131-1234',
-          '19830131-1234',
           '',
           ''
         ],
@@ -218,11 +220,10 @@ describe('Team Management', () => {
           'B',
           'B',
           '101010',
-          '20101010-0000',
           '    .',
           '.'
         ]
-      ])('should be possible to sign up as new team member "%s"', async (nameInput, nameExpected, pnoInput, pnoExpected, foodInput, foodExpected) => {
+      ])('should be possible to sign up as new team member "%s"', async (nameInput, nameExpected, pnoInput, foodInput, foodExpected) => {
         await goto(`http://localhost:8080/${groupProps.key}/anmal-mig`)
 
         await type('input[name^="tuja-person__name"]', nameInput)
@@ -240,7 +241,7 @@ describe('Team Management', () => {
         await goto(editPersonUrl)
 
         await expectFormValue('input[name^="tuja-person__name"]', nameExpected)
-        await expectFormValue('input[name^="tuja-person__pno"]', pnoExpected)
+        await expectFormValue('input[name^="tuja-person__pno"]', pnoInput)
         await expectElementCount('input[name^="tuja-person__email"]', 0)
         await expectElementCount('input[name^="tuja-person__phone"]', 0)
         await expectFormValue('input[name^="tuja-person__food"]', foodExpected)
@@ -557,12 +558,12 @@ describe('Team Management', () => {
         //
 
         await expectFormValue('div.tuja-person-role-leader > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__name__"]', 'Alice')
-        await expectFormValue('div.tuja-person-role-leader > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__pno__"]', '19800102-0000')
+        await expectFormValue('div.tuja-person-role-leader > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__pno__"]', '1980-01-02')
         await expectFormValue('div.tuja-person-role-leader > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__food__"]', 'Vegan')
         await expectFormValue('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__name__"]', 'Bob')
-        await expectFormValue('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__pno__"]', '19791231-0000')
+        await expectFormValue('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__pno__"]', '1979-12-31')
         await expectFormValue('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person:nth-child(2) input[name^="tuja-person__name__"]', 'Dave')
-        await expectFormValue('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person:nth-child(2) input[name^="tuja-person__pno__"]', '19900808-0000')
+        await expectFormValue('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person:nth-child(2) input[name^="tuja-person__pno__"]', '1990-08-08')
         await expectFormValue('div.tuja-person-role-admin > div.tuja-people-existing > div.tuja-signup-person input[name^="tuja-person__email__"]', 'extra-contact@example.com')
 
         //
@@ -587,7 +588,7 @@ describe('Team Management', () => {
         await expectElementCount('div.tuja-person-role-supervisor > div.tuja-people-existing > div.tuja-signup-person', 0)
         await expectElementCount('div.tuja-person-role-admin > div.tuja-people-existing > div.tuja-signup-person', 1)
         await expectFormValue('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__name__"]', 'Dave')
-        await expectFormValue('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__pno__"]', '19900808-0000')
+        await expectFormValue('div.tuja-person-role-regular > div.tuja-people-existing > div.tuja-signup-person:nth-child(1) input[name^="tuja-person__pno__"]', '1990-08-08')
       })
 
       it.each([

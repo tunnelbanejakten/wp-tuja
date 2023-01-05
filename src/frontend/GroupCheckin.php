@@ -20,7 +20,6 @@ use tuja\util\Template;
 use tuja\view\FieldChoices;
 use tuja\view\FieldEmail;
 use tuja\view\FieldPhone;
-use tuja\view\FieldPno;
 use tuja\view\FieldText;
 
 class GroupCheckin extends AbstractGroupView {
