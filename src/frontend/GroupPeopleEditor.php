@@ -233,9 +233,12 @@ class GroupPeopleEditor extends AbstractGroupView {
 		// DETERMINE REQUESTED CHANGES
 		$people = $this->get_current_group_members();
 
-		$preexisting_ids = array_map( function ( $person ) {
+		$preexisting_ids = array_map(
+			function ( $person ) {
 			return $person->random_id;
-		}, $people );
+			},
+			$people
+		);
 
 		$submitted_ids = $this->get_submitted_person_ids();
 
@@ -282,30 +285,20 @@ class GroupPeopleEditor extends AbstractGroupView {
 			}
 		}
 
-		$people_map = array_combine( array_map( function ( $person ) {
+		$people_map = array_combine(
+			array_map(
+				function ( $person ) {
 			return $person->random_id;
-		}, $people ), $people );
+				},
+				$people
+			),
+			$people
+		);
 
 		foreach ( $updated_ids as $id ) {
 			if ( isset( $people_map[ $id ] ) ) {
 				try {
-					$posted_values = [
-						'name'  => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $people_map[ $id ] ) ] ?: @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $people_map[ $id ] ) ],
-						'email' => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $people_map[ $id ] ) ],
-						'phone' => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $people_map[ $id ] ) ],
-						'pno'   => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $people_map[ $id ] ) ],
-						'food'  => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $people_map[ $id ] ) ]
-					];
-
-					$is_person_property_updated = false;
-					foreach ( $posted_values as $prop => $new_value ) {
-						if ( $people_map[ $id ]->{$prop} != $new_value ) {
-							$people_map[ $id ]->{$prop} = $new_value;
-
-							$is_person_property_updated = true;
-						}
-					}
-
+					$is_person_property_updated = $this->get_person_form()->update_with_posted_values( $people_map[ $id ] );
 					if ( $is_person_property_updated ) {
 						$people_map[ $id ]->validate( $category->get_rules() );
 						$affected_rows   = $this->person_dao->update( $people_map[ $id ] );
