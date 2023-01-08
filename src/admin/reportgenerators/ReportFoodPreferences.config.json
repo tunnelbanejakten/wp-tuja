@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "properties": {
+    "tuja_reports_grouping": {
+      "title": "Metod för att gruppera svar",
+      "type": "string",
+      "format": "radio",
+      "enum": [
+        "comma_separated",
+        "keyword_search"
+      ],
+      "options": {
+        "enum_titles": [
+          "Komma-separerad lista",
+          "Nyckelord"
+        ]
+      }
+    },
+    "tuja_reports_list_all": {
+      "title": "Visa samtliga svar som lista",
+      "type": "boolean",
+      "format": "checkbox"
+    }
+  }
+}
