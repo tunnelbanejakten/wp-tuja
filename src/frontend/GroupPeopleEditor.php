@@ -24,17 +24,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 	}
 
 	public static function params_section_description( GroupCategory $group_category ): array {
-		$rules = array_combine(
-			array_map(
-				function ( string $key ) {
-					return $key;
-				},
-				array_keys( $group_category->get_rules()->get_values() ) ),
-			array_map(
-				function ( string $key ) {
-					return $key;
-				},
-				array_values( $group_category->get_rules()->get_values() ) ) );
+		$rules = $group_category->get_rules()->get_values();
 
 		return array_merge( [
 			'group_category_name' => $group_category->name
