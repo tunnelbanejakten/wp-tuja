@@ -88,6 +88,7 @@ class PersonForm {
 								Strings::get( "$i18n_prefix.food.label" ),
 								Strings::get( "$i18n_prefix.food.hint" ),
 								$read_only,
+								$compact,
 								array(
 									// Source: https://astmaoallergiforbundet.se/information-rad/allergi/matallergi/allergener/
 									'Mjölkprotein',

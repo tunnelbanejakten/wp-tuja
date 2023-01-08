@@ -8,6 +8,7 @@ class FieldFood extends Field {
 	const FIELD_TYPE = 'fieldfood';
 
 	private $options;
+	private $compact;
 	private $is_custom_options_allowed;
 
 	const FORM_FIELD_SEPARATOR    = '__'; // Needs to match what's used by GroupPeopleEditor.
@@ -17,9 +18,10 @@ class FieldFood extends Field {
 	const TOGGLE_VALUE_YES        = 'yes';
 	const TOGGLE_VALUE_NO         = 'no';
 
-	public function __construct( $label, $hint = null, $read_only = false, $options = array(), $is_custom_options_allowed = false ) {
+	public function __construct( $label, $hint = null, $read_only = false, $compact = false, $options = array(), $is_custom_options_allowed = false ) {
 		parent::__construct( $label, $hint, $read_only );
 		$this->options                   = $options;
+		$this->compact                   = $compact;
 		$this->is_custom_options_allowed = $is_custom_options_allowed;
 	}
 
@@ -64,16 +66,19 @@ class FieldFood extends Field {
 				: '';
 		$label_and_hint = ! empty( $label ) || ! empty( $hint ) ? sprintf( '<label for="%s">%s%s</label>', $render_id, $label, $hint ) : '';
 
+		$head = $this->compact ? '' : $label_and_hint;
+		$tail = $this->compact ? $hint : '';
+
 		$data = $this->get_data( $field_name, $answer_object, $group );
 
 		$is_value_specified = count( $data ) > 0 && '' !== $data[0];
 
-		$yes_no_html     = sprintf(
-			'<div class="tuja-%s-%s"> %s %s </div>',
+		$yes_no_html = sprintf(
+			'<div class="tuja-%s-%s"> %s <br> %s </div>',
 			self::FIELD_TYPE,
 			self::TOGGLE_NAME,
-			self::toggle_option_html( $field_name, self::TOGGLE_VALUE_YES, 'Ja', $is_value_specified ), // TOOD: Localize.
-			self::toggle_option_html( $field_name, self::TOGGLE_VALUE_NO, 'Nej', ! $is_value_specified ) // TOOD: Localize.
+			self::toggle_option_html( $field_name, self::TOGGLE_VALUE_NO, $this->compact ? 'Ingen allergi eller överkänslighet' : 'Nej', ! $is_value_specified ), // TOOD: Localize.
+			self::toggle_option_html( $field_name, self::TOGGLE_VALUE_YES, $this->compact ? 'Är allergisk/överkänslig mot...' : 'Ja', $is_value_specified ), // TOOD: Localize.
 		);
 
 		$custom_option = join( self::CUSTOM_OPTION_SEPARATOR . ' ', array_diff( $data, $this->options ) );
@@ -85,19 +90,20 @@ class FieldFood extends Field {
 			$custom_option,
 			self::FIELD_TYPE,
 			self::FIELD_TYPE,
-			'Annat...' // TOOD: Localize.
+			$this->compact ? 'Annan matallergi...' : 'Annat...' // TOOD: Localize.
 		) : '';
 
 		return sprintf(
-			'<div class="tuja-field tuja-field-%s %s">%s%s<div class="tuja-%s-checkboxes">%s</div>%s%s</div>',
+			'<div class="tuja-field tuja-field-%s %s">%s%s<div class="tuja-%s-checkboxes">%s</div>%s %s %s</div>',
 			self::FIELD_TYPE,
 			! $is_value_specified ? 'tuja-' . self::FIELD_TYPE . '-notspecified' : '',
-			$label_and_hint,
+			$head,
 			$yes_no_html,
 			self::FIELD_TYPE,
 			$this->render_list( $render_id, $field_name, $data ),
 			$custom_option_html,
-			! empty( $error_message ) ? sprintf( '<div class="tuja-message tuja-message-error">%s</div>', $error_message ) : ''
+			! empty( $error_message ) ? sprintf( '<div class="tuja-message tuja-message-error">%s</div>', $error_message ) : '',
+			$tail
 		);
 	}
 
