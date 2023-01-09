@@ -10,6 +10,7 @@ class FieldFood extends Field {
 	private $options;
 	private $compact;
 	private $is_custom_options_allowed;
+	private $strings;
 
 	const FORM_FIELD_SEPARATOR    = '__'; // Needs to match what's used by GroupPeopleEditor.
 	const CUSTOM_OPTION_SEPARATOR = ',';
@@ -18,15 +19,22 @@ class FieldFood extends Field {
 	const TOGGLE_VALUE_YES        = 'yes';
 	const TOGGLE_VALUE_NO         = 'no';
 
-	public function __construct( $label, $hint = null, $read_only = false, $compact = false, $options = array(), $is_custom_options_allowed = false ) {
+	public function __construct( $label, $hint = null, $read_only = false, $compact = false, $options = array(), $strings = array(), $is_custom_options_allowed = false ) {
 		parent::__construct( $label, $hint, $read_only );
 		$this->options                   = $options;
 		$this->compact                   = $compact;
 		$this->is_custom_options_allowed = $is_custom_options_allowed;
+		$this->strings                   = array_merge(
+			array(
+				'toggle_on_label'           => 'Yes',
+				'toggle_off_label'          => 'No',
+				'custom_option_placeholder' => 'Other...',
+			),
+			$strings
+		);
 	}
 
 	public function get_data( string $field_name, $stored_posted_answer, Group $group ) {
-		// error_log( 'input to get_data' . json_encode( $stored_posted_answer ) );
 		if ( self::TOGGLE_VALUE_NO === @$_POST[ $field_name . self::FORM_FIELD_SEPARATOR . self::TOGGLE_NAME ] ) {
 			return array( '' );
 		}
@@ -77,8 +85,8 @@ class FieldFood extends Field {
 			'<div class="tuja-%s-%s"> %s <br> %s </div>',
 			self::FIELD_TYPE,
 			self::TOGGLE_NAME,
-			self::toggle_option_html( $field_name, self::TOGGLE_VALUE_NO, $this->compact ? 'Ingen allergi eller överkänslighet' : 'Nej', ! $is_value_specified ), // TOOD: Localize.
-			self::toggle_option_html( $field_name, self::TOGGLE_VALUE_YES, $this->compact ? 'Är allergisk/överkänslig mot...' : 'Ja', $is_value_specified ), // TOOD: Localize.
+			self::toggle_option_html( $field_name, self::TOGGLE_VALUE_NO, $this->strings['toggle_off_label'], ! $is_value_specified ),
+			self::toggle_option_html( $field_name, self::TOGGLE_VALUE_YES, $this->strings['toggle_on_label'], $is_value_specified ),
 		);
 
 		$custom_option = join( self::CUSTOM_OPTION_SEPARATOR . ' ', array_diff( $data, $this->options ) );
@@ -90,7 +98,7 @@ class FieldFood extends Field {
 			$custom_option,
 			self::FIELD_TYPE,
 			self::FIELD_TYPE,
-			$this->compact ? 'Annan matallergi...' : 'Annat...' // TOOD: Localize.
+			$this->strings['custom_option_placeholder']
 		) : '';
 
 		return sprintf(

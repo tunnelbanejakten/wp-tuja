@@ -89,23 +89,11 @@ class PersonForm {
 								Strings::get( "$i18n_prefix.food.hint" ),
 								$read_only,
 								$compact,
+								explode(',', Strings::get( "field_food.default_options" )),
 								array(
-									// Source: https://astmaoallergiforbundet.se/information-rad/allergi/matallergi/allergener/
-									'Mjölkprotein',
-									'Laktos',
-									'Jordnötter',
-									'Nötter/mandel',
-									'Ägg',
-									'Vete/spannmål',
-									'Celiaki/gluten',
-									// 'Senap',
-									// 'Selleri',
-									// 'Fisk',
-									// 'Skaldjur',
-									'Soja',
-									// 'Lupin',
-									// 'Sesamfrö',
-									// 'Sulfiter',
+									'toggle_on_label'           => Strings::get( "$i18n_prefix.food.toggle_on_label" ),
+									'toggle_off_label'          => Strings::get( "$i18n_prefix.food.toggle_off_label" ),
+									'custom_option_placeholder' => Strings::get( "$i18n_prefix.food.custom_option_placeholder" ),
 								),
 								GroupCategoryRules::FOOD_OPTION_FIXED_OPTIONS_AND_CUSTOM === $food_rule_name
 							);
@@ -201,7 +189,6 @@ class PersonForm {
 
 	public function update_with_posted_values( Person $person ) {
 		$is_updated = false;
-		// TODO: DRY?
 		if ( $this->is_field_visible( $person, GroupCategoryRules::PERSON_PROP_NAME ) ) {
 			$new_value = join( '', $this->person_name_question->get_data( self::get_field_name( self::FIELD_NAME, $person ), null, new Group() ) );
 			$old_value = $person->name;
