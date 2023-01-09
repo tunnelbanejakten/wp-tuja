@@ -55,7 +55,7 @@ class UserPageWrapper extends PageWrapper {
     return await super.$$eval(`#content ${selector}`, func, ...funcArgs)
   }
 
-  async signUpTeam(adminPage, isAutomaticallyAccepted = true, isGroupLeader = true, isCitySpecified = false) {
+  async signUpTeam(adminPage, isAutomaticallyAccepted = true, isGroupLeader = true, isCitySpecified = false, categoryName = 'Old Participants') {
     await adminPage.configureEventDateLimits(this.competitionId, 7 * 24 * 60, 7 * 24 * 60 + 60)
     const name = [
       ADJECTIVES,
@@ -64,7 +64,7 @@ class UserPageWrapper extends PageWrapper {
     const city = CITIES[Math.floor(Math.random() * CITIES.length)]
 
     await this.goto(`http://localhost:8080/${this.competitionKey}/anmal`)
-    await this.click('#tuja-group__age-0')
+    await this.click(`input[name="tuja-group__age"][value="${categoryName}"]`)
     if (isGroupLeader) {
       await this.click('#tuja-person__role-0')
     } else {

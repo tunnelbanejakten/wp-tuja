@@ -165,7 +165,7 @@ describe('Team Management', () => {
         const ageData = await adminPage.$eval('tr.tuja-person-status-created.tuja-person-type-leader > td > span.tuja-person-age', el => el.title)
         expect(ageData).toMatch(`Inmatat: ${input}, Normaliserat: ${expected}`)
       })
-      
+
       it.each([
         // This takes a LOT of time
         ['19831109-012', true],
@@ -197,10 +197,10 @@ describe('Team Management', () => {
 
       it('should NOT be possible to sign up to a competing team using referral link', async () => {
         await goto(`http://localhost:8080/${groupProps.key}/anmal-mig/?ref=${groupProps.key}`)
-  
+
         await expectErrorMessage('Du kan bara ange ett refererande lag när du anmäler dig som funktionär.')
       })
-  
+
       it.each([
         [
           '  David Dawson  ',
@@ -607,6 +607,93 @@ describe('Team Management', () => {
         } else {
           await expectErrorMessage('Tyvärr så går det inte att anmäla sig nu')
         }
+      })
+    })
+
+    describe('food strictness', () => {
+
+      const categoryName = 'Young Participants'
+
+      beforeAll(async () => {
+        await adminPage.configureGroupCategoryFoodRules(competitionId, categoryName, true)
+      })
+
+      afterAll(async () => {
+        await adminPage.configureGroupCategoryFoodRules(competitionId, categoryName, false)
+      })
+
+      describe('strict input', () => {
+        it('should be possible to pick options and write custom option', async () => {
+          const { key: groupKey } = await defaultPage.signUpTeam(adminPage, true, true, false, categoryName)
+          await goto(`http://localhost:8080/${groupKey}/andra-personer`)
+
+          // Asser: Single free-text fields NOT shown
+          await expectElementCount('form div.tuja-people-existing input[name="tuja-person__food__"]', 0)
+
+          // Assert: Two yes-no radio buttons are shown
+          await expectElementCount('form div.tuja-people-existing input[name^="tuja-person__food__"][name$="__toggle"]', 2)
+
+          // Act: Click to reveal other options
+          await click('form div.tuja-people-existing input[name^="tuja-person__food__"][id$="__toggle-yes"]')
+
+          // Assert: 8 checkboxes and 1 "custom allergi" field are shown
+          await expectElementCount('form div.tuja-people-existing input[type="checkbox"][name^="tuja-person__food__"][name$="__options[]"]', 8)
+          await expectElementCount('form div.tuja-people-existing input[type="text"][name^="tuja-person__food__"][name$="__options[]"]', 1)
+
+
+          // Act: Tick two predefined options and provide one custom
+          await click('form div.tuja-people-existing input[name$="__options[]"][value="Laktos"]')
+          await click('form div.tuja-people-existing input[name$="__options[]"][value="Soja"]')
+          await type('form div.tuja-people-existing input[type="text"][name^="tuja-person__food__"][name$="__options[]"]', 'Lupin,seNap')
+
+          // Act: Save changes
+          await clickLink('button[name="tuja-action"]')
+          await expectSuccessMessage('Ändringarna har sparats.')
+
+          // Assert: Changes are saved
+          await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"][value="Laktos"]', 1)
+          await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"][value="Soja"]', 1)
+          await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"]', 2)
+          await expectFormValue('form div.tuja-people-existing input[type="text"][name^="tuja-person__food__"][name$="__options[]"]', 'Lupin,seNap') // No space after comma
+
+          // Act: Force-fully reload page
+          await goto(`http://localhost:8080/${groupKey}/andra-personer`)
+          // Assert: Changes are (still) saved
+          await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"][value="Laktos"]', 1)
+          await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"][value="Soja"]', 1)
+          await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"]', 2)
+          await expectFormValue('form div.tuja-people-existing input[type="text"][name^="tuja-person__food__"][name$="__options[]"]', 'Lupin, seNap') // Space after comma
+        })
+      })
+
+      describe('free-text input', () => {
+        it('should only be possible to input free-text data', async () => {
+          const { key: groupKey } = await defaultPage.signUpTeam(adminPage, true, true, false, 'Old Participants')
+          await goto(`http://localhost:8080/${groupKey}/andra-personer`)
+
+          // Assert: NO yes-no radio buttons and NO checkboxes are shown
+          await expectElementCount('form div.tuja-people-existing input[name^="tuja-person__food__"][name$="__toggle"]', 0)
+          await expectElementCount('form div.tuja-people-existing input[name^="tuja-person__food__"][name$="__options[]"]', 0)
+
+          // Asser: Single free-text field IS shown
+          await expectElementCount('form div.tuja-people-existing input[name^="tuja-person__food__"]', 1)
+
+          // Act: Specify allergies
+          await type('form div.tuja-people-existing input[name^="tuja-person__food__"]', 'Laktos,gluten')
+
+          // Act: Save changes
+          await clickLink('button[name="tuja-action"]')
+          await expectSuccessMessage('Ändringarna har sparats.')
+
+          // Assert: Changes are saved
+          await expectFormValue('form div.tuja-people-existing input[name^="tuja-person__food__"]', 'Laktos,gluten')
+
+          // Act: Force-fully reload page
+          await goto(`http://localhost:8080/${groupKey}/andra-personer`)
+
+          // Assert: Changes are (still) saved
+          await expectFormValue('form div.tuja-people-existing input[name^="tuja-person__food__"]', 'Laktos,gluten')
+        })
       })
     })
 

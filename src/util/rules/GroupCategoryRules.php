@@ -245,6 +245,35 @@ class GroupCategoryRules {
 		),
 	);
 
+	const FOOD_OPTION_FIXED_OPTIONS            = 'fixed_options';
+	const FOOD_OPTION_FIXED_OPTIONS_AND_CUSTOM = 'fixed_options_and_custom';
+	const FOOD_OPTION_BOOL_REQUIRED            = self::BOOL_REQUIRED; // Reuse constants for backwards compability.
+	const FOOD_OPTION_BOOL_OPTIONAL            = self::BOOL_OPTIONAL; // Reuse constants for backwards compability.
+	const FOOD_OPTION_BOOL_SKIP                = self::BOOL_SKIP; // Reuse constants for backwards compability.
+
+	const FOOD_OPTIONS = array(
+		self::FOOD_OPTION_FIXED_OPTIONS            => array(
+			'label'     => 'Fasta alternativ, ej eget',
+			'validator' => '.*', // Trust that FieldFood will do enough validation.
+		),
+		self::FOOD_OPTION_FIXED_OPTIONS_AND_CUSTOM => array(
+			'label'     => 'Fasta alternativ, och eget',
+			'validator' => '.*', // Trust that FieldFood will do enough validation.
+		),
+		self::BOOL_REQUIRED                        => array(
+			'label'     => 'Fritext, oblig.',
+			'validator' => '.+',
+		),
+		self::BOOL_OPTIONAL                        => array(
+			'label'     => 'Fritext, valfritt',
+			'validator' => '.*',
+		),
+		self::BOOL_SKIP                            => array(
+			'label'     => 'Visa inte',
+			'validator' => '.*',
+		),
+	);
+
 	const PERSON_PROP_COUNT_MIN = 'count_min';
 	const PERSON_PROP_COUNT_MAX = 'count_max';
 	const PERSON_PROP_PHONE     = 'phone';
@@ -264,7 +293,7 @@ class GroupCategoryRules {
 		$this->leader_email                     = new EnumRule( 'Lagledare, e-post', self::tristate_options( self::EMAIL_PATTERN ) );
 		$this->leader_name                      = new EnumRule( 'Lagledare, namn', self::TRISTATE_OPTIONS );
 		$this->leader_note                      = new EnumRule( 'Lagledare, meddelande', self::TRISTATE_OPTIONS );
-		$this->leader_food                      = new EnumRule( 'Lagledare, matönskemål', self::TRISTATE_OPTIONS );
+		$this->leader_food                      = new EnumRule( 'Lagledare, matönskemål', self::FOOD_OPTIONS );
 		$this->leader_nin                       = new EnumRule( 'Lagledare, personnr', self::NIN_OPTIONS );
 		$this->regular_count_min                = new IntRule( 'Lagmedlem, min antal' );
 		$this->regular_count_max                = new IntRule( 'Lagmedlem, max antal' );
@@ -272,7 +301,7 @@ class GroupCategoryRules {
 		$this->regular_email                    = new EnumRule( 'Lagmedlem, e-post', self::tristate_options( self::EMAIL_PATTERN ) );
 		$this->regular_name                     = new EnumRule( 'Lagmedlem, namn', self::TRISTATE_OPTIONS );
 		$this->regular_note                     = new EnumRule( 'Lagmedlem, meddelande', self::TRISTATE_OPTIONS );
-		$this->regular_food                     = new EnumRule( 'Lagmedlem, matönskemål', self::TRISTATE_OPTIONS );
+		$this->regular_food                     = new EnumRule( 'Lagmedlem, matönskemål', self::FOOD_OPTIONS );
 		$this->regular_nin                      = new EnumRule( 'Lagmedlem, personnr', self::NIN_OPTIONS );
 		$this->supervisor_count_min             = new IntRule( 'Medföljande vuxen, min antal' );
 		$this->supervisor_count_max             = new IntRule( 'Medföljande vuxen, max antal' );
@@ -280,7 +309,7 @@ class GroupCategoryRules {
 		$this->supervisor_email                 = new EnumRule( 'Medföljande vuxen, e-post', self::tristate_options( self::EMAIL_PATTERN ) );
 		$this->supervisor_name                  = new EnumRule( 'Medföljande vuxen, namn', self::TRISTATE_OPTIONS );
 		$this->supervisor_note                  = new EnumRule( 'Medföljande vuxen, meddelande', self::TRISTATE_OPTIONS );
-		$this->supervisor_food                  = new EnumRule( 'Medföljande vuxen, matönskemål', self::TRISTATE_OPTIONS );
+		$this->supervisor_food                  = new EnumRule( 'Medföljande vuxen, matönskemål', self::FOOD_OPTIONS );
 		$this->supervisor_nin                   = new EnumRule( 'Medföljande vuxen, personnr', self::NIN_OPTIONS );
 		$this->admin_count_min                  = new IntRule( 'Administratör, min antal' );
 		$this->admin_count_max                  = new IntRule( 'Administratör, max antal' );
@@ -288,7 +317,7 @@ class GroupCategoryRules {
 		$this->admin_email                      = new EnumRule( 'Administratör, e-post', self::tristate_options( self::EMAIL_PATTERN ) );
 		$this->admin_name                       = new EnumRule( 'Administratör, namn', self::TRISTATE_OPTIONS );
 		$this->admin_note                       = new EnumRule( 'Administratör, meddelande', self::TRISTATE_OPTIONS );
-		$this->admin_food                       = new EnumRule( 'Administratör, matönskemål', self::TRISTATE_OPTIONS );
+		$this->admin_food                       = new EnumRule( 'Administratör, matönskemål', self::FOOD_OPTIONS );
 		$this->admin_nin                        = new EnumRule( 'Administratör, personnr', self::NIN_OPTIONS );
 		$this->create_registration_period_start = new DateRule( 'Anmäla lag, fr.o.m.' );
 		$this->create_registration_period_end   = new DateRule( 'Anmäla lag, t.o.m.' );

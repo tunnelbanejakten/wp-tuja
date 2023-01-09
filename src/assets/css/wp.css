@@ -258,6 +258,22 @@ p.tuja-message:last-child /* <--- Overrides other styling from tunnelbanejakten.
     cursor: pointer;
 }
 
+.tuja-fieldfood-checkboxes {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.tuja-fieldfood-notspecified .tuja-fieldfood-checkboxes,
+.tuja-fieldfood-notspecified .tuja-fieldfood-customoption {
+    display: none;
+}
+
+.tuja-fieldfood-checkboxes .tuja-fieldfood-checkbox {
+    width: 8em;
+}
+
 .tuja-image .dz-image img {
     margin: 0;
     background-color: #eee;
