@@ -95,10 +95,10 @@ abstract class AbstractGroupView extends FrontendView {
 	protected function init_posted_person( $id = null, bool $show_validation_errors = true ): Person {
 		$person     = new Person();
 		$person->id = $id ?: null;
-		$this->get_person_form( $show_validation_errors )->update_with_posted_values( $person );
-		$person->set_status( Person::STATUS_CREATED );
 		$role_posted = @$_POST[ self::FIELD_PERSON_ROLE . ( isset( $id ) ? '__' . $id : '' ) ];
 		$person->set_type( $role_posted ?: Person::PERSON_TYPE_REGULAR );
+		$person->set_status( Person::STATUS_CREATED );
+		$this->get_person_form( $show_validation_errors )->update_with_posted_values( $person );
 
 		return $person;
 	}
