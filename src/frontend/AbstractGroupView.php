@@ -25,6 +25,7 @@ abstract class AbstractGroupView extends FrontendView {
 	private $group_key;
 	private $group;
 	private $title_pattern;
+	private $person_form;
 
 	public function __construct( string $url, string $group_key, string $title_pattern ) {
 		parent::__construct( $url );
@@ -77,15 +78,24 @@ abstract class AbstractGroupView extends FrontendView {
 		return $group->is_edit_allowed( $update_requested, $delete_requested );
 	}
 
-	protected function init_posted_person( $id = null ): Person {
-		$person        = new Person();
-		$person->id    = $id ?: null;
-		$person->name  = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $person ) ];
-		$person->email = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $person ) ];
-		$person->phone = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $person ) ];
-		$person->pno   = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $person ) ];
-		$person->food  = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $person ) ];
-		$person->note  = @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NOTE, $person ) ];
+	protected function get_person_form( bool $show_validation_errors = true ): PersonForm {
+		if ( ! isset( $this->person_form ) ) {
+			$this->person_form = new PersonForm(
+				true,
+				false,
+				false,
+				$show_validation_errors,
+				$this->get_group()->get_category()->get_rules()
+			);
+		}
+
+		return $this->person_form;
+	}
+
+	protected function init_posted_person( $id = null, bool $show_validation_errors = true ): Person {
+		$person     = new Person();
+		$person->id = $id ?: null;
+		$this->get_person_form( $show_validation_errors )->update_with_posted_values( $person );
 		$person->set_status( Person::STATUS_CREATED );
 		$role_posted = @$_POST[ self::FIELD_PERSON_ROLE . ( isset( $id ) ? '__' . $id : '' ) ];
 		$person->set_type( $role_posted ?: Person::PERSON_TYPE_REGULAR );
@@ -100,7 +110,7 @@ abstract class AbstractGroupView extends FrontendView {
 	}
 
 	protected function check_event_is_ongoing() {
-		$competition      = $this->competition_dao->get( $this->get_group()->competition_id );
+		$competition = $this->competition_dao->get( $this->get_group()->competition_id );
 		if ( ! $competition->is_ongoing() ) {
 			throw new Exception( Strings::get( 'competition.is_not_open_yet' ) );
 		}

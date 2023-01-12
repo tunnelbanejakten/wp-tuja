@@ -16,7 +16,6 @@ use tuja\util\Strings;
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix. Throwing exceptions might be preferable.
 class GroupPeopleEditor extends AbstractGroupView {
 	private $read_only;
-	private $person_form;
 
 	public function __construct( $url, $group_key ) {
 		parent::__construct( $url, $group_key, 'Personer i %s' );
@@ -29,20 +28,6 @@ class GroupPeopleEditor extends AbstractGroupView {
 		return array_merge( [
 			'group_category_name' => $group_category->name
 		], $rules );
-	}
-
-	private function get_person_form(): PersonForm {
-		if ( ! isset( $this->person_form ) ) {
-			$this->person_form = new PersonForm(
-				true,
-				false,
-				false,
-				$this->is_save_request(),
-				$this->get_group()->get_category()->get_rules()
-			);
-		}
-
-		return $this->person_form;
 	}
 
 	function output() {
@@ -172,7 +157,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		$unsaved_ids = array_diff( $this->get_submitted_person_ids(), $preexisting_ids );
 		sort( $unsaved_ids );
 		$unsaved_people = array_map( function ( $id ) {
-			$person            = $this->init_posted_person( $id );
+			$person            = $this->init_posted_person( $id, $this->is_save_request() );
 			$person->random_id = $id;
 
 			return $person;
@@ -247,7 +232,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		foreach ( $created_ids as $id ) {
 			try {
-				$new_person           = $this->init_posted_person( $id );
+				$new_person           = $this->init_posted_person( $id, $this->is_save_request());
 				$new_person->group_id = $group_id;
 
 				$new_person->validate( $category->get_rules() );
