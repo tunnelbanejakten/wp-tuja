@@ -637,13 +637,13 @@ describe('Team Management', () => {
           await click('form div.tuja-people-existing input[name^="tuja-person__food__"][id$="__toggle-yes"]')
 
           // Assert: 8 checkboxes and 1 "custom allergi" field are shown
-          await expectElementCount('form div.tuja-people-existing input[type="checkbox"][name^="tuja-person__food__"][name$="__options[]"]', 8)
+          await expectElementCount('form div.tuja-people-existing input[type="checkbox"][name^="tuja-person__food__"][name$="__options[]"]', 7)
           await expectElementCount('form div.tuja-people-existing input[type="text"][name^="tuja-person__food__"][name$="__options[]"]', 1)
 
 
           // Act: Tick two predefined options and provide one custom
           await click('form div.tuja-people-existing input[name$="__options[]"][value="Laktos"]')
-          await click('form div.tuja-people-existing input[name$="__options[]"][value="Soja"]')
+          await click('form div.tuja-people-existing input[name$="__options[]"][value="Celiaki/gluten"]')
           await type('form div.tuja-people-existing input[type="text"][name^="tuja-person__food__"][name$="__options[]"]', 'Lupin,seNap')
 
           // Act: Save changes
@@ -652,7 +652,7 @@ describe('Team Management', () => {
 
           // Assert: Changes are saved
           await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"][value="Laktos"]', 1)
-          await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"][value="Soja"]', 1)
+          await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"][value="Celiaki/gluten"]', 1)
           await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"]', 2)
           await expectFormValue('form div.tuja-people-existing input[type="text"][name^="tuja-person__food__"][name$="__options[]"]', 'Lupin,seNap') // No space after comma
 
@@ -660,7 +660,7 @@ describe('Team Management', () => {
           await goto(`http://localhost:8080/${groupKey}/andra-personer`)
           // Assert: Changes are (still) saved
           await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"][value="Laktos"]', 1)
-          await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"][value="Soja"]', 1)
+          await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"][value="Celiaki/gluten"]', 1)
           await expectElementCount('form div.tuja-people-existing input:checked[name$="__options[]"]', 2)
           await expectFormValue('form div.tuja-people-existing input[type="text"][name^="tuja-person__food__"][name$="__options[]"]', 'Lupin, seNap') // Space after comma
         })
