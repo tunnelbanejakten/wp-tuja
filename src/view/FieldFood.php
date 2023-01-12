@@ -102,11 +102,13 @@ class FieldFood extends Field {
 		) : '';
 
 		return sprintf(
-			'<div class="tuja-field tuja-field-%s %s">%s%s<div class="tuja-%s-checkboxes">%s</div>%s %s %s</div>',
+			'<div class="tuja-field tuja-field-%s %s">%s%s<div class="tuja-%s-optionscontainer"><div class="tuja-%s-optionscontainer-overlay"></div><div class="tuja-%s-checkboxes">%s</div>%s</div>%s %s</div>',
 			self::FIELD_TYPE,
 			! $is_value_specified ? 'tuja-' . self::FIELD_TYPE . '-notspecified' : '',
 			$head,
 			$yes_no_html,
+			self::FIELD_TYPE,
+			self::FIELD_TYPE,
 			self::FIELD_TYPE,
 			$this->render_list( $render_id, $field_name, $data ),
 			$custom_option_html,
