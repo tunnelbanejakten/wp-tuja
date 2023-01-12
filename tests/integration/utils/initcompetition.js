@@ -1,7 +1,7 @@
 const PageWrapper = require('./pagewrapper')
 const AdminPageWrapper = require('./adminpagewrapper')
 const puppeteer = require('puppeteer')
-const faker = require('faker')
+const faker = require('@faker-js/faker')
 const querystring = require('querystring')
 
 const createCompetition = async (adminPage) => {
