@@ -190,14 +190,14 @@ class CompetitionSignup extends FrontendView {
 
 		$forms = join( array_map( function ( GroupCategory $category ) {
 			return join( array_map( function ( string $person_type, string $person_label ) use ( $category ) {
-				$person_form = new PersonForm( false, false, true, @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE, $category->get_rules(), 'competition_signup.form' );
+				$person_form = new PersonForm( false, false, true, $category->get_rules(), 'competition_signup.form' );
 				$temp_person = $this->get_posted_person();
 				$temp_person->set_type( $person_type );
 
 				return sprintf( '<div class="tuja-competitionsignup-form" data-group-category-name="%s" data-person-type-name="%s">%s</div>',
 					$category->name,
 					$person_label,
-					$person_form->render( $temp_person ) );
+					$person_form->render( $temp_person, @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) );
 			}, [ Person::PERSON_TYPE_LEADER, Person::PERSON_TYPE_ADMIN ], [
 				Strings::get('competition_signup.role_label.group_leader'),
 				Strings::get('competition_signup.role_label.extra_contact')

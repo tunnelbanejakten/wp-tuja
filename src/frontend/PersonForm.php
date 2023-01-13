@@ -24,7 +24,6 @@ class PersonForm {
 	private $person_phone_question;
 	private $person_food_questions;
 	private $person_note_question;
-	private $show_validation_errors;
 	private $group_category_rules;
 	private $required_only;
 
@@ -49,7 +48,6 @@ class PersonForm {
 		bool $compact,
 		bool $read_only,
 		bool $required_only,
-		bool $show_validation_errors,
 		GroupCategoryRules $group_category_rules,
 		string $i18n_prefix = 'person.form'
 	) {
@@ -114,15 +112,14 @@ class PersonForm {
 			)
 		);
 		$this->person_note_question   = new FieldText( Strings::get( "$i18n_prefix.note.label" ), Strings::get( "$i18n_prefix.note.hint" ), $read_only, array(), $compact );
-		$this->show_validation_errors = $show_validation_errors;
 		$this->group_category_rules   = $group_category_rules;
 		$this->required_only          = $required_only;
 	}
 
 
-	public function render( Person $person ) {
+	public function render( Person $person, bool $show_validation_errors ) {
 		$errors = array();
-		if ( $this->show_validation_errors ) {
+		if ( $show_validation_errors ) {
 			try {
 				$person->validate( $this->group_category_rules );
 			} catch ( ValidationException $e ) {

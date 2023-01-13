@@ -57,7 +57,7 @@ class FieldFood extends Field {
 		return sprintf(
 			'<input type="radio" name="%s" %s id="%s" value="%s" onchange="this.parentNode.parentNode.classList.toggle(\'tuja-%s-notspecified\')"><label for="%s">%s</label>',
 			$field_name . self::FORM_FIELD_SEPARATOR . self::TOGGLE_NAME,
-			$is_selected ? 'checked' : '',
+			$is_selected ? 'checked="checked"' : '',
 			$id,
 			$value,
 			self::FIELD_TYPE,

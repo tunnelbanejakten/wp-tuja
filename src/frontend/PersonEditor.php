@@ -51,9 +51,8 @@ class PersonEditor extends AbstractGroupView {
 			false,
 			$is_read_only,
 			false,
-			$do_update,
 			$real_category->get_rules()
-		) )->render( $person );
+		) )->render( $person, $do_update );
 
 		$submit_button = $this->get_submit_button_html( $is_read_only );
 

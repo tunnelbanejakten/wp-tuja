@@ -105,9 +105,8 @@ class GroupSignup extends AbstractGroupView {
 				false,
 				false, // TODO: Handle is_read_only?
 				false,
-				$show_validation_errors,
 				$this->get_group()->get_category()->get_rules()
-			) )->render( $this->get_person() )
+			) )->render( $this->get_person(), $show_validation_errors )
 		];
 
 		$html_sections[] = $this->get_recaptcha_html();

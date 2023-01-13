@@ -113,7 +113,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		if ( is_array( $people ) ) {
 			$html_sections[] = sprintf( '<div class="tuja-people-existing">%s</div>',
 				join( array_map( function ( Person $person ) use ( $errors, $is_remove_enabled ) {
-					return $this->render_person_form( $person, $is_remove_enabled );
+					return $this->render_person_form( $person, $is_remove_enabled, $this->is_save_request() );
 				}, $people ) ) );
 		}
 
@@ -121,7 +121,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 			$html_sections[] = sprintf( '<div class="tuja-item-buttons"><button type="button" value="%s" class="tuja-add-person">%s</button></div>', 'new_person', $add_button_label );
 			$person_template = new Person();
 			$person_template->set_type( $role );
-			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( $person_template, $is_remove_enabled ) );
+			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( $person_template, $is_remove_enabled, false ) );
 		}
 
 		return sprintf( '<div class="tuja-people tuja-person-role-%s">%s</div>', $role, join( $html_sections ) );
@@ -171,13 +171,14 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 	private function render_person_form(
 		Person $person,
-		bool $show_delete = true
+		bool $show_delete = true,
+		bool $show_validation_errors = true
 	): string {
 
 		$read_only = $this->is_read_only();
 
 		$html_sections = [
-			$this->get_person_form()->render( $person )
+			$this->get_person_form()->render( $person, $show_validation_errors )
 		];
 
 		// TODO: Handle $errors['__']?

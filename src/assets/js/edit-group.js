@@ -15,6 +15,14 @@ var tujaEditGroup = (function () {
     return [matches.groups.prefix, id, matches.groups.suffix].join('')
   }
 
+  // Manually click each checked radio button to make sure it's actually visibly checked.
+  // For some reason, cloned radio buttons aren't always properly checked despite having checked="checked".
+  function applyCheckedRadioButtonHack($, root) {
+    root.find('input[checked]').each(function () {
+      $(this).click()
+    })
+  }
+
   function addPerson($, event) {
     var form = $(event.target).closest('div.tuja-people')
     var container = form.find('div.tuja-people-existing')
@@ -32,6 +40,7 @@ var tujaEditGroup = (function () {
       input
         .attr('for', fixAttrValue(id, input.attr('for')))
     })
+    applyCheckedRadioButtonHack($, newPersonForm)
     newPersonForm.appendTo(container)
     return false
   }
