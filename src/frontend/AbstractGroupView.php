@@ -78,13 +78,12 @@ abstract class AbstractGroupView extends FrontendView {
 		return $group->is_edit_allowed( $update_requested, $delete_requested );
 	}
 
-	protected function get_person_form( bool $show_validation_errors = true ): PersonForm {
+	protected function get_person_form(): PersonForm {
 		if ( ! isset( $this->person_form ) ) {
 			$this->person_form = new PersonForm(
 				true,
 				false,
 				false,
-				$show_validation_errors,
 				$this->get_group()->get_category()->get_rules()
 			);
 		}
@@ -92,13 +91,13 @@ abstract class AbstractGroupView extends FrontendView {
 		return $this->person_form;
 	}
 
-	protected function init_posted_person( $id = null, bool $show_validation_errors = true ): Person {
+	protected function init_posted_person( $id = null ): Person {
 		$person     = new Person();
 		$person->id = $id ?: null;
 		$role_posted = @$_POST[ self::FIELD_PERSON_ROLE . ( isset( $id ) ? '__' . $id : '' ) ];
 		$person->set_type( $role_posted ?: Person::PERSON_TYPE_REGULAR );
 		$person->set_status( Person::STATUS_CREATED );
-		$this->get_person_form( $show_validation_errors )->update_with_posted_values( $person );
+		$this->get_person_form( )->update_with_posted_values( $person );
 
 		return $person;
 	}
