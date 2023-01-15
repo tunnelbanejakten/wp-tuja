@@ -420,11 +420,8 @@ abstract class Plugin {
 
 		try {
 			Database::start_transaction();
-			foreach ( $keys as $key ) {
-				Database::add_foreign_key( $key[0], $key[1], $key[2], $key[3] );
-			}
 
-			Database::set_missing_form_keys();
+			Database::update_foreign_keys( $keys );
 
 			Database::commit();
 		} catch ( Exception $e ) {
