@@ -80,7 +80,7 @@ class Database {
 
 			$table      = self::get_table( $table );
 			$references = self::get_table( $references );
-			$queries[]  = "ALTER TABLE $table ADD FOREIGN KEY $constraint_name ($key) REFERENCES $references (id) ON DELETE $on_delete";
+			$queries[]  = "ALTER TABLE $table ADD CONSTRAINT $constraint_name FOREIGN KEY $constraint_name ($key) REFERENCES $references (id) ON DELETE $on_delete";
 		}
 
 		//
@@ -101,7 +101,7 @@ class Database {
 			$table      = self::get_table( $table );
 			$references = self::get_table( $references );
 			$queries[]  = "ALTER TABLE $table DROP FOREIGN KEY $constraint_name";
-			$queries[]  = "ALTER TABLE $table ADD FOREIGN KEY $constraint_name ($key) REFERENCES $references (id) ON DELETE $on_delete";
+			$queries[]  = "ALTER TABLE $table ADD CONSTRAINT $constraint_name FOREIGN KEY $constraint_name ($key) REFERENCES $references (id) ON DELETE $on_delete";
 		}
 
 		//
