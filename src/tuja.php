@@ -355,11 +355,6 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$keys = array(
-			array( 'competition', 'message_template_new_team_admin', 'message_template', 'RESTRICT' ), // No longer used
-			array( 'competition', 'message_template_new_team_reporter', 'message_template', 'RESTRICT' ), // No longer used
-			array( 'competition', 'message_template_new_crew_member', 'message_template', 'RESTRICT' ), // No longer used
-			array( 'competition', 'message_template_new_noncrew_member', 'message_template', 'RESTRICT' ), // No longer used
-
 			array( 'team', 'map_id', 'map', 'RESTRICT' ),
 			array( 'team', 'competition_id', 'competition', 'CASCADE' ),
 			array( 'team_properties', 'team_id', 'team', 'CASCADE' ),
@@ -367,7 +362,7 @@ abstract class Plugin {
 
 			array( 'person_properties', 'person_id', 'person', 'CASCADE' ),
 			array( 'person_properties', 'team_id', 'team', 'CASCADE' ),
-			array( 'person_properties', 'referrer_team_id', 'team', 'RESTRICT' ),
+			array( 'person_properties', 'referrer_team_id', 'team', 'SET NULL' ),
 
 			array( 'form', 'competition_id', 'competition', 'CASCADE' ),
 
@@ -420,11 +415,8 @@ abstract class Plugin {
 
 		try {
 			Database::start_transaction();
-			foreach ( $keys as $key ) {
-				Database::add_foreign_key( $key[0], $key[1], $key[2], $key[3] );
-			}
 
-			Database::set_missing_form_keys();
+			Database::update_foreign_keys( $keys );
 
 			Database::commit();
 		} catch ( Exception $e ) {
