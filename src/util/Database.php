@@ -40,9 +40,9 @@ class Database {
 
 		$stmt                 = $wpdb->prepare(
 			'
-			SELECT constraint_name, table_name, delete_rule 
-			FROM information_schema.referential_constraints 
-			WHERE constraint_schema = %s AND table_name LIKE %s
+			SELECT CONSTRAINT_NAME AS constraint_name, TABLE_NAME as table_name, DELETE_RULE AS delete_rule
+			FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS 
+			WHERE CONSTRAINT_SCHEMA = %s AND TABLE_NAME LIKE %s
 			',
 			$wpdb->dbname,
 			self::get_table( '' ) . '%'
