@@ -16,9 +16,10 @@ $this->print_menu();
 	</a>
 	<em>Glöm inte att spara innan du förhandsgranskar.</em>
 </div>
+<hr class="tuja-hr">
 
 <form method="post">
-	<p><strong>Frågor</strong></p>
+	<h2>Frågor</h2>
 	<?php
     if(empty($questions)) {
 		echo '<p><i>Inga frågor än. Klicka på "Ny fråga" för att lägga till en.';

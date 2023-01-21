@@ -1,4 +1,4 @@
-FROM wordpress:php7.4
+FROM wordpress:php8.2
 RUN apt-get update && apt-get install -y libzip-dev zip
 RUN pecl install xdebug
 RUN docker-php-ext-enable xdebug

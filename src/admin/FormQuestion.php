@@ -7,14 +7,11 @@ use tuja\data\model\question\ImagesQuestion;
 use tuja\data\model\question\NumberQuestion;
 use tuja\data\model\question\OptionsQuestion;
 use tuja\data\model\question\TextQuestion;
-use tuja\data\store\FormDao;
 use tuja\data\store\QuestionDao;
-use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\CompetitionDao;
-use tuja\util\ReflectionUtils;
 use tuja\util\QuestionNameGenerator;
 
-class FormQuestions extends Form {
+class FormQuestion extends FormQuestionGroup {
 	const FORM_FIELD_NAME_PREFIX    = 'tuja-question';
 	const ACTION_NAME_DELETE_PREFIX = 'question_delete__';
 	const ACTION_NAME_CREATE_PREFIX = 'question_create__';
@@ -25,43 +22,43 @@ class FormQuestions extends Form {
 	const ACTION_NAME_CREATE_CHOICES = self::ACTION_NAME_CREATE_PREFIX . 'choices';
 
 	protected $question_dao;
+	protected $question;
 
 	public function __construct() {
 		parent::__construct();
 		$this->question_dao = new QuestionDao();
 
-		if ( isset( $_GET['tuja_question_group'] ) ) {
-			$this->question_group = $this->question_group_dao->get( $_GET['tuja_question_group'] );
+		if ( isset( $_GET['tuja_question'] ) ) {
+			$this->question = $this->question_dao->get( $_GET['tuja_question'] );
 		}
-		$this->assert_set( 'Could not find question group', $this->question_group );
-		$this->assert_same( 'Question group needs to belong to form', $this->form->id, $this->question_group->form_id );
+		$this->assert_set( 'Could not find question', $this->question );
+		$this->assert_same( 'Question needs to belong to group', $this->question->question_group_id, $this->question_group->id );
 	}
 
 	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
 		$menu = parent::create_menu( $current_view_name, $parents );
 
-		$question_group_current = null;
-		$question_group_links   = array();
-		$question_groups        = $this->question_group_dao->get_all_in_form( intval( $_GET['tuja_form'] ) );
-		foreach ( $question_groups as $question_group ) {
-			$active = $question_group->id === $this->question_group->id;
+		$question_current = null;
+		$question_links   = array();
+		$questions        = $this->question_dao->get_all_in_group( intval( $_GET['tuja_question_group'] ) );
+
+		foreach ( $questions as $question ) {
+			$active = $question->id === $this->question_group->id;
+
 			if ( $active ) {
-				$question_group_current = $question_group->text ?? $question_group->id;
+				$question_current = $question->name ?? $question->id;
 			}
-			$link                   = add_query_arg(
-				array(
-					'tuja_view'           => 'FormQuestions',
-					'tuja_competition'    => $this->competition->id,
-					'tuja_form'           => $this->form->id,
-					'tuja_question_group' => $question_group->id,
-				)
-			);
-			$question_group_links[] = BreadcrumbsMenu::item( $question_group->text ?? $question_group->id, $link, $active );
+
+			$link = add_query_arg([
+				'tuja_view'           => 'FormQuestion',
+				'tuja_question' => $question->id,
+			]);
+			$question_links[] = BreadcrumbsMenu::item( $question->name ?? $question->id, $link, $active );
 		}
 
 		$menu->add(
-			BreadcrumbsMenu::item( $question_group_current ),
-			...$question_group_links,
+			BreadcrumbsMenu::item( $question_current ),
+			...$question_links,
 		);
 
 		return $menu;
@@ -232,7 +229,7 @@ class FormQuestions extends Form {
 			)
 		);
 
-		include( 'views/form-questions.php' );
+		include( 'views/form-question.php' );
 	}
 
 }

@@ -64,28 +64,7 @@ class Form extends Forms {
 			return;
 		}
 
-		if ( $_POST['tuja_action'] == 'question_groups_update' ) {
-			$wpdb->show_errors();
-
-			$question_groups = $this->question_group_dao->get_all_in_form( $this->form->id );
-
-			$success = true;
-			foreach ( $question_groups as $question_group ) {
-				if ( isset( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question_group->id ] ) ) {
-
-					$question_group->set_properties_from_json_string( stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question_group->id ] ) );
-
-					try {
-						$affected_rows = $this->question_group_dao->update( $question_group );
-						$success       = $success && $affected_rows !== false;
-					} catch ( Exception $e ) {
-						$success = false;
-					}
-				}
-			}
-
-			$success ? AdminUtils::printSuccess( 'Uppdaterat!' ) : AdminUtils::printError( 'Kunde inte uppdatera grupp.' );
-		} elseif ( $_POST['tuja_action'] == 'form_update' ) {
+		if ( $_POST['tuja_action'] == 'form_update' ) {
 			try {
 				$this->form->submit_response_start = DateUtils::from_date_local_value( $_POST['tuja-submit-response-start'] );
 				$this->form->submit_response_end   = DateUtils::from_date_local_value( $_POST['tuja-submit-response-end'] );
@@ -103,19 +82,6 @@ class Form extends Forms {
 			$success = $this->question_group_dao->create( $group_props );
 
 			$success !== false ? AdminUtils::printSuccess( 'Grupp skapad!' ) : AdminUtils::printError( 'Kunde inte skapa grupp.' );
-		} elseif ( substr( $_POST['tuja_action'], 0, strlen( self::ACTION_NAME_DELETE_PREFIX ) ) == self::ACTION_NAME_DELETE_PREFIX ) {
-			$question_group_id_to_delete = substr( $_POST['tuja_action'], strlen( self::ACTION_NAME_DELETE_PREFIX ) );
-			$affected_rows               = $this->question_group_dao->delete( $question_group_id_to_delete );
-			$success                     = $affected_rows !== false && $affected_rows === 1;
-
-			if ( $success ) {
-				AdminUtils::printSuccess( 'Grupp borttagen!' );
-			} else {
-				AdminUtils::printError( 'Kunde inte ta bort grupp.' );
-				if ( $error = $wpdb->last_error ) {
-					AdminUtils::printError( $error );
-				}
-			}
 		}
 
 		QuestionNameGenerator::update_competition_questions( $this->form->competition_id );

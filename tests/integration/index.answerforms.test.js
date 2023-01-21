@@ -74,7 +74,7 @@ describe('Answer Forms', () => {
       await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${id}`)
 
       await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
-      await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestions"]')
+      await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestion"]')
       await adminPage.clickLink('button[name="tuja_action"][value="question_create__images"]')
       await adminPage.clickLink('button[name="tuja_action"][value="question_create__text"]')
       await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')

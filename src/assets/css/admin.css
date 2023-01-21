@@ -16,6 +16,10 @@
     list-style-type: disc;
 }
 
+.tuja-hr {
+    margin: 1.5em 0;
+}
+
 div.tuja-buttons {
     display: flex;
     flex-direction: row;
@@ -27,10 +31,21 @@ div.tuja-buttons em {
     margin-left: 10px;
 }
 
+.tuja-admin-table.forms {
+    max-width: 950px;
+}
+
+.tuja-admin-table {
+    margin-bottom: 1em;
+}
+
+.tuja-admin-table tbody td {
+    vertical-align: middle;
+}
+
 .tuja-admin-question {
     margin: 1em 0;
     padding: 1em 0 0 0;
-    border-top: 1px solid #aaa;
 }
 
 .tuja-admin-question:first-child {
