@@ -18,12 +18,20 @@ var tujaCompetitionSignup = (function () {
     prevForm.appendTo('#tuja-competitionsignup-inactive-forms')
   }
 
+  function updateTermsAndConditionsLink($) {
+    $('label[for=tuja-terms_and_conditions] a').each(function () {
+      $(this).attr('target', '_blank')
+    })
+  }
+
   return {
     init: function ($) {
       $('input[name="tuja-group__age"]').change(updateForms.bind(null, $))
       $('input[name="tuja-person__role"]').change(updateForms.bind(null, $))
 
       updateForms($) // Keep view in sync with preset radio buttons.
+
+      updateTermsAndConditionsLink($)
     }
   }
 })()

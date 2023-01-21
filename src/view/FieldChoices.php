@@ -42,11 +42,14 @@ class FieldChoices extends Field {
 
 	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' ) {
 		$render_id    = $field_name ?: uniqid();
-		$hint         = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
-		$label        = isset( $this->label )
-				? ( $this->is_formatted_label ? $this->formatted_label : $this->label )
-				: '';
-		$label_and_hint = ! empty( $label ) || ! empty( $hint ) ? sprintf( '<label for="%s">%s%s</label>', $render_id, $label, $hint ) : '';
+		$label_html   = array();
+		if ( isset( $this->label ) ) {
+			$label_html[] = $this->is_formatted_label ? $this->formatted_label : $this->label;
+		}
+		if ( isset( $this->hint ) ) {
+			$label_html[] = sprintf( '<small class="tuja-question-hint">%s</small>', $this->is_formatted_hint ? $this->formatted_hint : $this->hint );
+		}
+		$label_and_hint = ! empty( $label_html ) ? sprintf( '<label for="%s">%s</label>', $render_id, join( $label_html ) ) : '';
 
 		$data = $this->get_data( $field_name, $answer_object, $group );
 

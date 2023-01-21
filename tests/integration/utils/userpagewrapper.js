@@ -88,6 +88,7 @@ class UserPageWrapper extends PageWrapper {
       await this.expectToContain('#tuja_signup_button', 'Anmäl lag till väntelista')
       await this.expectWarningMessage('Varför väntelista?')
     }
+    await this.click('#tuja-terms_and_conditions-0')
     await this.clickLink('#tuja_signup_button')
     if (isAutomaticallyAccepted) {
       await this.expectSuccessMessage('Tack')
