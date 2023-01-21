@@ -57,8 +57,8 @@ class OptionsQuestion extends AbstractQuestion {
 	 * @param bool   $submit_on_change
 	 */
 	public function __construct(
-		$name,
-		$text,
+		$name = null,
+		$text = '',
 		$text_hint = null,
 		$id = 0,
 		$question_group_id = 0,

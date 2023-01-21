@@ -89,8 +89,8 @@ class TextQuestion extends AbstractQuestion {
 	 * @param array     $incorrect_answers
 	 */
 	public function __construct(
-		$name,
-		$text,
+		$name = null,
+		$text = '',
 		$text_hint = null,
 		$id = 0,
 		$question_group_id = 0,

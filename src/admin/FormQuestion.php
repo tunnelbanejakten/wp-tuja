@@ -10,16 +10,12 @@ use tuja\data\model\question\TextQuestion;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\CompetitionDao;
 use tuja\util\QuestionNameGenerator;
+use tuja\util\RouterInterface;
 
-class FormQuestion extends FormQuestionGroup {
+class FormQuestion extends FormQuestionGroup implements RouterInterface {
 	const FORM_FIELD_NAME_PREFIX    = 'tuja-question';
 	const ACTION_NAME_DELETE_PREFIX = 'question_delete__';
-	const ACTION_NAME_CREATE_PREFIX = 'question_create__';
-
-	const ACTION_NAME_CREATE_TEXT    = self::ACTION_NAME_CREATE_PREFIX . 'text';
-	const ACTION_NAME_CREATE_NUMBER  = self::ACTION_NAME_CREATE_PREFIX . 'number';
-	const ACTION_NAME_CREATE_IMAGES  = self::ACTION_NAME_CREATE_PREFIX . 'images';
-	const ACTION_NAME_CREATE_CHOICES = self::ACTION_NAME_CREATE_PREFIX . 'choices';
+	const ACTION_NAME_UPDATE_PREFIX = 'question_update__';
 
 	protected $question_dao;
 	protected $question;
@@ -29,10 +25,39 @@ class FormQuestion extends FormQuestionGroup {
 		$this->question_dao = new QuestionDao();
 
 		if ( isset( $_GET['tuja_question'] ) ) {
-			$this->question = $this->question_dao->get( $_GET['tuja_question'] );
+			$this->question = self::get_question($_GET['tuja_question'], $this->question_dao);
+
+			if (!$this->question->form_id) {
+				$this->question->form_id = $this->form->id;
+			}
+
+			if (!$this->question->question_group_id) {
+				$this->question->question_group_id = $this->question_group->id;
+			}
 		}
-		$this->assert_set( 'Could not find question', $this->question );
-		$this->assert_same( 'Question needs to belong to group', $this->question->question_group_id, $this->question_group->id );
+	}
+
+	private static function get_question($id, $question_dao) {
+		if (empty($id)) {
+			throw new Exception( 'Missing question parameter' );
+		}
+		
+		if (is_numeric($id)) {
+			return $question_dao->get( $id );
+		}
+
+		switch ( $id ) {
+			case self::ACTION_NAME_CREATE_CHOICES:
+				return new OptionsQuestion();
+			case self::ACTION_NAME_CREATE_IMAGES:
+				return new ImagesQuestion();
+			case self::ACTION_NAME_CREATE_TEXT:
+				return new TextQuestion();
+			case self::ACTION_NAME_CREATE_NUMBER:
+				return new NumberQuestion();
+			default:
+				throw new Exception( 'Unsupported action' );
+		}
 	}
 
 	protected function create_menu( string $current_view_name, array $parents ): BreadcrumbsMenu {
@@ -43,14 +68,14 @@ class FormQuestion extends FormQuestionGroup {
 		$questions        = $this->question_dao->get_all_in_group( intval( $_GET['tuja_question_group'] ) );
 
 		foreach ( $questions as $question ) {
-			$active = $question->id === $this->question_group->id;
+			$active = $question->id === $this->question->id;
 
 			if ( $active ) {
 				$question_current = $question->name ?? $question->id;
 			}
 
 			$link = add_query_arg([
-				'tuja_view'           => 'FormQuestion',
+				'tuja_view'     => 'FormQuestion',
 				'tuja_question' => $question->id,
 			]);
 			$question_links[] = BreadcrumbsMenu::item( $question->name ?? $question->id, $link, $active );
@@ -71,108 +96,44 @@ class FormQuestion extends FormQuestionGroup {
 			return;
 		}
 
-		if ( $_POST['tuja_action'] == 'questions_update' ) {
+		if ( strpos($_POST['tuja_action'], self::ACTION_NAME_CREATE_PREFIX) !== false ) {
+			$success = false;
+
+			try {
+				$data = stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $this->question->id ] );
+				$this->question->set_properties_from_json_string( $data );
+				$new_id  = $this->question_dao->create( $this->question );
+			} catch ( Exception $e ) {
+				// Do nothing
+			}
+
+			if (!empty($new_id)) {
+				wp_redirect(add_query_arg(['tuja_question' => $new_id, 'tuja_view' => 'FormQuestion']));
+				exit;
+			}
+
+			AdminUtils::printError( 'Kunde inte skapa fråga.' );
+		}
+
+		elseif ( strpos($_POST['tuja_action'], self::ACTION_NAME_UPDATE_PREFIX) !== false ) {
 			$wpdb->show_errors();
 
-			$questions = $this->question_dao->get_all_in_group( $this->question_group->id );
-
 			$success = true;
-			foreach ( $questions as $question ) {
-				if ( isset( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question->id ] ) ) {
+			if ( isset( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $this->question->id ] ) ) {
+				$this->question->set_properties_from_json_string( stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $this->question->id ] ) );
 
-					$question->set_properties_from_json_string( stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $question->id ] ) );
-
-					try {
-						$affected_rows = $this->question_dao->update( $question );
-						$success       = $success && $affected_rows !== false;
-					} catch ( Exception $e ) {
-						$success = false;
-					}
+				try {
+					$affected_rows = $this->question_dao->update( $this->question );
+					$success       = $success && $affected_rows !== false;
+				} catch ( Exception $e ) {
+					$success = false;
 				}
 			}
 
 			$success ? AdminUtils::printSuccess( 'Uppdaterat!' ) : AdminUtils::printError( 'Kunde inte uppdatera fråga.' );
-		} elseif ( substr( $_POST['tuja_action'], 0, strlen( self::ACTION_NAME_CREATE_PREFIX ) ) == self::ACTION_NAME_CREATE_PREFIX ) {
-			$success = false;
-
-			try {
-				switch ( $_POST['tuja_action'] ) {
-					case self::ACTION_NAME_CREATE_CHOICES:
-						$props = new OptionsQuestion(
-							null,
-							'Items to choose from',               // text.
-							'A subtle hint or reminder.',         // text_hint.
-							0,                                    // id.
-							$this->question_group->id,            // question_group_id.
-							0,                                    // sort_order.
-							0,                                    // limit_time.
-							null,                                 // text_preparation.
-							10,                                   // score_max.
-							OptionsQuestion::GRADING_TYPE_ONE_OF, // score_type.
-							true,                                 // is_single_select.
-							array( 'Alice', 'Bob' ),              // correct_answers.
-							array( 'Alice', 'Bob', 'Trudy' ),     // possible_answers.
-							false                                 // submit_on_change.
-						);
-						break;
-					case self::ACTION_NAME_CREATE_IMAGES:
-						$props = new ImagesQuestion(
-							null,
-							'Upload an image',                       // text.
-							'A subtle hint or reminder.',            // text_hint.
-							0,                                       // id.
-							$this->question_group->id,               // question_group_id.
-							0,                                       // sort_order.
-							0,                                       // limit_time.
-							null,                                    // text_preparation.
-							10,                                      // score_max.
-							ImagesQuestion::DEFAULT_FILE_COUNT_LIMIT // max_files_count.
-						);
-						break;
-					case self::ACTION_NAME_CREATE_TEXT:
-						$props = new TextQuestion(
-							null,
-							'What? Who? When?',                // text.
-							'A subtle hint or reminder.',      // text_hint.
-							0,                                 // id.
-							$this->question_group->id,         // question_group_id.
-							0,                                 // sort_order.
-							0,                                 // limit_time.
-							null,                              // text_preparation.
-							10,                                // score_max.
-							TextQuestion::GRADING_TYPE_ONE_OF, // score_type.
-							true,                              // is_single_answer.
-							array( 'Alice', 'Alicia' ),        // correct_answers.
-							array()                            // incorrect_answers.
-						);
-						break;
-					case self::ACTION_NAME_CREATE_NUMBER:
-						$props = new NumberQuestion(
-							null,
-							'How few, many, heavy, light...?', // text.
-							'A subtle hint or reminder.',      // text_hint.
-							0,                                 // id.
-							$this->question_group->id,         // question_group_id.
-							0,                                 // sort_order.
-							0,                                 // limit_time.
-							null,                              // text_preparation.
-							10,                                // score_max.
-							42                                 // correct_answer.
-						);
-						break;
-					default:
-						throw new Exception( 'Unsupported action' );
-						break;
-				}
-
-				$new_id  = $this->question_dao->create( $props );
-				$success = $new_id !== false;
-			} catch ( Exception $e ) {
-				$success = false;
-			}
-
-			$success === true ? AdminUtils::printSuccess( 'Fråga skapad!' ) : AdminUtils::printError( 'Kunde inte skapa fråga.' );
-		} elseif ( substr( $_POST['tuja_action'], 0, strlen( self::ACTION_NAME_DELETE_PREFIX ) ) == self::ACTION_NAME_DELETE_PREFIX ) {
+		}
+		
+		elseif ( substr( $_POST['tuja_action'], 0, strlen( self::ACTION_NAME_DELETE_PREFIX ) ) == self::ACTION_NAME_DELETE_PREFIX ) {
 			$question_id_to_delete = substr( $_POST['tuja_action'], strlen( self::ACTION_NAME_DELETE_PREFIX ) );
 			$affected_rows         = $this->question_dao->delete( $question_id_to_delete );
 			$success               = $affected_rows !== false && $affected_rows === 1;
@@ -190,46 +151,24 @@ class FormQuestion extends FormQuestionGroup {
 		QuestionNameGenerator::update_competition_questions( $this->form->competition_id );
 	}
 
-	private function get_preview_url() {
-		$short_name = substr( FormQuestionsPreview::class, strrpos( FormQuestionsPreview::class, '\\' ) + 1 );
-		return add_query_arg(
-			array(
-				'action'              => 'tuja_questions_preview',
-				'tuja_question_group' => $this->question_group->id,
-				'tuja_view'           => $short_name,
-				'TB_iframe'           => 'true',
-				'width'               => '400',
-				'height'              => '800',
-			),
-			admin_url( 'admin.php' )
-		);
-	}
-
-	public function get_scripts(): array {
-		return array(
-			'admin-formgenerator.js',
-			'admin-forms.js',
-			'jsoneditor.min.js',
-		);
-	}
-
 	public function output() {
-		$this->handle_post();
-
 		$db_competition = new CompetitionDao();
 		$competition    = $db_competition->get( $this->form->competition_id );
-		$questions      = $this->question_dao->get_all_in_group( $this->question_group->id );
+		$question       = $this->question;
+		$question_class_short = substr( get_class( $question ), strrpos( get_class( $question ), '\\' ) + 1 );
+		$json       = $question->get_editable_properties_json( $question );
+		$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $question->id;
+		$options_schema = $question->json_schema();
 		$preview_url    = $this->get_preview_url();
 
 		$back_url = add_query_arg(
 			array(
 				'tuja_competition' => $competition->id,
 				'tuja_form'        => $this->question_group->form_id,
-				'tuja_view'        => 'Form',
+				'tuja_view'        => 'FormQuestionGroup',
 			)
 		);
 
 		include( 'views/form-question.php' );
 	}
-
 }

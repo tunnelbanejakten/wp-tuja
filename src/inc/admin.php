@@ -18,6 +18,7 @@ class Admin extends Plugin {
 	}
 
 	public function init() {
+		add_action( 'init', array( $this, 'handle_post' ) );
 		add_action( 'admin_menu', array( $this, 'add_admin_menu_item' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'add_thickbox' ) );
@@ -27,6 +28,18 @@ class Admin extends Plugin {
 		add_action( 'admin_action_tuja_search', array( $this, 'search' ) );
 
 		Strings::init( intval( @$_GET['tuja_competition'] ?: 0 ) );
+	}
+
+	public function handle_post() {
+		$class_name = !empty($_POST['tuja_action']) && !empty($_GET['tuja_view']) ? 'tuja\\admin\\' . $_GET['tuja_view'] : null;
+
+		if ($class_name && class_exists($class_name)) {
+			$interfaces = class_implements($class_name) ?: [];
+
+			if (in_array('tuja\\util\\RouterInterface', $interfaces)) {
+				(new $class_name())->handle_post();
+			}
+		} 
 	}
 
 	function render_report() {

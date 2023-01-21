@@ -53,7 +53,10 @@ $this->print_menu();
 <?php endif; ?>
 
 <form method="post">
-	<button type="submit" name="tuja_action" class="button button-primary" value="question_groups__add_question">Ny fråga</button>
+	<button type="submit" name="tuja_action" class="button" value="<?php echo self::ACTION_NAME_CREATE_TEXT ?>">Ny textfråga</button>
+	<button type="submit" name="tuja_action" class="button" value="<?php echo self::ACTION_NAME_CREATE_NUMBER ?>">Ny nummerfråga</button>
+	<button type="submit" name="tuja_action" class="button" value="<?php echo self::ACTION_NAME_CREATE_IMAGES ?>">Ny bildfråga</button>
+	<button type="submit" name="tuja_action" class="button" value="<?php echo self::ACTION_NAME_CREATE_CHOICES ?>">Ny flervalsfråga</button>
 </form>
 
 <hr class="tuja-hr">
@@ -74,6 +77,6 @@ $this->print_menu();
 		</div>
 	</div>
 
-	<button type="submit" name="tuja_action" class="button button-primary" value="question_groups_update">Spara frågegrupp</button>
+	<button type="submit" name="tuja_action" class="button button-primary" value="<?php echo self::ACTION_UPDATE; ?>">Spara frågegrupp</button>
 	<button type="submit" class="button" name="tuja_action" onclick="return confirm('Är du säker?');" value="<?php echo self::ACTION_NAME_DELETE_PREFIX . $this->question_group->id; ?>">Ta bort</button>
 </form>

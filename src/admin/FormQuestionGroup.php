@@ -3,23 +3,38 @@
 namespace tuja\admin;
 
 use Exception;
+use tuja\data\model\question\ImagesQuestion;
+use tuja\data\model\question\NumberQuestion;
+use tuja\data\model\question\OptionsQuestion;
+use tuja\data\model\question\TextQuestion;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\QuestionDao;
 use tuja\util\QuestionNameGenerator;
+use tuja\util\RouterInterface;
 
-class FormQuestionGroup extends Form {
+class FormQuestionGroup extends Form implements RouterInterface {
 	const FORM_FIELD_NAME_PREFIX    = 'tuja-question-group';
 	const ACTION_NAME_DELETE_PREFIX = 'question_group_delete__';
+	const ACTION_UPDATE = 'question_group_update';
+	
+	const ACTION_NAME_CREATE_PREFIX = 'question_create__';
+	const ACTION_NAME_CREATE_TEXT    = self::ACTION_NAME_CREATE_PREFIX . 'text';
+	const ACTION_NAME_CREATE_NUMBER  = self::ACTION_NAME_CREATE_PREFIX . 'number';
+	const ACTION_NAME_CREATE_IMAGES  = self::ACTION_NAME_CREATE_PREFIX . 'images';
+	const ACTION_NAME_CREATE_CHOICES = self::ACTION_NAME_CREATE_PREFIX . 'choices';
 
+	protected $question_dao;
 	protected $question_group_dao;
 	protected $question_group;
 
 	public function __construct() {
 		parent::__construct();
+		$this->question_dao = new QuestionDao();
 
 		if ( isset( $_GET['tuja_question_group'] ) ) {
 			$this->question_group = $this->question_group_dao->get( $_GET['tuja_question_group'] );
 		}
+
 		$this->assert_set( 'Could not find question group', $this->question_group );
 		$this->assert_same( 'Question group needs to belong to form', $this->form->id, $this->question_group->form_id );
 	}
@@ -61,7 +76,15 @@ class FormQuestionGroup extends Form {
 			return;
 		}
 
-		if ( $_POST['tuja_action'] == 'question_groups_update' ) {
+		if ( strpos( $_POST['tuja_action'], self::ACTION_NAME_CREATE_PREFIX ) !== false ) {
+			wp_redirect(add_query_arg([
+				'tuja_view' 	=> 'FormQuestion',
+				'tuja_question' => $_POST['tuja_action']
+			]));
+			exit;
+		}
+
+		if ( $_POST['tuja_action'] === self::ACTION_UPDATE ) {
 			$wpdb->show_errors();
 			$id = self::FORM_FIELD_NAME_PREFIX . '__' . $this->question_group->id;
 
@@ -76,7 +99,9 @@ class FormQuestionGroup extends Form {
 					AdminUtils::printError( 'Kunde inte uppdatera grupp.' );
 				}
 			}
-		} elseif ( substr( $_POST['tuja_action'], 0, strlen( self::ACTION_NAME_DELETE_PREFIX ) ) == self::ACTION_NAME_DELETE_PREFIX ) {
+		}
+
+		elseif ( strpos( $_POST['tuja_action'], self::ACTION_NAME_DELETE_PREFIX ) !== false ) {
 			$question_group_id_to_delete = substr( $_POST['tuja_action'], strlen( self::ACTION_NAME_DELETE_PREFIX ) );
 			$affected_rows               = $this->question_group_dao->delete( $question_group_id_to_delete );
 			$success                     = $affected_rows !== false && $affected_rows === 1;
@@ -103,7 +128,7 @@ class FormQuestionGroup extends Form {
 		);
 	}
 
-	private function get_preview_url() {
+	protected function get_preview_url() {
 		$short_name = substr( FormQuestionsPreview::class, strrpos( FormQuestionsPreview::class, '\\' ) + 1 );
 		return add_query_arg(
 			array(
@@ -119,7 +144,7 @@ class FormQuestionGroup extends Form {
 	}
 
 	public function output() {
-		$this->handle_post();
+		// $this->handle_post();
 
 		$db_competition = new CompetitionDao();
 		$competition    = $db_competition->get( $this->form->competition_id );
