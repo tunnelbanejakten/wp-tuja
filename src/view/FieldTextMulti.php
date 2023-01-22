@@ -20,14 +20,12 @@ class FieldTextMulti extends Field {
 
 	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' ) {
 		$render_id = $field_name ?: uniqid();
-		$hint      = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
+		$label_and_hint = $this->label_with_hint_html( $render_id );
 
 		$data = $this->get_data( $field_name, $answer_object, $group );
 
-		return sprintf( '<div class="tuja-field"><label for="%s">%s%s</label><textarea name="%s" id="%s" class="tuja-%s" %s>%s</textarea>%s</div>',
-			$render_id,
-			$this->is_formatted_label ? $this->formatted_label : $this->label,
-			$hint,
+		return sprintf( '<div class="tuja-field">%s<textarea name="%s" id="%s" class="tuja-%s" %s>%s</textarea>%s</div>',
+			$label_and_hint,
 			$field_name,
 			$field_name,
 			'fieldtextmulti',

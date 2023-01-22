@@ -67,15 +67,10 @@ class FieldFood extends Field {
 	}
 
 	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' ) {
-		$render_id      = $field_name ?: uniqid();
-		$hint           = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
-		$label          = isset( $this->label )
-				? ( $this->is_formatted_label ? $this->formatted_label : $this->label )
-				: '';
-		$label_and_hint = ! empty( $label ) || ! empty( $hint ) ? sprintf( '<label for="%s">%s%s</label>', $render_id, $label, $hint ) : '';
+		$render_id = $field_name ?: uniqid();
 
-		$head = $this->compact ? '' : $label_and_hint;
-		$tail = $this->compact ? $hint : '';
+		$head = $this->compact ? '' : $this->label_with_hint_html( $render_id );
+		$tail = $this->compact ? $this->hint_html() : '';
 
 		$data = $this->get_data( $field_name, $answer_object, $group );
 
