@@ -253,6 +253,40 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'duel_group' ) . ' (
+				id                     INTEGER AUTO_INCREMENT NOT NULL,
+				competition_id         INTEGER NOT NULL,
+				name                   VARCHAR(100),
+				link_form_question_id  INTEGER,
+				created_at             INTEGER,
+				PRIMARY KEY (id)
+			) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'duel' ) . ' (
+				id               INTEGER AUTO_INCREMENT NOT NULL,
+				random_id        VARCHAR(20) NOT NULL,
+				duel_group_id    INTEGER NOT NULL,
+				name             VARCHAR(100),
+				display_at       INTEGER,
+				duel_at          INTEGER,
+				created_at       INTEGER,
+				PRIMARY KEY (id),
+				UNIQUE KEY idx_duel_token (random_id)
+			) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'duel_invite' ) . ' (
+				duel_id            INTEGER NOT NULL,
+				team_id            INTEGER NOT NULL,
+				random_id          VARCHAR(20) NOT NULL,
+				status             VARCHAR(100),
+				status_updated_at  INTEGER,
+				PRIMARY KEY (duel_id, team_id),
+				UNIQUE KEY idx_duel_invite_token (random_id)
+			) ' . $charset;
+
+		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'message' ) . ' (
 				id                INTEGER AUTO_INCREMENT NOT NULL,
 				form_question_id  INTEGER,
@@ -401,6 +435,10 @@ abstract class Plugin {
 			array( 'marker', 'link_form_question_id', 'form_question', 'CASCADE' ),
 			array( 'marker', 'link_question_group_id', 'form_question_group', 'CASCADE' ),
 			array( 'marker', 'link_station_id', 'station', 'CASCADE' ),
+
+			array( 'duel', 'duel_group_id', 'duel_group', 'CASCADE' ),
+			array( 'duel_invite', 'duel_id', 'duel', 'CASCADE' ),
+			array( 'duel_invite', 'team_id', 'team', 'CASCADE' ),
 
 			array( 'ticket', 'team_id', 'team', 'CASCADE' ),
 			array( 'ticket', 'station_id', 'station', 'CASCADE' ),
