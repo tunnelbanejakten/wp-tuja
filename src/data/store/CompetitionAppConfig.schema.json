@@ -79,6 +79,11 @@
           "type": "boolean",
           "format": "checkbox"
         },
+        "duels": {
+          "title": "Dueller",
+          "type": "boolean",
+          "format": "checkbox"
+        },
         "tickets": {
           "title": "Biljetter",
           "type": "boolean",
