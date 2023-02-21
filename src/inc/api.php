@@ -202,6 +202,17 @@ class API extends Plugin {
 				'permission_callback' => '__return_true',
 			)
 		);
+
+		register_rest_route(
+			'tuja/v1',
+			'/duels',
+			array(
+				'methods'             => 'GET',
+				'callback'            => $this->callback( 'Duels', 'get_duels' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
 	}
 
 	public function callback( $controller, $method ) {

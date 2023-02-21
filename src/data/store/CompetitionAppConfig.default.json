@@ -18,6 +18,7 @@
         "answer": true,
         "map": true,
         "device_test": true,
+        "duels": true,
         "tickets": true,
         "info": true
     },
