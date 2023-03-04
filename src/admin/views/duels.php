@@ -12,14 +12,17 @@ $this->print_menu();
 // print_r( $duel_groups );
 // print '</pre>';
 foreach ( $duel_groups as $duel_group ) {
-	printf(
-		'<p><strong>%s</strong></p>',
-		$duel_group->name,
+	$url = add_query_arg(
+		array(
+			'tuja_view'       => 'DuelGroup',
+			'tuja_duel_group' => $duel_group->id,
+		)
 	);
+	printf( '<p><a href="%s" data-id="%d">%s</a></p>', $url, $duel_group->id, $duel_group->name );
 	printf( '<ul>' );
 	foreach ( $duel_group->duels as $duel ) {
 		if ( count( $duel->invites ) > 0 ) {
-			printf( '<li>Duell %d<ul>', $duel->id);
+			printf( '<li>Duell %d<ul>', $duel->id );
 			foreach ( $duel->invites as $invite ) {
 				$id              = uniqid();
 				$group_duel_data = ( new DuelDao() )->get_duels_by_group( $invite->group );

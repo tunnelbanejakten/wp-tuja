@@ -100,8 +100,18 @@ class DuelDao extends AbstractDao {
 		return $this->wpdb->query( $this->wpdb->prepare( $query_template, $duel_group_id ) );
 	}
 
-	public function update_duel_group( $name ) {
-		throw new Error( 'Not implemented' );
+	public function update_duel_group( DuelGroup $duel_group ) {
+		$duel_group->validate();
+
+		return $this->wpdb->update(
+			$this->table_duel_group,
+			array(
+				'name' => $duel_group->name,
+			),
+			array(
+				'id' => $duel_group->id,
+			)
+		);
 	}
 
 	// Cancel any duel invites for specified duel group for specified groups.
@@ -279,11 +289,20 @@ class DuelDao extends AbstractDao {
 		return $result;
 	}
 
+	public function get_duel_group( $id ) {
+		return $this->get_object(
+			function ( $row ) {
+				return self::to_duel_group( $row );
+			},
+			'SELECT * FROM ' . $this->table_duel_group . ' WHERE id = %d',
+			$id
+		);
+	}
 	// Return nested structure:
 	// - DuelGroup (name)
 	//   - Duel (time)
 	//     - DuelInvite (team name)
-	public function get_duels_by_competition( $competition_id ) {
+	public function get_duels_by_competition( $competition_id, $only_duel_groups = false ) {
 
 		$duel_groups = $this->get_objects(
 			function ( $row ) {
@@ -292,6 +311,10 @@ class DuelDao extends AbstractDao {
 			'SELECT * FROM ' . $this->table_duel_group . ' WHERE competition_id = %d',
 			$competition_id
 		);
+
+		if ( $only_duel_groups ) {
+			return $duel_groups;
+		}
 
 		$duels = $this->get_objects(
 			function ( $row ) {
