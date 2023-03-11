@@ -2,7 +2,9 @@
 
 namespace tuja\admin;
 
+use Error;
 use Exception;
+use tuja\controller\DuelsController;
 use tuja\data\model\DuelGroup;
 use tuja\data\model\Group;
 use tuja\data\model\ValidationException;
@@ -60,30 +62,9 @@ class Duels extends Competition {
 				AdminUtils::printException( $e );
 			}
 		} elseif ( $_POST['tuja_action'] == 'create_duels' ) {
-			$duel_group_id              = intval( $_POST['tuja_duel_group'] );
 			$min_duel_participant_count = intval( $_POST['tuja_min_duel_participant_count'] );
-			switch ( $_POST['tuja_group_selector'] ) {
-				case self::GROUP_SET_ALL:
-					$group_ids = array_values(
-						array_map(
-							function ( Group $group ) {
-								return $group->id;
-							},
-							array_filter(
-								$this->group_dao->get_all_in_competition( $this->competition->id ),
-								function ( Group $group ) {
-									return ! $group->is_crew;
-								}
-							)
-						)
-					);
-					break;
-				case self::GROUP_SET_NOT_INVITED:
-					$group_ids = array();
-					break;
-			}
 
-			$this->duel_dao->create_duels( $duel_group_id, $group_ids, $min_duel_participant_count );
+			( new DuelsController( $this->competition ) )->generate_invites( $min_duel_participant_count );
 		}
 	}
 
@@ -94,38 +75,6 @@ class Duels extends Competition {
 		$competition = $this->competition;
 
 		$duel_groups = $this->duel_dao->get_duels_by_competition( $competition->id );
-
-		$group_sets = array(
-			self::GROUP_SET_ALL         => 'Alla grupper',
-			self::GROUP_SET_NOT_INVITED => 'Ännu ej inbjudna',
-		);
-
-		$group_set_selector = sprintf(
-			'<select size="1" name="%s">%s</select>',
-			'tuja_group_selector',
-			join(
-				array_map(
-					function ( $key, $label ) {
-						return sprintf( '<option value="%s">%s</option>', $key, $label );
-					},
-					array_keys( $group_sets ),
-					array_values( $group_sets ),
-				)
-			)
-		);
-
-		$duel_group_selector = sprintf(
-			'<select size="1" name="%s">%s</select>',
-			'tuja_duel_group',
-			join(
-				array_map(
-					function ( DuelGroup $duel_group ) {
-						return sprintf( '<option value="%s">%s</option>', $duel_group->id, $duel_group->name );
-					},
-					$duel_groups
-				)
-			)
-		);
 
 		include 'views/duels.php';
 	}
