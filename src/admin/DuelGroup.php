@@ -5,7 +5,7 @@ namespace tuja\admin;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\DuelDao;
 
-class DuelGroup extends Duels {
+class DuelGroup extends DuelGroups {
 
 	const ACTION_DELETE = 'delete';
 	const ACTION_SAVE   = 'save';

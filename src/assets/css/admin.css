@@ -16,6 +16,10 @@
     list-style-type: disc;
 }
 
+.tuja ul.tuja-no-bullets-list {
+    list-style: none;
+}
+
 div.tuja-buttons {
     display: flex;
     flex-direction: row;
