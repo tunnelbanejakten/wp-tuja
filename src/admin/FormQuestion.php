@@ -35,6 +35,9 @@ class FormQuestion extends FormQuestionGroup implements RouterInterface {
 				$this->question->question_group_id = $this->question_group->id;
 			}
 		}
+
+		$this->assert_set( 'Could not find question', $this->question );
+		$this->assert_same( 'Question needs to belong to group', $this->question_group->id, $this->question->question_group_id );
 	}
 
 	private static function get_question($id, $question_dao) {
@@ -102,17 +105,14 @@ class FormQuestion extends FormQuestionGroup implements RouterInterface {
 			try {
 				$data = stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $this->question->id ] );
 				$this->question->set_properties_from_json_string( $data );
-				$new_id  = $this->question_dao->create( $this->question );
+				$new_id = $this->question_dao->create( $this->question );
 			} catch ( Exception $e ) {
 				// Do nothing
 			}
 
-			if (!empty($new_id)) {
-				wp_redirect(add_query_arg(['tuja_question' => $new_id, 'tuja_view' => 'FormQuestion']));
-				exit;
+			if (empty($new_id)) {
+				AdminUtils::printError( 'Kunde inte skapa fråga.' );
 			}
-
-			AdminUtils::printError( 'Kunde inte skapa fråga.' );
 		}
 
 		elseif ( strpos($_POST['tuja_action'], self::ACTION_NAME_UPDATE_PREFIX) !== false ) {
@@ -149,6 +149,11 @@ class FormQuestion extends FormQuestionGroup implements RouterInterface {
 		}
 
 		QuestionNameGenerator::update_competition_questions( $this->form->competition_id );
+
+		if (!empty($new_id)) {
+			wp_redirect(add_query_arg(['tuja_question' => $new_id, 'tuja_view' => 'FormQuestion']));
+			exit;
+		}
 	}
 
 	public function output() {
@@ -160,14 +165,6 @@ class FormQuestion extends FormQuestionGroup implements RouterInterface {
 		$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $question->id;
 		$options_schema = $question->json_schema();
 		$preview_url    = $this->get_preview_url();
-
-		$back_url = add_query_arg(
-			array(
-				'tuja_competition' => $competition->id,
-				'tuja_form'        => $this->question_group->form_id,
-				'tuja_view'        => 'FormQuestionGroup',
-			)
-		);
 
 		include( 'views/form-question.php' );
 	}

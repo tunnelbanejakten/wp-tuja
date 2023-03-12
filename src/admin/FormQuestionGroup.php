@@ -3,10 +3,6 @@
 namespace tuja\admin;
 
 use Exception;
-use tuja\data\model\question\ImagesQuestion;
-use tuja\data\model\question\NumberQuestion;
-use tuja\data\model\question\OptionsQuestion;
-use tuja\data\model\question\TextQuestion;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\QuestionDao;
 use tuja\util\QuestionNameGenerator;
@@ -52,10 +48,11 @@ class FormQuestionGroup extends Form implements RouterInterface {
 			}
 			$link                   = add_query_arg(
 				array(
-					'tuja_view'           => 'FormQuestion',
+					'tuja_view'           => 'FormQuestionGroup',
 					'tuja_competition'    => $this->competition->id,
 					'tuja_form'           => $this->form->id,
 					'tuja_question_group' => $question_group->id,
+					'tuja_question'       => null
 				)
 			);
 			$question_group_links[] = BreadcrumbsMenu::item( $question_group->text ?? $question_group->id, $link, $active );
@@ -152,14 +149,6 @@ class FormQuestionGroup extends Form implements RouterInterface {
 
 		$db_questions = new QuestionDao();
 		$questions = $db_questions->get_all_in_group( $this->question_group->id );
-
-		$back_url = add_query_arg(
-			array(
-				'tuja_competition' => $competition->id,
-				'tuja_form'        => $this->question_group->form_id,
-				'tuja_view'        => 'Form',
-			)
-		);
 
 		include( 'views/form-question-group.php' );
 	}

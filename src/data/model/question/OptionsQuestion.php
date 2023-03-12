@@ -4,6 +4,7 @@ namespace tuja\data\model\question;
 
 use Exception;
 use tuja\data\model\Group;
+use tuja\data\model\ValidationException;
 use tuja\util\score\AutoScoreResult;
 use tuja\view\FieldChoices;
 
