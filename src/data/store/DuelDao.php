@@ -162,16 +162,26 @@ class DuelDao extends AbstractDao {
 	public function get_duels_by_group( Group $group ) {
 		$duels                   = $this->get_objects(
 			function ( $row ) {
+				$duel_at    = self::from_db_date( $row->duel_at );
+				$display_at = self::from_db_date( $row->display_at );
 				return array(
-					'id'         => intval( $row->id ),
-					'name'       => $row->name,
-					'duel_at'    => self::from_db_date( $row->duel_at ),
-					'display_at' => self::from_db_date( $row->display_at ),
+					'id'                    => intval( $row->id ),
+					'duel_group_id'         => isset( $row->duel_group_id ) ? intval( $row->duel_group_id ) : null,
+					'name'                  => $row->name,
+					'link_form_question_id' => $row->link_form_question_id,
+
+					'duel_at'               => isset( $duel_at ) ? $duel_at->format( 'c' ) : null,
+					'display_at'            => isset( $display_at ) ? $display_at->format( 'c' ) : null,
 				);
 			},
 			'
 			SELECT 
-				dg.name, d.duel_at, d.display_at, d.id 
+				dg.name,
+				dg.id AS duel_group_id,
+				dg.link_form_question_id,
+				d.duel_at,
+				d.display_at,
+				d.id
 			FROM 
 			' . $this->table_duel_invite . ' AS di 
 			INNER JOIN ' . $this->table_duel . ' AS d ON di.duel_id = d.id
@@ -217,8 +227,11 @@ class DuelDao extends AbstractDao {
 				)
 			);
 			$duel_data      = array(
-				'name'      => $duel['name'],
-				'opponents' => array_map(
+				'name'          => $duel['name'],
+				'duel_group_id' => $duel['duel_group_id'],
+				'duel_at'       => $duel['duel_at'],
+				'display_at'    => $duel['display_at'],
+				'opponents'     => array_map(
 					function ( $data ) use ( $group_dao, $person_dao ) {
 						$group    = $group_dao->get( $data['team_id'], null, true );
 						$contacts = array_filter(
