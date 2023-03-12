@@ -104,7 +104,8 @@ class DuelDao extends AbstractDao {
 		return $this->wpdb->update(
 			$this->table_duel_group,
 			array(
-				'name' => $duel_group->name,
+				'name'                  => $duel_group->name,
+				'link_form_question_id' => $duel_group->link_form_question_id,
 			),
 			array(
 				'id' => $duel_group->id,
