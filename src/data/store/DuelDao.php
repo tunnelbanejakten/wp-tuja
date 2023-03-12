@@ -52,15 +52,13 @@ class DuelDao extends AbstractDao {
 			array(
 				'random_id'     => $this->id->random_string(),
 				'duel_group_id' => intval( $duel->duel_group_id ),
-				// 'name'          => $duel->name,
-				'display_at'    => null,
-				'duel_at'       => null,
+				'display_at'    => self::to_db_date( $duel->display_at ),
+				'duel_at'       => self::to_db_date( $duel->duel_at ),
 				'created_at'    => self::to_db_date( new DateTime() ),
 			),
 			array(
 				'%s',
 				'%d',
-				// '%s',
 				'%d',
 				'%d',
 				'%d',
@@ -100,50 +98,22 @@ class DuelDao extends AbstractDao {
 		return $this->wpdb->query( $this->wpdb->prepare( $query_template, $duel_group_id ) );
 	}
 
-	public function update_duel_group( $name ) {
-		throw new Error( 'Not implemented' );
+	public function update_duel_group( DuelGroup $duel_group ) {
+		$duel_group->validate();
+
+		return $this->wpdb->update(
+			$this->table_duel_group,
+			array(
+				'name'                  => $duel_group->name,
+				'link_form_question_id' => $duel_group->link_form_question_id,
+			),
+			array(
+				'id' => $duel_group->id,
+			)
+		);
 	}
 
-	// Cancel any duel invites for specified duel group for specified groups.
-	// Create new duels with min_duel_participant_count or min_duel_participant_count+1 groups.
-	// Groups are selected randomly from list of group_ids.
-	public function create_duels( int $duel_group, array $group_ids, int $min_duel_participant_count ) {
-		$this->bulk_cancel_invites( $duel_group, $group_ids );
-		$this->bulk_create_invites( $duel_group, $group_ids, $min_duel_participant_count );
-	}
-
-	public function bulk_create_invites( int $duel_group, array $group_ids, int $min_duel_participant_count ) {
-		$duels_group_ids = array();
-		// var_dump( $group_ids );
-		shuffle( $group_ids );
-		// var_dump( $group_ids );
-		while ( count( $group_ids ) >= $min_duel_participant_count ) {
-			$duels_group_ids[] = array_splice( $group_ids, 0, $min_duel_participant_count, array() );
-		}
-
-		$i = 0;
-		while ( count( $group_ids ) > 0 ) {
-			$duels_group_ids[ $i++ ][] = array_pop( $group_ids );
-		}
-
-		// var_dump( $duels_group_ids );
-
-		foreach ( $duels_group_ids as $group_ids ) {
-			// Create duel.
-			$duel                = new Duel();
-			$duel->duel_group_id = $duel_group;
-			$duel_id             = $this->create_duel( $duel );
-			// Invite groups in $group_ids.
-			foreach ( $group_ids as $group_id ) {
-				$invite          = new DuelInvite();
-				$invite->duel_id = $duel_id;
-				$invite->team_id = $group_id;
-				$invite_id       = $this->create_invite( $invite );
-			}
-		}
-	}
-
-	private function bulk_cancel_invites( int $duel_group, array $group_ids ) {
+	public function bulk_cancel_invites( int $duel_group, array $group_ids ) {
 		$group_ids_string = join( ', ', array_map( 'intval', array_filter( $group_ids, 'is_numeric' ) ) );
 		$query_template   = '
 				UPDATE ' . $this->table_duel_invite . ' 
@@ -192,16 +162,26 @@ class DuelDao extends AbstractDao {
 	public function get_duels_by_group( Group $group ) {
 		$duels                   = $this->get_objects(
 			function ( $row ) {
+				$duel_at    = self::from_db_date( $row->duel_at );
+				$display_at = self::from_db_date( $row->display_at );
 				return array(
-					'id'         => intval( $row->id ),
-					'name'       => $row->name,
-					'duel_at'    => self::from_db_date( $row->duel_at ),
-					'display_at' => self::from_db_date( $row->display_at ),
+					'id'                    => intval( $row->id ),
+					'duel_group_id'         => isset( $row->duel_group_id ) ? intval( $row->duel_group_id ) : null,
+					'name'                  => $row->name,
+					'link_form_question_id' => $row->link_form_question_id,
+
+					'duel_at'               => isset( $duel_at ) ? $duel_at->format( 'c' ) : null,
+					'display_at'            => isset( $display_at ) ? $display_at->format( 'c' ) : null,
 				);
 			},
 			'
 			SELECT 
-				dg.name, d.duel_at, d.display_at, d.id 
+				dg.name,
+				dg.id AS duel_group_id,
+				dg.link_form_question_id,
+				d.duel_at,
+				d.display_at,
+				d.id
 			FROM 
 			' . $this->table_duel_invite . ' AS di 
 			INNER JOIN ' . $this->table_duel . ' AS d ON di.duel_id = d.id
@@ -238,15 +218,20 @@ class DuelDao extends AbstractDao {
 
 		$result = array();
 		foreach ( $duels as $duel ) {
-			$duel_opponents = array_values(array_filter(
-				$duel_opponent_group_ids,
-				function ( $data ) use ( $duel ) {
-					return $data['duel_id'] === $duel['id'];
-				}
-			));
-			$duel_data = array(
-				'name'      => $duel['name'],
-				'opponents' => array_map(
+			$duel_opponents = array_values(
+				array_filter(
+					$duel_opponent_group_ids,
+					function ( $data ) use ( $duel ) {
+						return $data['duel_id'] === $duel['id'];
+					}
+				)
+			);
+			$duel_data      = array(
+				'name'          => $duel['name'],
+				'duel_group_id' => $duel['duel_group_id'],
+				'duel_at'       => $duel['duel_at'],
+				'display_at'    => $duel['display_at'],
+				'opponents'     => array_map(
 					function ( $data ) use ( $group_dao, $person_dao ) {
 						$group    = $group_dao->get( $data['team_id'], null, true );
 						$contacts = array_filter(
@@ -273,17 +258,26 @@ class DuelDao extends AbstractDao {
 					$duel_opponents
 				),
 			);
-			$result[]  = $duel_data;
+			$result[]       = $duel_data;
 		}
 
 		return $result;
 	}
 
+	public function get_duel_group( $id ) {
+		return $this->get_object(
+			function ( $row ) {
+				return self::to_duel_group( $row );
+			},
+			'SELECT * FROM ' . $this->table_duel_group . ' WHERE id = %d',
+			$id
+		);
+	}
 	// Return nested structure:
 	// - DuelGroup (name)
 	//   - Duel (time)
 	//     - DuelInvite (team name)
-	public function get_duels_by_competition( $competition_id ) {
+	public function get_duels_by_competition( $competition_id, $only_duel_groups = false ) {
 
 		$duel_groups = $this->get_objects(
 			function ( $row ) {
@@ -292,6 +286,10 @@ class DuelDao extends AbstractDao {
 			'SELECT * FROM ' . $this->table_duel_group . ' WHERE competition_id = %d',
 			$competition_id
 		);
+
+		if ( $only_duel_groups ) {
+			return $duel_groups;
+		}
 
 		$duels = $this->get_objects(
 			function ( $row ) {

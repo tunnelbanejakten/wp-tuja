@@ -81,7 +81,14 @@ class MarkerDao extends AbstractDao {
 			function ( $row ) {
 				return self::to_marker( $row );
 			},
-			'SELECT * FROM ' . $this->table . ' WHERE id = %d',
+			'
+                SELECT
+					m.*,
+					dg.id AS link_duel_group_id,
+					dg.name AS link_duel_group_name
+                FROM ' . $this->table . ' AS m
+				LEFT JOIN ' . Database::get_table( 'duel_group' ) . ' AS dg ON dg.link_form_question_id = m.link_form_question_id
+                WHERE m.id = %d',
 			$id
 		);
 	}
@@ -92,9 +99,13 @@ class MarkerDao extends AbstractDao {
 				return self::to_marker( $row );
 			},
 			'
-                SELECT * 
-                FROM ' . $this->table . ' 
-                WHERE map_id = %d',
+                SELECT
+					m.*,
+					dg.id AS link_duel_group_id,
+					dg.name AS link_duel_group_name
+                FROM ' . $this->table . ' AS m
+				LEFT JOIN ' . Database::get_table( 'duel_group' ) . ' AS dg ON dg.link_form_question_id = m.link_form_question_id
+                WHERE m.map_id = %d',
 			$map_id
 		);
 	}
@@ -105,8 +116,13 @@ class MarkerDao extends AbstractDao {
 				return self::to_marker( $row );
 			},
 			'
-                SELECT m.* 
-                FROM ' . $this->table . ' AS m INNER JOIN ' . Database::get_table( 'map' ) . ' AS map ON m.map_id = map.id
+                SELECT
+					m.*,
+					dg.id AS link_duel_group_id,
+					dg.name AS link_duel_group_name
+                FROM ' . $this->table . ' AS m 
+					INNER JOIN ' . Database::get_table( 'map' ) . ' AS map ON m.map_id = map.id
+					LEFT JOIN ' . Database::get_table( 'duel_group' ) . ' AS dg ON dg.link_form_question_id = m.link_form_question_id
                 WHERE map.competition_id = %d',
 			$competition_id
 		);
@@ -126,6 +142,8 @@ class MarkerDao extends AbstractDao {
 		$marker->link_form_question_id  = isset( $result->link_form_question_id ) ? intval( $result->link_form_question_id ) : null;
 		$marker->link_question_group_id = isset( $result->link_question_group_id ) ? intval( $result->link_question_group_id ) : null;
 		$marker->link_station_id        = isset( $result->link_station_id ) ? intval( $result->link_station_id ) : null;
+		$marker->link_duel_group_id     = isset( $result->link_duel_group_id ) ? intval( $result->link_duel_group_id ) : null;
+		$marker->link_duel_group_name   = $result->link_duel_group_name;
 
 		return $marker;
 	}
