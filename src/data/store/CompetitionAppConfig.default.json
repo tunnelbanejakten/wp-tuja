@@ -12,7 +12,8 @@
         "config_poll_interval": 60
     },
     "messages": {
-        "info_page_content": "Info till lagen..."
+        "info_page_content": "Info till lagen...",
+        "start_page_content": "Detta är appen för Tunnelbanejakten."
     },
     "views": {
         "answer": true,
