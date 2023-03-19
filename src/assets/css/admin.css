@@ -98,10 +98,18 @@ form.tuja-admin-form {
     gap: 10px;
 }
 
+form.tuja-admin-form h3 {
+    margin-bottom: 0;
+}
+
 form.tuja-admin-form .form-control {
     display: flex;
     flex-flow: column nowrap;
     flex: 1;
+}
+
+form.tuja-admin-form .form-control.short {
+    flex: 0 1 auto;
 }
 
 form.tuja-admin-form .row,

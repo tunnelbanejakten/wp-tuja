@@ -275,4 +275,8 @@ class TextQuestion extends AbstractQuestion {
 			)
 		);
 	}
+
+	public function question_type_props_html(): void {
+		echo '<p>Hej</p>';
+	}
 }

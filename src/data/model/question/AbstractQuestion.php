@@ -132,5 +132,7 @@ abstract class AbstractQuestion {
 		return $time_limit_adjusted;
 	}
 
-
+	public function question_type_props_html(): void {
+		// Override
+	}
 }
