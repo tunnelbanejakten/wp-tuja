@@ -5,10 +5,12 @@ namespace tuja\data\model\question;
 
 use tuja\data\model\Group;
 use tuja\data\model\ValidationException;
-use tuja\util\ReflectionUtils;
+use tuja\data\trait\SetPropertiesTrait;
 use tuja\util\score\AutoScoreResult;
 
 abstract class AbstractQuestion {
+
+	use SetPropertiesTrait;
 
 	const RESPONSE_MISSING_HTML = '<span class="tuja-admin-noresponse">Inget svar</span>';
 
@@ -44,29 +46,6 @@ abstract class AbstractQuestion {
 		$this->limit_time        = $limit_time;
 		$this->text_preparation  = $text_preparation;
 		$this->score_max         = $score_max;
-	}
-
-
-	function json_schema() {
-		$str = __DIR__ . '/' . substr( get_class( $this ), strlen( __NAMESPACE__ ) + 1 ) . '.schema.json';
-
-		return file_get_contents( $str );
-	}
-
-	function get_editable_properties_json() {
-		$schema = json_decode( $this->json_schema(), true );
-
-		$editable_properties = array_keys( $schema['properties'] );
-
-		return ReflectionUtils::to_json_string( $this, $editable_properties );
-	}
-
-	function set_properties_from_json_string( $json_string ) {
-		ReflectionUtils::set_properties_from_json_string(
-			$this,
-			$json_string,
-			$this->json_schema()
-		);
 	}
 
 	/**

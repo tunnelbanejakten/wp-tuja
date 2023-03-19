@@ -2,10 +2,6 @@
 
 namespace tuja\util;
 
-
-use ReflectionClass;
-use ReflectionProperty;
-
 class ReflectionUtils {
 	public static function set_properties_from_json_string( $obj, $json_string, $json_schema_string ) {
 		$values = json_decode( $json_string, true );
