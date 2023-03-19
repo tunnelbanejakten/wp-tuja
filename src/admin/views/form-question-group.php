@@ -91,7 +91,7 @@ $this->print_menu();
 	<div class="row">
 		<div class="form-control">
 			<label for="sort_order">Position</label>
-			<input type="text" name="sort_order" id="sort_order" value="<?php echo $this->question_group->sort_order; ?>">
+			<input type="number" name="sort_order" id="sort_order" value="<?php echo $this->question_group->sort_order; ?>">
 		</div>
 	</div>
 
