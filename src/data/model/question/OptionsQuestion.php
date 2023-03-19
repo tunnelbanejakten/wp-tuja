@@ -181,4 +181,74 @@ class OptionsQuestion extends AbstractQuestion {
 	function get_correct_answer_html() {
 		return join( '<br>', $this->correct_answers );
 	}
+
+	public function question_type_props_html(): void {
+		?>
+		<div class="row">
+			<div class="form-control repeat">
+				<label>Alternativ</label>
+				<ol>
+					<template>
+						<li>
+							<input type="text" name="possible_answers[]">
+							<button type="button" class="remove">Ta bort</button>
+						</li>
+					</template>
+					<?php foreach($this->possible_answers as $possible_answer): ?>
+						<li>
+							<input type="text" name="possible_answers[]" value="<?php echo esc_html($possible_answer); ?>">
+							<button type="button" class="remove">Ta bort</button>
+						</li>
+					<?php endforeach; ?>
+				</ol>
+				<button type="button" class="add">Lägg till</button>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="form-control repeat">
+				<label>Rätta svar</label>
+				<ol>
+					<template>
+						<li>
+							<input type="text" name="correct_answers[]">
+							<button type="button" class="remove">Ta bort</button>
+						</li>
+					</template>
+					<?php foreach($this->correct_answers as $correct_answer): ?>
+						<li>
+							<input type="text" name="correct_answers[]" value="<?php echo esc_html($correct_answer); ?>">
+							<button type="button" class="remove">Ta bort</button>
+						</li>
+					<?php endforeach; ?>
+				</ol>
+				<button type="button" class="add">Lägg till</button>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="form-control checkbox">
+				<input type="checkbox" name="is_single_select" id="is_single_select"<?php checked($this->is_single_select); ?>>
+				<label for="is_single_select">Bara ett svar</label>
+			</div>
+		</div>
+
+		<div class="row">
+			<label>Rättningsmekanism</label>
+		</div>
+
+		<div class="row">
+			<div class="form-control radio">
+				<input type="radio" name="score_type" id="score_type__one_of" value="one_of"<?php checked($this->score_type, 'one_of'); ?>>
+				<label for="score_type__one_of">Minst ett rätt svar</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-control radio">
+				<input type="radio" name="score_type" id="score_type__all_of" value="all_of"<?php checked($this->score_type, 'all_of'); ?>>
+				<label for="score_type__all_of">Alla rätt</label>
+			</div>
+		</div>
+		<?php
+	}
 }

@@ -277,6 +277,84 @@ class TextQuestion extends AbstractQuestion {
 	}
 
 	public function question_type_props_html(): void {
-		echo '<p>Hej</p>';
+		?>
+		<div class="row">
+			<div class="form-control repeat">
+				<label>Rätta svar</label>
+				<ol>
+					<template>
+						<li>
+							<input type="text" name="correct_answers[]">
+							<button type="button" class="remove">Ta bort</button>
+						</li>
+					</template>
+					<?php foreach($this->correct_answers as $correct_answer): ?>
+						<li>
+							<input type="text" name="correct_answers[]" value="<?php echo esc_html($correct_answer); ?>">
+							<button type="button" class="remove">Ta bort</button>
+						</li>
+					<?php endforeach; ?>
+				</ol>
+				<button type="button" class="add">Lägg till</button>
+			</div>
+		</div>
+		
+		<div class="row">
+			<div class="form-control repeat">
+				<label>Felaktiga svar</label>
+				<ol>
+					<template>
+						<li>
+							<input type="text" name="incorrect_answers[]">
+							<button type="button" class="remove">Ta bort</button>
+						</li>
+					</template>
+					<?php foreach($this->incorrect_answers as $incorrect_answer): ?>
+						<li>
+							<input type="text" name="incorrect_answers[]" value="<?php echo esc_html($incorrect_answer); ?>">
+							<button type="button" class="remove">Ta bort</button>
+						</li>
+					<?php endforeach; ?>
+				</ol>
+				<button type="button" class="add">Lägg till</button>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="form-control checkbox">
+				<input type="checkbox" name="is_single_answer" id="is_single_answer"<?php checked($this->is_single_answer); ?>>
+				<label for="is_single_answer">Bara ett svar</label>
+			</div>
+		</div>
+
+		<div class="row">
+			<label>Rättningsmekanism</label>
+		</div>
+
+		<div class="row">
+			<div class="form-control radio">
+				<input type="radio" name="score_type" id="score_type__one_of" value="one_of"<?php checked($this->score_type, 'one_of'); ?>>
+				<label for="score_type__one_of">Minst ett rätt svar</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-control radio">
+				<input type="radio" name="score_type" id="score_type__unordered_percent_of" value="unordered_percent_of"<?php checked($this->score_type, 'unordered_percent_of'); ?>>
+				<label for="score_type__unordered_percent_of">Procent (ej ordnad)</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-control radio">
+				<input type="radio" name="score_type" id="score_type__ordered_percent_of" value="ordered_percent_of"<?php checked($this->score_type, 'ordered_percent_of'); ?>>
+				<label for="score_type__ordered_percent_of">Procent (ordnad)</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-control radio">
+				<input type="radio" name="score_type" id="score_type__all_of" value="all_of"<?php checked($this->score_type, 'all_of'); ?>>
+				<label for="score_type__all_of">Alla rätt</label>
+			</div>
+		</div>
+		<?php
 	}
 }

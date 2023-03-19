@@ -31,22 +31,24 @@ $this->print_menu();
 		</div>
 	</div>
 
+	<h3>Inställningar</h3>
+
 	<div class="row">
 		<div class="form-control">
 			<label for="text_hint">Hjälptext</label>
-			<input type="text" name="text_hint" id="text_hint" value="<?php echo $this->question->text_hint; ?>">
+			<input type="text" name="text_hint" id="text_hint" value="<?php echo esc_html($this->question->text_hint); ?>">
 		</div>
 	</div>
 
 	<div class="row">
 		<div class="form-control short">
 			<label for="score_max">Maximal poäng</label>
-			<input type="number" name="score_max" id="score_max" value="<?php echo $this->question->score_max; ?>">
+			<input type="number" name="score_max" id="score_max" value="<?php echo (int)$this->question->score_max; ?>">
 		</div>
 
 		<div class="form-control short">
 			<label for="sort_order">Position</label>
-			<input type="number" name="sort_order" id="sort_order" value="<?php echo $this->question->sort_order; ?>">
+			<input type="number" name="sort_order" id="sort_order" value="<?php echo (int)$this->question->sort_order; ?>">
 		</div>
 	</div>
 
@@ -57,32 +59,19 @@ $this->print_menu();
 	<div class="row">
 		<div class="form-control short">
 			<label for="limit_time">Maximal tid (sekunder, 0 = ingen begränsning)</label>
-			<input type="number" name="limit_time" id="limit_time" value="<?php echo $this->question->limit_time; ?>">
+			<input type="number" name="limit_time" id="limit_time" value="<?php echo (int)$this->question->limit_time; ?>">
 		</div>
 
 		<div class="form-control short">
 			<label for="text_preparation">Text innan uppgiften visas</label>
-			<input type="text" name="text_preparation" id="text_preparation" value="<?php echo $this->question->text_preparation; ?>">
+			<input type="text" name="text_preparation" id="text_preparation" value="<?php echo esc_html($this->question->text_preparation); ?>">
 		</div>
 	</div>
 
-	<!-- <div class="tuja-admin-question-properties">
-		<?php
-		if(false) {
-			printf(
-				'<div class="tuja-admin-formgenerator-form" data-schema="%s" data-values="%s" data-field-id="%s" id="%s"></div>',
-				htmlentities( $options_schema ),
-				htmlentities( $json ),
-				htmlentities( $field_name ),
-				sprintf('tuja-admin-questiongroup-form-%s', $question->id)
-			);
-			printf( '<input type="hidden" name="%s" id="%s" value="" />', $field_name, $field_name );
-		}
-		?>
-	</div> -->
-
 	<div class="row">
 		<?php
+		printf( '<input type="hidden" name="%s" id="%s" value="" />', $field_name, $field_name );
+		
 		if($question->id) {
 			printf('<button type="submit" class="button button-primary" name="tuja_action" value="%s%d">Spara</button>', self::ACTION_NAME_UPDATE_PREFIX, $question->id);
 			printf('<button type="submit" class="button" name="tuja_action" value="%s%d" onclick="return confirm(\'Är du säker?\');">Ta bort</button>', self::ACTION_NAME_DELETE_PREFIX, $question->id);

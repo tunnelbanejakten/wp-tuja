@@ -127,6 +127,16 @@ form.tuja-admin-form .form-control.checkbox input {
     margin: 0;
 }
 
+form.tuja-admin-form .form-control.repeat {
+    align-items: flex-start;
+    margin-bottom: 5px;
+}
+
+form.tuja-admin-form .form-control.repeat ol {
+    list-style-type: none;
+    margin: 0 0 5px;
+}
+
 div.tuja-messagetemplate-collapsible .tuja-messagetemplate-collapsecontrol>a>span:nth-child(1) {
     display: none;
 }

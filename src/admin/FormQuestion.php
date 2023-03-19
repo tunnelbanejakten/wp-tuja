@@ -99,12 +99,18 @@ class FormQuestion extends FormQuestionGroup implements RouterInterface {
 			return;
 		}
 
+		$id = self::FORM_FIELD_NAME_PREFIX . '__' . $this->question->id;
+
 		if ( strpos($_POST['tuja_action'], self::ACTION_NAME_CREATE_PREFIX) !== false ) {
 			$success = false;
 
+			if(empty($id)) {
+				$this->question->set_properties_from_array( $_POST );
+			} else {
+				$this->question->set_properties_from_json_string( stripslashes( $_POST[ $id ] ) );
+			}
+			
 			try {
-				$data = stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $this->question->id ] );
-				$this->question->set_properties_from_json_string( $data );
 				$new_id = $this->question_dao->create( $this->question );
 			} catch ( Exception $e ) {
 				// Do nothing
@@ -119,8 +125,13 @@ class FormQuestion extends FormQuestionGroup implements RouterInterface {
 			$wpdb->show_errors();
 
 			$success = true;
-			if ( isset( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $this->question->id ] ) ) {
-				$this->question->set_properties_from_json_string( stripslashes( $_POST[ self::FORM_FIELD_NAME_PREFIX . '__' . $this->question->id ] ) );
+
+			if ( isset( $_POST[ $id ] ) ) {
+				if(empty($_POST[ $id ])) {
+					$this->question->set_properties_from_array( $_POST );
+				} else {
+					$this->question->set_properties_from_json_string( stripslashes( $_POST[ $id ] ) );
+				}
 
 				try {
 					$affected_rows = $this->question_dao->update( $this->question );

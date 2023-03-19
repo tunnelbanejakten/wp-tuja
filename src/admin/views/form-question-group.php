@@ -64,9 +64,9 @@ $this->print_menu();
 <h2>Redigera frågegrupp</h2>
 <form method="post" class="tuja-admin-form tuja-admin-question">
 	<div class="row">
-		<div class="form-control">
+		<div class="form-control short">
 			<label for="score_max">Maximal poäng</label>
-			<input type="number" name="score_max" id="score_max" value="<?php echo $this->question_group->score_max; ?>">
+			<input type="number" name="score_max" id="score_max" value="<?php echo (int)$this->question_group->score_max; ?>">
 		</div>
 	</div>
 
@@ -76,29 +76,29 @@ $this->print_menu();
 
 	<div class="row">
 		<div class="form-control radio">
-			<input type="radio" name="question_filter" id="question_filter__all" value="all">
+			<input type="radio" name="question_filter" id="question_filter__all" value="all"<?php checked($this->question_filter, 'all'); ?>>
 			<label for="question_filter__all">Alla lag ser alla frågor i frågegruppen.</label>
 		</div>
 	</div>
 
 	<div class="row">
 		<div class="form-control radio">
-			<input type="radio" name="question_filter" id="question_filter__one" value="one">
+			<input type="radio" name="question_filter" id="question_filter__one" value="one"<?php checked($this->question_filter, 'one'); ?>>
 			<label for="question_filter__one">Varje lag ser bara en av frågorna i frågegruppen. Laget tilldelas sin fråga slumpmässigt.</label>
 		</div>
 	</div>
 
 	<div class="row">
-		<div class="form-control">
+		<div class="form-control short">
 			<label for="sort_order">Position</label>
-			<input type="number" name="sort_order" id="sort_order" value="<?php echo $this->question_group->sort_order; ?>">
+			<input type="number" name="sort_order" id="sort_order" value="<?php echo (int)$this->question_group->sort_order; ?>">
 		</div>
 	</div>
 
 	<div class="row">
 		<div class="form-control">
 			<label for="text">Rubrik</label>
-			<input type="text" name="text" id="text" value="<?php echo $this->question_group->text; ?>">
+			<input type="text" name="text" id="text" value="<?php echo esc_html($this->question_group->text); ?>">
 		</div>
 	</div>
 

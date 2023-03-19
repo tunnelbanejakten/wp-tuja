@@ -6,9 +6,25 @@ use tuja\util\ReflectionUtils;
 
 trait SetPropertiesTrait {
 	public function set_properties_from_array( $props ) {
-		foreach($this as $key => $val) {
+		foreach($this as $key => &$val) {
+			if($key === 'name' || $key === 'id' || strpos($key, '_id') !== false) continue;
+
 			if(array_key_exists($key, $props)) {
-				$this->$key = wp_kses_post($props[$key]);
+				if(is_array($props[$key])) {
+					$val = array_map('wp_kses_post', $props[$key]);
+				} else {
+					$val = wp_kses_post($props[$key]);
+				}
+			} elseif(is_array($val)) {
+				$val = [];
+			} elseif(is_string($val)) {
+				$val = "";
+			} elseif(is_numeric($val)) {
+				$val = 0;
+			} elseif(is_bool($val)) {
+				$val = false;
+			} else {
+				$val = null;
 			}
 		}
 	}

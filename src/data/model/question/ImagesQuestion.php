@@ -84,4 +84,15 @@ class ImagesQuestion extends AbstractQuestion {
 	function get_submitted_answer_html( $answer_object, Group $group ) {
 		return AdminUtils::get_image_thumbnails_html( $answer_object, $group->random_id );
 	}
+
+	public function question_type_props_html(): void {
+		?>
+		<div class="row">
+			<div class="form-control short">
+				<label for="max_files_count">Maximalt antal bilder</label>
+				<input type="number" name="max_files_count" id="max_files_count" value="<?php echo (int)$this->max_files_count; ?>">
+			</div>
+		</div>
+		<?php
+	}
 }

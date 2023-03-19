@@ -112,4 +112,15 @@ class NumberQuestion extends AbstractQuestion {
 
 		return number_format_i18n( $answer_object );
 	}
+
+	public function question_type_props_html(): void {
+		?>
+		<div class="row">
+			<div class="form-control short">
+				<label for="correct_answer">Rätt svar</label>
+				<input type="number" name="correct_answer" id="correct_answer" value="<?php echo (int)$this->correct_answer; ?>">
+			</div>
+		</div>
+		<?php
+	}
 }
