@@ -63,13 +63,6 @@ $this->print_menu();
 
 <h2>Redigera frågegrupp</h2>
 <form method="post" class="tuja-admin-form tuja-admin-question">
-	<?php
-	$json       = $this->question_group->get_editable_properties_json();
-	$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $this->question_group->id;
-
-	$options_schema = $this->question_group->json_schema();
-	
-	?>
 	<div class="row">
 		<div class="form-control">
 			<label for="score_max">Maximal poäng</label>

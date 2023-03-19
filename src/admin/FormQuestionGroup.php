@@ -145,14 +145,15 @@ class FormQuestionGroup extends Form implements RouterInterface {
 	}
 
 	public function output() {
-		// $this->handle_post();
-
 		$db_competition = new CompetitionDao();
 		$competition    = $db_competition->get( $this->form->competition_id );
 		$preview_url    = $this->get_preview_url();
 
 		$db_questions = new QuestionDao();
 		$questions = $db_questions->get_all_in_group( $this->question_group->id );
+
+		// Keeping this for backwards compatability
+		$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $this->question_group->id;
 
 		include( 'views/form-question-group.php' );
 	}
