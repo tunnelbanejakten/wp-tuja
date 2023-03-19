@@ -36,6 +36,7 @@ class Profile extends AbstractRestEndpoint {
 
 			'portal_link'        => GroupHomeInitiator::link( $group ),
 			'app_link'           => AppUtils::group_link( $group ),
+			'app_base_link'      => AppUtils::base_link(),
 
 			'count_competing'    => $group->count_competing,
 			'count_follower'     => $group->count_follower,

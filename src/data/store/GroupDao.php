@@ -188,10 +188,10 @@ class GroupDao extends AbstractDao {
 				gp.name';
 	}
 
-	function get( $id, $date = null ) {
+	function get( $id, $date = null, bool $core_data_only = false ) {
 		return $this->get_object(
-			function ( $row ) use ( $date ) {
-				return self::to_group( $row, $date );
+			function ( $row ) use ( $date, $core_data_only ) {
+				return self::to_group( $row, $date, $core_data_only );
 			},
 			$this->generate_query( [ 'g.id = %d' ], $date ),
 			$id );

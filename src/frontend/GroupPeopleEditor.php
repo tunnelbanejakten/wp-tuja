@@ -16,7 +16,6 @@ use tuja\util\Strings;
 // TODO: Unify error handling so that there is no mix of "arrays of error messages" and "exception throwing". Pick one practice, don't mix. Throwing exceptions might be preferable.
 class GroupPeopleEditor extends AbstractGroupView {
 	private $read_only;
-	private $person_form;
 
 	public function __construct( $url, $group_key ) {
 		parent::__construct( $url, $group_key, 'Personer i %s' );
@@ -24,35 +23,11 @@ class GroupPeopleEditor extends AbstractGroupView {
 	}
 
 	public static function params_section_description( GroupCategory $group_category ): array {
-		$rules = array_combine(
-			array_map(
-				function ( string $key ) {
-					return $key;
-				},
-				array_keys( $group_category->get_rules()->get_values() ) ),
-			array_map(
-				function ( string $key ) {
-					return $key;
-				},
-				array_values( $group_category->get_rules()->get_values() ) ) );
+		$rules = $group_category->get_rules()->get_values();
 
 		return array_merge( [
 			'group_category_name' => $group_category->name
 		], $rules );
-	}
-
-	private function get_person_form(): PersonForm {
-		if ( ! isset( $this->person_form ) ) {
-			$this->person_form = new PersonForm(
-				true,
-				false,
-				false,
-				$this->is_save_request(),
-				$this->get_group()->get_category()->get_rules()
-			);
-		}
-
-		return $this->person_form;
 	}
 
 	function output() {
@@ -138,7 +113,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		if ( is_array( $people ) ) {
 			$html_sections[] = sprintf( '<div class="tuja-people-existing">%s</div>',
 				join( array_map( function ( Person $person ) use ( $errors, $is_remove_enabled ) {
-					return $this->render_person_form( $person, $is_remove_enabled );
+					return $this->render_person_form( $person, $is_remove_enabled, $this->is_save_request() );
 				}, $people ) ) );
 		}
 
@@ -146,7 +121,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 			$html_sections[] = sprintf( '<div class="tuja-item-buttons"><button type="button" value="%s" class="tuja-add-person">%s</button></div>', 'new_person', $add_button_label );
 			$person_template = new Person();
 			$person_template->set_type( $role );
-			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( $person_template, $is_remove_enabled ) );
+			$html_sections[] = sprintf( '<div class="tuja-person-template">%s</div>', $this->render_person_form( $person_template, $is_remove_enabled, false ) );
 		}
 
 		return sprintf( '<div class="tuja-people tuja-person-role-%s">%s</div>', $role, join( $html_sections ) );
@@ -182,7 +157,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 		$unsaved_ids = array_diff( $this->get_submitted_person_ids(), $preexisting_ids );
 		sort( $unsaved_ids );
 		$unsaved_people = array_map( function ( $id ) {
-			$person            = $this->init_posted_person( $id );
+			$person            = $this->init_posted_person( $id, $this->is_save_request() );
 			$person->random_id = $id;
 
 			return $person;
@@ -196,13 +171,14 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 	private function render_person_form(
 		Person $person,
-		bool $show_delete = true
+		bool $show_delete = true,
+		bool $show_validation_errors = true
 	): string {
 
 		$read_only = $this->is_read_only();
 
 		$html_sections = [
-			$this->get_person_form()->render( $person )
+			$this->get_person_form()->render( $person, $show_validation_errors )
 		];
 
 		// TODO: Handle $errors['__']?
@@ -233,9 +209,12 @@ class GroupPeopleEditor extends AbstractGroupView {
 		// DETERMINE REQUESTED CHANGES
 		$people = $this->get_current_group_members();
 
-		$preexisting_ids = array_map( function ( $person ) {
+		$preexisting_ids = array_map(
+			function ( $person ) {
 			return $person->random_id;
-		}, $people );
+			},
+			$people
+		);
 
 		$submitted_ids = $this->get_submitted_person_ids();
 
@@ -254,7 +233,7 @@ class GroupPeopleEditor extends AbstractGroupView {
 
 		foreach ( $created_ids as $id ) {
 			try {
-				$new_person           = $this->init_posted_person( $id );
+				$new_person           = $this->init_posted_person( $id, $this->is_save_request());
 				$new_person->group_id = $group_id;
 
 				$new_person->validate( $category->get_rules() );
@@ -282,30 +261,20 @@ class GroupPeopleEditor extends AbstractGroupView {
 			}
 		}
 
-		$people_map = array_combine( array_map( function ( $person ) {
+		$people_map = array_combine(
+			array_map(
+				function ( $person ) {
 			return $person->random_id;
-		}, $people ), $people );
+				},
+				$people
+			),
+			$people
+		);
 
 		foreach ( $updated_ids as $id ) {
 			if ( isset( $people_map[ $id ] ) ) {
 				try {
-					$posted_values = [
-						'name'  => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_NAME, $people_map[ $id ] ) ] ?: @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $people_map[ $id ] ) ],
-						'email' => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_EMAIL, $people_map[ $id ] ) ],
-						'phone' => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PHONE, $people_map[ $id ] ) ],
-						'pno'   => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_PNO, $people_map[ $id ] ) ],
-						'food'  => @$_POST[ PersonForm::get_field_name( PersonForm::FIELD_FOOD, $people_map[ $id ] ) ]
-					];
-
-					$is_person_property_updated = false;
-					foreach ( $posted_values as $prop => $new_value ) {
-						if ( $people_map[ $id ]->{$prop} != $new_value ) {
-							$people_map[ $id ]->{$prop} = $new_value;
-
-							$is_person_property_updated = true;
-						}
-					}
-
+					$is_person_property_updated = $this->get_person_form()->update_with_posted_values( $people_map[ $id ] );
 					if ( $is_person_property_updated ) {
 						$people_map[ $id ]->validate( $category->get_rules() );
 						$affected_rows   = $this->person_dao->update( $people_map[ $id ] );

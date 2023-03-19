@@ -9,9 +9,12 @@ class AppUtils {
 		$is_localhost = strpos( $_SERVER['HTTP_HOST'], 'localhost' ) !== false;
 		return sprintf(
 			'%s/#/%s/',
-			$is_localhost ? 'http://localhost:8081' : 'https://app.tunnelbanejakten.se', // TODO: This shouldn't be hardcoded.
+			self::base_link(),
 			$group->random_id
 		);
 	}
+	public static function base_link() {
+		$is_localhost = strpos( $_SERVER['HTTP_HOST'], 'localhost' ) !== false;
+		return $is_localhost ? 'http://localhost:8081' : 'https://app.tunnelbanejakten.se'; // TODO: This shouldn't be hardcoded.
+	}
 }
-?>

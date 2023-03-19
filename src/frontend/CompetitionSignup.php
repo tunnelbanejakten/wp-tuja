@@ -26,8 +26,9 @@ class CompetitionSignup extends FrontendView {
 	private $competition_key;
 	private $competition_dao;
 
-	const FIELD_PREFIX_PERSON = 'tuja-person__';
-	const FIELD_PREFIX_GROUP = 'tuja-group__';
+	const FIELD_PREFIX_PERSON        = 'tuja-person__';
+	const FIELD_PREFIX_GROUP         = 'tuja-group__';
+	const FIELD_TERMS_AND_CONDITIONS = 'tuja-terms_and_conditions';
 
 	private $person_dao;
 	private $group_dao;
@@ -82,6 +83,8 @@ class CompetitionSignup extends FrontendView {
 		if ( @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) {
 			try {
 				$this->validate_recaptcha_html();
+
+				$this->validate_terms_and_conditions_acceptance();
 
 				// TODO: It's a bit odd that create_group and delete_person throw exceptions whereas update_group returns an arror of error messages.
 				$new_group = $this->create_group();
@@ -177,7 +180,18 @@ class CompetitionSignup extends FrontendView {
 			],
 			false );
 
-		$html_sections[] = $this->render_field( $reporter_role, self::FIELD_PERSON_ROLE, @$errors[ self::FIELD_PERSON_ROLE ], @$_POST[ self::FIELD_PERSON_ROLE ] ?: Strings::get('competition_signup.role_label.group_leader') );
+		$html_sections[] = $this->render_field( $reporter_role, self::FIELD_PERSON_ROLE, @$errors[ self::FIELD_PERSON_ROLE ], @$_POST[ self::FIELD_PERSON_ROLE ] );
+
+		$html_sections[] = '<div id="tuja-competitionsignup-active-form"></div>';
+
+		$terms_and_conditions_checkbox = new FieldChoices(
+			Strings::get( 'competition_signup.form.terms_and_conditions.label' ),
+			Strings::get( 'competition_signup.form.terms_and_conditions.hint' ),
+			false,
+			array( Strings::get( 'competition_signup.form.terms_and_conditions.checkbox_label' ) ),
+			true,
+			false );
+		$html_sections[] = $this->render_field( $terms_and_conditions_checkbox, self::FIELD_TERMS_AND_CONDITIONS, @$errors[ self::FIELD_TERMS_AND_CONDITIONS ] );
 
 		$html_sections[] = $this->get_recaptcha_html();
 
@@ -190,14 +204,14 @@ class CompetitionSignup extends FrontendView {
 
 		$forms = join( array_map( function ( GroupCategory $category ) {
 			return join( array_map( function ( string $person_type, string $person_label ) use ( $category ) {
-				$person_form = new PersonForm( false, false, true, @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE, $category->get_rules(), 'competition_signup.form' );
+				$person_form = new PersonForm( false, false, true, $category->get_rules(), 'competition_signup.form' );
 				$temp_person = $this->get_posted_person();
 				$temp_person->set_type( $person_type );
 
 				return sprintf( '<div class="tuja-competitionsignup-form" data-group-category-name="%s" data-person-type-name="%s">%s</div>',
 					$category->name,
 					$person_label,
-					$person_form->render( $temp_person ) );
+					$person_form->render( $temp_person, @$_POST[ self::ACTION_BUTTON_NAME ] == self::ACTION_NAME_SAVE ) );
 			}, [ Person::PERSON_TYPE_LEADER, Person::PERSON_TYPE_ADMIN ], [
 				Strings::get('competition_signup.role_label.group_leader'),
 				Strings::get('competition_signup.role_label.extra_contact')
@@ -320,5 +334,11 @@ class CompetitionSignup extends FrontendView {
 		}
 
 		return $new_person;
+	}
+
+	protected function validate_terms_and_conditions_acceptance() {
+		if ( ! isset( $_POST[ self::FIELD_TERMS_AND_CONDITIONS ] ) || 1 !== count( $_POST[ self::FIELD_TERMS_AND_CONDITIONS ] ) ) {
+			throw new ValidationException( self::FIELD_TERMS_AND_CONDITIONS, Strings::get( 'competition_signup.form.terms_and_conditions.error' ) );
+		}
 	}
 }

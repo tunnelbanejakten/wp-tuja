@@ -253,6 +253,40 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'duel_group' ) . ' (
+				id                     INTEGER AUTO_INCREMENT NOT NULL,
+				competition_id         INTEGER NOT NULL,
+				name                   VARCHAR(100),
+				link_form_question_id  INTEGER,
+				created_at             INTEGER,
+				PRIMARY KEY (id)
+			) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'duel' ) . ' (
+				id               INTEGER AUTO_INCREMENT NOT NULL,
+				random_id        VARCHAR(20) NOT NULL,
+				duel_group_id    INTEGER NOT NULL,
+				name             VARCHAR(100),
+				display_at       INTEGER,
+				duel_at          INTEGER,
+				created_at       INTEGER,
+				PRIMARY KEY (id),
+				UNIQUE KEY idx_duel_token (random_id)
+			) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'duel_invite' ) . ' (
+				duel_id            INTEGER NOT NULL,
+				team_id            INTEGER NOT NULL,
+				random_id          VARCHAR(20) NOT NULL,
+				status             VARCHAR(100),
+				status_updated_at  INTEGER,
+				PRIMARY KEY (duel_id, team_id),
+				UNIQUE KEY idx_duel_invite_token (random_id)
+			) ' . $charset;
+
+		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'message' ) . ' (
 				id                INTEGER AUTO_INCREMENT NOT NULL,
 				form_question_id  INTEGER,
@@ -355,11 +389,6 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$keys = array(
-			array( 'competition', 'message_template_new_team_admin', 'message_template', 'RESTRICT' ), // No longer used
-			array( 'competition', 'message_template_new_team_reporter', 'message_template', 'RESTRICT' ), // No longer used
-			array( 'competition', 'message_template_new_crew_member', 'message_template', 'RESTRICT' ), // No longer used
-			array( 'competition', 'message_template_new_noncrew_member', 'message_template', 'RESTRICT' ), // No longer used
-
 			array( 'team', 'map_id', 'map', 'RESTRICT' ),
 			array( 'team', 'competition_id', 'competition', 'CASCADE' ),
 			array( 'team_properties', 'team_id', 'team', 'CASCADE' ),
@@ -367,7 +396,7 @@ abstract class Plugin {
 
 			array( 'person_properties', 'person_id', 'person', 'CASCADE' ),
 			array( 'person_properties', 'team_id', 'team', 'CASCADE' ),
-			array( 'person_properties', 'referrer_team_id', 'team', 'RESTRICT' ),
+			array( 'person_properties', 'referrer_team_id', 'team', 'SET NULL' ),
 
 			array( 'form', 'competition_id', 'competition', 'CASCADE' ),
 
@@ -407,6 +436,10 @@ abstract class Plugin {
 			array( 'marker', 'link_question_group_id', 'form_question_group', 'CASCADE' ),
 			array( 'marker', 'link_station_id', 'station', 'CASCADE' ),
 
+			array( 'duel', 'duel_group_id', 'duel_group', 'CASCADE' ),
+			array( 'duel_invite', 'duel_id', 'duel', 'CASCADE' ),
+			array( 'duel_invite', 'team_id', 'team', 'CASCADE' ),
+
 			array( 'ticket', 'team_id', 'team', 'CASCADE' ),
 			array( 'ticket', 'station_id', 'station', 'CASCADE' ),
 			array( 'ticket_station_config', 'station_id', 'station', 'CASCADE' ),
@@ -420,11 +453,8 @@ abstract class Plugin {
 
 		try {
 			Database::start_transaction();
-			foreach ( $keys as $key ) {
-				Database::add_foreign_key( $key[0], $key[1], $key[2], $key[3] );
-			}
 
-			Database::set_missing_form_keys();
+			Database::update_foreign_keys( $keys );
 
 			Database::commit();
 		} catch ( Exception $e ) {
@@ -458,6 +488,7 @@ abstract class Plugin {
 			self::PATH . '/util/ticket/' . $classname . '.php',
 			self::PATH . '/util/fee/' . $classname . '.php',
 			self::PATH . '/util/paymentoption/' . $classname . '.php',
+			self::PATH . '/util/schedule/' . $classname . '.php',
 			self::PATH . '/util/' . $classname . '.php',
 			self::PATH . '/view/' . $classname . '.php',
 			self::PATH . '/admin/' . $classname . '.php',

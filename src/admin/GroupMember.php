@@ -11,6 +11,8 @@ use tuja\frontend\router\ReportPointsInitiator;
 
 class GroupMember extends Group {
 
+	private $no_referrer_group = null;
+
 	public function __construct() {
 		parent::__construct();
 
@@ -26,6 +28,10 @@ class GroupMember extends Group {
 			$person->set_status( Person::DEFAULT_STATUS );
 			$this->person = $person;
 		}
+
+		$this->no_referrer_group = new \tuja\data\model\Group();
+		$this->no_referrer_group->name = 'Ingen';
+		$this->no_referrer_group->id = 0;
 	}
 
 	public function handle_post() {
@@ -72,17 +78,24 @@ class GroupMember extends Group {
 			'food',
 			'note',
 			'role',
+			'referrer_team_id',
 		);
 
 		$is_updated = false;
 		foreach ( $props as $prop ) {
 			$new_value     = @$_POST[ 'tuja_person_property__' . $prop ];
 			$current_value = 'role' === $prop ? $person->get_type() : $person->{$prop};
-			if ( $current_value !== $new_value ) {
-				if ( 'role' === $prop ) {
-					$person->set_type( $new_value );
-				} else {
-					$person->{$prop} = $new_value;
+			if ( $current_value != $new_value ) {
+				switch($prop) {
+					case 'role':
+						$person->set_type( $new_value );
+						break;
+					case 'referrer_team_id':
+						$person->referrer_team_id = $new_value != $this->no_referrer_group->id ? intval( $new_value ) : null;
+						break;
+					default:
+						$person->{$prop} = $new_value;
+						break;
 				}
 
 				$is_updated = true;
@@ -186,8 +199,6 @@ class GroupMember extends Group {
 			join(
 				array_map(
 					function ( $key ) use ( $person ) {
-						$id = uniqid();
-
 						return sprintf(
 							'<option value="%s" %s>%s</option>',
 							$key,
@@ -196,6 +207,28 @@ class GroupMember extends Group {
 						);
 					},
 					Person::PERSON_TYPES
+				)
+			)
+		);
+
+		$referring_group_id = isset($_POST['tuja_person_property__referrer_team_id']) ? intval($_POST['tuja_person_property__referrer_team_id']) : $person->referrer_team_id ?? $this->no_referrer_group->id;
+
+		$referring_group_dropdown = sprintf(
+			'<div><select name="tuja_person_property__referrer_team_id">%s</select></div>',
+			join(
+				array_map(
+					function ( \tuja\data\model\Group $group ) use ( $referring_group_id ) {
+						return sprintf(
+							'<option value="%s" %s>%s</option>',
+							$group->id,
+							$referring_group_id === $group->id ? ' selected="selected"' : '',
+							$group->name,
+						);
+					},
+					array_merge(
+						array($this->no_referrer_group),
+						$this->group_dao->get_all_in_competition($this->competition->id, false, null)
+					)
 				)
 			)
 		);

@@ -3,11 +3,13 @@
 namespace tuja\admin;
 
 use Exception;
+use tuja\data\model\GroupCategory;
 use tuja\data\model\QuestionGroup;
 use tuja\data\store\CompetitionDao;
 use tuja\data\store\GroupDao;
 use tuja\data\store\EventDao;
 use tuja\data\store\FormDao;
+use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\MessageDao;
 use tuja\data\store\QuestionPointsOverrideDao;
 use tuja\data\store\StationPointsDao;
@@ -81,7 +83,10 @@ class Group extends GroupsList {
 		@list( $action, $parameter ) = explode( '__', @$_POST['tuja_points_action'] );
 
 		if ( $action === 'save_group' ) {
-			// Fee calculator
+			$this->group->name           = $_POST['tuja_group_name'];
+			$this->group->note           = $_POST['tuja_group_note'];
+			$this->group->city           = $_POST['tuja_group_city'];
+			$this->group->category_id    = intval( $_POST['tuja_group_category'] );
 			$this->group->fee_calculator = AdminUtils::get_fee_configuration_object( 'tuja_group_fee_calculator' );
 
 			$success = $this->group_dao->update( $this->group );
@@ -122,6 +127,29 @@ class Group extends GroupsList {
 			$this->group->fee_calculator,
 			'tuja_group_fee_calculator',
 			true
+		);
+	}
+
+	public function print_group_category_selector() {
+		$field_name = 'tuja_group_category';
+		return sprintf(
+			'<select name="%s" id="%s">%s</select>',
+			$field_name,
+			$field_name,
+			join(
+				array_map(
+					function ( GroupCategory $category ) {
+						$is_selected = $this->group->category_id == $category->id;
+						return sprintf(
+							'<option value="%s" %s>%s</option>',
+							$category->id,
+							$is_selected ? ' selected="selected"' : '',
+							$category->name,
+						);
+					},
+					( new GroupCategoryDao() )->get_all_in_competition( $this->competition->id )
+				)
+			)
 		);
 	}
 

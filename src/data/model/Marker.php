@@ -19,6 +19,8 @@ class Marker {
 	public $link_form_question_id;
 	public $link_question_group_id;
 	public $link_station_id;
+	public $link_duel_group_id; // read-only
+	public $link_duel_group_name; // read-only
 
 	public function validate() {
 		if ( strlen( trim( $this->name ) ) < 1 ) {

@@ -38,6 +38,12 @@ $this->print_menu();
 		<td><label for="">Meddelande till tävlingsledningen</label></td>
 		<td><input type="text" name="tuja_person_property__note" id="tuja_person_property__note" value="<?php echo $_POST['tuja_person_property__note'] ?? $person->note; ?>"></td>
 	</tr>
+	<tr>
+		<td><label for="">Rekryterande lag <?php AdminUtils::printTooltip( 'Det lag som uppmuntrade denna person att anmäla sig. Därmed också det lag som borde bli belönat för att ha "raggat funk".' ); ?></label></td>
+		<td>
+			<?php echo $referring_group_dropdown; ?>
+		</td>
+	</tr>
 	</tbody>
 </table>
 

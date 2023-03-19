@@ -2,13 +2,14 @@
 namespace tuja\admin;
 
 use tuja\data\model\Person;
+use tuja\util\DateUtils;
 
 $this->print_root_menu();
 $this->print_menu();
 $this->print_leaves_menu();
 ?>
 
-<p><a href="<?= $add_member_url ?>" id="tuja_group_member_add_link">Lägg till deltagare...</a></p>
+<p><a href="<?php echo $add_member_url; ?>" id="tuja_group_member_add_link">Lägg till deltagare...</a></p>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
 
@@ -68,23 +69,27 @@ $this->print_leaves_menu();
 					);
 
 					return sprintf(
-						'<tr class="tuja-person-status-%s">' .
+						'<tr class="tuja-person-status-%s tuja-person-type-%s">' .
 							'<td><input type="checkbox" name="tuja_group_people[]" value="%d" id="tuja_group_people__person_%d"></td>' .
 							'<td><a href="%s" id="tuja_group_member_link__%s">%s</a></td>' .
 							'<td>%s</td>' .
-							'<td>%s</td>' .
+							'<td><span class="tuja-person-age" title="Inmatat: %s, Normaliserat: %s, Numerisk ålder: %.2f">%s</span></td>' .
 							'<td><em>%s</em></td>' .
 							'<td><em>%s</em></td>' .
 							'<td>%s</td>' .
 							'<td><a href="mailto:%s">%s</a></td>' .
 							'</tr>',
 						$person->get_status(),
+						$person->get_type(),
 						$person->id,
 						$person->id,
 						$admin_person_url,
 						$person->id,
 						$person->get_short_description(),
 						$person->get_type_label(),
+						$person->pno,
+						DateUtils::fix_pno( $person->pno ),
+						$person->age,
 						$person->get_formatted_age(),
 						$person->food,
 						$person->note,

@@ -12,7 +12,6 @@ use tuja\util\messaging\EventMessageSender;
 use tuja\util\Strings;
 use tuja\view\FieldEmail;
 use tuja\view\FieldPhone;
-use tuja\view\FieldPno;
 use tuja\view\FieldText;
 
 class GroupSignup extends AbstractGroupView {
@@ -88,6 +87,7 @@ class GroupSignup extends AbstractGroupView {
 		}
 
 		$referrer_group = $this->get_referrer_group();
+		$referrer_group_html = '';
 		if ( isset( $referrer_group ) ) {
 			$referrer_group_html = sprintf( '<p class="tuja-message tuja-message-success">%s</p>', Strings::get( 'group_signup.referrer_group', $referrer_group->name ));
 		}
@@ -105,9 +105,8 @@ class GroupSignup extends AbstractGroupView {
 				false,
 				false, // TODO: Handle is_read_only?
 				false,
-				$show_validation_errors,
 				$this->get_group()->get_category()->get_rules()
-			) )->render( $this->get_person() )
+			) )->render( $this->get_person(), $show_validation_errors )
 		];
 
 		$html_sections[] = $this->get_recaptcha_html();

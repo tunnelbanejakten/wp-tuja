@@ -166,6 +166,8 @@ class Map extends AbstractRestEndpoint {
 						'longitude'              => $marker->gps_coord_long,
 						'radius'                 => 25,
 						'name'                   => $marker->name,
+						'link_duel_group_id'     => isset( $marker->link_duel_group_id ) ? intval( $marker->link_duel_group_id ) : null,
+						'link_duel_group_name'   => $marker->link_duel_group_name,
 						'link_form_id'           => isset( $marker->link_form_id ) ? intval( $marker->link_form_id ) : null,
 						'link_form_question_id'  => isset( $marker->link_form_question_id ) ? intval( $marker->link_form_question_id ) : null,
 						'link_question_group_id' => isset( $marker->link_question_group_id ) ? intval( $marker->link_question_group_id ) : null,

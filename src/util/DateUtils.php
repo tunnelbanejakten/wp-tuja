@@ -56,28 +56,33 @@ class DateUtils
 		if ( empty( trim( $input ) ) ) {
 			return null;
 		}
-		if ( preg_match( '/' . Person::PNO_PATTERN . '/', $input ) !== 1 ) {
-			throw new ValidationException( null, 'Ogiltigt datum eller personnummer.' );
-		}
 
-		$digits = preg_replace( "/[^0-9]/", "", $input );
-		if ( strlen( $digits ) == 6 ) {
+		$digits = preg_replace( '/[^0-9]/', '', $input );
+		if ( strlen( $digits ) == 2 ) {
+			// 83
+			return self::strict_date_parse(
+				self::is_20th_century( $digits ) ? "20${digits}0101" : "19${digits}0101"
+			)->format( 'Ymd' ) . '-0000';
+		} elseif ( strlen( $digits ) == 4 ) {
+			// 1983
+			return $digits . '0101-0000';
+		} elseif ( strlen( $digits ) == 6 ) {
 			// 831109
 			return self::strict_date_parse(
 					self::is_20th_century( $digits ) ? "20$digits" : "19$digits"
 				)->format( 'Ymd' ) . '-0000';
-		} else if ( strlen( $digits ) == 8 ) {
+		} elseif ( strlen( $digits ) == 8 ) {
 			//19831109
 			return self::strict_date_parse(
 					$digits
 				)->format( 'Ymd' ) . '-0000';
-		} else if ( strlen( $digits ) == 10 ) {
+		} elseif ( strlen( $digits ) == 10 ) {
 			// 8311090123
 			// 8311090000
 			return self::strict_date_parse(
 					substr( self::is_20th_century( $digits ) ? "20$digits" : "19$digits", 0, 8 )
 				)->format( 'Ymd' ) . '-' . substr( $digits, 6, 4 );
-		} else if ( strlen( $digits ) == 12 ) {
+		} elseif ( strlen( $digits ) == 12 ) {
 			// 198311090000
 			// 198311090123
 			return self::strict_date_parse(

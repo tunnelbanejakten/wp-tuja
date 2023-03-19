@@ -10,8 +10,6 @@ use tuja\util\Strings;
 
 	<?= $form ?>
 
-    <div id="tuja-competitionsignup-active-form"></div>
-
 	<?= $submit_button ?>
 </form>
 <div id="tuja-competitionsignup-inactive-forms" style="display: none;">

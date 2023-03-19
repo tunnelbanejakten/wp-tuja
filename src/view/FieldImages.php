@@ -75,12 +75,11 @@ class FieldImages extends Field {
 	}
 
 	public function render( $field_name, $answer_object, Group $group = null, $error_message = '' ) {
-		$hint = isset( $this->hint ) ? sprintf( '<small class="tuja-question-hint">%s</small>', $this->hint ) : '';
+		$label_and_hint = $this->label_with_hint_html( $field_name );
 
 		return sprintf(
-			'<div class="tuja-field tuja-fieldimages"><label>%s%s</label>%s%s</div>',
-			$this->is_formatted_label ? $this->formatted_label : $this->label,
-			$hint,
+			'<div class="tuja-field tuja-fieldimages">%s%s%s</div>',
+			$label_and_hint,
 			$this->render_image_upload( $field_name, $group->random_id, $this->get_data( $field_name, $answer_object, $group ) ),
 			! empty( $error_message ) ? sprintf( '<div class="tuja-message tuja-message-error">%s</div>', $error_message ) : ''
 		);

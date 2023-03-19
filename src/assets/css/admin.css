@@ -20,6 +20,10 @@
     margin: 1.5em 0;
 }
 
+.tuja ul.tuja-no-bullets-list {
+    list-style: none;
+}
+
 div.tuja-buttons {
     display: flex;
     flex-direction: row;

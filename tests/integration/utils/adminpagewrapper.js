@@ -18,7 +18,8 @@ class AdminPageWrapper extends PageWrapper {
     const groupId = await this.$eval(`span#tuja_new_group_message`, node => node.dataset.groupId)
 
     return {
-      id: groupId
+      id: groupId,
+      name
     }
   }
 
@@ -74,6 +75,27 @@ class AdminPageWrapper extends PageWrapper {
 
     await setGroupCategoryDateRange('Young Participants', isYoungParticipantsCategoryOpenNow, true)
     await setGroupCategoryDateRange('Old Participants', isOldParticipantsCategoryOpenNow, false)
+
+    await this.clickLink('#tuja_save_competition_settings_button')
+  }
+
+  async configureGroupCategoryFoodRules(competitionId, categoryName, foodStrict) {
+    await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=CompetitionSettingsGroupCategories&tuja_competition=${competitionId}`)
+
+    const categoryId = await this.$eval('input[type="text"][value="' + categoryName + '"]', node => node.name.substr('groupcategory__name__'.length))
+
+    const ruleValue = foodStrict ? 'fixed_options_and_custom' : 'optional';
+
+    await this.$eval('#groupcategory__rules__' + categoryId, (node, ruleValue) => {
+      const original = JSON.parse(node.value)
+      node.value = JSON.stringify({
+        ...original,
+        leader_food: ruleValue,
+        regular_food: ruleValue,
+        supervisor_food: ruleValue,
+        admin_food: ruleValue,
+      })
+    }, ruleValue)
 
     await this.clickLink('#tuja_save_competition_settings_button')
   }

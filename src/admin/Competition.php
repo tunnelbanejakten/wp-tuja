@@ -76,6 +76,7 @@ class Competition {
 				Forms::class               => array( 'Formulär', 'Uppgifter' ),
 				Stations::class            => array( 'Stationer', 'Uppgifter' ),
 				Maps::class                => array( 'Kartor', 'Uppgifter' ),
+				Duels::class               => array( 'Dueller', 'Uppgifter' ),
 
 				Groups::class              => array( 'Grupper', 'Administration' ),
 				Messages::class            => array( 'Meddelanden', 'Administration' ),

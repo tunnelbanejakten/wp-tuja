@@ -57,6 +57,11 @@
           "title": "Text på info-sidan (Markdown)",
           "type": "string",
           "format": "textarea"
+        },
+        "start_page_content": {
+          "title": "Text på start-sidan (Markdown)",
+          "type": "string",
+          "format": "textarea"
         }
       }
     },
@@ -76,6 +81,11 @@
         },
         "device_test": {
           "title": "Mobiltest",
+          "type": "boolean",
+          "format": "checkbox"
+        },
+        "duels": {
+          "title": "Dueller",
           "type": "boolean",
           "format": "checkbox"
         },

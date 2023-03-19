@@ -123,7 +123,7 @@ describe('Administration', () => {
         longFieldId: node.dataset.longFieldId
       })))
 
-      const { 
+      const {
         nameFieldId: emptyFieldId,
         latFieldId: emptyLatFieldId,
         longFieldId: emptyLongFieldId,
@@ -151,6 +151,30 @@ describe('Administration', () => {
       ).toEqual(
         fieldValuesAfterUpdate.filter(s => !s.includes(emptyFieldId) && !s.includes(nonEmptyFieldId))
       )
+    })
+  })
+
+  describe('Team', () => {
+    it('should be possible to rename team and change its category', async () => {
+      const { id: groupId, name: groupName } = await adminPage.addTeam()
+
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Group&tuja_competition=${competitionId}&tuja_group=${groupId}`)
+      
+      const newName = `Better than ${groupName}`
+      const newNote = `Formerly known as ${groupName}.`
+      const newCity = 'New Town'
+      await adminPage.type('#tuja_group_name', newName)
+      await adminPage.type('#tuja_group_note', newNote)
+      await adminPage.type('#tuja_group_city', newCity)
+
+      await adminPage.clickLink('button[name="tuja_points_action"][value="save_group"]')
+
+      await adminPage.expectFormValue('#tuja_group_name', newName)
+      await adminPage.expectFormValue('#tuja_group_note', newNote)
+      await adminPage.expectFormValue('#tuja_group_city', newCity)
+
+      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupsList&tuja_competition=${competitionId}`)
+      await adminPage.expectToContain('#tuja_groups_list', newName)
     })
   })
 
@@ -188,7 +212,7 @@ describe('Administration', () => {
         '+4670000001',
         'amy.zingh@example.com',
         'No allergies',
-        '20000101-0000',
+        '2000-01-01',
         'I like warm hugs')
 
       // Go back to complete list of team members
@@ -203,7 +227,7 @@ describe('Administration', () => {
         '+4670000001',
         'amy.zingh@example.com',
         'No allergies',
-        '20000101-0000',
+        '2000-01-01',
         'I like warm hugs')
 
       // Change the name
@@ -216,7 +240,7 @@ describe('Administration', () => {
         '+4670000001',
         'amy.zingh@example.com',
         'No allergies',
-        '20000101-0000',
+        '2000-01-01',
         'I like warm hugs')
     })
   })
