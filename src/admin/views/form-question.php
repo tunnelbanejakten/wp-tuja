@@ -19,7 +19,7 @@ $this->print_menu();
 <?php endif; ?>
 
 <form method="post">
-	<?php if($quetion->id): ?>
+	<?php if($question->id): ?>
 		<h2>Redigera fråga <?php echo esc_html($question->name); ?></h2>
 	<?php else: ?>
 		<h2>Ny fråga</h2>
