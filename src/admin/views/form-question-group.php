@@ -62,21 +62,66 @@ $this->print_menu();
 <hr class="tuja-hr">
 
 <h2>Redigera frågegrupp</h2>
-<form method="post">
-	<div class="tuja-admin-question">
-		<div class="tuja-admin-question-properties">
-			<?php
-			$json       = $this->question_group->get_editable_properties_json();
-			$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $this->question_group->id;
+<form method="post" class="tuja-admin-form tuja-admin-question">
+	<?php
+	$json       = $this->question_group->get_editable_properties_json();
+	$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $this->question_group->id;
 
-			$options_schema = $this->question_group->json_schema();
-
-			printf( '<div class="tuja-admin-formgenerator-form" data-schema="%s" data-values="%s" data-field-id="%s"></div>', htmlentities( $options_schema ), htmlentities( $json ), htmlentities( $field_name ) );
-			printf( '<input type="hidden" name="%s" id="%s" value="" />', $field_name, $field_name );
-			?>
+	$options_schema = $this->question_group->json_schema();
+	
+	?>
+	<div class="row">
+		<div class="form-control">
+			<label for="score_max">Maximal poäng</label>
+			<input type="number" name="score_max" id="score_max" value="<?php echo $this->question_group->score_max; ?>">
 		</div>
 	</div>
 
-	<button type="submit" name="tuja_action" class="button button-primary" value="<?php echo self::ACTION_UPDATE; ?>">Spara frågegrupp</button>
-	<button type="submit" class="button" name="tuja_action" onclick="return confirm('Är du säker?');" value="<?php echo self::ACTION_NAME_DELETE_PREFIX . $this->question_group->id; ?>">Ta bort</button>
+	<div class="row">
+		<label>Metod för att välja frågor att visa</label>
+	</div>
+
+	<div class="row">
+		<div class="form-control radio">
+			<input type="radio" name="question_filter" id="question_filter__all" value="all">
+			<label for="question_filter__all">Alla lag ser alla frågor i frågegruppen.</label>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="form-control radio">
+			<input type="radio" name="question_filter" id="question_filter__one" value="one">
+			<label for="question_filter__one">Varje lag ser bara en av frågorna i frågegruppen. Laget tilldelas sin fråga slumpmässigt.</label>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="form-control">
+			<label for="sort_order">Position</label>
+			<input type="text" name="sort_order" id="sort_order" value="<?php echo $this->question_group->sort_order; ?>">
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="form-control">
+			<label for="text">Rubrik</label>
+			<input type="text" name="text" id="text" value="<?php echo $this->question_group->text; ?>">
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="form-control">
+			<label for="text_description">Beskrivning</label>
+			<?php wp_editor($this->question_group->text_description, 'text_description'); ?>
+		</div>
+	</div>
+	<?php
+
+	printf( '<input type="hidden" name="%s" id="%s" value="" />', $field_name, $field_name );
+	?>
+
+	<div class="row">
+		<button type="submit" name="tuja_action" class="button button-primary" value="<?php echo self::ACTION_UPDATE; ?>">Spara frågegrupp</button>
+		<button type="submit" class="button" name="tuja_action" onclick="return confirm('Är du säker?');" value="<?php echo self::ACTION_NAME_DELETE_PREFIX . $this->question_group->id; ?>">Ta bort</button>
+	</div>
 </form>

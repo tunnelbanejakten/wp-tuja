@@ -86,7 +86,11 @@ class FormQuestionGroup extends Form implements RouterInterface {
 			$id = self::FORM_FIELD_NAME_PREFIX . '__' . $this->question_group->id;
 
 			if ( isset( $_POST[ $id ] ) ) {
-				$this->question_group->set_properties_from_json_string( stripslashes( $_POST[ $id ] ) );
+				if(!empty($_POST[ $id ])) {
+					$this->question_group->set_properties_from_json_string( stripslashes( $_POST[ $id ] ) );
+				} else {
+					$this->question_group->set_properties_from_array( $_POST );
+				}
 
 				try {
 					$affected_rows = $this->question_group_dao->update( $this->question_group );
