@@ -35,7 +35,6 @@ var tujaReportPoints = (function () {
 
   return {
     init: function ($) {
-      dismissWarningMessage();
       var $config = $(document.getElementById('tuja-report-points-data'))
       var userKey = $config.data('userKey')
       var stationId = $config.data('stationId')

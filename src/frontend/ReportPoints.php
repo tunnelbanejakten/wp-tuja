@@ -25,8 +25,11 @@ class ReportPoints extends AbstractCrewMemberView {
 	}
 
 	function output() {
-		Frontend::use_script( 'jquery' );
-		Frontend::use_script( 'tuja-report-points.js' );
+		$station = $this->get_station();
+		if ( false !== $station ) {
+			Frontend::use_script( 'jquery' );
+			Frontend::use_script( 'tuja-report-points.js' );
+		}
 		Frontend::use_stylesheet( 'tuja-wp-report-points.css' );
 
 		$form = $this->get_form_html();

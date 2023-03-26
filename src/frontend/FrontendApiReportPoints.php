@@ -21,7 +21,7 @@ class FrontendApiReportPoints {
 		$station = ( new StationDao() )->get( $_POST['station'] );
 
 		wp_send_json(
-			$controller->get_all_points( $station ),
+			array_values( $controller->get_all_points( $station ) ),
 			200
 		);
 		exit;
