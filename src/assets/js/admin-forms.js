@@ -16,4 +16,7 @@ jQuery(document).ready(function ($) {
   $('.tuja-admin-form').on('click', '.form-control.repeat button.remove', function() {
     $(this).closest('li').remove();
   });
+  $(document.body).on('click', '.notice-dismiss', function() {
+    $(this).closest('.notice').remove();
+  });
 })

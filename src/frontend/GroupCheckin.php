@@ -4,6 +4,8 @@ namespace tuja\frontend;
 
 
 use Exception;
+use Throwable;
+use tuja\controller\CheckinController;
 use tuja\data\model\Group;
 use tuja\data\model\MessageTemplate;
 use tuja\data\model\Person;
@@ -54,15 +56,12 @@ class GroupCheckin extends AbstractGroupView {
 			$template_parameters = self::params_body_text( $group );
 
 			if ( @$_POST[ self::FIELD_ANSWER ] == Strings::get( 'checkin.yes.label' ) ) {
-				$group->set_status( Group::STATUS_CHECKEDIN );
-				if ( $this->group_dao->update( $group ) ) {
-					printf( '<div class="tuja-message tuja-message-success">%s</div>', Strings::get( 'checkin.yes.title' ) );
-					print Strings::get( 'checkin.yes.body_text', $template_parameters );
+				( new CheckinController() )->check_in( $group, array() );
 
-					return;
-				} else {
-					throw new Exception( 'Could not set status to Checked In.' );
-				}
+				printf( '<div class="tuja-message tuja-message-success">%s</div>', Strings::get( 'checkin.yes.title' ) );
+				print Strings::get( 'checkin.yes.body_text', $template_parameters );
+
+				return;
 			} else {
 				printf( '<div class="tuja-message tuja-message-info">%s</div>', Strings::get( 'checkin.no.title' ) );
 				print Strings::get( 'checkin.no.body_text', $template_parameters );
@@ -72,12 +71,18 @@ class GroupCheckin extends AbstractGroupView {
 		}
 
 		$people            = $this->person_dao->get_all_in_group( $group->id );
-		$competing         = array_filter( $people, function ( Person $person ) {
-			return $person->is_competing();
-		} );
-		$adult_supervisors = array_filter( $people, function ( Person $person ) {
-			return $person->is_adult_supervisor();
-		} );
+		$competing         = array_filter(
+			$people,
+			function ( Person $person ) {
+				return $person->is_competing();
+			}
+		);
+		$adult_supervisors = array_filter(
+			$people,
+			function ( Person $person ) {
+				return $person->is_adult_supervisor();
+			}
+		);
 
 		$form = $this->get_form_html();
 
@@ -92,18 +97,19 @@ class GroupCheckin extends AbstractGroupView {
 	}
 
 	private function get_form_html( $errors = array() ): string {
-		$html_sections = [];
+		$html_sections = array();
 
 		$group_category_question = new FieldChoices(
 			null,
 			null,
 			false,
-			[
+			array(
 				Strings::get( 'checkin.yes.label' ),
-				Strings::get( 'checkin.no.label' )
-			],
-			false );
-		$html_sections[]         = $this->render_field( $group_category_question, self::FIELD_ANSWER, $errors[ self::FIELD_ANSWER ] );
+				Strings::get( 'checkin.no.label' ),
+			),
+			false
+		);
+		$html_sections[]         = $this->render_field( $group_category_question, self::FIELD_ANSWER, @$errors[ self::FIELD_ANSWER ] );
 
 		return join( $html_sections );
 	}

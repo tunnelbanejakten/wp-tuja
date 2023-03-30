@@ -1,4 +1,4 @@
-<div id="tuja-report-points-warning-message-container">
+<div id="tuja-report-points-warning-message-container" class="hide">
 	<section>
 		<div class="tuja-message-wrapper" style="width: 100%;">
 			<p class="tuja-message tuja-message-error" id="tuja-report-points-warning-message">Något gick fel.</p>

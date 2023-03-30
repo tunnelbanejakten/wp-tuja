@@ -69,6 +69,11 @@
       "type": "object",
       "title": "Sidor som visas i appen",
       "properties": {
+        "checkin": {
+          "title": "Incheckning",
+          "type": "boolean",
+          "format": "checkbox"
+        },
         "answer": {
           "title": "Svara",
           "type": "boolean",

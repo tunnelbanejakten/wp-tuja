@@ -14,6 +14,12 @@ use tuja\util\fee\FixedFeeCalculator;
 class AdminUtils {
 	const INHERIT = 'inherit';
 
+	static private $notices = [];
+
+	public static function getNotices() {
+		return self::$notices;
+	}
+
 	/**
 	 * Prints an error message, with WP's default admin page style, based on an exception.
 	 */
@@ -22,15 +28,24 @@ class AdminUtils {
 	}
 
 	public static function printError( $message ) {
-		printf(
-			'<div class="notice notice-error is-dismissable" style="margin-left: 2px"><p><strong>%s: </strong>%s</p></div>',
+		self::$notices[] = [
+			'<div class="notice notice-error is-dismissible">
+				<p><strong>%s: </strong>%s</p>
+				<button type="button" class="notice-dismiss"><span class="screen-reader-text">Avfärda denna notis.</span></button>
+			</div>',
 			'Fel',
 			$message
-		);
+		];
 	}
 
 	public static function printSuccess( $message ) {
-		printf( '<div class="notice notice-success is-dismissable" style="margin-left: 2px"><p>%s</p></div>', $message );
+		self::$notices[] = [
+			'<div class="notice notice-success is-dismissible">
+				<p>%s</p>
+				<button type="button" class="notice-dismiss"><span class="screen-reader-text">Avfärda denna notis.</span></button>
+			</div>',
+			$message
+		];
 	}
 
 	public static function printTooltip( $message ) {

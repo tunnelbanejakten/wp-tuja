@@ -16,6 +16,7 @@
         "start_page_content": "Detta är appen för Tunnelbanejakten."
     },
     "views": {
+        "checkin": false,
         "answer": true,
         "map": true,
         "device_test": true,
