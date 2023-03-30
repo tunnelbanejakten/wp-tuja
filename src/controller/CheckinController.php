@@ -31,16 +31,12 @@ class CheckinController {
 		}
 
 		$people               = $this->person_dao->get_all_in_group( $group->id );
-		error_log(json_encode($people, JSON_PRETTY_PRINT));
 		$people_update_result = array_reduce(
 			$people,
 			function ( bool $result, Person $person ) use ( $person_ids ) {
-				error_log(json_encode($person->id));
-				error_log(json_encode($person_ids));
 				if ( in_array( $person->id, $person_ids ) ) {
 					$person->set_status( Person::STATUS_CHECKEDIN );
 					$this_update_result = $this->person_dao->update( $person );
-					error_log(json_encode($this_update_result));
 					return $result && (false !== $this_update_result);
 				}
 				return $result;

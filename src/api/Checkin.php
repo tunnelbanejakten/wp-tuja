@@ -108,10 +108,8 @@ class Checkin extends AbstractRestEndpoint {
 			( new CheckinController() )->check_in( $group, $person_ids );
 			return self::create_response( 204 );
 		} catch ( Exception $e ) {
-			error_log( $e->getMessage() );
 			return self::create_response( 409 );
 		} catch ( Throwable $e ) {
-			error_log( $e->getMessage() );
 			return self::create_response( 500 );
 		}
 	}
