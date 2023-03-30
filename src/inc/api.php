@@ -213,6 +213,26 @@ class API extends Plugin {
 			)
 		);
 
+		register_rest_route(
+			'tuja/v1',
+			'/checkin',
+			array(
+				'methods'             => 'GET',
+				'callback'            => $this->callback( 'Checkin', 'get_checkin_data' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			'tuja/v1',
+			'/checkin',
+			array(
+				'methods'             => 'POST',
+				'callback'            => $this->callback( 'Checkin', 'check_in' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
 	}
 
 	public function callback( $controller, $method ) {

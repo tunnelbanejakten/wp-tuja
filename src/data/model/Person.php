@@ -11,8 +11,9 @@ use tuja\util\StateMachine;
 use tuja\util\StateMachineException;
 
 class Person {
-	const STATUS_CREATED = 'created';
-	const STATUS_DELETED = 'deleted';
+	const STATUS_CREATED   = 'created';
+	const STATUS_CHECKEDIN = 'checkedin';
+	const STATUS_DELETED   = 'deleted';
 
 	const DEFAULT_STATUS = self::STATUS_CREATED;
 
@@ -52,10 +53,15 @@ class Person {
 		self::PERSON_TYPE_ADMIN      => 'Administratör',
 	);
 	const STATUS_TRANSITIONS     = array(
-		self::STATUS_CREATED => array(
+		self::STATUS_CREATED   => array(
+			self::STATUS_CHECKEDIN,
 			self::STATUS_DELETED,
 		),
-		self::STATUS_DELETED => array(
+		self::STATUS_CHECKEDIN => array(
+			self::STATUS_CREATED,
+			self::STATUS_DELETED,
+		),
+		self::STATUS_DELETED   => array(
 			self::STATUS_CREATED,
 		),
 	);
