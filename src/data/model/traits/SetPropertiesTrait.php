@@ -1,6 +1,6 @@
 <?php
 
-namespace tuja\data\trait;
+namespace tuja\data\traits;
 
 use tuja\util\ReflectionUtils;
 

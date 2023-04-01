@@ -5,7 +5,7 @@ namespace tuja\data\model\question;
 
 use tuja\data\model\Group;
 use tuja\data\model\ValidationException;
-use tuja\data\trait\SetPropertiesTrait;
+use tuja\data\traits\SetPropertiesTrait;
 use tuja\util\score\AutoScoreResult;
 
 abstract class AbstractQuestion {

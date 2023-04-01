@@ -6,7 +6,7 @@ namespace tuja\data\model;
 use Exception;
 use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionDao;
-use tuja\data\trait\SetPropertiesTrait;
+use tuja\data\traits\SetPropertiesTrait;
 
 class QuestionGroup {
 
