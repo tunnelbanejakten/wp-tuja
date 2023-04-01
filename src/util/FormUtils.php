@@ -117,7 +117,7 @@ class FormUtils {
 			'name'          => $question_group->text,
 
 			// Parse Markdown texts into HTML.
-			'description'   => isset( $question_group->text_description ) ? Template::string( $question_group->text_description )->render( array(), true ) : null,
+			'description'   => isset( $question_group->text_description ) ? self::render_text_body( $question_group->text_description ) : null,
 
 			'is_marker_set' => $this->is_marker_set( 'link_question_group_id', $question_group->id ),
 			'questions'     => $questions_list,
@@ -238,9 +238,14 @@ class FormUtils {
 
 		if ( isset( $response['config']['text'] ) ) {
 			// Parse Markdown texts into HTML.
-			$response['config']['text'] = Template::string( $response['config']['text'] )->render( array(), true );
+			$response['config']['text'] = self::render_text_body( $response['config']['text'] );
 		}
 
 		return $response;
+	}
+
+	private static function render_text_body( string $raw ) {
+		$is_html = preg_match( '/<(img|p|em|strong)/', $raw ) === 1;
+		return Template::string( $raw )->render( array(), ! $is_html );
 	}
 }
