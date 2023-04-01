@@ -52,6 +52,7 @@ class Group {
 		],
 		self::STATUS_CHECKEDIN         => [
 			self::STATUS_CHECKEDOUT,
+			self::STATUS_AWAITING_CHECKIN,
 			self::STATUS_DELETED
 		],
 		self::STATUS_CHECKEDOUT        => [

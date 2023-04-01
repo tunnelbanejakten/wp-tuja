@@ -34,7 +34,7 @@ $this->print_menu();
 				<tr>
 					<td><?php echo $question->name ?: $i; ?></td>
 					<td><?php echo $question->text; ?></td>
-					<td><?php echo array_pop(explode('\\', get_class($question))); ?></td>
+					<td><?php echo preg_replace( '/.*\\\\([a-zA-Z]+)Question$/', '$1', get_class( $question ) ); ?></td>
 					<td>
 						<?php
 							printf(

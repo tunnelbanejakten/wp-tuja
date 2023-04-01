@@ -6,7 +6,6 @@ use tuja\data\model\Group;
 
 class AppUtils {
 	public static function group_link( Group $group ) {
-		$is_localhost = strpos( $_SERVER['HTTP_HOST'], 'localhost' ) !== false;
 		return sprintf(
 			'%s/#/%s/',
 			self::base_link(),
