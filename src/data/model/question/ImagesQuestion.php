@@ -14,15 +14,15 @@ class ImagesQuestion extends AbstractQuestion {
 	public $max_files_count;
 
 	public function __construct(
-		$name,
-		$text,
-		$text_hint,
-		$id,
-		$question_group_id,
-		$sort_order,
-		$limit_time,
+		$name = null,
+		$text = '',
+		$text_hint = null,
+		$id = 0,
+		$question_group_id = 0,
+		$sort_order = 0,
+		$limit_time = -1,
 		$text_preparation = null,
-		$score_max,
+		$score_max = 0,
 		$max_files_count = self::DEFAULT_FILE_COUNT_LIMIT
 	) {
 		parent::__construct(
@@ -83,5 +83,16 @@ class ImagesQuestion extends AbstractQuestion {
 
 	function get_submitted_answer_html( $answer_object, Group $group ) {
 		return AdminUtils::get_image_thumbnails_html( $answer_object, $group->random_id );
+	}
+
+	public function question_type_props_html(): void {
+		?>
+		<div class="row">
+			<div class="form-control short">
+				<label for="max_files_count">Maximalt antal bilder</label>
+				<input type="number" name="max_files_count" id="max_files_count" value="<?php echo (int)$this->max_files_count; ?>">
+			</div>
+		</div>
+		<?php
 	}
 }

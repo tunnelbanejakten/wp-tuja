@@ -6,9 +6,11 @@ namespace tuja\data\model;
 use Exception;
 use tuja\data\store\GroupDao;
 use tuja\data\store\QuestionDao;
-use tuja\util\ReflectionUtils;
+use tuja\data\trait\SetPropertiesTrait;
 
 class QuestionGroup {
+
+	use SetPropertiesTrait;
 
 	const QUESTION_FILTER_ALL = 'all';
 	const QUESTION_FILTER_FIXED_RANDOM = 'one_random_with_even_group_distribution';
@@ -37,27 +39,6 @@ class QuestionGroup {
 		if ( isset( $this->score_max ) && $this->score_max < 0 ) {
 			throw new ValidationException( 'score_max', 'Maximal poäng måste vara mer än 0.' );
 		}
-	}
-
-	function json_schema() {
-		$str = __DIR__ . '/QuestionGroup.schema.json';
-
-		return file_get_contents( $str );
-	}
-
-	function get_editable_properties_json() {
-		$schema = json_decode( $this->json_schema(), true );
-
-		$editable_properties = array_keys( $schema['properties'] );
-
-		return ReflectionUtils::to_json_string( $this, $editable_properties );
-	}
-
-	function set_properties_from_json_string( $json_string ) {
-		ReflectionUtils::set_properties_from_json_string(
-			$this,
-			$json_string,
-			$this->json_schema() );
 	}
 
 	function get_filtered_questions( QuestionDao $question_dao, GroupDao $group_dao, Group $group ) {

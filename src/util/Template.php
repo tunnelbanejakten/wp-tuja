@@ -40,7 +40,7 @@ class Template {
 
 			return $markdown_parser->parse( $rendered_content );
 		} else {
-			return $rendered_content;
+			return wpautop( $rendered_content );
 		}
 	}
 

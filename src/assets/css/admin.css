@@ -16,6 +16,10 @@
     list-style-type: disc;
 }
 
+.tuja-hr {
+    margin: 1.5em 0;
+}
+
 .tuja ul.tuja-no-bullets-list {
     list-style: none;
 }
@@ -31,28 +35,21 @@ div.tuja-buttons em {
     margin-left: 10px;
 }
 
+.tuja-admin-table.forms {
+    max-width: 950px;
+}
+
+.tuja-admin-table {
+    margin-bottom: 1em;
+}
+
+.tuja-admin-table tbody td {
+    vertical-align: middle;
+}
+
 .tuja-admin-question {
     margin: 1em 0;
     padding: 1em 0 0 0;
-    border-top: 1px solid #aaa;
-}
-
-.tuja-admin-question:first-child {
-    margin-top: 0;
-    padding-top: 0;
-    border-top: none;
-}
-
-.tuja-admin-question label {
-    display: block;
-}
-
-.tuja-admin-question input,
-.tuja-admin-question textarea,
-.tuja-admin-question select {
-    display: block;
-    width: 100%;
-    max-width: 70em;
 }
 
 .tuja-admin-question-preview {
@@ -69,16 +66,7 @@ div.tuja-buttons em {
 
 .tuja-admin-question-preview input {
     width: auto;
-}
-
-.tuja-admin-question-properties {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.tuja-admin-question-properties textarea {
-    margin-bottom: 5px;
-}
+}tuja-admin-question
 
 .tuja-admin-question-property {
     width: 30em;
@@ -106,6 +94,51 @@ body.wp-admin th {
     border-bottom: 1px solid #ccc;
     padding: 0 0 10px 0;
     margin: 0 0 10px 0;
+}
+
+form.tuja-admin-form {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 10px;
+}
+
+form.tuja-admin-form h3 {
+    margin-bottom: 0;
+}
+
+form.tuja-admin-form .form-control {
+    display: flex;
+    flex-flow: column nowrap;
+    flex: 1;
+}
+
+form.tuja-admin-form .form-control.short {
+    flex: 0 1 auto;
+}
+
+form.tuja-admin-form .row,
+form.tuja-admin-form .form-control.radio,
+form.tuja-admin-form .form-control.checkbox {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    row-gap: 10px;
+    column-gap: 5px;
+}
+
+form.tuja-admin-form .form-control.radio input,
+form.tuja-admin-form .form-control.checkbox input {
+    margin: 0;
+}
+
+form.tuja-admin-form .form-control.repeat {
+    align-items: flex-start;
+    margin-bottom: 5px;
+}
+
+form.tuja-admin-form .form-control.repeat ol {
+    list-style-type: none;
+    margin: 0 0 5px;
 }
 
 div.tuja-messagetemplate-collapsible .tuja-messagetemplate-collapsecontrol>a>span:nth-child(1) {

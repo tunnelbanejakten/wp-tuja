@@ -477,6 +477,7 @@ abstract class Plugin {
 			self::PATH . '/data/model/' . $classname . '.php',
 			self::PATH . '/util/anonymizer/' . $classname . '.php',
 			self::PATH . '/data/model/question/' . $classname . '.php',
+			self::PATH . '/data/model/trait/' . $classname . '.php',
 			self::PATH . '/util/router/' . $classname . '.php',
 			self::PATH . '/util/markdown/' . $classname . '.php',
 			self::PATH . '/util/formattedtext/' . $classname . '.php',

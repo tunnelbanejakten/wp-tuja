@@ -11,16 +11,16 @@ class NumberQuestion extends AbstractQuestion {
 	public $correct_answer = 0;
 
 	public function __construct(
-		$name,
-		$text,
-		$text_hint,
-		$id,
-		$question_group_id,
-		$sort_order,
-		$limit_time,
+		$name = null,
+		$text = '',
+		$text_hint = null,
+		$id = 0,
+		$question_group_id = 0,
+		$sort_order = 0,
+		$limit_time = -1,
 		$text_preparation = null,
-		$score_max,
-		$correct_answer
+		$score_max = 0,
+		$correct_answer = null
 	) {
 		parent::__construct(
 			$name,
@@ -111,5 +111,16 @@ class NumberQuestion extends AbstractQuestion {
 		}
 
 		return number_format_i18n( $answer_object );
+	}
+
+	public function question_type_props_html(): void {
+		?>
+		<div class="row">
+			<div class="form-control short">
+				<label for="correct_answer">Rätt svar</label>
+				<input type="number" name="correct_answer" id="correct_answer" value="<?php echo (int)$this->correct_answer; ?>">
+			</div>
+		</div>
+		<?php
 	}
 }

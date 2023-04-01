@@ -3,6 +3,7 @@
 namespace tuja;
 
 use Exception;
+use Throwable;
 use tuja\data\model\Event;
 use tuja\data\model\Form as ModelForm;
 use tuja\data\store\EventDao;
@@ -116,7 +117,7 @@ class Questions extends AbstractRestEndpoint {
 					$errors
 				);
 			}
-		} catch ( Exception $e ) {
+		} catch ( Throwable $e ) {
 			return self::create_response( 500, array( 'error' => $e->getMessage() ) );
 		}
 	}

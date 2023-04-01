@@ -114,7 +114,7 @@ $this->print_menu();
 			printf( '<td data-group-key="%s"><input type="checkbox" name="tuja_group__selection[]" value="%d" class="tuja-group-checkbox" %s></td>',
 				$group->random_id,
 				$group->id,
-				@in_array( $group->id, $_POST['tuja_group__selection'] ) ? 'checked="checked"' : ''
+				@in_array( $group->id, $_POST['tuja_group__selection'] ?? array() ) ? 'checked="checked"' : ''
 			);
 
 			// Print name and age range

@@ -18,6 +18,7 @@ use tuja\Frontend;
 use tuja\util\ImageManager;
 use tuja\util\Strings;
 use tuja\view\FieldChoices;
+use Exception;
 
 
 class Slideshow extends FrontendView {
@@ -62,7 +63,7 @@ class Slideshow extends FrontendView {
 	}
 
 	private function get_question_ids(): array {
-		list( $filter_type, $filter_param ) = @explode( '_', $_GET[ self::FIELD_QUESTION_FILTER ] );
+		list( $filter_type, $filter_param ) = @explode( '_', $_GET[ self::FIELD_QUESTION_FILTER ] ?? '_' );
 
 		switch ( $filter_type ) {
 			case 'all':
@@ -122,7 +123,7 @@ class Slideshow extends FrontendView {
 			}
 		}
 
-		if ( $_GET[ self::FIELD_SHUFFLE ] == 'yes' ) {
+		if ( @$_GET[ self::FIELD_SHUFFLE ] == 'yes' ) {
 			shuffle( $image_urls );
 		}
 
@@ -156,7 +157,7 @@ class Slideshow extends FrontendView {
 					FieldChoices::FIELD_TYPE,
 					FieldChoices::FIELD_TYPE,
 					$id,
-					$_GET[ self::FIELD_QUESTION_FILTER ] == $key ? ' checked="checked"' : '',
+					@$_GET[ self::FIELD_QUESTION_FILTER ] == $key ? ' checked="checked"' : '',
 					$id,
 					$label );
 			}, array_keys( $question_filters ), array_values( $question_filters ) ) ) );
@@ -173,7 +174,7 @@ class Slideshow extends FrontendView {
 				FieldChoices::FIELD_TYPE,
 				FieldChoices::FIELD_TYPE,
 				$id,
-				$_GET[ self::FIELD_DURATION ] == $seconds ? ' checked="checked"' : '',
+				@$_GET[ self::FIELD_DURATION ] == $seconds ? ' checked="checked"' : '',
 				$id,
 				htmlspecialchars( sprintf( '%d sekunder', $seconds ) ) );
 		}, [ 3, 5, 10 ] ) ) );
@@ -190,7 +191,7 @@ class Slideshow extends FrontendView {
 				FieldChoices::FIELD_TYPE,
 				FieldChoices::FIELD_TYPE,
 				$id,
-				$_GET[ self::FIELD_SHUFFLE ] == 'yes' ? ' checked="checked"' : '',
+				@$_GET[ self::FIELD_SHUFFLE ] == 'yes' ? ' checked="checked"' : '',
 				$id,
 				htmlspecialchars( "Ja, slumpa" ) ) );
 
