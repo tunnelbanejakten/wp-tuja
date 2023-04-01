@@ -79,9 +79,18 @@ class Form extends Forms {
 			$group_props->text    = null;
 			$group_props->form_id = $this->form->id;
 
-			$success = $this->question_group_dao->create( $group_props );
+			$new_question_group_id = $this->question_group_dao->create( $group_props );
 
-			$success !== false ? AdminUtils::printSuccess( 'Grupp skapad!' ) : AdminUtils::printError( 'Kunde inte skapa grupp.' );
+			$new_question_group_id !== false ? AdminUtils::printSuccess(
+				sprintf(
+					'<span
+							id="tuja_new_question_group_message"
+							data-question-group-id="%s"
+							>Grupp skapad!</span>',
+					$new_question_group_id,
+				)
+			)
+			: AdminUtils::printError( 'Kunde inte skapa grupp.' );
 		}
 
 		QuestionNameGenerator::update_competition_questions( $this->form->competition_id );

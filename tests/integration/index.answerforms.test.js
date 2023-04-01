@@ -33,20 +33,9 @@ describe('Answer Forms', () => {
     await adminPage.type('#tuja_form_name', formName)
     await adminPage.clickLink('#tuja_form_create_button')
 
-    const links = await adminPage.page.$$('form.tuja a')
-    let link = null
-    for (let i = 0; i < links.length; i++) {
-      const el = links[i]
-      const linkText = await el.evaluate(node => node.innerText)
-      const isEqual = linkText === formName
-      if (isEqual) {
-        link = el
-        break
-      }
-    }
+    const { id, key } = await adminPage.$eval(`span#tuja_new_form_message`, node => ({ id: node.dataset.formId, key: node.dataset.formRandomId }))
 
-    const formIds = await link.evaluate(node => ({ id: node.dataset.id, key: node.dataset.randomId }))
-    return formIds
+    return { id, key }
   }
 
   beforeAll(async () => {
@@ -67,21 +56,6 @@ describe('Answer Forms', () => {
     let formKey = 0
     let formId = 0
     let groupProps = null
-
-    const createForm = async () => {
-      const { id, key } = await createNewForm('The Form')
-
-      await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=Form&tuja_competition=${competitionId}&tuja_form=${id}`)
-
-      await adminPage.clickLink('button[name="tuja_action"][value="question_group_create"]')
-      await adminPage.clickLink('div.tuja-admin-question a[href*="FormQuestion"]')
-      await adminPage.clickLink('button[name="tuja_action"][value="question_create__images"]')
-      await adminPage.clickLink('button[name="tuja_action"][value="question_create__text"]')
-      await adminPage.clickLink('button[name="tuja_action"][value="question_create__number"]')
-      await adminPage.clickLink('button[name="tuja_action"][value="question_create__choices"]')
-
-      return ({ id, key })
-    }
 
     beforeAll(async () => {
       groupProps = await defaultPage.signUpTeam(adminPage)
