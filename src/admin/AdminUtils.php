@@ -14,11 +14,8 @@ use tuja\util\fee\FixedFeeCalculator;
 class AdminUtils {
 	const INHERIT = 'inherit';
 
-	static private $notices = [];
-
-	public static function getNotices() {
-		return self::$notices;
-	}
+	static private $notices              = array();
+	static private $enable_notice_print = false;
 
 	/**
 	 * Prints an error message, with WP's default admin page style, based on an exception.
@@ -27,25 +24,42 @@ class AdminUtils {
 		self::printError( $ex->getMessage() );
 	}
 
+	public static function enableNoticePrint() {
+		self::$enable_notice_print = true;
+		self::printNotices();
+	}
+
 	public static function printError( $message ) {
-		self::$notices[] = [
+		self::$notices[] = array(
 			'<div class="notice notice-error is-dismissible">
 				<p><strong>%s: </strong>%s</p>
 				<button type="button" class="notice-dismiss"><span class="screen-reader-text">Avfärda denna notis.</span></button>
 			</div>',
 			'Fel',
-			$message
-		];
+			$message,
+		);
+		self::printNotices();
+	}
+
+	public static function printNotices() {
+		if ( self::$enable_notice_print ) {
+			foreach ( self::$notices as $notice ) {
+				error_log( json_encode( $notice ) );
+				printf( ...$notice );
+			}
+			self::$notices = array();
+		}
 	}
 
 	public static function printSuccess( $message ) {
-		self::$notices[] = [
+		self::$notices[] = array(
 			'<div class="notice notice-success is-dismissible">
 				<p>%s</p>
 				<button type="button" class="notice-dismiss"><span class="screen-reader-text">Avfärda denna notis.</span></button>
 			</div>',
-			$message
-		];
+			$message,
+		);
+		self::printNotices();
 	}
 
 	public static function printTooltip( $message ) {
