@@ -15,11 +15,11 @@ abstract class Field {
 	protected $read_only;
 
 	public function __construct( $label, $hint = null, $read_only = false ) {
-		$this->formatted_label    = Template::string( $label )->render( array(), true );
+		$this->formatted_label    = Template::string( $label, Template::TYPE_MARKDOWN )->render( array() );
 		$this->label              = $label;
 		$this->is_formatted_label = '<p>' . $this->label . '</p>' !== $this->formatted_label;
 
-		$this->formatted_hint    = Template::string( $hint )->render( array(), true );
+		$this->formatted_hint    = Template::string( $hint, Template::TYPE_MARKDOWN )->render( array() );
 		$this->hint              = $hint;
 		$this->is_formatted_hint = '<p>' . $this->hint . '</p>' !== $this->formatted_hint;
 

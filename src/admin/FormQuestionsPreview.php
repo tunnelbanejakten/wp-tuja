@@ -37,7 +37,7 @@ class FormQuestionsPreview {
 				$question_group_name = $question_group->text;
 				printf( '<h3>%s</h3>', $question_group_name );
 
-				$question_group_description = isset( $question_group->text_description ) ? Template::string( $question_group->text_description )->render( array(), true ) : null;
+				$question_group_description = isset( $question_group->text_description ) ? Template::string( $question_group->text_description, Template::TYPE_WP_EDITOR_HTML )->render( array() ) : null;
 				if ( isset( $question_group_description ) ) {
 					printf( '<div>%s</div>', $question_group_description );
 				}

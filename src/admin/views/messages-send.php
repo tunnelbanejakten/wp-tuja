@@ -162,9 +162,9 @@ if ( ! empty( $action_result ) ) {
 			}, $variables ) );
 
 			$preview_html = sprintf( '<div class="tuja-message-preview">%s</div><div class="tuja-message-preview %s">%s</div>',
-				strip_tags( $subject_template->render( $template_parameters ) ),
+				$subject_template->render( $template_parameters ),
 				$is_plain_text_body ? 'tuja-message-preview-plaintext' : 'tuja-message-preview-html',
-				$body_template->render( $template_parameters, ! $is_plain_text_body ) );
+				$body_template->render( $template_parameters ) );
 
 			return sprintf(
 				'<tr>' .
