@@ -27,12 +27,12 @@ class Configuration extends AbstractRestEndpoint {
 
 		$info_page_content = @$competition->app_config['messages']['info_page_content'];
 		if ( isset( $info_page_content ) ) {
-			$competition->app_config['messages']['info_page_content'] = Template::string( $info_page_content )->render( array(), true );
+			$competition->app_config['messages']['info_page_content'] = Template::string( $info_page_content, Template::TYPE_MARKDOWN )->render( array(), true );
 		}
 
 		$start_page_content = @$competition->app_config['messages']['start_page_content'];
 		if ( isset( $start_page_content ) ) {
-			$competition->app_config['messages']['start_page_content'] = Template::string( $start_page_content )->render( array(), true );
+			$competition->app_config['messages']['start_page_content'] = Template::string( $start_page_content, Template::TYPE_MARKDOWN )->render( array(), true );
 		}
 
 		return array(

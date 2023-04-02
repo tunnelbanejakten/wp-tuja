@@ -92,14 +92,14 @@ class MessageTemplate {
 				return new OutgoingEmailMessage(
 					new MessageSender(),
 					$contact,
-					$this->render_body( $template_parameters ),
-					Template::string( $this->subject )->render( $template_parameters )
+					$this->render_body( $template_parameters, false ),
+					Template::string( $this->subject, Template::TYPE_PLAIN_TEXT )->render( $template_parameters )
 				);
 		}
 		throw new Exception( 'Invalid type: ' . $this->delivery_method );
 	}
 
 	public function render_body( $template_parameters, $is_plaintext = false ) {
-		return Template::string( $this->body )->render( $template_parameters, ! $is_plaintext );
+		return Template::string( $this->body, $is_plaintext ? Template::TYPE_PLAIN_TEXT : Template::TYPE_MARKDOWN )->render( $template_parameters );
 	}
 }

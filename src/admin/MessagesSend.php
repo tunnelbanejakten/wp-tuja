@@ -70,8 +70,9 @@ class MessagesSend extends Messages {
 				$message_template->subject         = $_POST['tuja_messages_subject'];
 				$message_template->delivery_method = $_POST['tuja_messages_delivery_method'];
 
-				$body_template    = Template::string( $message_template->body );
-				$subject_template = Template::string( $message_template->subject );
+				$is_plain_text_body = $delivery_method['is_plain_text_body'];
+				$body_template      = Template::string( $message_template->body, $is_plain_text_body ? Template::TYPE_PLAIN_TEXT : Template::TYPE_MARKDOWN );
+				$subject_template   = Template::string( $message_template->subject, Template::TYPE_PLAIN_TEXT );
 				$variables = array_merge( $body_template->get_variables(), $subject_template->get_variables() );
 
 				$recipients_data = array_map( function ( $person ) use ( $delivery_method, $variables, $selected_groups, $subject_template, $body_template, $is_send, $message_template ) {
@@ -105,7 +106,7 @@ class MessagesSend extends Messages {
 						'person_id'           => $person->id,
 						'person_name'         => $person->name,
 						'group_name'          => $group->name,
-						'is_plain_text_body'  => $delivery_method['is_plain_text_body']
+						'is_plain_text_body'  => $is_plain_text_body
 					];
 				}, $people );
 

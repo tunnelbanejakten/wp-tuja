@@ -116,10 +116,10 @@ class CompetitionSignup extends FrontendView {
 		$person_forms = $this->get_person_forms_html( $errors );
 
 		$intro = Strings::get( 'competition_signup.intro.body_text' );
-		$intro = ! empty( $intro ) ? Template::string( $intro )->render( [], true ) : '';
+		$intro = ! empty( $intro ) ? Template::string( $intro, Template::TYPE_MARKDOWN )->render( [] ) : '';
 
 		$fineprint = Strings::get( 'competition_signup.fineprint.body_text' );
-		$fineprint = ! empty( $fineprint ) ? sprintf( '<div class="tuja-fineprint">%s</div>', Template::string( $fineprint )->render( [], true ) ) : '';
+		$fineprint = ! empty( $fineprint ) ? sprintf( '<div class="tuja-fineprint">%s</div>', Template::string( $fineprint, Template::TYPE_MARKDOWN )->render( [] ) ) : '';
 
 		$submit_button = $this->get_submit_button_html();
 

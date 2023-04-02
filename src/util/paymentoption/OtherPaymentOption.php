@@ -16,7 +16,7 @@ class OtherPaymentOption implements PaymentOption {
 			Template::group_parameters( $group ),
 			Template::site_parameters()
 		);
-		return Template::string( $this->message_template )->render( $params );
+		return Template::string( $this->message_template, Template::TYPE_PLAIN_TEXT )->render( $params );
 	}
 
 	function render( Group $group, int $fee ): string {

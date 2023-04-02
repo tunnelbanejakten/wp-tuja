@@ -143,7 +143,7 @@ class Strings {
 				throw new Exception( 'Parameters must be specified as array, not list of arguments.' );
 			}
 
-			return Template::string( $value )->render( @$args[0] ?: [], self::is_markdown( $key ) );
+			return Template::string( $value, self::is_markdown( $key ) ? Template::TYPE_MARKDOWN : Template::TYPE_PLAIN_TEXT )->render( @$args[0] ?: [] );
 		} else {
 			return sprintf( $value, ...$args );
 		}

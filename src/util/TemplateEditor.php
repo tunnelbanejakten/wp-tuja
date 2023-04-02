@@ -70,6 +70,6 @@ class TemplateEditor {
 					%s
 				</body>
 			</html>',
-			Template::string( $template )->render( $parameters, true ) );
+			Template::string( $template, Template::TYPE_MARKDOWN )->render( $parameters ) );
 	}
 }

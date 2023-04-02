@@ -24,47 +24,59 @@ use tuja\util\formattedtext\FormattedText;
 use tuja\util\rules\RuleResult;
 
 class Template {
-	private $content;
+	const TYPE_PLAIN_TEXT     = 'PLAIN_TEXT';
+	const TYPE_HTML           = 'HTML';
+	const TYPE_WP_EDITOR_HTML = 'WP_EDITOR_HTML';
+	const TYPE_MARKDOWN       = 'MARKDOWN';
 
-	private function __construct( $content ) {
-		$this->content = $content;
+	private $content;
+	private $content_type;
+
+	private function __construct( $content, string $content_type ) {
+		$this->content      = $content;
+		$this->content_type = $content_type;
 	}
 
-	public function render( $parameters = array(), $is_markdown = false ) {
+	public function render( $parameters = array() ) {
 		$rendered_content = $this->content;
 		foreach ( $parameters as $name => $value ) {
 			$rendered_content = str_replace( '{{' . $name . '}}', $value, $rendered_content );
 		}
-		if ( $is_markdown ) {
-			$markdown_parser = new FormattedText();
-
-			return $markdown_parser->parse( $rendered_content );
-		} else {
-			return wpautop( $rendered_content );
+		switch ( $this->content_type ) {
+			case self::TYPE_WP_EDITOR_HTML:
+				return wpautop( $rendered_content );
+			case self::TYPE_MARKDOWN:
+				return ( new FormattedText() )->parse( $rendered_content );
+			case self::TYPE_PLAIN_TEXT:
+			case self::TYPE_HTML:
+			default:
+				return $rendered_content;
 		}
 	}
 
 	public static function params_template_registration_evaluation( array $issues ): array {
-		return [
+		return array(
 			'list_of_messages' => join(
 				"\n",
 				array_map(
 					function ( RuleResult $issue ) {
 						return sprintf( '- %s. %s', $issue->rule_name, $issue->details );
 					},
-					$issues ) )
-		];
+					$issues
+				)
+			),
+		);
 	}
 
 	public function get_variables() {
-		$variables = [];
+		$variables = array();
 		preg_match_all( '/\{\{([a-zA-Z_]+)\}\}/', $this->content, $variables );
 
 		return array_unique( $variables[1] );
 	}
 
 	public static function person_parameters( Person $person, Group $group ) {
-		return [
+		return array(
 			'person_key'                => $person->random_id,
 			'person_name'               => $person->name,
 			'person_phone'              => $person->phone,
@@ -73,7 +85,7 @@ class Template {
 			'person_pno'                => $person->pno,
 			'person_edit_link'          => PersonEditorInitiator::link( $group, $person ),
 			'person_report_points_link' => ReportPointsInitiator::link_all( $person ),
-		];
+		);
 	}
 
 	public static function group_parameters( Group $group, array $referral_signup_groups = array() ) {
@@ -114,39 +126,39 @@ class Template {
 		return array_merge(
 			$referral_links,
 			array(
-			'group_name'                             => $group->name,
-			'group_key'                              => $group->random_id,
-			'group_home_link'                        => GroupHomeInitiator::link( $group ),
-			'group_payment_link'                     => GroupPaymentInitiator::link( $group ),
-			'group_app_link'                         => AppUtils::group_link( $group ),
-			'group_map_name'                         => $group_map_name,
-			'group_map_start_coord'                  => $group_map_start_coord,
-			'group_map_start_label'                  => $group_map_start_label,
-			'group_edit_link'                        => GroupEditorInitiator::link( $group ),
-			'group_people_edit_link'                 => GroupPeopleEditorInitiator::link( $group ),
-			'group_signup_link'                      => GroupSignupInitiator::link( $group ),
-			'group_status_link'                      => GroupStatusInitiator::link( $group ),
-			'group_tickets_link'                     => GroupTicketsInitiator::link( $group ),
-			'group_checkin_link'                     => GroupCheckinInitiator::link( $group ),
-			'group_cancel_signup_link'               => GroupCancelSignupInitiator::link( $group ),
-			'group_registration_evaluation_warnings' => self::group_parameter_registration_issues(
-				'template.registration_evaluation.warnings.label',
-				$evaluation_result,
-				RuleResult::WARNING
-			),
-			'group_registration_evaluation_errors'   => self::group_parameter_registration_issues(
-				'template.registration_evaluation.errors.label',
-				$evaluation_result,
-				RuleResult::BLOCKER
-			),
+				'group_name'                             => $group->name,
+				'group_key'                              => $group->random_id,
+				'group_home_link'                        => GroupHomeInitiator::link( $group ),
+				'group_payment_link'                     => GroupPaymentInitiator::link( $group ),
+				'group_app_link'                         => AppUtils::group_link( $group ),
+				'group_map_name'                         => $group_map_name,
+				'group_map_start_coord'                  => $group_map_start_coord,
+				'group_map_start_label'                  => $group_map_start_label,
+				'group_edit_link'                        => GroupEditorInitiator::link( $group ),
+				'group_people_edit_link'                 => GroupPeopleEditorInitiator::link( $group ),
+				'group_signup_link'                      => GroupSignupInitiator::link( $group ),
+				'group_status_link'                      => GroupStatusInitiator::link( $group ),
+				'group_tickets_link'                     => GroupTicketsInitiator::link( $group ),
+				'group_checkin_link'                     => GroupCheckinInitiator::link( $group ),
+				'group_cancel_signup_link'               => GroupCancelSignupInitiator::link( $group ),
+				'group_registration_evaluation_warnings' => self::group_parameter_registration_issues(
+					'template.registration_evaluation.warnings.label',
+					$evaluation_result,
+					RuleResult::WARNING
+				),
+				'group_registration_evaluation_errors'   => self::group_parameter_registration_issues(
+					'template.registration_evaluation.errors.label',
+					$evaluation_result,
+					RuleResult::BLOCKER
+				),
 			)
 		);
 	}
 
 	public static function competition_parameters( Competition $competition ) {
-		return [
-			'competition_signup_link' => CompetitionSignupInitiator::link( $competition )
-		];
+		return array(
+			'competition_signup_link' => CompetitionSignupInitiator::link( $competition ),
+		);
 	}
 
 	private static function group_parameter_registration_issues( $template_key, array $evaluation_result, $status ) {
@@ -154,7 +166,8 @@ class Template {
 			$evaluation_result,
 			function ( $issue ) use ( $status ) {
 				return $issue->status === $status;
-			} );
+			}
+		);
 
 		if ( empty( $issues ) ) {
 			return '';
@@ -164,24 +177,24 @@ class Template {
 	}
 
 	public static function site_parameters() {
-		return [
-			'base_url'    => get_site_url(),
-			'admin_email' => get_option( 'admin_email' ),
-			'admin_email_link' => sprintf( '<a href="mailto:%s">%s</a>', get_bloginfo( 'admin_email' ), get_bloginfo( 'admin_email' ) )
-		];
+		return array(
+			'base_url'         => get_site_url(),
+			'admin_email'      => get_option( 'admin_email' ),
+			'admin_email_link' => sprintf( '<a href="mailto:%s">%s</a>', get_bloginfo( 'admin_email' ), get_bloginfo( 'admin_email' ) ),
+		);
 	}
 
-	public static function string( $content ) {
-		return new Template( $content );
+	public static function string( $content, string $content_type = self::TYPE_MARKDOWN ) {
+		return new Template( $content, $content_type );
 	}
 
 	public static function file( $path ) {
 		if ( file_exists( $path ) ) {
-			return new Template( file_get_contents( $path ) );
+			return new Template( file_get_contents( $path ), self::TYPE_HTML );
 		} elseif ( file_exists( __DIR__ . '/' . $path ) ) {
-			return new Template( file_get_contents( __DIR__ . '/' . $path ) );
+			return new Template( file_get_contents( __DIR__ . '/' . $path ), self::TYPE_HTML );
 		} elseif ( file_exists( __DIR__ . '/../' . $path ) ) {
-			return new Template( file_get_contents( __DIR__ . '/../' . $path ) );
+			return new Template( file_get_contents( __DIR__ . '/../' . $path ), self::TYPE_HTML );
 		}
 	}
 }

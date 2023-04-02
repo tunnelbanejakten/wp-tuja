@@ -18,7 +18,7 @@ class SwishPaymentOption implements PaymentOption {
 	private $generate_qr_code;
 
 	function get_payment_reference( Group $group ): string {
-		return substr( Template::string( $this->message_template )->render( Template::group_parameters( $group ) ), 0, 50 );
+		return substr( Template::string( $this->message_template, Template::TYPE_PLAIN_TEXT )->render( Template::group_parameters( $group ) ), 0, 50 );
 	}
 
 	function render( Group $group, int $fee ): string {
