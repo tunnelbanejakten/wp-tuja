@@ -223,10 +223,10 @@ describe('Tickets', () => {
       //
 
       const validPasswords = [
-        'TREAsure',
-        '  gold',
-        'abcÅÄÖ  ',
-        'abcåäö  '
+        '\tTREA   sure', // <-- Ignore all whitespace characters
+        '  gold', //        <-- Trim beginning
+        'abcÅÄÖ  ', //      <-- Trim end
+        'abcåäö  ' //       <-- Handle case-insensitive accented characters
       ]
       for (const password of validPasswords) {
         await type('#tuja_ticket_password', password)

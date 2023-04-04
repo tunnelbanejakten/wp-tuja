@@ -209,6 +209,6 @@ class TicketDao extends AbstractDao {
 		if ( $str == null ) {
 			return null;
 		}
-		return trim( strtolower( $str ) );
+		return preg_replace('/\\s+/', '', strtolower( $str ) );
 	}
 }
