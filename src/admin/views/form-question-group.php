@@ -1,6 +1,8 @@
 <?php
 namespace tuja\admin;
 
+use tuja\util\FormUtils;
+
 $this->print_root_menu();
 $this->print_menu();
 ?>
@@ -20,7 +22,7 @@ $this->print_menu();
 <?php if(empty($questions)): ?>
 	<p>Inga frågor just nu.</p>
 <?php else: ?>
-	<table class="tuja-admin-table widefat">
+	<table class="tuja-admin-table tuja-admin-table-align-top widefat">
 		<thead>
 			<tr>
 				<th scope="col">Nr</th>
@@ -33,7 +35,7 @@ $this->print_menu();
 			<?php foreach($questions as $i => $question): ?>
 				<tr>
 					<td><?php echo $question->name ?: $i; ?></td>
-					<td><?php echo $question->text; ?></td>
+					<td><div class="tuja-admin-richtext-preview"><?php echo FormUtils::render_text_body( $question->text ); ?></div></td>
 					<td><?php echo preg_replace( '/.*\\\\([a-zA-Z]+)Question$/', '$1', get_class( $question ) ); ?></td>
 					<td>
 						<?php

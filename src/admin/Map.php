@@ -13,6 +13,7 @@ use tuja\data\store\MarkerDao;
 use tuja\data\store\QuestionDao;
 use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\StationDao;
+use tuja\util\FormUtils;
 
 class Map extends Maps {
 	const ACTION_NAME_SAVE   = 'map_save';
@@ -258,8 +259,9 @@ class Map extends Maps {
 		$questions_fields = array_map(
 			function ( AbstractQuestion $question ) use ( $markers, $question_groups ) {
 				$question_field_key = self::key( Marker::MARKER_TYPE_TASK, $question->id, 0 );
+				$question_text_html = FormUtils::render_text_body( $question->text );
 				return array(
-					'label'          => $question->name . ': ' . $question->text,
+					'label'          => $question_text_html,
 					'short_label'    => sprintf( 'Fråga %s', $question->name ),
 					'question_group' => $question_groups[ $question->question_group_id ] ?? sprintf( 'Namnlös grupp %s', $question->question_group_id ),
 					'fields'         => self::get_field_values( $question_field_key, $markers ),

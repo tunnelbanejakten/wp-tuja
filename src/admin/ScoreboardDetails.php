@@ -18,6 +18,7 @@ use tuja\data\model\question\AbstractQuestion;
 use tuja\data\model\QuestionGroup;
 use tuja\data\store\ExtraPointsDao;
 use tuja\data\store\StationDao;
+use tuja\util\FormUtils;
 
 class ScoreboardDetails extends Scoreboard {
 
@@ -227,8 +228,9 @@ class ScoreboardDetails extends Scoreboard {
 
 		$questions_fields = array_map(
 			function ( AbstractQuestion $question ) use ( $question_groups, $column_group_ids, $score_board ) {
+				$question_text_html        = FormUtils::render_text_body( $question->text );
 				return array(
-					'label'          => $question->text,
+					'label'          => $question_text_html,
 					'question_group' => $question_groups[ $question->question_group_id ] ?? sprintf( 'Namnlös grupp %s', $question->question_group_id ),
 					'fields'         => array_map(
 						$this->create_row_values_mapper( $score_board, $this->create_details_value_extrator( 'questions', $question->id ) ),

@@ -244,7 +244,7 @@ class FormUtils {
 		return $response;
 	}
 
-	private static function render_text_body( string $raw ) {
+	public static function render_text_body( string $raw ) {
 		$is_html = preg_match( '/<(img|p|em|i|strong|b|h1|h2|h3|h4|ul|ol|li)/', $raw ) === 1;
 		return Template::string( $raw )->render( array(), $is_html ? Template::TYPE_WP_EDITOR_HTML : Template::TYPE_MARKDOWN );
 	}

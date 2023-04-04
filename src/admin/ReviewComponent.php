@@ -20,6 +20,7 @@ use tuja\data\store\QuestionGroupDao;
 use tuja\data\store\ResponseDao;
 use tuja\data\model\Competition;
 use tuja\data\store\EventDao;
+use tuja\util\FormUtils;
 use tuja\util\score\ScoreCalculator;
 
 
@@ -280,7 +281,7 @@ class ReviewComponent {
 			return;
 		}
 		print ( '
-	        <table class="tuja-admin-review tuja-table"><tbody>
+	        <table class="tuja-admin-review tuja-table tuja-admin-table-align-top"><tbody>
 	            <tr>
 	                <td><div class="spacer"></div></td>
 	                <td><div class="spacer"></div></td>
@@ -295,7 +296,7 @@ class ReviewComponent {
 
 				$question                  = $question_entry['question'];
 				$question_group_text       = $question_groups[ $question->question_group_id ]->text;
-				$question_text             = join( ': ', array_filter( array( $question->name, $question_group_text, $question->text ) ) );
+				$question_text_html        = FormUtils::render_text_body( $question->text );
 				$answer_html               = $question->get_correct_answer_html();
 				$is_correct_answer_defined = ! empty( $answer_html );
 				$rowspan                   = $is_correct_answer_defined ? 2 : 1;
@@ -304,13 +305,15 @@ class ReviewComponent {
 				printf( '
 					<tr class="tuja-admin-review-question-row">
 						<td></td>
-						<td colspan="3"><strong>%s</strong></td>
+						<td colspan="3"><strong>%s %s:</strong><div class="tuja-admin-richtext-preview">%s</div></td>
 						<td valign="%s" rowspan="%s">%s</td>
 						<td valign="%s" rowspan="%s">Manuell %s</td>
 						<td valign="%s" rowspan="%s">Slutlig</td>
 					</tr>
 					',
-					$question_text,
+					! empty( $question_group_text ) ? "$question_group_text, fråga" : "Fråga",
+					$question->name,
+					$question_text_html,
 					$valign,
 					$rowspan,
 					$auto_score_header,

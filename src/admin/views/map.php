@@ -12,7 +12,7 @@ $this->print_menu();
 		<button type="submit" class="button" name="tuja_action" value="map_delete" id="tuja_delete_button" onclick="return confirm('Är du säker?');">
 			Ta bort
 		</button>
-		<table id="tuja_all_markers" class="tuja-table">
+		<table id="tuja_all_markers" class="tuja-table tuja-admin-table-align-top">
 			<tbody>
 				<tr>
 					<td>Kartans namn</td>
@@ -49,7 +49,7 @@ $this->print_menu();
 						printf( '<tr><th>%s</th></tr>', $question_fields['question_group'] );
 						$last_header = $question_fields['question_group'];
 					}
-					printf( '<tr><td><span class="tuja-maps-question">%s</span></td><td>', $question_fields['label'] );
+					printf( '<tr><td><div class="tuja-admin-richtext-preview tuja-admin-richtext-preview-narrow">%s</div></td><td>', $question_fields['label'] );
 
 					$controls_id = 'tuja-map-markers-controls-' . uniqid();
 					printf(

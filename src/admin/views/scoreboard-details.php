@@ -8,7 +8,7 @@ $this->print_leaves_menu();
 ?>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
-<table id="tuja_all_markers" class="tuja-table">
+<table id="tuja_all_markers" class="tuja-table tuja-admin-table-align-top">
 <thead>
 	<tr>
 		<td></td>
@@ -49,7 +49,7 @@ $this->print_leaves_menu();
 			printf( '<tr><td>%s</td></tr>', $question_fields['question_group'] );
 			$last_header = $question_fields['question_group'];
 		}
-		printf( '<tr><td><span class="tuja-scoreboard-details-question">%s</span></td>', $question_fields['label'] );
+		printf( '<tr><td><div class="tuja-admin-richtext-preview">%s</div></td>', $question_fields['label'] );
 		$render_fields( $question_fields['fields'] );
 		printf( '</tr>' );
 	}
