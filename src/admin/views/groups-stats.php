@@ -8,8 +8,12 @@ $this->print_menu();
 <table class="tuja-table">
     <tbody>
     <tr>
-        <td>Antal tävlande personer:</td>
+        <td>Antal personer som är anmälda:</td>
         <td><?= $people_competing + $people_following ?> st</td>
+    </tr>
+    <tr>
+        <td style="padding-left: 2em">varav incheckade:</td>
+        <td><?= $people_checkedin ?> st</td>
     </tr>
     <tr>
         <td style="padding-left: 2em">varav tävlande:</td>
@@ -20,12 +24,12 @@ $this->print_menu();
         <td><?= $people_following ?> st</td>
     </tr>
     <tr>
-        <td>Antal tävlande lag:</td>
+        <td>Antal lag:</td>
         <td><?= $groups_competing ?> st</td>
     </tr>
 	<?php foreach ( $groups_per_category as $name => $count ) { ?>
         <tr>
-            <td style="padding-left: 2em">varav i kategori <?= $name ?>:</td>
+            <td style="padding-left: 2em">varav <?= $name ?>:</td>
             <td><?= $count ?> st</td>
         </tr>
 	<?php } ?>

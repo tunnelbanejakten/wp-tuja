@@ -69,6 +69,16 @@ class ReportPeople extends AbstractListReport {
 					)
 				);
 				break;
+			case 'all_checkedin':
+				$selected_people = array_values(
+					array_filter(
+						$all_people_in_active_groups,
+						function ( Person $person ) {
+							return $person->get_status() === Person::STATUS_CHECKEDIN;
+						}
+					)
+				);
+				break;
 			case 'crew':
 				$crew_group_ids  = array_map(
 					function ( Group $group ) {
@@ -110,6 +120,17 @@ class ReportPeople extends AbstractListReport {
 									return $person->{$prop};
 								case 'role':
 									return $person->get_type();
+								case 'status':
+									$status = $person->get_status();
+									switch ( $status ) {
+										case Person::STATUS_CHECKEDIN:
+											return 'Incheckad';
+										case Person::STATUS_CREATED:
+											return 'Anmäld';
+										case Person::STATUS_DELETED:
+											return 'Avanmäld';
+									}
+									return $status;
 								case 'group_category':
 								case 'group_name':
 									$props = $groups_data[ intval( $person->group_id ) ];
@@ -122,6 +143,15 @@ class ReportPeople extends AbstractListReport {
 			},
 			$selected_people
 		);
+
+		$sort_key = $_GET['tuja_reports_people_sort'] ?? 'name';
+		usort(
+			$rows,
+			function ( $a, $b ) use ( $sort_key ) {
+				return strcmp( $a[ $sort_key ], $b[ $sort_key ] );
+			}
+		);
+
 		return $rows;
 	}
 
