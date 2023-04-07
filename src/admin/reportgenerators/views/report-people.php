@@ -35,6 +35,7 @@ if ( count( $people ) > 0 ) {
 
 		</tbody>
 	</table>
+	<p>Totalt: <?php echo count( $people ); ?> personer.</p>
 	<?php
 }
 ?>

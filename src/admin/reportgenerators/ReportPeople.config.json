@@ -2,12 +2,13 @@
   "type": "object",
   "properties": {
     "tuja_reports_people_filter": {
-      "title": "Personer",
+      "title": "Urval",
       "type": "string",
       "format": "radio",
       "enum": [
         "everyone",
         "all_competing",
+        "all_checkedin",
         "leaders_supervisors_admins",
         "crew"
       ],
@@ -15,8 +16,26 @@
         "enum_titles": [
           "Alla",
           "Alla tävlande",
+          "Alla incheckade",
           "Lagledare, medföljande vuxna och administratörer",
           "Funktionärer"
+        ]
+      }
+    },
+    "tuja_reports_people_sort": {
+      "title": "Sortering",
+      "type": "string",
+      "format": "radio",
+      "enum": [
+        "name",
+        "pno",
+        "group_name"
+      ],
+      "options": {
+        "enum_titles": [
+          "Namn",
+          "Personnummer",
+          "Grupp"
         ]
       }
     },
@@ -37,7 +56,8 @@
           "phone",
           "role",
           "group_category",
-          "group_name"
+          "group_name",
+          "status"
         ],
         "options": {
           "enum_titles": [
@@ -47,7 +67,8 @@
             "Telefon",
             "Roll",
             "Gruppkategori",
-            "Grupp"
+            "Grupp",
+            "Status"
           ]
         }
       }
