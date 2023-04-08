@@ -81,6 +81,7 @@ class Competition {
 				Groups::class              => array( 'Grupper', 'Administration' ),
 				Messages::class            => array( 'Meddelanden', 'Administration' ),
 				Reports::class             => array( 'Rapporter', 'Administration' ),
+				Payments::class            => array( 'Betalning', 'Administration' ),
 				CompetitionSettings::class => array( 'Inställningar', 'Administration' ),
 				CompetitionDelete::class   => array( 'Rensa', 'Administration' ),
 			)
