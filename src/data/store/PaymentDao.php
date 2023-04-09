@@ -9,6 +9,16 @@ class PaymentDao extends AbstractDao {
 	private $table_paymenttransaction;
 	private $table_grouppayment;
 
+	const PAYMENTTRANSACTION_COLUMNS = array(
+		'id',
+		'competition_id',
+		'id_key',
+		'transaction_time',
+		'message',
+		'sender',
+		'amount',
+	);
+
 	function __construct() {
 		parent::__construct();
 		$this->table_paymenttransaction = Database::get_table( 'paymenttransaction' );
@@ -53,12 +63,46 @@ class PaymentDao extends AbstractDao {
 		return $success;
 	}
 
+	function create_group_payment( int $group_id, int $amount, int $payment_transaction_id ) {
+		$affected_rows = $this->wpdb->insert(
+			$this->table_grouppayment,
+			array(
+				'team_id'               => $group_id,
+				'amount'                => $amount,
+				'paymenttransaction_id' => $payment_transaction_id,
+			),
+			array(
+				'%d',
+				'%d',
+				'%d',
+			)
+		);
+		$success       = $affected_rows !== false && $affected_rows === 1;
+
+		return $success ? $this->wpdb->insert_id : false;
+	}
+
 	function get_all_in_competition( $competition_id ) {
+		$main_columns = join(
+			',',
+			array_map(
+				function ( string $column ) {
+					return 'pt.' . $column;
+				},
+				self::PAYMENTTRANSACTION_COLUMNS
+			)
+		);
 		return $this->get_objects(
 			function ( $row ) {
 				return self::to_payment_transaction( $row );
 			},
-			'SELECT * FROM ' . $this->table_paymenttransaction . ' WHERE competition_id = %d',
+			'SELECT ' .
+			" $main_columns, SUM(gp.amount) AS groups_attribution_sum " .
+			' FROM ' . $this->table_paymenttransaction . ' AS pt ' .
+			' LEFT JOIN ' . $this->table_grouppayment . ' AS gp ' .
+			' ON pt.id = gp.paymenttransaction_id ' .
+			' WHERE competition_id = %d' .
+			" GROUP BY $main_columns ",
 			$competition_id
 		);
 	}
@@ -72,6 +116,7 @@ class PaymentDao extends AbstractDao {
 			$result->message,
 			$result->sender,
 			intval( $result->amount ),
+			intval( $result->groups_attribution_sum ),
 		);
 	}
 

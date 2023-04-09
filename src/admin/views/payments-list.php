@@ -14,7 +14,7 @@ $this->print_menu();
 			<th>Meddelande</th>
 			<th>Avsändare</th>
 			<th>Belopp</th>
-			<th>Id</th>
+			<!-- <th>Id</th> -->
 		</tr>
 		</thead>
 		<tbody>
@@ -28,14 +28,15 @@ $this->print_menu();
 					<td>%s</td>
 					<td>%s</td>
 					<td>%s</td>
-					<td>%s</td>
-					<td>%s</td>
+					<td>%s (varav %s allokerat till lag)</td>
+					<!-- <td>%s</td> -->
 				</tr>
 				',
-					$transaction->transaction_time->format('c'),
+					$transaction->transaction_time->format( 'c' ),
 					$transaction->message,
 					$transaction->sender,
-					$transaction->amount,
+					number_format( $transaction->amount / 100, 2, ',', '' ),
+					number_format( $transaction->groups_attribution_sum / 100, 2, ',', '' ),
 					$transaction->key,
 				);
 			}

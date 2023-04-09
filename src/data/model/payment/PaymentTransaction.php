@@ -11,6 +11,7 @@ class PaymentTransaction {
 	public $message;
 	public $sender;
 	public $amount;
+	public $groups_attribution_sum;
 
 	public function __construct(
 		int $id,
@@ -19,15 +20,17 @@ class PaymentTransaction {
 		DateTimeInterface $transaction_time,
 		string $message,
 		string $sender,
-		int $amount = 0
+		int $amount = 0,
+		int $groups_attribution_sum = 0
 	) {
-		$this->id               = $id;
-		$this->competition_id   = $competition_id;
-		$this->key              = $key;
-		$this->transaction_time = $transaction_time;
-		$this->message          = $message;
-		$this->sender           = $sender;
-		$this->amount           = $amount;
+		$this->id                     = $id;
+		$this->competition_id         = $competition_id;
+		$this->key                    = $key;
+		$this->transaction_time       = $transaction_time;
+		$this->message                = $message;
+		$this->sender                 = $sender;
+		$this->amount                 = $amount;
+		$this->groups_attribution_sum = $groups_attribution_sum;
 	}
 
 	public function validate() {

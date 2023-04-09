@@ -129,6 +129,16 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'team_payment' ) . ' (
+				id                    INTEGER AUTO_INCREMENT NOT NULL,
+				team_id               INTEGER NOT NULL,
+				amount                INTEGER NOT NULL,
+				note                  TEXT,
+				paymenttransaction_id INTEGER,
+				PRIMARY KEY (id)
+			) ' . $charset;
+
+		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'person' ) . ' (
 				id               INTEGER AUTO_INCREMENT NOT NULL,
 				random_id        VARCHAR(20)  NOT NULL,
@@ -461,6 +471,8 @@ abstract class Plugin {
 
 			array( 'paymenttransaction', 'competition_id', 'competition', 'CASCADE' ),
 
+			array( 'team_payment', 'team_id', 'team', 'CASCADE' ),
+			array( 'team_payment', 'paymenttransaction_id', 'paymenttransaction', 'SET NULL' ),
 		);
 
 		foreach ( $tables as $table ) {
@@ -515,6 +527,7 @@ abstract class Plugin {
 			self::PATH . '/api/' . $classname . '.php',
 			self::PATH . '/inc/' . $classname . '.php',
 			self::PATH . '/controller/' . $classname . '.php',
+			self::PATH . '/controller/payments/' . $classname . '.php',
 		);
 
 		foreach ( $paths as $path ) {
