@@ -354,7 +354,7 @@ describe('Team Management', () => {
           await verifyFeePage.goto(`http://localhost:8080/${tempGroupProps.key}/betala`)
           await verifyFeePage.expectToContain('#tuja-payment-body', String(expectedFee) + ',00 kr')
 
-          await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupsList&tuja_competition=${competitionId}`)
+          await adminPage.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=PaymentsStatus&tuja_competition=${competitionId}`)
           const actualFee = await adminPage.$eval(`#tuja-group-fee-${tempGroupProps.id}`, node => node.dataset.fee)
           expect(actualFee).toBe(String(expectedFee))
         }

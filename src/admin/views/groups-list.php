@@ -16,7 +16,6 @@ $this->print_menu();
             <th rowspan="2" valign="top">Ort <?php AdminUtils::printTooltip( 'Fritextfält som anges av lagen själva vid anmälan.' ); ?></th>
             <th rowspan="2" valign="top">Karta <?php AdminUtils::printTooltip( 'Den karta som laget fått tilldelad.' ); ?></th>
             <th colspan="3" valign="top">Antal</th>
-            <th rowspan="2" valign="top">Avgift</th>
             <th colspan="3" valign="top">Anmälningsstatus</th>
         </tr>
         <tr>
@@ -150,8 +149,6 @@ $this->print_menu();
 				$group->count_follower,
 				$group->count_team_contact
 			);
-
-			printf( '<td align="right"><span id="tuja-group-fee-%d" data-fee="%d"></span>%s kr</td>', $group->id, $group_data['fee'], number_format_i18n( $group_data['fee'] ) );
 
 			// Print group status
 			printf( '<td><span class="tuja-admin-groupstatus tuja-admin-groupstatus-%s">%s</span></td>',

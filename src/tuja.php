@@ -91,6 +91,19 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'paymenttransaction' ) . ' (
+				id                    INTEGER AUTO_INCREMENT NOT NULL,
+				id_key                VARCHAR(100) NOT NULL,
+				competition_id        INTEGER NOT NULL,
+				transaction_time       INTEGER NOT NULL,
+				message               TEXT,
+				sender                TEXT,
+				amount                INTEGER NOT NULL,
+				PRIMARY KEY (id),
+				UNIQUE KEY idx_paymenttransaction_key (id_key)
+			) ' . $charset;
+
+		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'team' ) . ' (
 				id                    INTEGER AUTO_INCREMENT NOT NULL,
 				random_id             VARCHAR(20)  			 NOT NULL,
@@ -112,6 +125,16 @@ abstract class Plugin {
 				city           VARCHAR(30),
 				category_id    INTEGER,
 				note           TEXT,
+				PRIMARY KEY (id)
+			) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'team_payment' ) . ' (
+				id                    INTEGER AUTO_INCREMENT NOT NULL,
+				team_id               INTEGER NOT NULL,
+				amount                INTEGER NOT NULL,
+				note                  TEXT,
+				paymenttransaction_id INTEGER,
 				PRIMARY KEY (id)
 			) ' . $charset;
 
@@ -445,6 +468,11 @@ abstract class Plugin {
 			array( 'ticket_station_config', 'station_id', 'station', 'CASCADE' ),
 			array( 'ticket_coupon_weight', 'from_station_id', 'station', 'CASCADE' ),
 			array( 'ticket_coupon_weight', 'to_station_id', 'station', 'CASCADE' ),
+
+			array( 'paymenttransaction', 'competition_id', 'competition', 'CASCADE' ),
+
+			array( 'team_payment', 'team_id', 'team', 'CASCADE' ),
+			array( 'team_payment', 'paymenttransaction_id', 'paymenttransaction', 'SET NULL' ),
 		);
 
 		foreach ( $tables as $table ) {
@@ -478,6 +506,7 @@ abstract class Plugin {
 			self::PATH . '/util/anonymizer/' . $classname . '.php',
 			self::PATH . '/data/model/question/' . $classname . '.php',
 			self::PATH . '/data/model/traits/' . $classname . '.php',
+			self::PATH . '/data/model/payment/' . $classname . '.php',
 			self::PATH . '/util/router/' . $classname . '.php',
 			self::PATH . '/util/markdown/' . $classname . '.php',
 			self::PATH . '/util/formattedtext/' . $classname . '.php',
@@ -498,6 +527,7 @@ abstract class Plugin {
 			self::PATH . '/api/' . $classname . '.php',
 			self::PATH . '/inc/' . $classname . '.php',
 			self::PATH . '/controller/' . $classname . '.php',
+			self::PATH . '/controller/payments/' . $classname . '.php',
 		);
 
 		foreach ( $paths as $path ) {
