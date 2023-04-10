@@ -161,7 +161,9 @@ class PaymentsController {
 	}
 
 	public function group_fee_status( Group $group, array $group_payments, DateTime $date ) {
-		$amount_expected = $group->effective_fee_calculator->calculate_fee( $group, $date );
+		$fee_calculator  = $group->effective_fee_calculator;
+		$amount_expected = $fee_calculator->calculate_fee( $group, $date );
+		$description     = $fee_calculator->description();
 		$amount_paid     = array_sum(
 			array_map(
 				function ( GroupPayment $payment ) {
@@ -179,6 +181,6 @@ class PaymentsController {
 		} elseif ( $amount_diff > 0 ) {
 			$status_message = number_format_i18n( $amount_diff ) . ' kr saknas.';
 		}
-		return array( $amount_expected, $amount_paid, $status_message );
+		return array( $amount_expected, $amount_paid, $status_message, $description );
 	}
 }
