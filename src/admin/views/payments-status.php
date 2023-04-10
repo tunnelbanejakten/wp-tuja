@@ -45,7 +45,7 @@ $this->print_menu();
 					'
 				<tr>
 					<td><a href="%s">%s</a></td>
-					<td>%s kr</td>
+					<td id="%s" data-fee="%s">%s kr</td>
 					<td>%s kr</td>
 					<td>
 						<span class="tuja-admin-review-autoscore %s">
@@ -61,6 +61,8 @@ $this->print_menu();
 						)
 					),
 					$group->name,
+					'tuja-group-fee-' . $group->id,
+					$fee,
 					number_format_i18n( $fee ),
 					number_format_i18n( $fee_paid ),
 					$status_css_class,
