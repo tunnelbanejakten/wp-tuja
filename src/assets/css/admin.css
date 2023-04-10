@@ -448,6 +448,7 @@ div#tuja-tab-appconfig div.form-control input {
     width: 30em;
 }
 
+div.tuja-import-indent,
 div#tuja-tab-appconfig div.je-indented-panel div.je-indented-panel {
     margin-left: 20px !important;
 }

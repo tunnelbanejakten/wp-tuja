@@ -11,7 +11,7 @@ $this->print_menu();
 	<table id="tuja_transctions_list" class="tuja-table tuja-admin-table-align-top">
 		<thead>
 		<tr>
-			<th>Tidpunkt</th>
+			<th>Datum</th>
 			<th>Meddelande</th>
 			<th>Avsändare</th>
 			<th>Belopp</th>

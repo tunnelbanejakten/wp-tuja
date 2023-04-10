@@ -2,6 +2,7 @@
 namespace tuja\controller;
 
 use DateTime;
+use Exception;
 use tuja\controller\payments\MatchPaymentResult;
 use tuja\controller\payments\MatchPaymentsResult;
 use tuja\data\model\Competition;
@@ -20,6 +21,8 @@ class PaymentsController {
 	private $people_dao;
 	private $competition;
 
+	const TRANSACTION_REPORT_MAGIC_STRING = '* Transaktionsrapport';
+
 	public function __construct( Competition $competition ) {
 		$this->payment_dao = new PaymentDao();
 		$this->groups_dao  = new GroupDao();
@@ -35,6 +38,10 @@ class PaymentsController {
 		return array_map(
 			function ( string $line ) {
 				$values = str_getcsv( $line );
+
+				if ( strpos( $values[0], self::TRANSACTION_REPORT_MAGIC_STRING ) !== false ) {
+					throw new Exception( 'Fel typ av rapport.' );
+				}
 
 				if ( count( $values ) !== 14 || ! is_numeric( $values[0] ) ) {
 					return null;
@@ -60,7 +67,6 @@ class PaymentsController {
 				if ( false === $transaction_date ) {
 					return null;
 				}
-				print_r( "$transaction_date_string $transaction_time_string" );
 				$amount             = round( floatval( $amount_string ) * 100 );
 				$sender_description = join( ', ', array( $sender_number, $sender_name ) );
 				$key                = join(

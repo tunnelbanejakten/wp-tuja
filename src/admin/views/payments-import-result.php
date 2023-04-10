@@ -6,13 +6,14 @@ $this->print_root_menu();
 $this->print_menu();
 ?>
 
+<h2>Importerade transaktioner</h2>
+
 <table class="tuja-table">
 	<thead>
-		<td>key</td>
-		<td>transaction_time</td>
-		<td>message</td>
-		<td>sender</td>
-		<td>amount</td>
+		<th>Datum</th>
+		<th>Meddelande</th>
+		<th>Avsändare</th>
+		<th>Belopp</th>
 	</thead>
 	<tbody>
 		<?php
@@ -25,14 +26,12 @@ $this->print_menu();
 							<td>%s</td>
 							<td>%s</td>
 							<td>%s</td>
-							<td>%s</td>
-							<td>%s</td>
+							<td>%s kr</td>
 						</tr>',
-						$transaction->key,
-						$transaction->transaction_time->format( 'c' ),
+						$transaction->transaction_time->format( 'Y-m-d' ),
 						$transaction->message,
 						$transaction->sender,
-						$transaction->amount
+						number_format_i18n( $transaction->amount / 100 ),
 					);
 				}
 			);

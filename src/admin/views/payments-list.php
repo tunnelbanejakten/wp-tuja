@@ -10,11 +10,10 @@ $this->print_menu();
 	<table id="tuja_transctions_list" class="tuja-table">
 		<thead>
 		<tr>
-			<th>Tidpunkt</th>
+			<th>Datum</th>
 			<th>Meddelande</th>
 			<th>Avsändare</th>
 			<th>Belopp</th>
-			<!-- <th>Id</th> -->
 		</tr>
 		</thead>
 		<tbody>
@@ -29,15 +28,13 @@ $this->print_menu();
 					<td>%s</td>
 					<td>%s</td>
 					<td>%s (varav %s allokerat till lag)</td>
-					<!-- <td>%s</td> -->
 				</tr>
 				',
-					$transaction->transaction_time->format( 'c' ),
+					$transaction->transaction_time->format( 'Y-m-d' ),
 					$transaction->message,
 					$transaction->sender,
 					number_format( $transaction->amount / 100, 2, ',', '' ),
 					number_format( $transaction->groups_attribution_sum / 100, 2, ',', '' ),
-					$transaction->key,
 				);
 			}
 		);
