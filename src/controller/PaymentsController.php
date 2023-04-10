@@ -6,6 +6,7 @@ use tuja\controller\payments\MatchPaymentResult;
 use tuja\controller\payments\MatchPaymentsResult;
 use tuja\data\model\Competition;
 use tuja\data\model\Group;
+use tuja\data\model\payment\GroupPayment;
 use tuja\data\model\payment\PaymentTransaction;
 use tuja\data\model\Person;
 use tuja\data\store\GroupDao;
@@ -157,5 +158,27 @@ class PaymentsController {
 				$transactions
 			)
 		);
+	}
+
+	public function group_fee_status( Group $group, array $group_payments, DateTime $date ) {
+		$amount_expected = $group->effective_fee_calculator->calculate_fee( $group, $date );
+		$amount_paid     = array_sum(
+			array_map(
+				function ( GroupPayment $payment ) {
+					return $payment->amount / 100;
+				},
+				$group_payments
+			)
+		);
+		$amount_diff     = $amount_expected - $amount_paid;
+		$status_message  = '';
+		if ( $amount_diff === 0 ) {
+			$status_message = 'Okej.';
+		} elseif ( $amount_diff < 0 ) {
+			$status_message = 'Har betalat ' . number_format_i18n( -$amount_diff ) . ' kr för mycket.';
+		} elseif ( $amount_diff > 0 ) {
+			$status_message = number_format_i18n( $amount_diff ) . ' kr saknas.';
+		}
+		return array( $amount_expected, $amount_paid, $status_message );
 	}
 }

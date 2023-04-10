@@ -22,6 +22,7 @@ class Payments extends Competition {
 				PaymentsList::class   => array( 'Transaktioner', null ),
 				PaymentsImport::class => array( 'Importera', null ),
 				PaymentsMatch::class  => array( 'Koppla transaktioner till lag', null ),
+				PaymentsStatus::class => array( 'Betalningsstatus för lag', null ),
 			)
 		);
 	}

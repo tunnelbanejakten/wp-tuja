@@ -2,11 +2,11 @@
 namespace tuja\data\model\payment;
 
 class GroupPayment {
-	private $id;
-	private $team_id;
-	private $amount;
-	private $note;
-	private $paymenttransaction_id;
+	public $id;
+	public $team_id;
+	public $amount;
+	public $note;
+	public $paymenttransaction_id;
 
 	public function __construct(
 		$id,

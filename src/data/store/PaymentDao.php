@@ -2,6 +2,7 @@
 
 namespace tuja\data\store;
 
+use tuja\data\model\payment\GroupPayment;
 use tuja\data\model\payment\PaymentTransaction;
 use tuja\util\Database;
 
@@ -82,7 +83,29 @@ class PaymentDao extends AbstractDao {
 		return $success ? $this->wpdb->insert_id : false;
 	}
 
-	function get_all_in_competition( $competition_id ) {
+	function get_group_payments( int $competition_id ) {
+		return array_reduce(
+			$this->get_objects(
+				function ( $row ) {
+					return self::to_group_payent( $row );
+				},
+				'SELECT ' .
+				' gp.* ' .
+				' FROM ' . $this->table_grouppayment . ' AS gp ' .
+				' INNER JOIN ' . Database::get_table( 'team' ) . ' AS t ' .
+				' ON t.id = gp.team_id ' .
+				' WHERE t.competition_id = %d',
+				$competition_id
+			),
+			function ( array $result, GroupPayment $group_payment ) {
+				$result[ $group_payment->team_id ][] = $group_payment;
+				return $result;
+			},
+			array()
+		);
+	}
+
+	function get_all_in_competition( int $competition_id ) {
 		$main_columns = join(
 			',',
 			array_map(
@@ -104,6 +127,16 @@ class PaymentDao extends AbstractDao {
 			' WHERE competition_id = %d' .
 			" GROUP BY $main_columns ",
 			$competition_id
+		);
+	}
+
+	private static function to_group_payent( $result ): GroupPayment {
+		return new GroupPayment(
+			intval( $result->id ),
+			intval( $result->team_id ),
+			intval( $result->amount ),
+			$result->note,
+			intval( $result->paymenttransaction_id ),
 		);
 	}
 
