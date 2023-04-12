@@ -6,6 +6,7 @@ use tuja\data\model\Competition;
 use tuja\data\model\Group;
 use tuja\data\model\Marker;
 use tuja\data\model\Person;
+use tuja\data\store\GroupDao;
 use tuja\data\store\MapDao;
 use tuja\data\store\MarkerDao;
 use tuja\frontend\router\CompetitionSignupInitiator;
@@ -123,6 +124,9 @@ class Template {
 			$referral_links[ $key ] = GroupSignupInitiator::link( $referral_signup_group, $group );
 		}
 
+		$group_dao = new GroupDao();
+		$auth_code = $group_dao->calculate_auth_code( $group );
+
 		return array_merge(
 			$referral_links,
 			array(
@@ -131,6 +135,8 @@ class Template {
 				'group_home_link'                        => GroupHomeInitiator::link( $group ),
 				'group_payment_link'                     => GroupPaymentInitiator::link( $group ),
 				'group_app_link'                         => AppUtils::group_link( $group ),
+				'group_app_checkin_link'                 => AppUtils::group_checkin_link( $group ),
+				'group_app_auth_code'                    => $auth_code,
 				'group_map_name'                         => $group_map_name,
 				'group_map_start_coord'                  => $group_map_start_coord,
 				'group_map_start_label'                  => $group_map_start_label,
