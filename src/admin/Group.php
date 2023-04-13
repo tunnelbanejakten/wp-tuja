@@ -22,6 +22,7 @@ use tuja\util\JwtUtils;
 class Group extends GroupsList {
 
 	private $question_group_dao;
+	protected $group;
 	// private $form_dao;
 
 	public function __construct() {
@@ -64,11 +65,12 @@ class Group extends GroupsList {
 		return $this->add_static_menu(
 			$menu,
 			array(
-				Group::class        => array( 'Allmänt', null ),
-				GroupMembers::class => array( 'Deltagare', null ),
-				GroupLinks::class   => array( 'Länkar', null ),
-				GroupScore::class   => array( 'Svar och poäng', null ),
-				GroupEvents::class  => array( 'Tidsbegränsade frågor som visats', null ),
+				Group::class         => array( 'Allmänt', null ),
+				GroupMembers::class  => array( 'Deltagare', null ),
+				GroupLinks::class    => array( 'Länkar', null ),
+				GroupScore::class    => array( 'Svar och poäng', null ),
+				GroupEvents::class   => array( 'Tidsbegränsade frågor som visats', null ),
+				GroupPayments::class => array( 'Betalning', null ),
 			)
 		);
 	}
