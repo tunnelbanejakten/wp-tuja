@@ -148,9 +148,9 @@ class RegistrationEvaluator {
 	}
 
 	private function rule_person_names( array $people ) {
-		$names = array_map( function ( Person $person ) {
+		$names = array_filter( array_map( function ( Person $person ) {
 			return trim( $person->name );
-		}, $people );
+		}, $people ) );
 		if ( count( $people ) > 1 && count( $names ) != count( array_unique( $names ) ) ) {
 			return [ new RuleResult( 'Deltagarnas namn', RuleResult::WARNING, 'Stämmer det verkligen att några i laget har samma namn?' ) ];
 		} else {
