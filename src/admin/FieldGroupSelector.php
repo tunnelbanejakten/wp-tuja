@@ -59,6 +59,19 @@ class FieldGroupSelector {
 				},
 				$group_categories ),
 			array_map(
+				function ( string $status ) {
+					return array(
+						'key'      => 'status' . $status,
+						'label'    => 'alla grupper med status ' . strtoupper( $status ),
+						'selector' => function ( Group $group ) use ( $status ) {
+							$group_status = $group->get_status();
+
+							return isset( $group_status ) && $group_status === $status;
+						},
+					);
+				},
+				array_keys( Group::STATUS_TRANSITIONS ) ),
+			array_map(
 				function ( Group $selected_group ) {
 					return array(
 						'key'      => self::to_key($selected_group),
