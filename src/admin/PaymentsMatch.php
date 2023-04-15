@@ -46,7 +46,7 @@ class PaymentsMatch extends Payments {
 						$amount   = intval( $_POST[ $amount_field_key ] );
 						$group_id = intval( $_POST[ $action_field_key ] );
 						if ( $amount > 0 ) {
-							$success = $this->payment_dao->create_group_payment( $group_id, $amount * 100, $transaction->id );
+							$success = $this->payment_dao->create_group_payment( $group_id, $amount * 100, $transaction->id, '' );
 						}
 					}
 
@@ -112,7 +112,7 @@ class PaymentsMatch extends Payments {
 
 				$parts[] = sprintf( 'Belopp:<input type="number" name="%s" size="10" value="%d">', join( self::FIELD_LINK_SEP, array( self::FIELD_AMOUNT, $result->transaction->id ) ), $amount_major_unit - $groups_attribution_sum_major_unit );
 
-				if ( null !== $result->best_match ) {
+				if ( null !== $result->best_match_reason ) {
 					$parts[] = AdminUtils::tooltip( $result->best_match_reason );
 				}
 

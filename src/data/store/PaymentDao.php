@@ -2,6 +2,7 @@
 
 namespace tuja\data\store;
 
+use tuja\data\model\Group;
 use tuja\data\model\payment\GroupPayment;
 use tuja\data\model\payment\PaymentTransaction;
 use tuja\util\Database;
@@ -64,17 +65,19 @@ class PaymentDao extends AbstractDao {
 		return $success;
 	}
 
-	function create_group_payment( int $group_id, int $amount, int $payment_transaction_id ) {
+	function create_group_payment( int $group_id, int $amount, int $payment_transaction_id = 0, string $note = '' ) {
 		$affected_rows = $this->wpdb->insert(
 			$this->table_grouppayment,
 			array(
 				'team_id'               => $group_id,
 				'amount'                => $amount,
-				'paymenttransaction_id' => $payment_transaction_id,
+				'note'                  => ! empty( $note ) ? $note : null,
+				'paymenttransaction_id' => $payment_transaction_id > 0 ? $payment_transaction_id : null,
 			),
 			array(
 				'%d',
 				'%d',
+				'%s',
 				'%d',
 			)
 		);
@@ -90,10 +93,15 @@ class PaymentDao extends AbstractDao {
 					return self::to_group_payent( $row );
 				},
 				'SELECT ' .
-				' gp.* ' .
-				' FROM ' . $this->table_grouppayment . ' AS gp ' .
+				' gp.*, ' .
+				' pt.transaction_time, ' .
+				' pt.message, ' .
+				' pt.sender ' .
+					' FROM ' . $this->table_grouppayment . ' AS gp ' .
 				' INNER JOIN ' . Database::get_table( 'team' ) . ' AS t ' .
 				' ON t.id = gp.team_id ' .
+				' LEFT JOIN ' . $this->table_paymenttransaction . ' AS pt ' .
+				' ON pt.id = gp.paymenttransaction_id ' .
 				' WHERE t.competition_id = %d',
 				$competition_id
 			),
@@ -103,6 +111,37 @@ class PaymentDao extends AbstractDao {
 			},
 			array()
 		);
+	}
+
+	function get_group_payments_by_group( Group $group ) {
+		return $this->get_objects(
+			function ( $row ) {
+				return self::to_group_payent( $row );
+			},
+			'SELECT ' .
+			' gp.*, ' .
+			' pt.transaction_time, ' .
+			' pt.message, ' .
+			' pt.sender ' .
+			' FROM ' . $this->table_grouppayment . ' AS gp ' .
+			' LEFT JOIN ' . $this->table_paymenttransaction . ' AS pt ' .
+			' ON pt.id = gp.paymenttransaction_id ' .
+			' WHERE gp.team_id = %d',
+			$group->id
+		);
+	}
+
+	function delete_group_payment( int $payment_id ) {
+		$affected = $this->wpdb->delete(
+			$this->table_grouppayment,
+			array(
+				'id' => $payment_id,
+			),
+			array(
+				'%d',
+			)
+		);
+		return $affected === 1;
 	}
 
 	function get_all_in_competition( int $competition_id ) {
@@ -131,12 +170,21 @@ class PaymentDao extends AbstractDao {
 	}
 
 	private static function to_group_payent( $result ): GroupPayment {
+		$paymenttransaction_description = null !== $result->paymenttransaction_id
+		? sprintf(
+			'%s, %s, %s',
+			self::from_db_date( $result->transaction_time )->format( 'Y-m-d' ),
+			$result->message,
+			$result->sender
+		)
+			: '';
 		return new GroupPayment(
 			intval( $result->id ),
 			intval( $result->team_id ),
 			intval( $result->amount ),
 			$result->note,
-			intval( $result->paymenttransaction_id ),
+			null !== $result->paymenttransaction_id ? intval( $result->paymenttransaction_id ) : null,
+			$paymenttransaction_description
 		);
 	}
 
