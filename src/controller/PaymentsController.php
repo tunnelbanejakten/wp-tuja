@@ -141,6 +141,9 @@ class PaymentsController {
 							$best_match        = self::find_by_group_id( $all_groups, $matching_person->group_id );
 							$best_match_reason = "Lagets deltagare $matching_person->name har telefonnummer $matching_person->phone och transaktionen kommer från $transaction_sender_phone_number.";
 						}
+						if ( null === $best_match ) {
+							$best_match_reason = sprintf( 'Ingen matchning gjordes eftersom %d personer har telefonnummer %s.', count( $matching_people ), $transaction_sender_phone_number );
+						}
 					}
 
 					$transaction_message_group_key = self::find_id( $transaction->message );
@@ -156,6 +159,9 @@ class PaymentsController {
 						if ( count( $matches_by_group_key ) === 1 ) {
 							$best_match        = self::find_by_group_id( $all_groups, current( $matches_by_group_key ) );
 							$best_match_reason = "Laget har id $best_match->random_id och transaktionen nämner $transaction_message_group_key.";
+						}
+						if ( null === $best_match ) {
+							$best_match_reason = sprintf( 'Ingen matchning gjordes eftersom %d grupper har ID %s.', count( $matches_by_group_key ), $transaction_message_group_key );
 						}
 					}
 
