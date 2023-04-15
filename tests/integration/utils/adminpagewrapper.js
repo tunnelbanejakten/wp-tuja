@@ -15,10 +15,17 @@ class AdminPageWrapper extends PageWrapper {
 
     await this.clickLink('button[name="tuja_action"][value="group_create"]')
 
-    const groupId = await this.$eval(`span#tuja_new_group_message`, node => node.dataset.groupId)
+    const { groupId, groupKey } = await this.$eval(
+      `span#tuja_new_group_message`,
+      node => ({
+        groupId: node.dataset.groupId,
+        groupKey: node.dataset.groupKey
+      })
+    )
 
     return {
       id: groupId,
+      key: groupKey,
       name
     }
   }

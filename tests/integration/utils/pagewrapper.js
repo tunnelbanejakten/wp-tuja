@@ -55,8 +55,12 @@ class PageWrapper {
     expect(actual).toContain(expected)
   }
 
-  async expectSuccessMessage (expected) {
-    await this.expectToContain('.tuja-message-success', expected)
+  async expectSuccessMessage(expected) {
+    try {
+      await this.expectToContain('.tuja-message-success', expected)
+    } catch (e) {
+      await this.expectToContain('.notice-success p', expected)
+    }
   }
 
   async expectWarningMessage (expected) {
@@ -67,8 +71,12 @@ class PageWrapper {
     await this.expectToContain('.tuja-message-info', expected)
   }
 
-  async expectErrorMessage (expected) {
-    await this.expectToContain('.tuja-message-error', expected)
+  async expectErrorMessage(expected) {
+    try {
+      await this.expectToContain('.tuja-message-error', expected)
+    } catch (e) {
+      await this.expectToContain('.notice-error p', expected)
+    }
   }
 
   async wait(timeMs) {
