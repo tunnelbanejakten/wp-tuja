@@ -75,14 +75,17 @@ class GroupsList extends Groups {
 				try {
 					$db_groups = new GroupDao();
 					$group_id  = $db_groups->create( $props );
+					$group  = $db_groups->get( $group_id );
 
 					AdminUtils::printSuccess(
 						sprintf(
 							'<span
 								id="tuja_new_group_message"
 								data-group-id="%s"
+								data-group-key="%s"
 								>Gruppen har skapats</span>',
-							$group_id
+							$group->id,
+							$group->random_id
 						)
 					);
 
