@@ -8,6 +8,7 @@ use tuja\data\model\GroupCategory;
 use tuja\data\store\GroupCategoryDao;
 use tuja\data\store\GroupDao;
 use tuja\data\model\Group;
+use tuja\data\store\PaymentDao;
 
 class FieldGroupSelector {
 
