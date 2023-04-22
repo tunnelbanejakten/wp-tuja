@@ -68,7 +68,7 @@ class PaymentsMatch extends Payments {
 
 		$transactions = $this->payment_dao->get_all_in_competition( $this->competition->id );
 
-		$controller   = new PaymentsController( $this->competition );
+		$controller   = new PaymentsController( $this->competition->id );
 		$match_result = $controller->match_transactions( $transactions );
 
 		$auto_casting_hack = '___';

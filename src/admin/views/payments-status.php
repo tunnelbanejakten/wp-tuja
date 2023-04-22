@@ -22,7 +22,7 @@ $this->print_menu();
 		</thead>
 		<tbody>
 		<?php
-		$payments_controller = new PaymentsController( $this->competition );
+		$payments_controller = new PaymentsController( $this->competition->id );
 		array_walk(
 			$groups,
 			function ( Group $group ) use ( $group_payments, $payments_controller ) {

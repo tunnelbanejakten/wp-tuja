@@ -24,7 +24,7 @@ class GroupPayment extends AbstractGroupView {
 		$competition = $this->competition_dao->get( $this->get_group()->competition_id );
 
 		$group_payments      = $this->payment_dao->get_group_payments( $competition->id );
-		$payments_controller = new PaymentsController( $competition );
+		$payments_controller = new PaymentsController( $competition->id );
 
 		list (
 			$fee_amount,

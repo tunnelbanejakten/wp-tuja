@@ -172,10 +172,14 @@ class Group {
 
 
 	public static function sample(): Group {
-		$group = new Group();
+		$group                           = new Group();
+		$group->competition_id           = 0;
+		$group->fee_calculator           = new FixedFeeCalculator();
+		$group->effective_fee_calculator = new FixedFeeCalculator();
 
 		$group->random_id = ( new Id() )->random_string();
-		$group->note      = 'Vi gillar ' . Random::string( [
+		$group->note      = 'Vi gillar ' . Random::string(
+			array(
 				'godis',
 				'glass',
 				'scouting',
@@ -187,37 +191,40 @@ class Group {
 				'eld',
 				'lägerbål',
 				'tunnelbanan',
-				'fika'
-			] );
-		$group->name      = Random::string( [
-			'Griffonen',
-			'Kentauren',
-			'Enhörningen',
-			'Faunen',
-			'Gripen',
-			'Sjömannen',
-			'Ekorren',
-			'Älgen',
-			'Vargen',
-			'Bävern',
-			'Björnen',
-			'Järven',
-			'Uttern',
-			'Räven',
-			'Vesslan',
-			'Draken',
-			'Stora',
-			'Ödlan',
-			'Kräftan',
-			'Pegasus',
-			'Tjuren',
-			'Ugglan',
-			'Örnen',
-			'Tjädern',
-			'Tranan',
-			'Korpen',
-			'Talgoxen'
-		] );
+				'fika',
+			)
+		);
+		$group->name      = Random::string(
+			array(
+				'Griffonen',
+				'Kentauren',
+				'Enhörningen',
+				'Faunen',
+				'Gripen',
+				'Sjömannen',
+				'Ekorren',
+				'Älgen',
+				'Vargen',
+				'Bävern',
+				'Björnen',
+				'Järven',
+				'Uttern',
+				'Räven',
+				'Vesslan',
+				'Draken',
+				'Stora',
+				'Ödlan',
+				'Kräftan',
+				'Pegasus',
+				'Tjuren',
+				'Ugglan',
+				'Örnen',
+				'Tjädern',
+				'Tranan',
+				'Korpen',
+				'Talgoxen',
+			)
+		);
 
 		return $group;
 	}

@@ -2,6 +2,8 @@
 
 namespace tuja\util;
 
+use DateTime;
+use tuja\controller\PaymentsController;
 use tuja\data\model\Competition;
 use tuja\data\model\Group;
 use tuja\data\model\Marker;
@@ -9,6 +11,7 @@ use tuja\data\model\Person;
 use tuja\data\store\GroupDao;
 use tuja\data\store\MapDao;
 use tuja\data\store\MarkerDao;
+use tuja\data\store\PaymentDao;
 use tuja\frontend\router\CompetitionSignupInitiator;
 use tuja\frontend\router\GroupCancelSignupInitiator;
 use tuja\frontend\router\GroupCheckinInitiator;
@@ -127,6 +130,10 @@ class Template {
 		$group_dao = new GroupDao();
 		$auth_code = $group_dao->calculate_auth_code( $group );
 
+		$payment_dao           = new PaymentDao();
+		$payments_controller   = new PaymentsController( $group->competition_id );
+		list ($fee, $fee_paid) = $payments_controller->group_fee_status( $group, $payment_dao->get_group_payments_by_group( $group ), new DateTime() );
+
 		return array_merge(
 			$referral_links,
 			array(
@@ -157,6 +164,9 @@ class Template {
 					$evaluation_result,
 					RuleResult::BLOCKER
 				),
+				'group_fee'                              => number_format_i18n( $fee ),
+				'group_fee_debt'                         => number_format_i18n( $fee - $fee_paid ),
+				'group_fee_paid'                         => number_format_i18n( $fee_paid ),
 			)
 		);
 	}

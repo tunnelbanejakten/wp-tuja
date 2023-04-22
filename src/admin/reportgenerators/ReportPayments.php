@@ -34,7 +34,7 @@ class ReportPayments extends AbstractListReport {
 
 		$group_payments = $this->payment_dao->get_group_payments( $this->competition->id );
 
-		$payments_controller = new PaymentsController( $this->competition );
+		$payments_controller = new PaymentsController( $this->competition->id );
 
 		return array_reduce(
 			$groups,

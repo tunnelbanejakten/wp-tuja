@@ -25,7 +25,7 @@ class PaymentsImport extends Payments {
 
 		if ( $_POST['tuja_action'] == self::ACTION_NAME_START ) {
 			try {
-				$controller = new PaymentsController( $this->competition );
+				$controller = new PaymentsController( $this->competition->id );
 
 				if ( isset( $_FILES['tuja_import_file'] ) && $_FILES['tuja_import_file']['size'] > 0 ) {
 					$content         = file_get_contents( $_FILES['tuja_import_file']['tmp_name'] );

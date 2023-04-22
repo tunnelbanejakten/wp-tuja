@@ -19,15 +19,15 @@ class PaymentsController {
 	private $payment_dao;
 	private $groups_dao;
 	private $people_dao;
-	private $competition;
+	private $competition_id;
 
 	const TRANSACTION_REPORT_MAGIC_STRING = '* Transaktionsrapport';
 
-	public function __construct( Competition $competition ) {
-		$this->payment_dao = new PaymentDao();
-		$this->groups_dao  = new GroupDao();
-		$this->people_dao  = new PersonDao();
-		$this->competition = $competition;
+	public function __construct( int $competition_id ) {
+		$this->payment_dao    = new PaymentDao();
+		$this->groups_dao     = new GroupDao();
+		$this->people_dao     = new PersonDao();
+		$this->competition_id = $competition_id;
 	}
 
 	public function parse_swedbank_csv_swish_report( string $file_content ) : array {
@@ -79,7 +79,7 @@ class PaymentsController {
 						md5( $message ),
 					)
 				);
-				return new PaymentTransaction( 0, $this->competition->id, $key, $transaction_date, $message, $sender_description, $amount );
+				return new PaymentTransaction( 0, $this->competition_id, $key, $transaction_date, $message, $sender_description, $amount );
 			},
 			$lines
 		);
@@ -125,8 +125,8 @@ class PaymentsController {
 	}
 
 	public function match_transactions( array $transactions ): MatchPaymentsResult {
-		$all_groups = $this->groups_dao->get_all_in_competition( $this->competition->id );
-		$all_people = $this->people_dao->get_all_in_competition( $this->competition->id );
+		$all_groups = $this->groups_dao->get_all_in_competition( $this->competition_id );
+		$all_people = $this->people_dao->get_all_in_competition( $this->competition_id );
 		return new MatchPaymentsResult(
 			array_map(
 				function ( PaymentTransaction $transaction ) use ( $all_groups, $all_people ) {
