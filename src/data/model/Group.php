@@ -5,6 +5,7 @@ namespace tuja\data\model;
 
 use Exception;
 use tuja\data\store\GroupCategoryDao;
+use tuja\util\fee\FixedFeeCalculator;
 use tuja\util\Id;
 use tuja\util\Random;
 use tuja\util\rules\RegistrationEvaluator;
