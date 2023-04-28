@@ -19,6 +19,22 @@
 	<h2>Alla svar</h2>
 	
 	<?php foreach ( $rows as $row ) { ?>
-		<p><?php echo $row['value']; ?></p>
+		<p>
+			<?php
+			echo $row['value'];
+			echo ' (';
+			echo join(
+				', ',
+				array_filter(
+					array(
+						$row['name'],
+						$row['phone'],
+						$row['email'],
+					)
+				)
+			);
+			echo ')';
+			?>
+		</p>
 	<?php } ?>
 <?php } ?>

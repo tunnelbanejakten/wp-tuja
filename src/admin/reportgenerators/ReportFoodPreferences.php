@@ -18,18 +18,24 @@ class ReportFoodPreferences extends AbstractReport {
 		$people = $this->person_dao->get_all_in_competition( $this->competition->id );
 
 		$rows = array_map(
-			function ( $value ) {
-				return array( 'value' => $value );
+			function ( $values ) {
+				list ($food, $name, $phone, $email) = $values;
+				return array(
+					'value' => $food,
+					'name'  => $name,
+					'phone' => $phone,
+					'email' => $email,
+				);
 			},
 			array_filter(
 				array_map(
 					function ( Person $person ) {
-						return $person->food;
+						return array( $person->food, $person->name, $person->phone, $person->email );
 					},
 					$people
 				),
-				function ( $value ) {
-					return ! empty( $value );
+				function ( $values ) {
+					return ! empty( $values[0] );
 				}
 			)
 		);
