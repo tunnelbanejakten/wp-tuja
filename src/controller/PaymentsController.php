@@ -134,6 +134,7 @@ class PaymentsController {
 					$best_match_reason = '';
 
 					$transaction_sender_phone_number = self::find_international_phone_number( $transaction->sender );
+					error_log( '$transaction_sender_phone_number: ' . $transaction_sender_phone_number );
 					if ( null !== $transaction_sender_phone_number ) {
 						$matching_people = self::find_by_phone( $all_people, $transaction_sender_phone_number );
 						if ( count( $matching_people ) === 1 ) {
@@ -144,9 +145,12 @@ class PaymentsController {
 						if ( null === $best_match ) {
 							$best_match_reason = sprintf( 'Ingen matchning gjordes eftersom %d personer har telefonnummer %s.', count( $matching_people ), $transaction_sender_phone_number );
 						}
+						error_log( json_encode( $best_match ) );
+						error_log( json_encode( $matching_people ) );
 					}
 
 					$transaction_message_group_key = self::find_id( $transaction->message );
+					error_log( '$transaction_message_group_key: ' . strval( $transaction_message_group_key ) );
 					if ( null !== $transaction_message_group_key ) {
 						$matches_by_group_key = array_unique(
 							array_map(
@@ -163,6 +167,8 @@ class PaymentsController {
 						if ( null === $best_match ) {
 							$best_match_reason = sprintf( 'Ingen matchning gjordes eftersom %d grupper har ID %s.', count( $matches_by_group_key ), $transaction_message_group_key );
 						}
+						error_log( json_encode( $best_match ) );
+						error_log( json_encode( $matches_by_group_key ) );
 					}
 
 					return new MatchPaymentResult( $transaction, $best_match, $best_match_reason );
