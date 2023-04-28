@@ -160,7 +160,7 @@ class DuelDao extends AbstractDao {
 	//     - DuelInvite (team name)
 	//       - Contact
 	public function get_duels_by_group( Group $group ) {
-		$duels                   = $this->get_objects(
+		$duels = $this->get_objects(
 			function ( $row ) {
 				$duel_at    = self::from_db_date( $row->duel_at );
 				$display_at = self::from_db_date( $row->display_at );
@@ -190,6 +190,9 @@ class DuelDao extends AbstractDao {
 			$group->id,
 			DuelInvite::STATUS_CANCELLED
 		);
+		if ( empty( $duels ) ) {
+			return array();
+		}
 		$duel_ids_string         = join(
 			',',
 			array_map(
