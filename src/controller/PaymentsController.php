@@ -164,7 +164,7 @@ class PaymentsController {
 							)
 						);
 						if ( count( $matches_by_group_key ) === 1 ) {
-							$best_match        = current( $matches_by_group_key );
+							$best_match        = self::find_by_group_id( $all_groups, current( $matches_by_group_key ) );
 							$best_match_reason = "Laget har id $best_match->random_id och transaktionen nämner $transaction_message_group_key.";
 						}
 						if ( null === $best_match ) {
