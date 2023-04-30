@@ -125,8 +125,8 @@ class PaymentsController {
 	}
 
 	public function match_transactions( array $transactions ): MatchPaymentsResult {
-		$all_groups = $this->groups_dao->get_all_in_competition( $this->competition_id );
-		$all_people = $this->people_dao->get_all_in_competition( $this->competition_id );
+		$all_groups = $this->groups_dao->get_all_in_competition( $this->competition_id, true );
+		$all_people = $this->people_dao->get_all_in_competition( $this->competition_id, true );
 		return new MatchPaymentsResult(
 			array_map(
 				function ( PaymentTransaction $transaction ) use ( $all_groups, $all_people ) {
@@ -138,9 +138,12 @@ class PaymentsController {
 					if ( null !== $transaction_sender_phone_number ) {
 						$matching_people = self::find_by_phone( $all_people, $transaction_sender_phone_number );
 						if ( count( $matching_people ) === 1 ) {
-							$matching_person   = current( $matching_people );
-							$best_match        = self::find_by_group_id( $all_groups, $matching_person->group_id );
-							$best_match_reason = "Lagets deltagare $matching_person->name har telefonnummer $matching_person->phone och transaktionen kommer från $transaction_sender_phone_number.";
+							$matching_person = current( $matching_people );
+							$matching_group  = self::find_by_group_id( $all_groups, $matching_person->group_id );
+							if ( false !== $matching_group ) {
+								$best_match        = $matching_group;
+								$best_match_reason = "Lagets deltagare $matching_person->name har telefonnummer $matching_person->phone och transaktionen kommer från $transaction_sender_phone_number.";
+							}
 						}
 						if ( null === $best_match ) {
 							$best_match_reason = sprintf( 'Ingen matchning gjordes eftersom %d personer har telefonnummer %s.', count( $matching_people ), $transaction_sender_phone_number );
@@ -161,7 +164,7 @@ class PaymentsController {
 							)
 						);
 						if ( count( $matches_by_group_key ) === 1 ) {
-							$best_match        = self::find_by_group_id( $all_groups, current( $matches_by_group_key ) );
+							$best_match        = current( $matches_by_group_key );
 							$best_match_reason = "Laget har id $best_match->random_id och transaktionen nämner $transaction_message_group_key.";
 						}
 						if ( null === $best_match ) {
