@@ -7,8 +7,8 @@ class AdminPageWrapper extends PageWrapper {
     super(browser)
   }
 
-  async addTeam() {
-    const name = 'Team ' + Math.random().toFixed(5).substring(2) // "Team" and 5 random digits
+  async addTeam(name) {
+    name = name ?? 'Team ' + Math.random().toFixed(5).substring(2) // "Team" and 5 random digits
     await this.goto(`http://localhost:8080/wp-admin/admin.php?page=tuja&tuja_view=GroupsList&tuja_competition=${competitionId}`)
 
     await this.type('input[name=tuja_new_group_name]', name)

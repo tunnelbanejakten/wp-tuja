@@ -36,7 +36,7 @@ describe('Stations', () => {
         await adminPage.takeScreenshot()
       }
 
-      const groupAliceProps = await adminPage.addTeam()
+      const groupAliceProps = await adminPage.addTeam('LongTeamName')
       const aliceName = 'Alice Alison'
       const alicePhone = '+467000' + Math.random().toFixed(5).substring(2)
       await addTeamMember(groupAliceProps.id, aliceName, alicePhone)
@@ -68,6 +68,16 @@ describe('Stations', () => {
           amount: '100.00',
 
           expectedAmount: '100',
+          expectedExplanation: `Laget har id ${groupAliceProps.key} och transaktionen nämner ${groupAliceProps.key}.`,
+          expectedMatchGroupId: groupAliceProps.id
+        },
+        {
+          message: `TSL23 ${groupAliceProps.key}`,
+          phone: alicePhone,
+          sender: aliceName,
+          amount: '10.00',
+
+          expectedAmount: '10',
           expectedExplanation: `Laget har id ${groupAliceProps.key} och transaktionen nämner ${groupAliceProps.key}.`,
           expectedMatchGroupId: groupAliceProps.id
         },
