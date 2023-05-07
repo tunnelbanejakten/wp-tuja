@@ -249,6 +249,19 @@ abstract class Plugin {
 			) ' . $charset;
 
 		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'uploads' ) . ' (
+				id               INTEGER AUTO_INCREMENT NOT NULL,
+				team_id          INTEGER,
+				hash             VARCHAR(100) NOT NULL,
+				paths            TEXT,
+				edits            TEXT,
+				is_favourite     BOOLEAN NOT NULL DEFAULT FALSE,
+				created_at       INTEGER,
+				PRIMARY KEY (id),
+				UNIQUE KEY idx_uploads_hash (hash)
+			) ' . $charset;
+
+		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'form_question_points' ) . ' (
 				form_question_id INTEGER NOT NULL,
 				team_id          INTEGER NOT NULL,
@@ -470,6 +483,8 @@ abstract class Plugin {
 			array( 'ticket_coupon_weight', 'to_station_id', 'station', 'CASCADE' ),
 
 			array( 'paymenttransaction', 'competition_id', 'competition', 'CASCADE' ),
+
+			array( 'uploads', 'team_id', 'team', 'CASCADE' ),
 
 			array( 'team_payment', 'team_id', 'team', 'CASCADE' ),
 			array( 'team_payment', 'paymenttransaction_id', 'paymenttransaction', 'SET NULL' ),

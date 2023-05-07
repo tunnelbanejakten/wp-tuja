@@ -2,9 +2,12 @@
 
 namespace tuja\util;
 
+use Error;
 use Exception;
 use tuja\data\model\Group;
+use tuja\data\model\Upload;
 use tuja\data\store\GroupDao;
+use tuja\data\store\UploadDao;
 use tuja\data\store\ResponseDao;
 use tuja\frontend\FormLockValidator;
 use tuja\util\concurrency\LockValuesList;
@@ -15,6 +18,7 @@ class ImageManager {
 
 	private $directory;
 	private $public_url_directory;
+	private $uploads_dao;
 
 	public function __construct() {
 		$dir = wp_upload_dir( 'tuja', true, false );
@@ -23,6 +27,7 @@ class ImageManager {
 		}
 		$this->directory            = trailingslashit( $dir['path'] );
 		$this->public_url_directory = trailingslashit( $dir['url'] );
+		$this->uploads_dao          = new UploadDao();
 	}
 
 	public function import_jpeg( $file_path, $group_key = null ): string {
@@ -110,7 +115,11 @@ class ImageManager {
 		if ( is_wp_error( $saved ) ) {
 			return false;
 		} else {
-			return $this->public_url_directory . $sub_directory . $dst_filename;
+			$resized_image_url = $this->public_url_directory . $sub_directory . $dst_filename;
+
+			$this->uploads_dao->add_path( $file_id, 'resized_' . $pixels . '_url', $resized_image_url );
+
+			return $resized_image_url;
 		}
 	}
 
@@ -166,7 +175,7 @@ class ImageManager {
 		$bytes_written = file_put_contents( $file_path, $file_content );
 
 		if ( false !== $bytes_written && $bytes_written > 0 ) {
-			return self::resize_and_return( $file_path, $group->random_id );
+			return $this->resize_and_return( $file_path, $group );
 		}
 
 		return array(
@@ -175,7 +184,7 @@ class ImageManager {
 		);
 	}
 
-	public static function save_uploaded_file( $file_upload_object, Group $group, string $question_id, string $lock_value ) {
+	public function save_uploaded_file( $file_upload_object, Group $group, string $question_id, string $lock_value ) {
 		$question = (int) $question_id;
 		Strings::init( $group->competition_id );
 
@@ -221,7 +230,7 @@ class ImageManager {
 		$movefile = wp_handle_upload( $file, $upload_overrides );
 
 		if ( $movefile && ! isset( $movefile['error'] ) ) {
-			return self::resize_and_return( $movefile['file'], $group->random_id );
+			return $this->resize_and_return( $movefile['file'], $group );
 		}
 
 		return array(
@@ -230,9 +239,32 @@ class ImageManager {
 		);
 	}
 
-	private static function resize_and_return( string $file_path, string $group_key ) {
-		$filename = explode( '/', $file_path );
-		$filename = array_pop( $filename );
+	private function save_upload_record( string $file_path, string $file_name, Group $group ) : int {
+		$upload           = new Upload();
+		$upload->group_id = $group->id;
+		$upload->hash     = md5_file( $file_path );
+		$upload->paths    = array(
+			'source_path'     => $file_path,
+			'source_filename' => $file_name,
+		);
+		$upload->edits    = array();
+		return $this->uploads_dao->create( $upload );
+
+	}
+
+	private function resize_and_return( string $file_path, Group $group ) {
+		$group_key            = $group->random_id;
+		$file_path_components = explode( '/', $file_path );
+		$filename             = array_pop( $file_path_components );
+
+		$record_saved = $this->save_upload_record( $file_path, $filename, $group );
+		if ( false === $record_saved ) {
+			error_log( 'Could not store upload object.' );
+			return array(
+				'error'       => Strings::get( 'image_manager.unknown_error' ),
+				'http_status' => 500,
+			);
+		}
 
 		$resized_image_url = ( new ImageManager() )->get_resized_image_url(
 			$filename,
