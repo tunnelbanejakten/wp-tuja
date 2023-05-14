@@ -250,15 +250,22 @@ abstract class Plugin {
 
 		$tables[] = '
 			CREATE TABLE ' . Database::get_table( 'uploads' ) . ' (
-				id               INTEGER AUTO_INCREMENT NOT NULL,
+				id               VARCHAR(100) NOT NULL,
 				team_id          INTEGER,
-				hash             VARCHAR(100) NOT NULL,
-				paths            TEXT,
 				edits            TEXT,
 				is_favourite     BOOLEAN NOT NULL DEFAULT FALSE,
-				created_at       INTEGER,
-				PRIMARY KEY (id),
-				UNIQUE KEY idx_uploads_hash (hash)
+				created_at       INTEGER NOT NULL,
+				PRIMARY KEY (id)
+				) ' . $charset;
+
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'upload_versions' ) . ' (
+				path             VARCHAR(100) NOT NULL,
+				upload_id        VARCHAR(100) NOT NULL,
+				label            VARCHAR(20) NOT NULL,
+				created_at       INTEGER NOT NULL,
+				PRIMARY KEY (path),
+				UNIQUE KEY idx_uploadversions_idlabels (upload_id, label)
 			) ' . $charset;
 
 		$tables[] = '
@@ -485,6 +492,7 @@ abstract class Plugin {
 			array( 'paymenttransaction', 'competition_id', 'competition', 'CASCADE' ),
 
 			array( 'uploads', 'team_id', 'team', 'CASCADE' ),
+			array( 'upload_versions', 'upload_id', 'uploads', 'CASCADE' ),
 
 			array( 'team_payment', 'team_id', 'team', 'CASCADE' ),
 			array( 'team_payment', 'paymenttransaction_id', 'paymenttransaction', 'SET NULL' ),
