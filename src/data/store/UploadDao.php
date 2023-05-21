@@ -10,6 +10,8 @@ use tuja\util\Database;
 
 class UploadDao extends AbstractDao {
 
+	private $table_versions;
+
 	function __construct() {
 		parent::__construct();
 		$this->table          = Database::get_table( 'uploads' );
@@ -115,27 +117,54 @@ class UploadDao extends AbstractDao {
 	// 	);
 	// }
 
-	// function get_all_in_competition( $competition_id ) {
-	// 	return $this->get_objects(
-	// 		function ( $row ) {
-	// 			return self::to_upload( $row );
-	// 		},
-	// 		'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d',
-	// 		$competition_id
-	// 	);
-	// }
+	function get_all_in_competition( $competition_id ) {
+		$raw_data = $this->get_objects(
+			function ( $row ) {
+				return array( self::to_upload( $row ), array( $row->label => $row->path ) );
+			},
+			'SELECT u.*, v.label, v.path ' .
+			'FROM ' . $this->table . ' AS u ' .
+			'INNER JOIN ' . Database::get_table( 'team' ) . ' AS t ON u.team_id = t.id ' .
+			'INNER JOIN ' . $this->table_versions . ' AS v ON u.id = v.upload_id ' .
+			'WHERE t.competition_id = %d ' .
+			'ORDER BY u.id',
+			$competition_id
+		);
+		return array_reduce(
+			$raw_data,
+			function( $uploads, $raw ) {
+				list ($current_upload, $current_version_info) = $raw;
+				if ( empty( $uploads ) ) {
+					// Add right away
+					$current_upload->versions = $current_version_info;
+					$uploads[]                = $current_upload;
+				} else {
+					$previous_upload = $uploads[ count( $uploads ) - 1 ];
+					if ( $current_upload->id == $previous_upload->id ) {
+						// Append to previous
+						$previous_upload->versions = array_merge( $previous_upload->versions, $current_version_info );
+					} else {
+						// Add new
+						$current_upload->versions = $current_version_info;
+						$uploads[]                = $current_upload;
+					}
+				}
+				return $uploads;
+			},
+			array()
+		);
+	}
 
-	// protected static function to_upload( $result ): Upload {
-	// 	$upload               = new Upload();
-	// 	$upload->id           = intval( $result->id );
-	// 	$upload->group_id     = isset( $result->team_id ) ? intval( $result->team_id ) : null;
-	// 	$upload->hash         = $result->hash;
-	// 	$upload->paths        = json_decode( $result->paths, true );
-	// 	$upload->edits        = json_decode( $result->edits, true );
-	// 	$upload->is_favourite = '1' === $result->is_favourite;
-	// 	$upload->created_at   = self::from_db_date( $result->created_at );
+	protected static function to_upload( $result ): Upload {
+		$upload = new Upload(
+			UploadId::from_string( $result->id ),
+			isset( $result->team_id ) ? intval( $result->team_id ) : null,
+			json_decode( $result->edits, true ),
+			'1' === $result->is_favourite,
+			self::from_db_date( $result->created_at )
+		);
 
-	// 	return $upload;
-	// }
+		return $upload;
+	}
 
 }

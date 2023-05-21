@@ -69,6 +69,10 @@ class ImageManager {
 		}
 	}
 
+	public function get_url_from_absolute_path( $path ): string {
+		return $this->public_url_directory . substr( $path, strlen( $this->directory ) );
+	}
+
 	public function get_original_image_url( $filename, $group_key = null ) {
 		$sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
 		$dst_path      = $this->directory . $sub_directory . $filename;
