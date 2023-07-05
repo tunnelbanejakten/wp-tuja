@@ -9,17 +9,14 @@ class UploadsList extends Uploads {
 		parent::__construct();
 	}
 
+	public function get_scripts(): array {
+		return array(
+			'admin-uploads.js',
+		);
+	}
+
 	public function output() {
 		$uploads = $this->upload_dao->get_all_in_competition( $this->competition->id );
-
-		$update_favourite_endpoint = add_query_arg(
-			array(
-				'action'           => 'tuja_favourite_upload',
-				'tuja_upload_id'   => 'UPLOADID',
-				'tuja_competition' => $this->competition->id,
-			),
-			admin_url( 'admin.php' )
-		);
 
 		$image_manager = new ImageManager();
 

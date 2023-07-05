@@ -107,6 +107,18 @@ class UploadDao extends AbstractDao {
 	// 	);
 	// }
 
+	function update_favourite_status( UploadId $upload_id, bool $is_favourite ) {
+		return $this->wpdb->update(
+			$this->table,
+			array(
+				'is_favourite' => $is_favourite ? 1 : 0,
+			),
+			array(
+				'id' => strval( $upload_id ),
+			)
+		);
+	}
+
 	// function get_by_hash( $key ) {
 	// 	return $this->get_object(
 	// 		function ( $row ) {

@@ -31,11 +31,19 @@ $this->print_menu();
 				if ( isset( $upload->versions[ $key ] ) ) {
 					$thumbnail_html = sprintf( '<img src="%s">', $image_manager->get_url_from_absolute_path( $upload->versions[ $key ] ) );
 				}
+				$update_favourite_endpoint = add_query_arg(
+					array(
+						'action'           => 'tuja_favourite_upload',
+						'tuja_upload_id'   => rawurlencode( strval( $upload->id ) ),
+						'tuja_competition' => $this->competition->id,
+					),
+					admin_url( 'admin.php' )
+				);
 				printf(
 					'
 				<tr>
 					<td>%s</td>
-					<td>%s</td>
+					<td><input type="checkbox" class="tuja-toggle-favourite-upload" data-endpoint="%s" %s></td>
 					<td>%s</td>
 					<td>%s</td>
 					<td>%s</td>
@@ -44,7 +52,8 @@ $this->print_menu();
 				</tr>
 				',
 					$upload->id,
-					$upload->is_favourite ? 'Ja' : 'Nej',
+					$update_favourite_endpoint,
+					$upload->is_favourite ? 'checked="checked"' : '',
 					$upload->created_at->format( 'Y-m-d H:i' ),
 					$thumbnail_html,
 					join( ', ', array_keys( $upload->versions ) ),
