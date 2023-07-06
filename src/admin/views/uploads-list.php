@@ -9,8 +9,13 @@ $this->print_menu();
 ?>
 
 <form method="post" action="<?php echo add_query_arg( array() ); ?>" class="tuja">
+	<div>
+		
 	<table id="tuja_uploads_list" class="tuja-table">
 		<thead>
+		<tr>
+			<td colspan="7" style="text-align: right"><?php echo $pagination_html; ?></td>
+		</tr>
 		<tr>
 			<th>Id</th>
 			<th>Favorit?</th>
@@ -21,6 +26,11 @@ $this->print_menu();
 			<th>Aktuell?</th>
 		</tr>
 		</thead>
+		<tfoot>
+		<tr>
+			<td colspan="7" style="text-align: right"><?php echo $pagination_html; ?></td>
+		</tr>
+		</tfoot>
 		<tbody>
 		<?php
 		array_walk(

@@ -129,17 +129,22 @@ class UploadDao extends AbstractDao {
 	// 	);
 	// }
 
-	function get_all_in_competition( $competition_id ) {
+	function get_all_in_competition( int $competition_id, int $offset = 0, int $count = 50 ) {
 		$raw_data = $this->get_objects(
 			function ( $row ) {
 				return array( self::to_upload( $row ), array( $row->label => $row->path ) );
 			},
-			'SELECT u.*, v.label, v.path ' .
-			'FROM ' . $this->table . ' AS u ' .
-			'INNER JOIN ' . Database::get_table( 'team' ) . ' AS t ON u.team_id = t.id ' .
-			'INNER JOIN ' . $this->table_versions . ' AS v ON u.id = v.upload_id ' .
-			'WHERE t.competition_id = %d ' .
-			'ORDER BY u.id',
+			'SELECT u_temp.*, v.label, v.path ' .
+			'FROM (
+				SELECT u.* 
+				FROM ' . $this->table . ' AS u
+				INNER JOIN ' . Database::get_table( 'team' ) . ' AS t ON u.team_id = t.id 
+				WHERE t.competition_id = %d 
+				ORDER BY u.created_at, u.id 
+				LIMIT ' . $count . ' 
+				OFFSET ' . $offset . '
+			) AS u_temp ' .
+			'INNER JOIN ' . $this->table_versions . ' AS v ON u_temp.id = v.upload_id ',
 			$competition_id
 		);
 		return array_reduce(
