@@ -111,19 +111,6 @@ class Admin extends Plugin {
 		define( 'IFRAME_REQUEST', true );
 		header( 'Content-type: application/json' );
 
-		$competition_dao = new CompetitionDao();
-
-		$competition = null;
-		if ( isset( $_GET['tuja_competition'] ) ) {
-			$competition = $competition_dao->get( $_GET['tuja_competition'] );
-		}
-
-		if ( ! $competition ) {
-			print 'Could not find competition';
-
-			exit;
-		}
-
 		$upload_dao    = new UploadDao();
 		$affected_rows = $upload_dao->update_favourite_status(
 			UploadId::from_string( $_GET['tuja_upload_id'] ),

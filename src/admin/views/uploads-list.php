@@ -43,9 +43,8 @@ $this->print_menu();
 				}
 				$update_favourite_endpoint = add_query_arg(
 					array(
-						'action'           => 'tuja_favourite_upload',
-						'tuja_upload_id'   => rawurlencode( strval( $upload->id ) ),
-						'tuja_competition' => $this->competition->id,
+						'action'         => 'tuja_favourite_upload',
+						'tuja_upload_id' => rawurlencode( strval( $upload->id ) ),
 					),
 					admin_url( 'admin.php' )
 				);
