@@ -27,11 +27,11 @@ class FormQuestion extends FormQuestionGroup implements RouterInterface {
 		if ( isset( $_GET['tuja_question'] ) ) {
 			$this->question = self::get_question($_GET['tuja_question'], $this->question_dao);
 
-			if (!$this->question->form_id) {
+			if ( !isset( $this->question->form_id ) || !$this->question->form_id) {
 				$this->question->form_id = $this->form->id;
 			}
 
-			if (!$this->question->question_group_id) {
+			if ( !isset( $this->question->question_group_id ) || !$this->question->question_group_id) {
 				$this->question->question_group_id = $this->question_group->id;
 			}
 		}
@@ -104,7 +104,7 @@ class FormQuestion extends FormQuestionGroup implements RouterInterface {
 		if ( strpos($_POST['tuja_action'], self::ACTION_NAME_CREATE_PREFIX) !== false ) {
 			$success = false;
 
-			if(empty($id)) {
+			if( empty( $this->question->id ) ) {
 				$this->question->set_properties_from_array( $_POST );
 			} else {
 				$this->question->set_properties_from_json_string( stripslashes( $_POST[ $id ] ) );
