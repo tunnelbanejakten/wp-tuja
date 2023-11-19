@@ -7,6 +7,7 @@ use tuja\data\model\Group;
 use tuja\data\model\ValidationException;
 use tuja\util\score\AutoScoreResult;
 use tuja\view\FieldChoices;
+use tuja\admin\AdminUtils;
 
 class OptionsQuestion extends AbstractQuestion {
 
@@ -229,7 +230,7 @@ class OptionsQuestion extends AbstractQuestion {
 		<div class="row">
 			<div class="form-control checkbox">
 				<input type="checkbox" name="is_single_select" id="is_single_select"<?php checked($this->is_single_select); ?>>
-				<label for="is_single_select">Bara ett svar</label>
+				<label for="is_single_select">Bara ett svar <?php AdminUtils::printTooltip( 'De tävlande får bara lämna ett svar på frågan. Annars tillåts att man svarar flera saker.' ); ?></label>
 			</div>
 		</div>
 
@@ -240,13 +241,13 @@ class OptionsQuestion extends AbstractQuestion {
 		<div class="row">
 			<div class="form-control radio">
 				<input type="radio" name="score_type" id="score_type__one_of" value="one_of"<?php checked($this->score_type, 'one_of'); ?>>
-				<label for="score_type__one_of">Minst ett rätt svar</label>
+				<label for="score_type__one_of">Minst ett rätt svar <?php AdminUtils::printTooltip( 'Maximal poäng om (minst) ett av de rätta svaren anges. Annars noll poäng.' ); ?></label>
 			</div>
 		</div>
 		<div class="row">
 			<div class="form-control radio">
 				<input type="radio" name="score_type" id="score_type__all_of" value="all_of"<?php checked($this->score_type, 'all_of'); ?>>
-				<label for="score_type__all_of">Alla rätt</label>
+				<label for="score_type__all_of">Alla rätt krävs <?php AdminUtils::printTooltip( 'Maximal poäng endast om alla de rätta svaren anges. Annars noll poäng.' ); ?></label>
 			</div>
 		</div>
 		<?php
