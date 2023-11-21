@@ -23,7 +23,7 @@ abstract class AbstractQuestion {
 	public $sort_order        = 0;
 	public $limit_time        = 0;
 	public $text_preparation  = null;
-	public $score_max         = 0;
+	public $score_max         = -1;
 
 	/**
 	 * AbstractQuestion constructor.
@@ -93,6 +93,9 @@ abstract class AbstractQuestion {
 		}
 		if ( strlen( $this->text_hint ) > 65000 ) {
 			throw new ValidationException( 'text_hint', 'Hjälptexten är för lång.' );
+		}
+		if ( ! is_numeric( $this->score_max ) || $this->score_max < 0 ) {
+			throw new ValidationException( 'score_max', 'Maximal poäng måste anges till 0 eller mer.' );
 		}
 	}
 

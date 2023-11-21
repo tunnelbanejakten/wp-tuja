@@ -19,7 +19,7 @@ class NumberQuestion extends AbstractQuestion {
 		$sort_order = 0,
 		$limit_time = -1,
 		$text_preparation = null,
-		$score_max = 0,
+		$score_max = -1,
 		$correct_answer = null
 	) {
 		parent::__construct(
