@@ -13,9 +13,8 @@ use tuja\util\QuestionNameGenerator;
 use tuja\util\RouterInterface;
 
 class FormQuestion extends FormQuestionGroup implements RouterInterface {
-	const FORM_FIELD_NAME_PREFIX    = 'tuja-question';
-	const ACTION_NAME_DELETE_PREFIX = 'question_delete__';
-	const ACTION_NAME_UPDATE_PREFIX = 'question_update__';
+	const ACTION_NAME_DELETE = 'question_delete';
+	const ACTION_NAME_UPDATE = 'question_update';
 
 	protected $question_dao;
 	protected $question;
@@ -99,16 +98,10 @@ class FormQuestion extends FormQuestionGroup implements RouterInterface {
 			return;
 		}
 
-		$id = self::FORM_FIELD_NAME_PREFIX . '__' . $this->question->id;
-
 		if ( strpos($_POST['tuja_action'], self::ACTION_NAME_CREATE_PREFIX) !== false ) {
 			$success = false;
 
-			if( empty( $this->question->id ) ) {
-				$this->question->set_properties_from_array( $_POST );
-			} else {
-				$this->question->set_properties_from_json_string( stripslashes( $_POST[ $id ] ) );
-			}
+			$this->question->set_properties_from_array( $_POST );
 			
 			try {
 				$new_id = $this->question_dao->create( $this->question );
@@ -121,36 +114,39 @@ class FormQuestion extends FormQuestionGroup implements RouterInterface {
 			}
 		}
 
-		elseif ( strpos($_POST['tuja_action'], self::ACTION_NAME_UPDATE_PREFIX) !== false ) {
+		elseif ( $_POST['tuja_action'] === self::ACTION_NAME_UPDATE ) {
 			$wpdb->show_errors();
 
 			$success = true;
 
-			if ( isset( $_POST[ $id ] ) ) {
-				if(empty($_POST[ $id ])) {
-					$this->question->set_properties_from_array( $_POST );
-				} else {
-					$this->question->set_properties_from_json_string( stripslashes( $_POST[ $id ] ) );
-				}
+			$this->question->set_properties_from_array( $_POST );
 
-				try {
-					$affected_rows = $this->question_dao->update( $this->question );
-					$success       = $success && $affected_rows !== false;
-				} catch ( Exception $e ) {
-					$success = false;
-				}
+			try {
+				$affected_rows = $this->question_dao->update( $this->question );
+				$success       = $success && $affected_rows !== false;
+			} catch ( Exception $e ) {
+				$success = false;
 			}
 
 			$success ? AdminUtils::printSuccess( 'Uppdaterat!' ) : AdminUtils::printError( 'Kunde inte uppdatera fråga.' );
 		}
 		
-		elseif ( substr( $_POST['tuja_action'], 0, strlen( self::ACTION_NAME_DELETE_PREFIX ) ) == self::ACTION_NAME_DELETE_PREFIX ) {
-			$question_id_to_delete = substr( $_POST['tuja_action'], strlen( self::ACTION_NAME_DELETE_PREFIX ) );
-			$affected_rows         = $this->question_dao->delete( $question_id_to_delete );
+		elseif ( $_POST['tuja_action'] === self::ACTION_NAME_DELETE ) {
+			$affected_rows         = $this->question_dao->delete( $this->question->id );
 			$success               = $affected_rows !== false && $affected_rows === 1;
 
 			if ( $success ) {
-				AdminUtils::printSuccess( 'Fråga borttagen!' );
+				$back_url = add_query_arg(
+					array(
+						'tuja_competition'    => $this->competition->id,
+						'tuja_form'           => $this->question->form_id,
+						'tuja_question_group' => $this->question->question_group_id,
+						'tuja_view'           => 'FormQuestionGroup',
+					)
+				);
+
+				wp_redirect( $back_url );
+				exit;
 			} else {
 				AdminUtils::printError( 'Kunde inte ta bort fråga.' );
 				if ( $error = $wpdb->last_error ) {
@@ -171,10 +167,6 @@ class FormQuestion extends FormQuestionGroup implements RouterInterface {
 		$db_competition = new CompetitionDao();
 		$competition    = $db_competition->get( $this->form->competition_id );
 		$question       = $this->question;
-		$question_class_short = substr( get_class( $question ), strrpos( get_class( $question ), '\\' ) + 1 );
-		$json       = $question->get_editable_properties_json( $question );
-		$field_name = self::FORM_FIELD_NAME_PREFIX . '__' . $question->id;
-		$options_schema = $question->json_schema();
 		$preview_url    = $this->get_preview_url();
 
 		include( 'views/form-question.php' );
