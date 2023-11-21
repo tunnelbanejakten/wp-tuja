@@ -98,7 +98,7 @@ class TextQuestion extends AbstractQuestion {
 		$sort_order = 0,
 		$limit_time = -1,
 		$text_preparation = null,
-		$score_max = 0,
+		$score_max = -1,
 		$score_type = self::GRADING_TYPE_ONE_OF,
 		$is_single_answer = true,
 		$correct_answers = array(),
@@ -334,25 +334,25 @@ class TextQuestion extends AbstractQuestion {
 
 		<div class="row">
 			<div class="form-control radio">
-				<input type="radio" name="score_type" id="score_type__one_of" value="one_of"<?php checked($this->score_type, 'one_of'); ?>>
+				<input type="radio" name="score_type" required id="score_type__one_of" value="one_of"<?php checked($this->score_type, 'one_of'); ?>>
 				<label for="score_type__one_of">Minst ett rätt svar <?php AdminUtils::printTooltip( 'Maximal poäng om (minst) ett av de rätta svaren anges. Annars noll poäng.' ); ?></label>
 			</div>
 		</div>
 		<div class="row">
 			<div class="form-control radio">
-				<input type="radio" name="score_type" id="score_type__unordered_percent_of" value="unordered_percent_of"<?php checked($this->score_type, 'unordered_percent_of'); ?>>
+				<input type="radio" name="score_type" required id="score_type__unordered_percent_of" value="unordered_percent_of"<?php checked($this->score_type, 'unordered_percent_of'); ?>>
 				<label for="score_type__unordered_percent_of">Andel rätta svar <?php AdminUtils::printTooltip( 'Poäng baserat på hur många av de rätta svaren som angetts. Exempel: Om en fråga har tre rätta svar och två av dessa lämnats så får man 2/3 av maxpoäng.' ); ?></label>
 			</div>
 		</div>
 		<div class="row">
 			<div class="form-control radio">
-				<input type="radio" name="score_type" id="score_type__ordered_percent_of" value="ordered_percent_of"<?php checked($this->score_type, 'ordered_percent_of'); ?>>
+				<input type="radio" name="score_type" required id="score_type__ordered_percent_of" value="ordered_percent_of"<?php checked($this->score_type, 'ordered_percent_of'); ?>>
 				<label for="score_type__ordered_percent_of">Andel rätta svar i korrekt ordning <?php AdminUtils::printTooltip( 'Poäng baserat på hur många av de rätta svaren som angetts i samma ordning som här ovan. Exempel: Om svaren är Adam, Bertil, Cecilia, Doris men användaren svarat Adam, Cecilia, Bertil, Doris (dvs. bytt plats på Bertil och Cecilia) så får hen 50% av maxpoäng eftersom 2 av 4 svar (Adam och Doris) är på rätt plats (1:an och 4:an).' ); ?></label>
 			</div>
 		</div>
 		<div class="row">
 			<div class="form-control radio">
-				<input type="radio" name="score_type" id="score_type__all_of" value="all_of"<?php checked($this->score_type, 'all_of'); ?>>
+				<input type="radio" name="score_type" required id="score_type__all_of" value="all_of"<?php checked($this->score_type, 'all_of'); ?>>
 				<label for="score_type__all_of">Alla rätt krävs <?php AdminUtils::printTooltip( 'Maximal poäng endast om alla de rätta svaren anges. Annars noll poäng.' ); ?></label>
 			</div>
 		</div>

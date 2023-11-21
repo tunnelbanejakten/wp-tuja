@@ -43,7 +43,7 @@ $this->print_menu();
 	<div class="row">
 		<div class="form-control short">
 			<label for="score_max">Maximal poäng</label>
-			<input type="number" name="score_max" id="score_max" value="<?php echo (int)$this->question->score_max; ?>">
+			<input type="number" name="score_max" id="score_max" min="0" value="<?php echo (int)$this->question->score_max; ?>">
 		</div>
 
 		<div class="form-control short">
@@ -59,7 +59,7 @@ $this->print_menu();
 	<div class="row">
 		<div class="form-control short">
 			<label for="limit_time">Maximal tid (sekunder, 0 = ingen begränsning)</label>
-			<input type="number" name="limit_time" id="limit_time" value="<?php echo (int)$this->question->limit_time; ?>">
+			<input type="number" name="limit_time" id="limit_time" min="0" value="<?php echo (int)$this->question->limit_time; ?>">
 		</div>
 
 		<div class="form-control short">

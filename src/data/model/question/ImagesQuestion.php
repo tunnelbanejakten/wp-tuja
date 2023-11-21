@@ -22,7 +22,7 @@ class ImagesQuestion extends AbstractQuestion {
 		$sort_order = 0,
 		$limit_time = -1,
 		$text_preparation = null,
-		$score_max = 0,
+		$score_max = -1,
 		$max_files_count = self::DEFAULT_FILE_COUNT_LIMIT
 	) {
 		parent::__construct(

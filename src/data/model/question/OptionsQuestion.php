@@ -67,7 +67,7 @@ class OptionsQuestion extends AbstractQuestion {
 		$sort_order = 0,
 		$limit_time = -1,
 		$text_preparation = null,
-		$score_max = 0,
+		$score_max = -1,
 		$score_type = self::GRADING_TYPE_ONE_OF,
 		$is_single_select = true,
 		$correct_answers = array(),
@@ -240,13 +240,13 @@ class OptionsQuestion extends AbstractQuestion {
 
 		<div class="row">
 			<div class="form-control radio">
-				<input type="radio" name="score_type" id="score_type__one_of" value="one_of"<?php checked($this->score_type, 'one_of'); ?>>
+				<input type="radio" required name="score_type" id="score_type__one_of" value="one_of"<?php checked($this->score_type, 'one_of'); ?>>
 				<label for="score_type__one_of">Minst ett rätt svar <?php AdminUtils::printTooltip( 'Maximal poäng om (minst) ett av de rätta svaren anges. Annars noll poäng.' ); ?></label>
 			</div>
 		</div>
 		<div class="row">
 			<div class="form-control radio">
-				<input type="radio" name="score_type" id="score_type__all_of" value="all_of"<?php checked($this->score_type, 'all_of'); ?>>
+				<input type="radio" required name="score_type" id="score_type__all_of" value="all_of"<?php checked($this->score_type, 'all_of'); ?>>
 				<label for="score_type__all_of">Alla rätt krävs <?php AdminUtils::printTooltip( 'Maximal poäng endast om alla de rätta svaren anges. Annars noll poäng.' ); ?></label>
 			</div>
 		</div>
