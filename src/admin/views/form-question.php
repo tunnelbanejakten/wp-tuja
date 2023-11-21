@@ -70,11 +70,9 @@ $this->print_menu();
 
 	<div class="row">
 		<?php
-		printf( '<input type="hidden" name="%s" id="%s" value="" />', $field_name, $field_name );
-		
 		if($question->id) {
-			printf('<button type="submit" class="button button-primary" name="tuja_action" value="%s%d">Spara</button>', self::ACTION_NAME_UPDATE_PREFIX, $question->id);
-			printf('<button type="submit" class="button" name="tuja_action" value="%s%d" onclick="return confirm(\'Är du säker?\');">Ta bort</button>', self::ACTION_NAME_DELETE_PREFIX, $question->id);
+			printf('<button type="submit" class="button button-primary" name="tuja_action" value="%s">Spara</button>', self::ACTION_NAME_UPDATE);
+			printf('<button type="submit" class="button" name="tuja_action" value="%s" onclick="return confirm(\'Är du säker?\');">Ta bort</button>', self::ACTION_NAME_DELETE);
 		} elseif (is_string($_GET['tuja_question'])) {
 			printf('<button type="submit" class="button button-primary" name="tuja_action" value="%s">Skapa</button>', $_GET['tuja_question']);
 		}
