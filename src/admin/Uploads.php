@@ -20,7 +20,6 @@ class Uploads extends Competition {
 			$menu,
 			array(
 				UploadsList::class => array( 'Alla bilder', null ),
-				UploadsSync::class => array( 'Synka databas och disk', null ),
 			)
 		);
 	}

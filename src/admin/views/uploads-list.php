@@ -14,7 +14,7 @@ $this->print_menu();
 	<table id="tuja_uploads_list" class="tuja-table">
 		<thead>
 		<tr>
-			<td colspan="7" style="text-align: right"><?php echo $pagination_html; ?></td>
+			<td colspan="5" style="text-align: right"><?php echo $pagination_html; ?></td>
 		</tr>
 		<tr>
 			<th>Id</th>
@@ -22,13 +22,11 @@ $this->print_menu();
 			<th>Datum</th>
 			<th>Förhandsgranskning</th>
 			<th>Versioner</th>
-			<th>Fråga</th>
-			<th>Aktuell?</th>
 		</tr>
 		</thead>
 		<tfoot>
 		<tr>
-			<td colspan="7" style="text-align: right"><?php echo $pagination_html; ?></td>
+			<td colspan="5" style="text-align: right"><?php echo $pagination_html; ?></td>
 		</tr>
 		</tfoot>
 		<tbody>
@@ -56,8 +54,6 @@ $this->print_menu();
 					<td>%s</td>
 					<td>%s</td>
 					<td>%s</td>
-					<td>%s</td>
-					<td>%s</td>
 				</tr>
 				',
 					$upload->id,
@@ -65,9 +61,7 @@ $this->print_menu();
 					$upload->is_favourite ? 'checked="checked"' : '',
 					$upload->created_at->format( 'Y-m-d H:i' ),
 					$thumbnail_html,
-					join( ', ', array_keys( $upload->versions ) ),
-					'?',
-					'?'
+					join( ', ', array_keys( $upload->versions ) )
 				);
 			}
 		);

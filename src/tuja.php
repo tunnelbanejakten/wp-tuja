@@ -252,7 +252,6 @@ abstract class Plugin {
 			CREATE TABLE ' . Database::get_table( 'uploads' ) . ' (
 				id               VARCHAR(100) NOT NULL,
 				team_id          INTEGER,
-				edits            TEXT,
 				is_favourite     BOOLEAN NOT NULL DEFAULT FALSE,
 				created_at       INTEGER NOT NULL,
 				PRIMARY KEY (id)

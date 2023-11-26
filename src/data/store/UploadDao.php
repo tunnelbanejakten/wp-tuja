@@ -21,9 +21,9 @@ class UploadDao extends AbstractDao {
 	function create( UploadId $upload_id, Group $group ) {
 		$query = '
 		INSERT IGNORE INTO ' . $this->table . '
-			(id, team_id, edits, is_favourite, created_at)
+			(id, team_id, is_favourite, created_at)
 			VALUES
-			(%s, %d, %s, %d, %d)
+			(%s, %d, %d, %d)
 		';
 
 		$affected_rows = $this->wpdb->query(
@@ -81,8 +81,6 @@ class UploadDao extends AbstractDao {
 	// 		$this->table,
 	// 		array(
 	// 			'team_id'      => $upload->group_id,
-	// 			'paths'        => json_encode( $upload->paths ),
-	// 			'edits'        => json_encode( $upload->edits ),
 	// 			'is_favourite' => $upload->is_favourite ? 1 : 0,
 	// 		),
 	// 		array(
@@ -176,7 +174,6 @@ class UploadDao extends AbstractDao {
 		$upload = new Upload(
 			UploadId::from_string( $result->id ),
 			isset( $result->team_id ) ? intval( $result->team_id ) : null,
-			json_decode( $result->edits, true ),
 			'1' === $result->is_favourite,
 			self::from_db_date( $result->created_at )
 		);
