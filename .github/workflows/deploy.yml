@@ -1,0 +1,40 @@
+name: Build & Deploy
+run-name: Deploy ${{ github.ref_name }}
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+    - name: Install composer dependencies
+      uses: ramsey/composer-install@v2
+      with:
+        composer-options: "--ignore-platform-reqs"
+    - name: Configure SSH
+      run: |
+        mkdir -p ~/.ssh/
+        echo "$SSH_KEY" > ~/.ssh/private.key
+        chmod 600 ~/.ssh/private.key
+        cat >>~/.ssh/config <<END
+        Host remote
+          HostName $SSH_HOST
+          User $SSH_USER
+          IdentityFile ~/.ssh/private.key
+          StrictHostKeyChecking no
+        END
+      env:
+        SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_HOST: ${{ vars.REMOTE_HOST }}
+        SSH_USER: ${{ secrets.REMOTE_USER }}
+    - name: Deploy to ${{ vars.REMOTE_HOST }}
+      run: rsync -azh --delay-updates --stats ${{ github.workspace }}/src remote:${{ vars.REMOTE_TARGET }}
