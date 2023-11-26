@@ -37,4 +37,4 @@ jobs:
         SSH_HOST: ${{ vars.REMOTE_HOST }}
         SSH_USER: ${{ secrets.REMOTE_USER }}
     - name: Deploy to ${{ vars.REMOTE_HOST }}
-      run: rsync -azh --delay-updates --stats ${{ github.workspace }}/src/ remote:${{ vars.REMOTE_TARGET }}
+      run: rsync -azh --super --delay-updates --stats ${{ github.workspace }}/src/ remote:${{ vars.REMOTE_TARGET }}
