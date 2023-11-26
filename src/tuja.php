@@ -2,7 +2,7 @@
 /*
    Plugin Name: Tuja
    Description: Made for Tunnelbanejakten.se
-   Version: 1.0.0
+   Version: 0.0.0-dev
    Author: Mikael Svensson & Mattias Forsman
    Author URI: https://tunnelbanejakten.se
 */
@@ -13,7 +13,7 @@ use Exception;
 use tuja\util\Database;
 
 abstract class Plugin {
-	const VERSION       = '1.0.0';
+	const VERSION       = '0.0.0-dev';
 	const SLUG          = 'tuja';
 	const TABLE_PREFIX  = 'tuja_';
 	const FILE          = __FILE__;

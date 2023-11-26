@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Set version number
+      run: grep -rl 0.0.0-dev . | xargs sed -i 's/0.0.0-dev/${{ github.ref_name }}/g'
     - uses: shivammathur/setup-php@v2
       with:
         php-version: '7.4'
