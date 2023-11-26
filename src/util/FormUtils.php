@@ -189,7 +189,7 @@ class FormUtils {
 			$images        = @$current_value['images'] ?? array();
 			$image_manager = new ImageManager();
 			foreach ( $images as $index => $image_id ) {
-				$url = $image_manager->get_resized_image_url( $image_id, 40000, $this->group->random_id );
+				$url = $image_manager->get_resized_image_url( $image_id, ImageManager::DEFAULT_THUMBNAIL_PIXEL_COUNT, $this->group->random_id );
 				if ( $url !== false ) {
 					$response['response']['current_value']['thumbnails'][ $index ] = $url;
 				}

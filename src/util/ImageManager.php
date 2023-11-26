@@ -2,9 +2,13 @@
 
 namespace tuja\util;
 
+use Error;
 use Exception;
 use tuja\data\model\Group;
+use tuja\data\model\Upload;
+use tuja\data\model\UploadId;
 use tuja\data\store\GroupDao;
+use tuja\data\store\UploadDao;
 use tuja\data\store\ResponseDao;
 use tuja\frontend\FormLockValidator;
 use tuja\util\concurrency\LockValuesList;
@@ -12,17 +16,20 @@ use tuja\util\concurrency\LockValuesList;
 class ImageManager {
 	const DEFAULT_THUMBNAIL_PIXEL_COUNT = 200 * 200;
 	const DEFAULT_LARGE_PIXEL_COUNT     = 1000 * 1000;
+	const FOLDER_NAME                   = 'tuja';
 
 	private $directory;
 	private $public_url_directory;
+	private $uploads_dao;
 
 	public function __construct() {
-		$dir = wp_upload_dir( 'tuja', true, false );
+		$dir = wp_upload_dir( self::FOLDER_NAME, true, false );
 		if ( ! isset( $dir['path'] ) ) {
 			throw new Exception( 'Could not find folder to put image in.' );
 		}
-		$this->directory            = trailingslashit( $dir['path'] );
-		$this->public_url_directory = trailingslashit( $dir['url'] );
+		$this->directory            = trailingslashit( trailingslashit( $dir['basedir'] ) . self::FOLDER_NAME );
+		$this->public_url_directory = trailingslashit( trailingslashit( $dir['baseurl'] ) . self::FOLDER_NAME );
+		$this->uploads_dao          = new UploadDao();
 	}
 
 	public function import_jpeg( $file_path, $group_key = null ): string {
@@ -62,6 +69,10 @@ class ImageManager {
 		}
 	}
 
+	public function get_url_from_absolute_path( $path ): string {
+		return $this->public_url_directory . substr( $path, strlen( $this->directory ) );
+	}
+
 	public function get_original_image_url( $filename, $group_key = null ) {
 		$sub_directory = isset( $group_key ) ? "group-$group_key/" : '';
 		$dst_path      = $this->directory . $sub_directory . $filename;
@@ -84,13 +95,10 @@ class ImageManager {
 			return $this->public_url_directory . $sub_directory . $dst_filename;
 		}
 
-		$src_path     = $this->directory . $sub_directory . "$file_id.$ext";
+		$src_path     = $this->directory . $sub_directory . $filename;
 		$image_editor = wp_get_image_editor( $src_path );
 		if ( is_wp_error( $image_editor ) ) {
-			if ( $group_key != null ) {
-				// The group_key is set but we didn't find the image in the group's sub-directory. Check if it for some reason is still in the root directory.
-				return $this->get_resized_image_url( $filename, $pixels, null );
-			}
+			error_log( 'Could not create wp_get_image_editor for ' . $src_path . ' because: ' . $image_editor->get_error_message() );
 
 			return false;
 		}
@@ -110,7 +118,12 @@ class ImageManager {
 		if ( is_wp_error( $saved ) ) {
 			return false;
 		} else {
-			return $this->public_url_directory . $sub_directory . $dst_filename;
+			$resized_image_url = $this->public_url_directory . $sub_directory . $dst_filename;
+
+			$upload_id = new UploadId( $group_key, md5_file( $src_path ) );
+			$this->uploads_dao->create_version( $upload_id, $dst_path, 'resized_' . $pixels . '_path' );
+
+			return $resized_image_url;
 		}
 	}
 
@@ -166,7 +179,7 @@ class ImageManager {
 		$bytes_written = file_put_contents( $file_path, $file_content );
 
 		if ( false !== $bytes_written && $bytes_written > 0 ) {
-			return self::resize_and_return( $file_path, $group->random_id );
+			return $this->resize_and_return( $file_path, $group );
 		}
 
 		return array(
@@ -175,7 +188,7 @@ class ImageManager {
 		);
 	}
 
-	public static function save_uploaded_file( $file_upload_object, Group $group, string $question_id, string $lock_value ) {
+	public function save_uploaded_file( $file_upload_object, Group $group, string $question_id, string $lock_value ) {
 		$question = (int) $question_id;
 		Strings::init( $group->competition_id );
 
@@ -221,7 +234,7 @@ class ImageManager {
 		$movefile = wp_handle_upload( $file, $upload_overrides );
 
 		if ( $movefile && ! isset( $movefile['error'] ) ) {
-			return self::resize_and_return( $movefile['file'], $group->random_id );
+			return $this->resize_and_return( $movefile['file'], $group );
 		}
 
 		return array(
@@ -230,15 +243,43 @@ class ImageManager {
 		);
 	}
 
-	private static function resize_and_return( string $file_path, string $group_key ) {
-		$filename = explode( '/', $file_path );
-		$filename = array_pop( $filename );
+	private function save_upload_record( string $file_path, Group $group ) : int {
+		error_log( 'save_upload_record for ' . $file_path );
+		$id = new UploadId( $group->random_id, md5_file( $file_path ) );
+
+		$create_result         = $this->uploads_dao->create( $id, $group );
+		$create_version_result = $this->uploads_dao->create_version( $id, $file_path, 'original' );
+
+		return $create_result && $create_version_result;
+	}
+
+	private function resize_and_return( string $file_path, Group $group ) {
+		$group_key            = $group->random_id;
+		$file_path_components = explode( '/', $file_path );
+		$filename             = array_pop( $file_path_components );
+
+		$record_saved = $this->save_upload_record( $file_path, $group );
+		if ( false === $record_saved ) {
+			error_log( 'Could not store upload object.' );
+			return array(
+				'error'       => Strings::get( 'image_manager.unknown_error' ),
+				'http_status' => 500,
+			);
+		}
 
 		$resized_image_url = ( new ImageManager() )->get_resized_image_url(
 			$filename,
 			self::DEFAULT_THUMBNAIL_PIXEL_COUNT,
 			$group_key
 		);
+
+		if ( false === $resized_image_url ) {
+			error_log( 'Could not resize image.' );
+			return array(
+				'error'       => Strings::get( 'image_manager.unknown_error' ),
+				'http_status' => 500,
+			);
+		}
 
 		return array(
 			'error'         => false,

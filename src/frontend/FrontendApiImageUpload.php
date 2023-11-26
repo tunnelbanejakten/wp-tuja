@@ -18,7 +18,7 @@ class FrontendApiImageUpload {
 
 			$group = self::get_group( $_POST['group'] ?? '', $_POST['token'] ?? '' );
 			if ( ! empty( $group ) && isset( $group ) ) {
-				$result = ImageManager::save_uploaded_file( $_FILES['file'], $group, $_POST['question'], $_POST['lock'] );
+				$result = ( new ImageManager() )->save_uploaded_file( $_FILES['file'], $group, $_POST['question'], $_POST['lock'] );
 
 				wp_send_json( $result, $result['http_status'] );
 				exit;

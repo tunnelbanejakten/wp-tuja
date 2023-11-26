@@ -4,7 +4,9 @@ namespace tuja;
 
 use tuja\admin\AdminUtils;
 use tuja\controller\SearchController;
+use tuja\data\model\UploadId;
 use tuja\data\store\CompetitionDao;
+use tuja\data\store\UploadDao;
 use tuja\util\Strings;
 use tuja\util\TemplateEditor;
 
@@ -27,6 +29,7 @@ class Admin extends Plugin {
 		add_action( 'admin_action_tuja_questions_preview', array( $this, 'render_questions_preview' ) );
 		add_action( 'admin_action_tuja_markdown', array( $this, 'render_markdown' ) );
 		add_action( 'admin_action_tuja_search', array( $this, 'search' ) );
+		add_action( 'admin_action_tuja_favourite_upload', array( $this, 'favourite_upload' ) );
 
 		Strings::init( intval( @$_GET['tuja_competition'] ?: 0 ) );
 	}
@@ -101,6 +104,20 @@ class Admin extends Plugin {
 		$result = $controller->search( $_GET['query'] );
 
 		print json_encode( $result );
+		exit;
+	}
+
+	function favourite_upload() {
+		define( 'IFRAME_REQUEST', true );
+		header( 'Content-type: application/json' );
+
+		$upload_dao    = new UploadDao();
+		$affected_rows = $upload_dao->update_favourite_status(
+			UploadId::from_string( $_GET['tuja_upload_id'] ),
+			$_POST['is_favourite'] === 'true'
+		);
+
+		print json_encode( array( 'result' => 1 === $affected_rows ) );
 		exit;
 	}
 
