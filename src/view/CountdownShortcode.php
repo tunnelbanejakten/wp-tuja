@@ -73,14 +73,14 @@ class CountdownShortcode
     public static function submit_form_response_opens($atts)
     {
         return self::form_shortcode(function ($form) {
-            return $form->submit_response_start;
+            return $form->submit_response_start_effective;
         }, $atts);
     }
 
     public static function submit_form_response_closes($atts)
     {
         return self::form_shortcode(function ($form) {
-            return $form->submit_response_end;
+            return $form->submit_response_end_effective;
         }, $atts);
     }
 
