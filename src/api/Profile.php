@@ -42,7 +42,7 @@ class Profile extends AbstractRestEndpoint {
 			'count_follower'     => $group->count_follower,
 			'count_team_contact' => $group->count_team_contact,
 
-			'auth_code'          => $group_dao->calculate_auth_code( $group ),
+			'auth_code'          => $group->auth_code,
 		);
 	}
 }

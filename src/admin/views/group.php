@@ -29,6 +29,10 @@ $this->print_leaves_menu();
 			<td><input type="text" name="tuja_group_name" id="tuja_group_name" value="<?php echo $_POST['tuja_group_name'] ?? $group->name; ?>"></td>
 		</tr>
 		<tr>
+			<td><label for="">Inloggningskod</label></td>
+			<td><input type="text" name="tuja_group_authcode" id="tuja_group_authcode" value="<?php echo $_POST['tuja_group_authcode'] ?? $group->auth_code; ?>" readonly disabled></td>
+		</tr>
+		<tr>
 			<td><label for="">Meddelande från laget</label></td>
 			<td><input type="text" name="tuja_group_note" id="tuja_group_note" value="<?php echo $_POST['tuja_group_note'] ?? $group->note; ?>"></td>
 		</tr>

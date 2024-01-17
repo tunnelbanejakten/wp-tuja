@@ -16,6 +16,17 @@ class Database {
 		return $wpdb->prefix . Plugin::TABLE_PREFIX . $name;
 	}
 
+	// TODO: Delete after https://github.com/tunnelbanejakten/wp-tuja/issues/410 has been deployed to all environments.
+	static public function backfill_group_auth_codes() {
+		global $wpdb;
+
+		$table         = Database::get_table( 'team' );
+		$query         = "UPDATE " . $table . " SET auth_code = LPAD(FLOOR(RAND() * 1000000), 6, '0') WHERE auth_code IS NULL";
+		$affected_rows = $wpdb->query( $query );
+
+		error_log('backfill_group_auth_codes updated ' . $affected_rows . ' teams.');
+	}
+
 	static public function update_foreign_keys( $keys ) {
 		global $wpdb;
 

@@ -67,8 +67,10 @@ class Group {
 	private $status;
 	public $id;
 	public $random_id;
+	public $auth_code;
 	public $competition_id;
 	public $name;
+	public $city;
 	public $category_id;
 	private $category_obj = null;
 	public $is_crew; // Derived from group category configuration
@@ -179,6 +181,7 @@ class Group {
 		$group->effective_fee_calculator = new FixedFeeCalculator();
 
 		$group->random_id = ( new Id() )->random_string();
+		$group->auth_code = ( new Id() )->random_digits(6);
 		$group->note      = 'Vi gillar ' . Random::string(
 			array(
 				'godis',

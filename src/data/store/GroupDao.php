@@ -17,9 +17,6 @@ use tuja\util\rules\RuleResult;
 
 class GroupDao extends AbstractDao {
 
-	const AUTH_CODE_MIN_LENGTH = 4;
-	const AUTH_CODE_MAX_LENGTH = 6;
-
 	private $props_table;
 
 	function __construct() {
@@ -36,6 +33,7 @@ class GroupDao extends AbstractDao {
 		$affected_rows = $this->wpdb->insert( $this->table,
 			array(
 				'random_id'            => $this->id->random_string(),
+				'auth_code'            => $this->id->random_digits(6),
 				// 'name'                 => $group->name,
 				'competition_id'       => $group->competition_id,
 				'payment_instructions' => self::serialize_payment_instructions( $group->fee_calculator, array() ),
@@ -43,6 +41,7 @@ class GroupDao extends AbstractDao {
 				'is_always_editable'   => $group->is_always_editable
 			),
 			array(
+				'%s',
 				'%s',
 				'%d',
 				'%s',
@@ -219,33 +218,13 @@ class GroupDao extends AbstractDao {
 		} );
 	}
 
-	function get_by_auth_code( string $code ) {
-		$code_length = strlen( $code );
-		if ($code_length < self::AUTH_CODE_MIN_LENGTH || $code_length > self::AUTH_CODE_MAX_LENGTH) {
-			return false;
-		}
-		$objects     = $this->get_objects(
-			function ( $row ) {
-				return self::to_group( $row, null );
+	function get_by_auth_code( string $code, $date = null ) {
+		return $this->get_object(
+			function ( $row ) use ( $date ) {
+				return self::to_group( $row, $date );
 			},
-			$this->generate_query( array( 'RIGHT(CONVERT(CRC32(g.random_id), CHAR(20)), ' . $code_length . ') = %s' ), null ),
-			$code
-		);
-		if ( count( $objects ) === 1 ) {
-			return $objects[0];
-		}
-		return false;
-	}
-
-	function calculate_auth_code( Group $group ) {
-		$full_code = sprintf( '%u', crc32( $group->random_id ) );
-		for ( $len = self::AUTH_CODE_MIN_LENGTH; $len <= self::AUTH_CODE_MAX_LENGTH; $len++ ) {
-			$short_code = substr( $full_code, -$len );
-			if ( $this->get_by_auth_code( $short_code ) !== false ) {
-				return $short_code;
-			}
-		}
-		return false;
+			$this->generate_query( [ 'g.auth_code = %s' ], $date ),
+			$code );
 	}
 
 	function search( $competition_id, string $query ) {
@@ -264,6 +243,7 @@ class GroupDao extends AbstractDao {
 		$g->id                 = isset($result->team_id) ? intval($result->team_id) : null;
 		$g->random_id          = $result->random_id;
 		$g->name               = $result->name;
+		$g->auth_code          = $result->auth_code;
 		$g->set_status( $result->status );
 		if ( ! $core_data_only ) {
 			$g->city               = $result->city;
