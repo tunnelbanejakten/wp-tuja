@@ -302,52 +302,58 @@ class DuelDao extends AbstractDao {
 			$competition_id
 		);
 
-		$duel_ids_string = join(
-			',',
-			array_map(
-				function ( Duel $duel ) {
-					return $duel->id;
-				},
-				$duels
-			)
-		);
-		$invites         = $this->get_objects(
-			function ( $row ) {
-				return self::to_duel_invite( $row );
-			},
-			'SELECT * FROM ' . $this->table_duel_invite . ' WHERE duel_id IN (' . $duel_ids_string . ') AND status != %s',
-			DuelInvite::STATUS_CANCELLED
-		);
-
-		foreach ( $duel_groups as $duel_group ) {
-			$duel_group->duels = array_filter(
-				$duels,
-				function ( Duel $duel ) use ( $duel_group ) {
-					return $duel->duel_group_id === $duel_group->id;
-				}
-			);
-		}
-
-		foreach ( $duels as $duel ) {
-			$duel->invites = array_filter(
-				$invites,
-				function ( DuelInvite $invite ) use ( $duel ) {
-					return $invite->duel_id === $duel->id;
-				}
-			);
-		}
-
-		$group_dao = new GroupDao();
-		$groups    = $group_dao->get_all_in_competition( $competition_id );
-		foreach ( $invites as $invite ) {
-			$invite->group = current(
-				array_filter(
-					$groups,
-					function ( Group $group ) use ( $invite ) {
-						return $group->id === $invite->team_id;
+		if ( count( $duels ) > 0 ) {
+			foreach ( $duel_groups as $duel_group ) {
+				$duel_group->duels = array_filter(
+					$duels,
+					function ( Duel $duel ) use ( $duel_group ) {
+						return $duel->duel_group_id === $duel_group->id;
 					}
+				);
+			}
+
+			$duel_ids_string = join(
+				',',
+				array_map(
+					function ( Duel $duel ) {
+						return $duel->id;
+					},
+					$duels
 				)
 			);
+			$invites         = $this->get_objects(
+				function ( $row ) {
+					return self::to_duel_invite( $row );
+				},
+				'SELECT * FROM ' . $this->table_duel_invite . ' WHERE duel_id IN (' . $duel_ids_string . ') AND status != %s',
+				DuelInvite::STATUS_CANCELLED
+			);
+
+			foreach ( $duels as $duel ) {
+				$duel->invites = array_filter(
+					$invites,
+					function ( DuelInvite $invite ) use ( $duel ) {
+						return $invite->duel_id === $duel->id;
+					}
+				);
+			}
+	
+			$group_dao = new GroupDao();
+			$groups    = $group_dao->get_all_in_competition( $competition_id );
+			foreach ( $invites as $invite ) {
+				$invite->group = current(
+					array_filter(
+						$groups,
+						function ( Group $group ) use ( $invite ) {
+							return $group->id === $invite->team_id;
+						}
+					)
+				);
+			}
+		} else {
+			foreach ( $duel_groups as $duel_group ) {
+				$duel_group->duels = array();
+			}
 		}
 
 		return $duel_groups;
