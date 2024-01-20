@@ -3,6 +3,7 @@
 namespace tuja\util\schedule;
 
 use tuja\data\model\Competition;
+use Exception;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
@@ -49,6 +50,9 @@ class DuelGroupSchedule {
 	}
 
 	public function generate( Competition $competition ): array {
+		if ( is_null( $competition->event_start ) || is_null( $competition->event_end ) ) {
+			throw new Exception( 'Competition has no start and/or end time.' );
+		}
 		$first_event                      = DateTime::createFromImmutable( $competition->event_start );
 		$competition_starts_on_whole_hour = $first_event->format( 'i' ) !== '00';
 		$first_event_hour_offset          = $this->start_hour_offset + ( $competition_starts_on_whole_hour ? 1 : 0 );
