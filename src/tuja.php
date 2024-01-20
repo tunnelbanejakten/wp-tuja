@@ -107,12 +107,14 @@ abstract class Plugin {
 			CREATE TABLE ' . Database::get_table( 'team' ) . ' (
 				id                    INTEGER AUTO_INCREMENT NOT NULL,
 				random_id             VARCHAR(20)  			 NOT NULL,
+				auth_code             VARCHAR(20),
 				competition_id        INTEGER      			 NOT NULL,
 				payment_instructions  TEXT,
 				map_id                INTEGER,
 				is_always_editable    BOOLEAN      			 NOT NULL DEFAULT FALSE,
 				PRIMARY KEY (id),
-				UNIQUE KEY idx_team_token (random_id)
+				UNIQUE KEY idx_team_token (random_id),
+				UNIQUE KEY idx_team_authcode (auth_code)
 			) ' . $charset;
 
 		$tables[] = '
@@ -505,6 +507,8 @@ abstract class Plugin {
 			Database::start_transaction();
 
 			Database::update_foreign_keys( $keys );
+
+			Database::backfill_group_auth_codes();
 
 			Database::commit();
 		} catch ( Exception $e ) {

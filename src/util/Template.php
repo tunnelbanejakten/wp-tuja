@@ -127,9 +127,6 @@ class Template {
 			$referral_links[ $key ] = GroupSignupInitiator::link( $referral_signup_group, $group );
 		}
 
-		$group_dao = new GroupDao();
-		$auth_code = $group_dao->calculate_auth_code( $group );
-
 		$payment_dao           = new PaymentDao();
 		$payments_controller   = new PaymentsController( $group->competition_id );
 		list ($fee, $fee_paid) = $payments_controller->group_fee_status( $group, $payment_dao->get_group_payments_by_group( $group ), new DateTime() );
@@ -143,7 +140,7 @@ class Template {
 				'group_payment_link'                     => GroupPaymentInitiator::link( $group ),
 				'group_app_link'                         => AppUtils::group_link( $group ),
 				'group_app_checkin_link'                 => AppUtils::group_checkin_link( $group ),
-				'group_app_auth_code'                    => $auth_code,
+				'group_app_auth_code'                    => $group->auth_code,
 				'group_map_name'                         => $group_map_name,
 				'group_map_start_coord'                  => $group_map_start_coord,
 				'group_map_start_label'                  => $group_map_start_label,

@@ -5,6 +5,7 @@ namespace tuja;
 use tuja\data\store\GroupDao;
 use tuja\data\model\Group;
 use tuja\util\JwtUtils;
+use tuja\util\Id;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -17,12 +18,7 @@ class Auth extends AbstractRestEndpoint {
 		// Start by checking for numeric sign-in code
 		$payload_code = @$payload['code'];
 		if (!empty ($payload_code )) {
-			if (! is_string( $payload_code )) {
-				return self::create_response( 400 );
-			}
-			
-			$code_length = strlen($payload_code);
-			if ($code_length < GroupDao::AUTH_CODE_MIN_LENGTH || $code_length > GroupDao::AUTH_CODE_MAX_LENGTH) {
+			if (! preg_match( '/^[' . Id::RANDOM_DIGITS . ']{1,20}$/', $payload_code )) {
 				return self::create_response( 400 );
 			}
 			
