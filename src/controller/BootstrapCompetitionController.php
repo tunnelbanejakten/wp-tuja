@@ -159,7 +159,9 @@ class BootstrapCompetitionController {
 		$props->competition_id                     = $competition->id;
 		$props->allow_multiple_responses_per_group = false;
 		$props->submit_response_start              = null;
+		$props->submit_response_start_effective    = $competition->event_start;
 		$props->submit_response_end                = null;
+		$props->submit_response_end_effective      = $competition->event_end;
 
 		$form_id = $this->form_dao->create( $props );
 		if ( $form_id === false ) {

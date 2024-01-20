@@ -164,7 +164,9 @@ class AbstractDao {
 		$f->name                               = $result->name;
 		$f->allow_multiple_responses_per_group = $result->allow_multiple_responses_per_team;
 		$f->submit_response_start              = self::from_db_date( $result->submit_response_start );
+		$f->submit_response_start_effective    = self::from_db_date( $result->submit_response_start_effective );
 		$f->submit_response_end                = self::from_db_date( $result->submit_response_end );
+		$f->submit_response_end_effective      = self::from_db_date( $result->submit_response_end_effective );
 
 		return $f;
 	}

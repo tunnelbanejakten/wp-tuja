@@ -21,7 +21,9 @@ class FormDao extends AbstractDao {
 				'random_id'                         => $this->id->random_string(),
 				'name'                              => $form->name,
 				'allow_multiple_responses_per_team' => 1,
+				// submit_response_start_effective is read-only.
 				'submit_response_start'             => self::to_db_date( $form->submit_response_start ),
+				// submit_response_end_effective is read-only.
 				'submit_response_end'               => self::to_db_date( $form->submit_response_end )
 			),
 			array(
@@ -43,7 +45,9 @@ class FormDao extends AbstractDao {
 		return $this->wpdb->update( $this->table,
 			array(
 				'name'                  => $form->name,
+				// submit_response_start_effective is read-only.
 				'submit_response_start' => self::to_db_date( $form->submit_response_start ),
+				// submit_response_end_effective is read-only.
 				'submit_response_end'   => self::to_db_date( $form->submit_response_end )
 			),
 			array(
@@ -56,7 +60,7 @@ class FormDao extends AbstractDao {
 			function ( $row ) {
 				return self::to_form( $row );
 			},
-			'SELECT * FROM ' . $this->table . ' WHERE id = %d',
+			$this->generate_query('f.id = %d'),
 			$id );
 	}
 
@@ -65,7 +69,7 @@ class FormDao extends AbstractDao {
 			function ( $row ) {
 				return self::to_form( $row );
 			},
-			'SELECT * FROM ' . $this->table . ' WHERE random_id = %s',
+			$this->generate_query('f.random_id = %s'),
 			$key );
 	}
 
@@ -74,7 +78,21 @@ class FormDao extends AbstractDao {
 			function ( $row ) {
 				return self::to_form( $row );
 			},
-			'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d',
+			$this->generate_query('f.competition_id = %d'),
 			$competition_id );
+	}
+
+	private function generate_query( String $where ) {
+		return sprintf('
+			SELECT 
+				f.*,
+				COALESCE(f.submit_response_start, c.event_start) AS submit_response_start_effective,
+				COALESCE(f.submit_response_end, c.event_end) AS submit_response_end_effective
+			FROM 
+				' . $this->table . ' AS f 
+				INNER JOIN ' . Database::get_table('competition') . ' AS c 
+					ON f.competition_id = c.id
+			WHERE
+				%s', $where);
 	}
 }

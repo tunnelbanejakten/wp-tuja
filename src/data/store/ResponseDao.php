@@ -218,6 +218,8 @@ class ResponseDao extends AbstractDao {
 				' . $map_and_join( 'q.%s AS q_%s', self::TABLE_COLUMNS_QUESTIONS ) . ',
 				' . $map_and_join( 'r.%s AS r_%s', self::TABLE_COLUMNS_RESPONSES ) . ',
 				' . $map_and_join( 'f.%s AS f_%s', self::TABLE_COLUMNS_FORMS ) . ',
+				COALESCE(f.submit_response_start, c.event_start) AS f_submit_response_start_effective,
+				COALESCE(f.submit_response_end, c.event_end) AS f_submit_response_end_effective,
 				r.created_at - (
 					SELECT MIN(evt.created_at) 
 					FROM ' . Database::get_table( 'event' ) . ' evt 
@@ -231,6 +233,7 @@ class ResponseDao extends AbstractDao {
 				%s
 				INNER JOIN ' . Database::get_table( 'form_question_group' ) . ' fqg ON q.question_group_id = fqg.id 
 				INNER JOIN ' . Database::get_table( 'form' ) . ' f ON fqg.form_id = f.id 
+				INNER JOIN ' . Database::get_table( 'competition' ) . ' c ON f.competition_id = c.id 
 			WHERE 
 				%s
 			ORDER BY

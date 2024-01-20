@@ -64,12 +64,12 @@ $this->print_menu();
     <div class="tuja-admin-question">
         <div class="tuja-admin-question-properties">
             <div class="tuja-admin-question-property tuja-admin-question-short">
-                <label for="">Svar accepteras fr.o.m.</label>
+                <label for="">Svar accepteras fr.o.m. <?php echo AdminUtils::tooltip( 'Om inget anges så används tävlingens starttid istället.'); ?></label>
                 <input type="datetime-local" name="tuja-submit-response-start" id="tuja-submit-response-start" placeholder="yyyy-mm-dd hh:mm"
                        value="<?= DateUtils::to_date_local_value($this->form->submit_response_start) ?>"/>
             </div>
             <div class="tuja-admin-question-property tuja-admin-question-short">
-                <label for="">Svar accepteras t.o.m.</label>
+                <label for="">Svar accepteras t.o.m. <?php echo AdminUtils::tooltip( 'Om inget anges så används tävlingens sluttid istället.'); ?></label>
                 <input type="datetime-local" name="tuja-submit-response-end" id="tuja-submit-response-end" placeholder="yyyy-mm-dd hh:mm"
                        value="<?= DateUtils::to_date_local_value($this->form->submit_response_end) ?>"/>
             </div>

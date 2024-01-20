@@ -12,7 +12,9 @@ class Form {
 	public $competition_id;
 	public $allow_multiple_responses_per_group;
 	public $submit_response_start;
+	public $submit_response_start_effective; // Read-only. Returns submit_response_start on form or event_start on competition.
 	public $submit_response_end;
+	public $submit_response_end_effective; // Read-only. Returns submit_response_end on form or event_end on competition.
 
 	public function validate() {
 		if ( strlen( trim( $this->name ) ) < 1 ) {
@@ -29,13 +31,13 @@ class Form {
 
 	public function is_opened(): bool {
 		$now  = ( new DateTime() )->getTimestamp();
-		$open = $this->submit_response_start == null || $now >= $this->submit_response_start->getTimestamp();
+		$open = $this->submit_response_start_effective == null || $now >= $this->submit_response_start_effective->getTimestamp();
 		return $open;
 	}
 
 	public function is_closed(): bool {
 		$now    = ( new DateTime() )->getTimestamp();
-		$closed = $this->submit_response_end != null && $now > $this->submit_response_end->getTimestamp();
+		$closed = $this->submit_response_end_effective != null && $now > $this->submit_response_end_effective->getTimestamp();
 		return $closed;
 	}
 }
