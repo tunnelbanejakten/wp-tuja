@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "tuja_reports_copies": {
+      "title": "Antal exemplar av blanketten:",
+      "type": "integer",
+      "default": 1,
+      "format": "number"
+    }
+  }
+}
