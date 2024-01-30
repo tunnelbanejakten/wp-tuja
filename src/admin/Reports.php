@@ -10,6 +10,7 @@ use tuja\admin\reportgenerators\ReportPayments;
 use tuja\admin\reportgenerators\ReportNotes;
 use tuja\admin\reportgenerators\ReportPeople;
 use tuja\admin\reportgenerators\ReportQuestionFiltering;
+use tuja\admin\reportgenerators\ReportExpenseReports;
 
 class Reports extends Competition {
 	private function get_report_url( $short_name, $format ) {
@@ -58,6 +59,7 @@ class Reports extends Competition {
 			$this->report_config( ReportNotes::class, 'Meddelanden till tävlingsledningen' ),
 			$this->report_config( ReportPeople::class, 'Deltagare och funktionärer' ),
 			$this->report_config( ReportQuestionFiltering::class, 'get_filtered_questions' ),
+			$this->report_config( ReportExpenseReports::class, 'Utläggsrapporter' ),
 		);
 
 		include( 'views/reports.php' );
