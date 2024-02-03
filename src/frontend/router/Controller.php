@@ -32,7 +32,8 @@ class Controller {
 			new GroupCancelSignupInitiator(),
 			new GroupCheckinInitiator(),
 			new GroupPaymentInitiator(),
-			new SlideshowInitiator()
+			new SlideshowInitiator(),
+			new ExpenseReportInitiator(),
 		];
 	}
 

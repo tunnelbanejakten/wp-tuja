@@ -5,7 +5,7 @@ namespace tuja\admin\reportgenerators;
 
 use tuja\data\store\GroupDao;
 use tuja\data\model\Group;
-use tuja\util\Id;
+use tuja\controller\ExpenseReportController;
 
 class ReportExpenseReports extends AbstractListReport {
 	public function __construct() {
@@ -14,9 +14,8 @@ class ReportExpenseReports extends AbstractListReport {
 
 	function get_rows(): array {
 		$copies = intval($_GET['tuja_reports_copies']);
-		$id_generator = new Id();
-		return array_map(function () use ($copies, $id_generator) {
-			return array('key' => strtoupper($id_generator->random_unambiguous_letters(4)));
+		return array_map(function () {
+			return array('key' => strtoupper(ExpenseReportController::get_new_id()));
 		}, array_fill(0, $copies, null));
 	}
 
