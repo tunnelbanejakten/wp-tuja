@@ -14,6 +14,12 @@
     </section>
     <section class="body">
         <section class="inputs">
+            <section class="inputs-qr">
+                <p>Scanna QR-koden med din mobil för att fylla i detaljerna digitalt. Då behöver du bara fästa kvittot och lämna in blanketten med fälten nedan tomma.</p>
+                <div class="qr-code-container">
+                    <img class="qr-code" src="" data-qr-value="<?= htmlentities( $row['form_link'] )?>">
+                </div>
+            </section>
             <section class="inputs-what">
                 <h3>Om utlägget:</h3>
                 <div class="expense-report-input"><div class="expense-report-label">Id:</div><div class="expense-report-line"><?= $row['key'] ?></div></div>

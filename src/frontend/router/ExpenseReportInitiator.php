@@ -13,7 +13,7 @@ class ExpenseReportInitiator implements ViewInitiator {
 	const ACTION = 'utlagg';
 
 	public static function link( Competition $competition, string $expense_report_key ) {
-		return join( '/', [ get_site_url(), $competition->random_id, self::ACTION, $expense_report_key ] );
+		return join( '/', [ get_site_url(), $competition->random_id, self::ACTION, strtolower($expense_report_key) ] );
 	}
 
 	function create_page( $path ): FrontendView {
