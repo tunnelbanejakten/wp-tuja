@@ -154,7 +154,7 @@ class Admin extends Plugin {
 		// Load scripts based on screen->id
 		$screen = get_current_screen();
 
-		if ( $screen->id === 'toplevel_page_tuja' && isset( $_GET['tuja_view'] ) ) {
+		if ( ($screen->id === 'toplevel_page_tuja' || $screen->id === 'admin') && isset( $_GET['tuja_view'] ) ) {
 			foreach ( $this->list_scripts( $_GET['tuja_view'] ) as $script_file_name ) {
 				wp_enqueue_script( 'tuja-script-' . $script_file_name, static::get_url() . '/assets/js/' . $script_file_name );
 			}
@@ -192,12 +192,17 @@ class Admin extends Plugin {
 	}
 
 	private function list_scripts( $view_name ) {
-		$view = 'tuja\\admin\\' . sanitize_text_field( $view_name );
-		if ( class_exists( $view ) ) {
-			$view = new $view();
+		$possible_class_names = array(
+			'tuja\\admin\\' . sanitize_text_field( $view_name ),
+			'tuja\\admin\\reportgenerators\\' . sanitize_text_field( $view_name ),
+		);
+		foreach ( $possible_class_names as $view ) {
+			if ( class_exists( $view ) ) {
+				$view = new $view();
 
-			if ( method_exists( $view, 'get_scripts' ) ) {
-				return $view->get_scripts();
+				if ( method_exists( $view, 'get_scripts' ) ) {
+					return $view->get_scripts();
+				}
 			}
 		}
 

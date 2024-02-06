@@ -62,9 +62,11 @@ article.expense-report section.header {
     display: flex;
     justify-content: space-between;
 }
+
 article.expense-report section.title {
     display: flex;
 }
+
 article.expense-report section.inputs {
     display: flex;
     flex-direction: column;
@@ -110,10 +112,12 @@ article.expense-report .for-cashier .expense-report-line {
 article.expense-report .expense-report-receipt-placeholder p {
     text-align: center;
 }
+
 article.expense-report .expense-report-receipt-placeholder,
 article.expense-report section.inputs {
     margin-top: 1cm;
 }
+
 article.expense-report .expense-report-receipt-placeholder {
     border: 0.05pt dashed black;
     display: flex;
@@ -127,4 +131,25 @@ article.expense-report .expense-report-receipt-placeholder {
 
 article.expense-report .expense-report-receipt-note {
     margin-top: 5cm;
+}
+
+article.expense-report section.inputs-qr {
+    border: 0.05pt dashed black;
+    padding: 0.5cm;
+    width: 7.8cm;
+    border-radius: 0.25cm;
+}
+
+article.expense-report section.inputs-qr p {
+    margin: 0;
+}
+
+article.expense-report section.inputs-qr div.qr-code-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+article.expense-report section.inputs-qr img.qr-code {
+    margin-top: 0.5cm;
 }
