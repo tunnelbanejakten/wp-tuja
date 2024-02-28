@@ -505,6 +505,8 @@ abstract class Plugin {
 
 			array( 'paymenttransaction', 'competition_id', 'competition', 'CASCADE' ),
 
+			array( 'expense_report', 'competition_id', 'competition', 'CASCADE' ),
+
 			array( 'uploads', 'team_id', 'team', 'CASCADE' ),
 			array( 'upload_versions', 'upload_id', 'uploads', 'CASCADE' ),
 

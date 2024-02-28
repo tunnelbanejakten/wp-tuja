@@ -4,6 +4,7 @@ namespace tuja\data\store;
 
 use DateTime;
 use tuja\data\model\ExpenseReport;
+use tuja\data\model\Competition;
 use tuja\util\Database;
 
 class ExpenseReportDao extends AbstractDao {
@@ -23,7 +24,7 @@ class ExpenseReportDao extends AbstractDao {
 				'random_id'      => $expense_report->random_id,
 				'description'    => $expense_report->description,
 				'amount'         => $expense_report->amount,
-				'date'           => self::to_db_date( $expense_report->amount ),
+				'date'           => self::to_db_date( $expense_report->date ),
 				'name'           => $expense_report->name,
 				'email'          => $expense_report->email,
 				'bank_account'   => $expense_report->bank_account,
@@ -45,7 +46,7 @@ class ExpenseReportDao extends AbstractDao {
 	}
 
 	function get( Competition $competition, string $random_id ) {
-		return $this->get_objects(
+		return $this->get_object(
 			function ( $row ) {
 				return self::to_expense_report( $row );
 			},
