@@ -56,6 +56,15 @@ class ExpenseReportDao extends AbstractDao {
 		);
 	}
 
+	function get_all_in_competition( $competition_id ) {
+		return $this->get_objects(
+			function ( $row ) {
+				return self::to_expense_report( $row );
+			},
+			'SELECT * FROM ' . $this->table . ' WHERE competition_id = %d',
+			$competition_id );
+	}
+
 	protected static function to_expense_report( $result ): ExpenseReport {
 		$expense_report                 = new ExpenseReport();
 		$expense_report->competition_id = intval( $result->competition_id );
