@@ -60,7 +60,7 @@ class Reports extends Competition {
 			$this->report_config( ReportNotes::class, 'Meddelanden till tävlingsledningen' ),
 			$this->report_config( ReportPeople::class, 'Deltagare och funktionärer' ),
 			$this->report_config( ReportQuestionFiltering::class, 'get_filtered_questions' ),
-			$this->report_config( ReportExpenseReports::class, 'Utläggsrapporter' ),
+			$this->report_config( ReportExpenseReports::class, 'Blanketter för utlägg' ),
 			$this->report_config( ReportExpenses::class, 'Registrerade utlägg' ),
 		);
 
