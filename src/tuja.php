@@ -432,6 +432,19 @@ abstract class Plugin {
 				INDEX idx_event_object (object_type, object_id)
 			) ' . $charset;
 
+		$tables[] = '
+			CREATE TABLE ' . Database::get_table( 'expense_report' ) . ' (
+				competition_id        INTEGER NOT NULL,
+				random_id             VARCHAR(20) NOT NULL,
+				description           TEXT,
+				amount                INTEGER NOT NULL,
+				date                  INTEGER NOT NULL,
+				name                  VARCHAR(100) NOT NULL,
+				email                 VARCHAR(100) NOT NULL,
+				bank_account          VARCHAR(100) NOT NULL,
+				PRIMARY KEY (competition_id, random_id)
+			) ' . $charset;
+
 		$keys = array(
 			array( 'team', 'map_id', 'map', 'RESTRICT' ),
 			array( 'team', 'competition_id', 'competition', 'CASCADE' ),
@@ -491,6 +504,8 @@ abstract class Plugin {
 			array( 'ticket_coupon_weight', 'to_station_id', 'station', 'CASCADE' ),
 
 			array( 'paymenttransaction', 'competition_id', 'competition', 'CASCADE' ),
+
+			array( 'expense_report', 'competition_id', 'competition', 'CASCADE' ),
 
 			array( 'uploads', 'team_id', 'team', 'CASCADE' ),
 			array( 'upload_versions', 'upload_id', 'uploads', 'CASCADE' ),
